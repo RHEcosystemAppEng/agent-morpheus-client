@@ -41,7 +41,11 @@ def print_output():
             for item in items:
                 with st.expander(item[0], expanded=True):
                     st.markdown(item[1])
-            st.download_button(label='Download', type='primary', data=json.dumps(data), file_name='output.json')
+            image = data['input']['image']['name'].split('/')[-1]
+            tag = data['input']['image']['tag']
+            product_ref = data['input']['scan']['product_ref']
+            file_name = f"{image}:{tag}-{product_ref}.json"
+            st.download_button(label='Download', type='primary', data=json.dumps(data), file_name=file_name)
 
 
 callback_server = HttpCallback()
