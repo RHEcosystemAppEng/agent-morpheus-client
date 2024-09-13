@@ -43,6 +43,7 @@ class Vuln(BaseModel):
 
 class Scan(BaseModel):
     vulns: list[Vuln]
+    product_ref: str
 
 
 class InputRequest(BaseModel):

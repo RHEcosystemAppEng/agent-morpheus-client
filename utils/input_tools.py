@@ -1,4 +1,6 @@
 import streamlit as st
+import json
+import os
 
 from utils.client_model import SUPPORTED_LANGUAGES, Image, InputRequest, JsonSbomInfo, ManualSbomInfo, SbomPackage, Scan, SourceInfo, Vuln
 from utils.sbom_tools import SbomInput
@@ -204,7 +206,7 @@ def build_input() -> InputRequest:
     st.session_state['morpheus_waiting'] = True
     input_format = st.session_state.input_format
     cves = [cve.strip() for cve in cves_text.split(',')]
-    scan = Scan(vulns=[Vuln(vuln_id=cve) for cve in cves])
+    scan = Scan(vulns=[Vuln(vuln_id=cve) for cve in cves], product_ref=f"{st.session_state.product_name}-{st.session_state.product_version}")
     input_data = InputRequest(
         image=build_image_from_sbom(sbom, input_format), scan=scan)
     return input_data
@@ -225,3 +227,15 @@ def print_input_data(col):
             sbom.git_repo.languages)
     else:
         col.text('Load an SBOM to show the input data')
+
+def product_dropdowns(col):
+    if 'products' not in st.session_state:
+        with open(os.path.join('./catalog', "products.json")) as products_file:
+            st.session_state.products = json.load(products_file)
+
+    if 'products' in st.session_state and len(st.session_state.products.keys()) > 0:
+        products = st.session_state.products
+        def __product_name(id: str) -> str:
+            return products[id]["name"]
+        st.session_state.product_name = col.selectbox(label='Product Name', options=products.keys(), index=0, format_func=__product_name)
+        st.session_state.product_version = col.selectbox(label='Version', options=products[st.session_state.product_name]["versions"], index=0)

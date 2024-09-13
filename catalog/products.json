@@ -1,0 +1,38 @@
+{
+  "openshift": {
+    "name": "OpenShift Container Platform 4",
+    "versions": [
+      "4.16",
+      "4.15",
+      "4.14",
+      "4.13",
+      "4.12",
+      "4.11",
+      "4.10"
+    ]
+  },
+  "openshift-logging": {
+    "name": "OpenShift Logging Subsystem",
+    "versions": [
+      "5.9",
+      "5.8",
+      "5.7",
+      "5.6",
+      "5.5",
+      "5.4",
+      "5.3",
+      "5.2",
+      "5.1",
+      "5.0"
+    ]
+  },
+  "openstack": {
+    "name": "OpenStack",
+    "versions": [
+      "18",
+      "17",
+      "16",
+      "13"
+    ]
+  }
+}

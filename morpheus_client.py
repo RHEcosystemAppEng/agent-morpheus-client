@@ -7,13 +7,13 @@ from pathlib import Path
 from utils.sbom_tools import parse_sbom
 from callback.http_callback import HttpCallback
 from utils.output_tools import generate_markdown
-from utils.input_tools import build_input, print_input_data
+from utils.input_tools import build_input, print_input_data, product_dropdowns
 
 st.set_page_config(page_title='Morpheus Client', layout='wide')
 
 data_dir = os.getenv("DATA_DIR", '/data')
 if not os.path.isdir(data_dir):
-    raise ValueError('Missing required data dir: ' + data_dir)
+    raise ValueError('Missing required output dir: ' + data_dir)
 
 if 'callback' not in st.session_state:
     st.session_state.callback = {}
@@ -122,7 +122,10 @@ st.session_state.cves = main_col.text_input(label='CVEs', placeholder='CVE-2024-
                                             value='CVE-2024-27304', on_change=set_data_ready)
 st.session_state.input_file = main_col.file_uploader("Pick a CycloneDX SBOM File generated form Syft")
 update_file()
-st.session_state.input_format=main_col.selectbox(label='Input format', options=['JSON', 'CSV'], index=1)
+st.session_state.input_format = main_col.selectbox(label='Input format', options=['JSON', 'CSV'], index=1)
+
+product_dropdowns(main_col)
+
 main_col.button('Send to Morpheus', on_click=send_to_morpheus, type='primary',
                 disabled=is_running() or not st.session_state['data_ready'])
 main_col.download_button('Save Morpheus Input', type='secondary', file_name='input.json',
