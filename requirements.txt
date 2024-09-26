@@ -1,4 +1,0 @@
-Flask==3.0.3
-pydantic==2.8.2
-streamlit==1.37.1
-watchdog==4.0.1

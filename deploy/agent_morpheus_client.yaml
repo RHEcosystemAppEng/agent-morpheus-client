@@ -20,19 +20,15 @@ spec:
         - name: agent-morpheus-client
           image: quay.io/ecosystem-appeng/agent-morpheus-client:latest
           imagePullPolicy: Always
-          command: ["streamlit", "run", "morpheus_client.py", "--server.port=8080", "--server.address=0.0.0.0"]
           ports:
             - name: http
               protocol: TCP
               containerPort: 8080
-            - name: callback
-              protocol: TCP
-              containerPort: 8081
           env:
-            - name: MORPHEUS_URL
-              value: http://agent-morpheus:8080/scan
-            - name: CALLBACK_PORT
-              value: "8081"
+            - name: QUARKUS_REST-CLIENT_MORPHEUS_URL
+              value: http://agent-morpheus-rh:8080/scan
+            - name: MORPHEUS_REPORTS_PATH
+              value: /data
           volumeMounts:
             - name: data
               mountPath: /data
@@ -53,10 +49,6 @@ spec:
     port: 8080
     protocol: TCP
     targetPort: 8080
-  - name: callback
-    port: 8081
-    protocol: TCP
-    targetPort: 8081
   selector:
     app: agent-morpheus-client
 ---

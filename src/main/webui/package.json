@@ -1,0 +1,21 @@
+{
+  "name": "agent-morpheus-client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --base=/app",
+    "build": "vite build --base=/app",
+    "preview": "vite preview --base=/app"
+  },
+  "devDependencies": {
+    "vite": "^5.3.6"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^5.4.0",
+    "@patternfly/react-core": "^5.4.0",
+    "@patternfly/react-icons": "^5.4.0",
+    "@patternfly/react-styles": "^5.4.0",
+    "react-router-dom": "^6.26.2"
+  }
+}
