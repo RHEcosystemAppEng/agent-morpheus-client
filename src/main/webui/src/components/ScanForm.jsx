@@ -1,8 +1,9 @@
-import { FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
+import { ActionGroup, AlertGroup, Button, FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
-import { GetGitHubLanguages } from "../services/FormUtilsClient";
+import { GetGitHubLanguages, SendToMorpheus } from "../services/FormUtilsClient";
+import { ToastNotifications } from "./Notifications";
 
-export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
+export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || '');
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
@@ -10,14 +11,31 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
   const [isLoading, setIsLoading] = React.useState(false);
   const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
+  const [canSubmit, setCanSubmit] = React.useState(false);
+  const [alerts, setAlerts] = React.useState([]);
+
+  const addAlert = (variant, title) => {
+    alerts.push({ title: title, variant: variant });
+    setAlerts(alerts);
+  }
+
+  const onDeleteAlert = deletePos => {
+    const newAlerts = [];
+    alerts.forEach((alert, idx) => {
+      if (idx !== deletePos) {
+        newAlerts.push(alert);
+      }
+    })
+    setAlerts(newAlerts);
+  }
 
   const handleIdChange = (_, id) => {
     setId(id);
-    handleVulnRequestChange({id: id})
+    onFormUpdated({ id: id })
   };
   const handleCvesChange = (_, cves) => {
     setCves(cves);
-    handleVulnRequestChange({cves: cves})
+    onFormUpdated({ cves: cves })
   };
   const getMetadataProperty = (metadata, property) => {
     const found = metadata['properties'].find(e => e.name === property);
@@ -39,7 +57,7 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
     const fileReader = new FileReader();
     fileReader.readAsText(file, "UTF-8");
     fileReader.onload = e => {
-      const loadedSbom =  JSON.parse(e.target.result)
+      const loadedSbom = JSON.parse(e.target.result)
       setSbom(loadedSbom);
       const metadata = loadedSbom['metadata']
       const component = metadata['component']
@@ -50,7 +68,7 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
       const version = component['version'];
 
       var newId = id;
-      if(id === '') {
+      if (id === '') {
         var suffix = version;
         if (suffix.startsWith('sha256')) {
           suffix = suffix.substring(0, 16);
@@ -61,7 +79,7 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
       }
       GetGitHubLanguages(repository).then(ghLanguages => {
         setLanguages(ghLanguages);
-        handleVulnRequestChange({
+        onFormUpdated({
           id: newId,
           name: name,
           version: version,
@@ -77,7 +95,7 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
   }
   const handleSbomTypeChange = (_, type) => {
     setSbomType(type);
-    handleVulnRequestChange({sbomType: type});
+    onFormUpdated({ sbomType: type });
   }
   const handleFileReadStarted = (_event, _fileHandle) => {
     setIsLoading(true);
@@ -87,19 +105,50 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
   };
   const handleLanguagesChange = (languages) => {
     setLanguages(languages)
-    handleVulnRequestChange({languages: languages})
+    onFormUpdated({ languages: languages })
   }
 
   const handleClear = _ => {
     setFilename('');
     setSbom('');
-    handleVulnRequestChange({
+    onFormUpdated({
       name: '',
       version: '',
       repository: '',
       commitRef: '',
       components: '',
     });
+  }
+
+  const onSubmitForm = () => {
+    setCanSubmit(false);
+    SendToMorpheus(vulnRequest).then(response => {
+      if (response.ok) {
+        addAlert('success', 'Analysis request sent to Morpheus');
+      } else {
+        addAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
+      }
+    }).catch(error => {
+      addAlert('danger', `Unable to send request: ${error}`)
+    }).finally(() => setCanSubmit(true));
+  }
+
+  const REQUIRED_FIELDS = ['name', 'version', 'id', 'cves', 'commitRef', 'repository']
+
+  const onFormUpdated = (update) => {
+    const updated = handleVulnRequestChange(update);
+    for(let f in REQUIRED_FIELDS) {
+      if (updated[REQUIRED_FIELDS[f]] === undefined || updated[REQUIRED_FIELDS[f]].trim() === '') {
+        setCanSubmit(false);
+        handleVulnRequestChange(update);
+        return;
+      }
+    };
+    if (updated.components === undefined || updated.components.length === 0) {
+      setCanSubmit(false);
+    } else {
+      setCanSubmit(true);
+    }
   }
 
   const sbomTypes = [{
@@ -131,7 +180,7 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
         filename={filename}
         onReadStarted={handleFileReadStarted}
         onReadFinished={handleFileReadFinished}
-        isLoading={isLoading} 
+        isLoading={isLoading}
         filenamePlaceholder="Drag and drop or upload a SPDX SBOM JSON file"
         onFileInputChange={handleFileInputChange}
         onClearClick={handleClear}
@@ -140,6 +189,10 @@ export const ScanForm = ({vulnRequest, handleVulnRequestChange}) => {
     <FormGroup label="Programming Languages" isRequired fieldId="languages">
       <ProgrammingLanguagesSelect selected={languages} handleSelectedChange={handleLanguagesChange} />
     </FormGroup>
+    <ActionGroup>
+      <Button variant="primary" isDisabled={!canSubmit} onClick={onSubmitForm}>Submit</Button>
+      <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
+    </ActionGroup>
   </Form>
 
 }

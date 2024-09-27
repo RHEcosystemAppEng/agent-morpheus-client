@@ -10,6 +10,7 @@ export default function App() {
     let updated = {...vulnRequest}
     Object.assign(updated, changes)
     setVulnRequest(updated);
+    return updated;
   };
 
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
