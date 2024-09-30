@@ -425,112 +425,112 @@
   font-family: RedHatDisplay;
   font-style: normal;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplay-Medium.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplay-Medium.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatDisplay;
   font-style: italic;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplay-MediumItalic.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplay-MediumItalic.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatDisplay;
   font-style: normal;
   font-weight: 700;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplay-Bold.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplay-Bold.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatDisplay;
   font-style: italic;
   font-weight: 700;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplay-BoldItalic.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplay-BoldItalic.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatText;
   font-style: normal;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatText/RedHatText-Regular.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatText-Regular.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatText;
   font-style: italic;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatText/RedHatText-Italic.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatText-Italic.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatText;
   font-style: normal;
   font-weight: 700;
-  src: url("./assets/fonts/RedHatText/RedHatText-Medium.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatText-Medium.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatText;
   font-style: italic;
   font-weight: 700;
-  src: url("./assets/fonts/RedHatText/RedHatText-MediumItalic.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatText-MediumItalic.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatMono;
   font-style: normal;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatMono/RedHatMono-Regular.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatMono/RedHatMono-Regular.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatMono;
   font-style: italic;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatMono/RedHatMono-Italic.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatMono/RedHatMono-Italic.woff2") format("woff2");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatDisplayVF;
   font-style: normal;
   font-weight: 400 700;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplayVF.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplayVF.woff2") format("woff2-variations");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatDisplayVF;
   font-style: italic;
   font-weight: 400 700;
-  src: url("./assets/fonts/RedHatDisplay/RedHatDisplayVF-Italic.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatDisplay/RedHatDisplayVF-Italic.woff2") format("woff2-variations");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatTextVF;
   font-style: normal;
   font-weight: 400 500;
-  src: url("./assets/fonts/RedHatText/RedHatTextVF.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatTextVF.woff2") format("woff2-variations");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatTextVF;
   font-style: italic;
   font-weight: 400 500;
-  src: url("./assets/fonts/RedHatText/RedHatTextVF-Italic.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatText/RedHatTextVF-Italic.woff2") format("woff2-variations");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatMonoVF;
   font-style: normal;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatMono/RedHatMonoVF.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatMono/RedHatMonoVF.woff2") format("woff2-variations");
   font-display: fallback;
 }
 @font-face {
   font-family: RedHatMonoVF;
   font-style: italic;
   font-weight: 400;
-  src: url("./assets/fonts/RedHatMono/RedHatMonoVF-Italic.woff2") format("woff2-variations");
+  src: url("@patternfly/patternfly/assets/fonts/RedHatMono/RedHatMonoVF-Italic.woff2") format("woff2-variations");
   font-display: fallback;
 }
 .pf-v5-screen-reader {
@@ -4904,7 +4904,7 @@ button) {
   font-family: "Font Awesome 5 Free";
   font-style: normal;
   font-weight: 900;
-  src: url("./assets/fonts/webfonts/fa-solid-900.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/fonts/webfonts/fa-solid-900.woff2") format("woff2");
 }
 .fa,
 .fas {
@@ -4914,7 +4914,7 @@ button) {
 
 @font-face {
   font-family: "pf-v5-pficon";
-  src: url("./assets/pficon/pf-v5-pficon.woff2") format("woff2");
+  src: url("@patternfly/patternfly/assets/pficon/pf-v5-pficon.woff2") format("woff2");
 }
 .pf-v5-pficon-zone:before, .pf-v5-pficon-warning-triangle:before, .pf-v5-pficon-volume:before, .pf-v5-pficon-virtual-machine:before, .pf-v5-pficon-users:before, .pf-v5-pficon-user:before, .pf-v5-pficon-unplugged:before, .pf-v5-pficon-unlocked:before, .pf-v5-pficon-unknown:before, .pf-v5-pficon-trend-up:before, .pf-v5-pficon-trend-down:before, .pf-v5-pficon-treeview:before, .pf-v5-pficon-topology:before, .pf-v5-pficon-thumb-tack:before, .pf-v5-pficon-tenant:before, .pf-v5-pficon-task:before, .pf-v5-pficon-storage-domain:before, .pf-v5-pficon-spinner2:before, .pf-v5-pficon-spinner:before, .pf-v5-pficon-severity-undefined:before, .pf-v5-pficon-severity-none:before, .pf-v5-pficon-severity-moderate:before, .pf-v5-pficon-severity-minor:before, .pf-v5-pficon-severity-important:before, .pf-v5-pficon-severity-critical:before, .pf-v5-pficon-services:before, .pf-v5-pficon-service:before, .pf-v5-pficon-service-catalog:before, .pf-v5-pficon-server:before, .pf-v5-pficon-server-group:before, .pf-v5-pficon-security:before, .pf-v5-pficon-screen:before, .pf-v5-pficon-save:before, .pf-v5-pficon-running:before, .pf-v5-pficon-resources-full:before, .pf-v5-pficon-resources-empty:before, .pf-v5-pficon-resources-almost-full:before, .pf-v5-pficon-resources-almost-empty:before, .pf-v5-pficon-resource-pool:before, .pf-v5-pficon-repository:before, .pf-v5-pficon-replicator:before, .pf-v5-pficon-remove2:before, .pf-v5-pficon-registry:before, .pf-v5-pficon-regions:before, .pf-v5-pficon-rebooting:before, .pf-v5-pficon-rebalance:before, .pf-v5-pficon-project:before, .pf-v5-pficon-process-automation:before, .pf-v5-pficon-private:before, .pf-v5-pficon-print:before, .pf-v5-pficon-port:before, .pf-v5-pficon-plugged:before, .pf-v5-pficon-pficon-vcenter:before, .pf-v5-pficon-pficon-template:before, .pf-v5-pficon-pficon-sort-common-desc:before, .pf-v5-pficon-pficon-sort-common-asc:before, .pf-v5-pficon-pficon-satellite:before, .pf-v5-pficon-pficon-network-range:before, .pf-v5-pficon-pficon-history:before, .pf-v5-pficon-pficon-dragdrop:before, .pf-v5-pficon-pending:before, .pf-v5-pficon-paused:before, .pf-v5-pficon-panel-open:before, .pf-v5-pficon-panel-close:before, .pf-v5-pficon-package:before, .pf-v5-pficon-os-image:before, .pf-v5-pficon-orders:before, .pf-v5-pficon-optimize:before, .pf-v5-pficon-openstack:before, .pf-v5-pficon-openshift:before, .pf-v5-pficon-open-drawer-right:before, .pf-v5-pficon-on:before, .pf-v5-pficon-on-running:before, .pf-v5-pficon-ok:before, .pf-v5-pficon-off:before, .pf-v5-pficon-not-started:before, .pf-v5-pficon-new-process:before, .pf-v5-pficon-network:before, .pf-v5-pficon-namespaces:before, .pf-v5-pficon-multicluster:before, .pf-v5-pficon-monitoring:before, .pf-v5-pficon-module:before, .pf-v5-pficon-migration:before, .pf-v5-pficon-middleware:before, .pf-v5-pficon-messages:before, .pf-v5-pficon-memory:before, .pf-v5-pficon-maintenance:before, .pf-v5-pficon-locked:before, .pf-v5-pficon-key:before, .pf-v5-pficon-integration:before, .pf-v5-pficon-infrastructure:before, .pf-v5-pficon-info:before, .pf-v5-pficon-in-progress:before, .pf-v5-pficon-import:before, .pf-v5-pficon-home:before, .pf-v5-pficon-history:before, .pf-v5-pficon-help:before, .pf-v5-pficon-globe-route:before, .pf-v5-pficon-folder-open:before, .pf-v5-pficon-folder-close:before, .pf-v5-pficon-flavor:before, .pf-v5-pficon-filter:before, .pf-v5-pficon-export:before, .pf-v5-pficon-error-circle-o:before, .pf-v5-pficon-equalizer:before, .pf-v5-pficon-enterprise:before, .pf-v5-pficon-enhancement:before, .pf-v5-pficon-edit:before, .pf-v5-pficon-domain:before, .pf-v5-pficon-disconnected:before, .pf-v5-pficon-degraded:before, .pf-v5-pficon-data-source:before, .pf-v5-pficon-data-sink:before, .pf-v5-pficon-data-processor:before, .pf-v5-pficon-critical-risk:before, .pf-v5-pficon-cpu:before, .pf-v5-pficon-container-node:before, .pf-v5-pficon-connected:before, .pf-v5-pficon-cluster:before, .pf-v5-pficon-cloud-tenant:before, .pf-v5-pficon-cloud-security:before, .pf-v5-pficon-close:before, .pf-v5-pficon-chat:before, .pf-v5-pficon-catalog:before, .pf-v5-pficon-bundle:before, .pf-v5-pficon-builder-image:before, .pf-v5-pficon-build:before, .pf-v5-pficon-blueprint:before, .pf-v5-pficon-bell:before, .pf-v5-pficon-automation:before, .pf-v5-pficon-attention-bell:before, .pf-v5-pficon-asleep:before, .pf-v5-pficon-arrow:before, .pf-v5-pficon-applications:before, .pf-v5-pficon-ansible-tower:before, .pf-v5-pficon-add-circle-o:before {
   font-family: "pf-v5-pficon";
