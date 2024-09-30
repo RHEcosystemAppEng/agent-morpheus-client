@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { viewReport } from "./services/ReportClient";
-import { Banner, Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, Title } from "@patternfly/react-core";
+import { Banner, Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, Label, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, Title } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 
 export default function Report() {
@@ -14,16 +14,16 @@ export default function Report() {
       .then(r => setReport(r));
   }, []);
 
-  const showJustification = (justification) => {
-    if(justification.status === "FALSE") {
-      return <Banner variant="green">{justification.label}: {justification.reason}</Banner>
+  const JustificationBanner = ({ justification }) => {
+    if (justification.status === "FALSE") {
+      return <Label color="green">{justification.label}</Label>
     }
-    return  <Banner variant="red">{justification.label}: {justification.reason}</Banner>
+    return <Label color="red">{justification.label}</Label>
   }
 
   const onDownload = () => {
     const element = document.createElement("a");
-    const file = new Blob([JSON.stringify(report)], {type: 'application/json'});
+    const file = new Blob([JSON.stringify(report)], { type: 'application/json' });
     element.href = URL.createObjectURL(file);
     element.download = `${params.id}-output.json`;
     document.body.appendChild(element);
@@ -59,8 +59,17 @@ export default function Report() {
       {output.map((vuln, v_idx) => {
         return <GridItem>
           <Panel>
-            <PanelHeader>{vuln.vuln_id}</PanelHeader>
+          <TextContent>
+                <Text component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Text>
+                
+              </TextContent>
+              <Text><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Text>
+              <Text><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Text>
+            <PanelHeader>
+              
+            </PanelHeader>
             <Divider />
+            <TextContent><Text component="h1">Checklist:</Text></TextContent>
             <PanelMain>
               <PanelMainBody>
                 <TextList component={TextListVariants.ol}>
@@ -75,14 +84,11 @@ export default function Report() {
                 </TextList>
               </PanelMainBody>
             </PanelMain>
-            <Text component="h3"><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Text>
-            {showJustification(vuln.justification)}
-
           </Panel>
         </GridItem>
       })}
       <GridItem>
-      <Button variant="secondary" onClick={onDownload}>Download</Button>
+        <Button variant="secondary" onClick={onDownload}>Download</Button>
       </GridItem>
     </Grid>
   }

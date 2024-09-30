@@ -100,7 +100,7 @@ public class ReportService {
   }
 
   private Report toReport(JsonNode obj, String fileName) {
-
+    try {
       var input = obj.get("input");
       var scan = input.get("scan");
       var image = input.get("image");
@@ -114,18 +114,25 @@ public class ReportService {
       return new Report(getId(obj), scan.get("started_at").asText(),
           scan.get("completed_at").asText(), image.get("name").asText(),
           image.get("tag").asText(), cves, fileName);
+    } catch (Exception e) {
+      LOGGER.infof("Ignoring invalid file: %s", fileName);
+      return null;
+    }
+  }
 
+  private boolean isOutput(Path file) {
+    return !Files.isDirectory(file) && file.getFileName().toString().endsWith(".json");
   }
 
   private void loadReports() {
     try {
       try (Stream<Path> stream = Files.list(Paths.get(reportsPath))) {
 
-        reports = stream.filter(file -> !Files.isDirectory(file) && file.getFileName().endsWith(".json"))
+        reports.putAll(stream.filter(this::isOutput)
             .map(Path::toFile)
             .map(this::toReport)
             .filter(Objects::nonNull)
-            .collect(Collectors.toMap(r -> r.id(), r -> r));
+            .collect(Collectors.toMap(r -> r.id(), r -> r)));
       }
     } catch (IOException e) {
       LOGGER.warn("Unable to traverse reports directory", e);
