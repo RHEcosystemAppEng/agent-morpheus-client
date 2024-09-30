@@ -4,10 +4,10 @@ import { Link, Outlet } from 'react-router-dom';
 
 export default function App() {
 
-  const [vulnRequest, setVulnRequest] = React.useState({sbomType: 'csv'});
+  const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'csv' });
 
   const handleVulnRequestChange = (changes) => {
-    let updated = {...vulnRequest}
+    let updated = { ...vulnRequest }
     Object.assign(updated, changes)
     setVulnRequest(updated);
     return updated;
@@ -26,7 +26,7 @@ export default function App() {
         <Link to={'/'}>Request Analysis</Link>
       </NavItem>
       <NavItem itemId={1} isActive={activeItem === 1} to="#">
-      <Link to={'/reports'}>View Reports</Link>
+        <Link to={'/reports'}>View Reports</Link>
       </NavItem>
     </NavList>
   </Nav>;
@@ -49,7 +49,7 @@ export default function App() {
           md: 'visible',
           lg: 'hidden'
         }}>
-          
+
         </ToolbarItem>
         <ToolbarItem visibility={{
           md: 'hidden'
@@ -82,7 +82,7 @@ export default function App() {
   const PageSkipToContent = <SkipToContent href={`#${pageId}`}>Skip to content</SkipToContent>;
   return <React.Fragment>
     <Page header={Header} skipToContent={PageSkipToContent} mainContainerId={pageId}>
-       <Outlet context={[vulnRequest, handleVulnRequestChange]}/>
+      <Outlet context={[vulnRequest, handleVulnRequestChange]} />
     </Page>
   </React.Fragment>;
 };

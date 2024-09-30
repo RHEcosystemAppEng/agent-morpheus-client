@@ -10,17 +10,17 @@ export default function Analysis() {
   return <PageSection variant={PageSectionVariants.light}>
     <Grid hasGutter>
       <GridItem>
-      <TextContent>
-    <Text component="h1">Request Vulnerabilty Analysis</Text>
-    </TextContent>
+        <TextContent>
+          <Text component="h1">Request Vulnerabilty Analysis</Text>
+        </TextContent>
       </GridItem>
       <GridItem>
         <ScanForm vulnRequest={vulnRequest} handleVulnRequestChange={handleVulnRequestChange} />
       </GridItem>
       <GridItem>
-      <TextContent>
-    <Text component="h1">Extracted Data</Text>
-    </TextContent> </GridItem>
+        <TextContent>
+          <Text component="h1">Extracted Data</Text>
+        </TextContent> </GridItem>
       <GridItem>
         <RequestPreview vulnRequest={vulnRequest} />
       </GridItem>
