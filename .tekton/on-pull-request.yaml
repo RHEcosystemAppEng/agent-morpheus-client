@@ -32,7 +32,7 @@ spec:
     - name: path-context
       value: .
     - name: dockerfile
-      value: ./Dockerfile
+      value: ./src/main/docker/Dockerfile.multi-stage
   pipelineSpec:
     params:
       - name: repo_url
@@ -81,9 +81,6 @@ spec:
           - name: BUILD_EXTRA_ARGS
             value: >-
               --label=quay.expires-after=$(params.image-expires-after)
-          - name: BUILDER_IMAGE
-            value: >-
-              registry.redhat.io/rhel8/buildah@sha256:aac6629389db17e99894c5bee0da01d4c8065d11d8c6f6e1602f9484290baa70
         taskRef:
           kind: ClusterTask
           name: buildah
@@ -108,4 +105,4 @@ spec:
       secretName: "{{ git_auth_secret }}"
   - name: dockerconfig-ws
     secret:
-      secretName: ecosystem-appeng-morpheus-quay
+      secretName: redhat-quay-registry-secret

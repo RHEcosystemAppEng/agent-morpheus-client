@@ -30,7 +30,7 @@ spec:
     - name: path-context
       value: .
     - name: dockerfile
-      value: ./Dockerfile
+      value: ./src/main/docker/Dockerfile.multi-stage
   pipelineSpec:
     params:
       - name: repo_url
