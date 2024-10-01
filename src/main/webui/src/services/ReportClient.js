@@ -1,3 +1,10 @@
+class ClientRequestError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export const listReports = async () => {
   const response = await fetch('/reports', {
     headers: {
@@ -5,7 +12,7 @@ export const listReports = async () => {
     }
   });
   if (!response.ok) {
-    throw new Error(`Reponse status: ${response.status}`);
+    throw new ClientRequestError(response.status, response.statusText);
   }
   return await response.json();
 
@@ -16,7 +23,7 @@ export const deleteReport = async (reportId) => {
     method: 'DELETE'
   });
   if (!response.ok) {
-    throw new Error(`Reponse status: ${response.status}`);
+    throw new ClientRequestError(response.status, response.statusText);
   }
   return true;
 };
@@ -28,7 +35,7 @@ export const viewReport = async (reportId) => {
     }
   });
   if (!response.ok) {
-    throw new Error(`Reponse status: ${response.status}`);
+    throw new ClientRequestError(response.status, response.statusText);
   }
   return await response.json();
 

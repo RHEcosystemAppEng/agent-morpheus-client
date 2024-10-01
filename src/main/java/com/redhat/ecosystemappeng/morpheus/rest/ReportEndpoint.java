@@ -13,6 +13,7 @@ import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -49,9 +50,14 @@ public class ReportEndpoint {
 
   @GET
   @Path("/{id}")
-  public String get(@PathParam("id") String id) {
+  public String get(@PathParam("id") String id) throws InterruptedException {
     try {
-      return reportService.get(id);
+      var report = reportService.get(id);
+      if(report == null) {
+        throw new NotFoundException(id);
+      }
+      Thread.sleep(10000);
+      return report;
     } catch (IOException e) {
       throw new ServerErrorException("Unable to retrieve requested Report with id " + id, Status.INTERNAL_SERVER_ERROR);
     }

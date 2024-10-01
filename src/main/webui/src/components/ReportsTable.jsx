@@ -42,12 +42,10 @@ export default function ReportsTable() {
   }
 
   const onView = id => {
-    console.log(`view ${id}`);
     navigate(`/reports/${id}`);
   }
 
   const onDelete = () => {
-    console.log(`Deleted ${confirmation.id}`);
     deleteReport(confirmation.id).then(() => loadReports());
     onCloseConfirmation();
   }
