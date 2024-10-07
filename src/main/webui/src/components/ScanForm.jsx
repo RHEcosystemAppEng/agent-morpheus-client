@@ -1,7 +1,8 @@
-import { ActionGroup, AlertGroup, Button, FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
+import { ActionGroup, Button, FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import { GetGitHubLanguages, SendToMorpheus } from "../services/FormUtilsClient";
 import { ToastNotifications } from "./Notifications";
+import {PackageURL} from "packageurl-js";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
@@ -37,20 +38,34 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
     setCves(cves);
     onFormUpdated({ cves: cves })
   };
-  const getMetadataProperty = (metadata, property) => {
+
+  const getProperty = (metadata, property) => {
     const found = metadata['properties'].find(e => e.name === property);
     if (found) {
       return found.value;
     }
     return '';
   };
+
+  // Extract the system info from the purl when possible, if not try to retrieve it
+  // from the syft:package:type metadata property
+  const getSystem = (component) => {
+    const purl = component['purl'];
+    if (purl !== undefined) {
+      return PackageURL.fromString(purl).type;
+    }
+    return getProperty(component, "syft:package:type");
+  }
+
   const getComponents = (components) => {
-    return components.map(component => (
-      JSON.stringify({
+    return components.map(component => {
+      const system = getSystem(component);
+      return JSON.stringify({
         name: component['name'],
         version: component['version'],
-        purl: component['purl']
-      })));
+        purl: component['purl'],
+        system: system
+      })});
   };
 
   const handleFileInputChange = (_, file) => {
@@ -61,8 +76,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
       setSbom(loadedSbom);
       const metadata = loadedSbom['metadata']
       const component = metadata['component']
-      const commitUrl = getMetadataProperty(metadata, "syft:image:labels:io.openshift.build.commit.url");
-      const repository = getMetadataProperty(metadata, "syft:image:labels:io.openshift.build.source-location");
+      const commitUrl = getProperty(metadata, "syft:image:labels:io.openshift.build.commit.url");
+      const repository = getProperty(metadata, "syft:image:labels:io.openshift.build.source-location");
       const commitRef = commitUrl.substring(commitUrl.lastIndexOf('/') + 1);
       const name = component['name'];
       const version = component['version'];

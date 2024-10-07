@@ -17,6 +17,7 @@
     "@patternfly/react-icons": "^5.4.0",
     "@patternfly/react-styles": "^5.4.0",
     "@patternfly/react-table": "^5.4.0",
+    "packageurl-js": "^2.0.1",
     "react-router-dom": "^6.26.2"
   }
 }
