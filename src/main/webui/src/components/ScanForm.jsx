@@ -47,14 +47,40 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
     return '';
   };
 
-  // Extract the system info from the purl when possible, if not try to retrieve it
+  // Extract the component type from the purl when possible, if not try to retrieve it
   // from the syft:package:type metadata property
-  const getSystem = (component) => {
+  const getComponentType = (component) => {
     const purl = component['purl'];
     if (purl !== undefined) {
       return PackageURL.fromString(purl).type;
     }
+    
     return getProperty(component, "syft:package:type");
+  }
+
+  /**
+   * The supported system types are: 
+   *   pip,npm,go,maven,nuget,rubygems,rust,erlang,composer,conan
+   */
+  const getSystem = (component) => {
+    const compType = getComponentType(component);
+    switch (compType) {
+      case 'pi':
+      case 'pypi':
+      case 'python':
+        return 'pip';
+      case 'mvn':
+      case 'maven':
+      case 'jar':
+      case 'gradle':
+      case 'java':
+        return 'maven';
+      case 'go':
+      case 'golang':
+        return 'go';
+      default:
+        return compType;
+    }
   }
 
   const getComponents = (components) => {
