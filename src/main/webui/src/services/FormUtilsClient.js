@@ -20,6 +20,9 @@ export const GetGitHubLanguages = (repoUrl) => {
 }
 
 const getVulns = (cves) => {
+  if(cves === undefined) {
+    return [];
+  }
   return cves.split(',').map(x => ({ vuln_id: x.trim() }));
 };
 
@@ -196,8 +199,8 @@ const getExcludes = (languages) => {
   return result.flat();
 };
 
-export const SendToMorpheus = (data) => {
-  const request = {
+export const BuildRequestJson = (data) => {
+  return {
     scan: {
       id: data.id,
       vulns: getVulns(data.cves)
@@ -223,16 +226,20 @@ export const SendToMorpheus = (data) => {
       ],
       sbom_info: {
         _type: "manual",
-        packages: data.components.map(c => JSON.parse(c))
+        packages: data.components?.map(c => JSON.parse(c))
       }
     }
-  }
+  };
+}
+
+export const SendToMorpheus = (data) => {
+ 
   return fetch('/form', {
     method: "POST",
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(request)
+    body: JSON.stringify(BuildRequestJson(data))
   });
 }
