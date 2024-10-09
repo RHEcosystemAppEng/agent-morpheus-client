@@ -20,6 +20,7 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.model.Justification;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
@@ -43,25 +44,43 @@ public class ReportService {
   private String getId(JsonNode obj) {
     var input = obj.get("input");
     var idNode = input.get("scan").get("id");
-    var id = "";
-    if (idNode.isNull() || idNode.isEmpty()) {
-      var name = input.get("image").get("name").asText();
-      var tag = input.get("image").get("tag").asText();
-      if (tag.startsWith("sha256")) {
-        tag = tag.substring(0, 15);
-      }
-      id = name + ":" + tag;
-      return id.replace("/", "_");
+    if (!idNode.isNull() && !idNode.asText().isBlank()) {
+      return idNode.asText();
     }
-    return idNode.asText();
+    var name = input.get("image").get("name").asText();
+    var tag = input.get("image").get("tag").asText();
+    if (tag.startsWith("sha256")) {
+      tag = tag.substring(0, 15);
+    }
+    var id = name + ":" + tag;
+    return id.replace("/", "_");
+  }
+
+  private String getIdSuffix(String id) {
+    var counter = 1;
+    if (id.matches(".*\\.d+")) {
+      id = id.substring(0, id.lastIndexOf("."));
+    }
+    while (reports.containsKey(id + "." + counter)) {
+      counter++;
+    }
+    return id + "." + counter;
   }
 
   public Report save(String data) throws IOException {
     var obj = mapper.readTree(data);
+    var scan = (ObjectNode) obj.get("input").get("scan");
+    var reportId = scan.get("id").asText();
     var id = getId(obj);
+    if (reports.containsKey(id)) {
+      id = getIdSuffix(id);
+    }
     var fileName = id + ".json";
-    var r = toReport(obj, fileName);
-    Files.writeString(Path.of(reportsPath, fileName), data);
+    var r = toReport(id, obj, fileName);
+    if (!Objects.equals(reportId, r.id()) || !Objects.equals(r.id(), id)) {
+      scan.put("id", r.id());
+    }
+    Files.writeString(Path.of(reportsPath, fileName), mapper.writeValueAsString(obj));
     reports.put(id, r);
     return r;
   }
@@ -95,14 +114,14 @@ public class ReportService {
   private Report toReport(File f) {
     try {
       var obj = mapper.readTree(f);
-      return toReport(obj, f.getName());
-    } catch (IOException e) {
+      return toReport(getId(obj), obj, f.getName());
+    } catch (Exception e) {
       LOGGER.warnf("Unable to read JSON Report from file: %s", f.getName(), e);
       return null;
     }
   }
 
-  private Report toReport(JsonNode obj, String fileName) {
+  private Report toReport(String id, JsonNode obj, String fileName) {
     try {
       var input = obj.get("input");
       var scan = input.get("scan");
@@ -117,7 +136,7 @@ public class ReportService {
         var label = vuln.get("justification").get("label").asText();
         cves.add(new VulnResult(vulnId, new Justification(status, label)));
       }
-      return new Report(getId(obj), scan.get("started_at").asText(),
+      return new Report(id, scan.get("started_at").asText(),
           scan.get("completed_at").asText(), image.get("name").asText(),
           image.get("tag").asText(), cves, fileName);
     } catch (Exception e) {
@@ -138,7 +157,7 @@ public class ReportService {
             .map(Path::toFile)
             .map(this::toReport)
             .filter(Objects::nonNull)
-            .collect(Collectors.toMap(r -> r.id(), r -> r)));
+            .collect(Collectors.toMap(r -> r.id(), r -> r, (first, second) -> first)));
       }
     } catch (IOException e) {
       LOGGER.warn("Unable to traverse reports directory", e);
