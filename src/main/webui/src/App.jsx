@@ -23,6 +23,7 @@ export default function App() {
     });
 
     socket.addEventListener("message", (event) => {
+      console.log(`Received new report: ${event.data}`);
       addAlert('Info', 'New report received', <p>Report: {event.data} reveived.<div><Link to={`/reports/${event.data}`} onClick={onLinkToReportClicked}>View</Link></div></p>)
     })
   }, []);

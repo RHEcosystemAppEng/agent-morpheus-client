@@ -39,6 +39,7 @@ public class ReportEndpoint {
   public Response receive(String report) {
     try {
       var r = reportService.save(report);
+      LOGGER.infof("Received report %s", r.id());
       notificationSocket.onMessage(r.id());
     } catch (IOException e) {
       LOGGER.warn("Unable to process received report", e);
