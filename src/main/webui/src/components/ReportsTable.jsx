@@ -67,6 +67,7 @@ export default function ReportsTable() {
     sortedReports = reports.sort((a, b) => {
       let aValue = getSortableRowValues(a)[activeSortIndex];
       let bValue = getSortableRowValues(b)[activeSortIndex];
+      if (aValue === "null" && bValue === "null") return 0;
       if (typeof aValue === 'number') {
         if (activeSortDirection === 'asc') {
           return aValue - bValue;
@@ -74,8 +75,12 @@ export default function ReportsTable() {
         return bValue - aValue;
       }
       if (activeSortDirection === 'asc') {
+        if (aValue === "null") return -1;
+        if (bValue === "null") return 1;
         return aValue.localeCompare(bValue);
       }
+      if (aValue === "null") return 1;
+      if (bValue === "null") return -1;
       return bValue.localeCompare(aValue);
     });
   }
@@ -104,7 +109,7 @@ export default function ReportsTable() {
     return sortedReports.map(r => {
       return <Tr key={r.id}>
         <Td dataLabel={columnNames.id} modifier="truncate">{r.id}</Td>
-        <Td dataLabel={columnNames.vulns} modifier="nowrap">{r.vulns.map(vuln  => <div>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>)}</Td>
+        <Td dataLabel={columnNames.vulns} modifier="nowrap">{r.vulns.map(vuln => <div>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>)}</Td>
         <Td dataLabel={columnNames.completedAt} modifier="nowrap">{r.completedAt !== 'null' ? r.completedAt : '-'}</Td>
         <Td dataLabel={columnNames.imageName} modifier="truncate">{r.imageName}</Td>
         <Td dataLabel={columnNames.imageTag} modifier="truncate">{r.imageTag}</Td>

@@ -25,6 +25,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Justification;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -65,6 +66,11 @@ public class ReportService {
       counter++;
     }
     return id + "." + counter;
+  }
+
+  @Startup
+  void init() {
+    loadReports();
   }
 
   public Report save(String data) throws IOException {
