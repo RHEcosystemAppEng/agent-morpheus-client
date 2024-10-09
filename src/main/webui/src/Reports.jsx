@@ -10,7 +10,7 @@ export default function Reports() {
         </TextContent>
       </GridItem>
       <GridItem>
-        <ReportsTable  />
+        <ReportsTable />
       </GridItem>
     </Grid>
   </PageSection>;

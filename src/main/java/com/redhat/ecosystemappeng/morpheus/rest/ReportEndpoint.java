@@ -30,15 +30,19 @@ public class ReportEndpoint {
   private static final Logger LOGGER = Logger.getLogger(ReportEndpoint.class);
 
   @Inject
+  NotificationSocket notificationSocket;
+
+  @Inject
   ReportService reportService;
-  
+
   @POST
   public Response receive(String report) {
     try {
-			reportService.save(report);
-		} catch (IOException e) {
-			LOGGER.warn("Unable to process received report", e);
-		}
+      var r = reportService.save(report);
+      notificationSocket.onMessage(r.id());
+    } catch (IOException e) {
+      LOGGER.warn("Unable to process received report", e);
+    }
     return Response.ok().build();
   }
 
@@ -52,10 +56,9 @@ public class ReportEndpoint {
   public String get(@PathParam("id") String id) throws InterruptedException {
     try {
       var report = reportService.get(id);
-      if(report == null) {
+      if (report == null) {
         throw new NotFoundException(id);
       }
-      Thread.sleep(10000);
       return report;
     } catch (IOException e) {
       throw new ServerErrorException("Unable to retrieve requested Report with id " + id, Status.INTERNAL_SERVER_ERROR);

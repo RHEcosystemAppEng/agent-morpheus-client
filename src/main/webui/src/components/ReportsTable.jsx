@@ -1,17 +1,17 @@
 import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Modal, ModalVariant, Truncate } from "@patternfly/react-core";
 import { deleteReport, listReports } from "../services/ReportClient";
-import { ToastNotifications } from "./Notifications";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import JustificationBanner from "./JustificationBanner";
 
 export default function ReportsTable() {
 
+  const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);
-  const [alerts, setAlerts] = React.useState([]);
   const [confirmation, setConfirmation] = React.useState({ isOpen: false });
   const [activeSortDirection, setActiveSortDirection] = React.useState('desc');
-  const [activeSortIndex, setActiveSortIndex] = React.useState(3); // Completed At
+  const [activeSortIndex, setActiveSortIndex] = React.useState(1); // Completed At
   const navigate = useNavigate();
 
   const loadReports = () => {
@@ -22,24 +22,10 @@ export default function ReportsTable() {
         addAlert('danger', 'Unable to load reports table')
       })
   }
+
   React.useEffect(() => {
     loadReports();
   }, []);
-
-  const addAlert = (variant, title) => {
-    alerts.push({ title: title, variant: variant });
-    setAlerts(alerts);
-  }
-
-  const onDeleteAlert = deletePos => {
-    const newAlerts = [];
-    alerts.forEach((alert, idx) => {
-      if (idx !== deletePos) {
-        newAlerts.push(alert);
-      }
-    })
-    setAlerts(newAlerts);
-  }
 
   const onView = id => {
     navigate(`/reports/${id}`);
@@ -72,8 +58,8 @@ export default function ReportsTable() {
   });
 
   const getSortableRowValues = report => {
-    const {id, vulns, startedAt, completedAt} = report;
-    return [id, vulns, startedAt, completedAt];
+    const { id, completedAt } = report;
+    return [id, completedAt];
   };
 
   let sortedReports = reports;
@@ -86,11 +72,7 @@ export default function ReportsTable() {
           return aValue - bValue;
         }
         return bValue - aValue;
-      } 
-      if (Array.isArray(aValue)) {
-        aValue = aValue.toString();
-        bValue = bValue.toString();
-      } 
+      }
       if (activeSortDirection === 'asc') {
         return aValue.localeCompare(bValue);
       }
@@ -103,7 +85,6 @@ export default function ReportsTable() {
     imageName: "Image Name",
     imageTag: "Image Tag",
     vulns: "CVEs",
-    startedAt: "Started At",
     completedAt: "Completed At"
   }
 
@@ -123,8 +104,7 @@ export default function ReportsTable() {
     return sortedReports.map(r => {
       return <Tr key={r.id}>
         <Td dataLabel={columnNames.id} modifier="truncate">{r.id}</Td>
-        <Td dataLabel={columnNames.vulns} modifier="nowrap">{r.vulns}</Td>
-        <Td dataLabel={columnNames.startedAt} modifier="nowrap">{r.startedAt !== 'null' ? r.startedAt : '-'}</Td>
+        <Td dataLabel={columnNames.vulns} modifier="nowrap">{r.vulns.map(vuln  => <div>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>)}</Td>
         <Td dataLabel={columnNames.completedAt} modifier="nowrap">{r.completedAt !== 'null' ? r.completedAt : '-'}</Td>
         <Td dataLabel={columnNames.imageName} modifier="truncate">{r.imageName}</Td>
         <Td dataLabel={columnNames.imageTag} modifier="truncate">{r.imageTag}</Td>
@@ -140,9 +120,8 @@ export default function ReportsTable() {
       <Thead>
         <Tr>
           <Th width={20} sort={getSortParams(0)}>{columnNames.id}</Th>
-          <Th width={10} sort={getSortParams(1)}>{columnNames.vulns}</Th>
-          <Th width={10} sort={getSortParams(2)}>{columnNames.startedAt}</Th>
-          <Th width={10} sort={getSortParams(3)}>{columnNames.completedAt}</Th>
+          <Th width={10}>{columnNames.vulns}</Th>
+          <Th width={10} sort={getSortParams(1)}>{columnNames.completedAt}</Th>
           <Th>{columnNames.imageName}</Th>
           <Th>{columnNames.imageTag}</Th>
           <Td colSpan={2}>Actions</Td>
@@ -152,7 +131,6 @@ export default function ReportsTable() {
         {reports.length == 0 ? emptyTable() : reportsTable()}
       </Tbody>
     </Table>
-    <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
     <Modal variant={ModalVariant.small} title="Permanently delete report?" isOpen={confirmation.isOpen}
       onClose={onCloseConfirmation}
       actions={[<Button key="confirm" variant="danger" onClick={onDelete}>Delete</Button>,

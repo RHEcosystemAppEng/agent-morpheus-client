@@ -1,10 +1,9 @@
 import { ActionGroup, Button, FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import { GetGitHubLanguages, SendToMorpheus } from "../services/FormUtilsClient";
-import { ToastNotifications } from "./Notifications";
-import {PackageURL} from "packageurl-js";
+import { PackageURL } from "packageurl-js";
 
-export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
+export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || '');
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
@@ -13,22 +12,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
   const [canSubmit, setCanSubmit] = React.useState(false);
-  const [alerts, setAlerts] = React.useState([]);
-
-  const addAlert = (variant, title) => {
-    alerts.push({ title: title, variant: variant });
-    setAlerts(alerts);
-  }
-
-  const onDeleteAlert = deletePos => {
-    const newAlerts = [];
-    alerts.forEach((alert, idx) => {
-      if (idx !== deletePos) {
-        newAlerts.push(alert);
-      }
-    })
-    setAlerts(newAlerts);
-  }
 
   const handleIdChange = (_, id) => {
     setId(id);
@@ -65,7 +48,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
         version: component['version'],
         purl: component['purl'],
         system: system
-      })});
+      })
+    });
   };
 
   const handleFileInputChange = (_, file) => {
@@ -139,12 +123,12 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
     setCanSubmit(false);
     SendToMorpheus(vulnRequest).then(response => {
       if (response.ok) {
-        addAlert('success', 'Analysis request sent to Morpheus');
+        onNewAlert('success', 'Analysis request sent to Morpheus');
       } else {
-        addAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
+        onNewAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
       }
     }).catch(error => {
-      addAlert('danger', `Unable to send request: ${error}`)
+      onNewAlert('danger', `Unable to send request: ${error}`)
     }).finally(() => setCanSubmit(true));
   }
 
@@ -152,7 +136,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
 
   const onFormUpdated = (update) => {
     const updated = handleVulnRequestChange(update);
-    for(let f in REQUIRED_FIELDS) {
+    for (let f in REQUIRED_FIELDS) {
       if (updated[REQUIRED_FIELDS[f]] === undefined || updated[REQUIRED_FIELDS[f]].trim() === '') {
         setCanSubmit(false);
         handleVulnRequestChange(update);
@@ -206,7 +190,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange }) => {
     </FormGroup>
     <ActionGroup>
       <Button variant="primary" isDisabled={!canSubmit} onClick={onSubmitForm}>Submit</Button>
-      <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
     </ActionGroup>
   </Form>
 

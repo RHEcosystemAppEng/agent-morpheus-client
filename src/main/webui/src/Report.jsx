@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { viewReport } from "./services/ReportClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, Label, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants } from "@patternfly/react-core";
+import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
+import JustificationBanner from "./components/JustificationBanner";
 
 export default function Report() {
 
@@ -16,13 +17,6 @@ export default function Report() {
       .then(r => setReport(r))
       .catch(e => setErrorReport(e));
   }, []);
-
-  const JustificationBanner = ({ justification }) => {
-    if (justification.status === "FALSE") {
-      return <Label color="green">{justification.label}</Label>
-    }
-    return <Label color="red">{justification.label}</Label>
-  }
 
   const onDownload = () => {
     const element = document.createElement("a");

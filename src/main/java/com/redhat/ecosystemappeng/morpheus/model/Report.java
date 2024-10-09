@@ -3,11 +3,11 @@ package com.redhat.ecosystemappeng.morpheus.model;
 import java.util.Set;
 
 public record Report(String id,
-    String startedAt,
+    String result,
     String completedAt,
     String imageName,
     String imageTag,
-    Set<String> vulns,
+    Set<VulnResult> vulns,
     String filePath) {
 
 }

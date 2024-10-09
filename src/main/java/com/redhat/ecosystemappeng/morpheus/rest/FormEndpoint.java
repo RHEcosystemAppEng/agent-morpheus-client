@@ -24,7 +24,7 @@ import jakarta.ws.rs.core.Response;
 public class FormEndpoint {
 
   private static final Logger LOGGER = Logger.getLogger(FormEndpoint.class);
-  
+
   @RestClient
   GitHubService gitHubService;
 
@@ -48,7 +48,7 @@ public class FormEndpoint {
   public Response submitRequest(String request) {
     LOGGER.infof("Received request", request);
     try {
-    return morpheusService.submit(request);
+      return morpheusService.submit(request);
     } catch (WebApplicationException e) {
       return e.getResponse();
     }

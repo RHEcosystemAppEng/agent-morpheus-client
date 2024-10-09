@@ -6,7 +6,7 @@ import ExtractedData from "./components/ExtractedData";
 
 export default function Analysis() {
 
-  const [vulnRequest, handleVulnRequestChange] = useOutletContext();
+  const {vulnRequest, handleVulnRequestChange, addAlert} = useOutletContext();
 
   return <PageSection variant={PageSectionVariants.light}>
     <Grid hasGutter>
@@ -16,7 +16,7 @@ export default function Analysis() {
         </TextContent>
       </GridItem>
       <GridItem>
-        <ScanForm vulnRequest={vulnRequest} handleVulnRequestChange={handleVulnRequestChange} />
+        <ScanForm vulnRequest={vulnRequest} handleVulnRequestChange={handleVulnRequestChange} onNewAlert={addAlert} />
       </GridItem>
       <GridItem>
         <TextContent>
