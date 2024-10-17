@@ -23,7 +23,7 @@ const getVulns = (cves) => {
   if(cves === undefined) {
     return [];
   }
-  return cves.split(',').map(x => ({ vuln_id: x.trim() }));
+  return cves.map(cve => ({ vuln_id: cve.name?.trim(), vuln_comments: cve.comments }));
 };
 
 const getIncludes = (languages) => {

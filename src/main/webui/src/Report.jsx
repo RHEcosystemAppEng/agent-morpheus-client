@@ -67,10 +67,17 @@ export default function Report() {
       </>;
     }
 
-    const scan = report.input.scan;
+    const vulns = report.input.scan.vulns;
     const image = report.input.image
-    const info = report.info;
     const output = report.output;
+
+    const getComments = (vuln_id) => {
+      for(let v of vulns) {
+        if (v.vuln_id === vuln_id) {
+          return v.vuln_comments;
+        }
+      }
+    }
 
     return <Grid hasGutter>
       <GridItem>
@@ -84,17 +91,15 @@ export default function Report() {
       </GridItem>
 
       {output.map((vuln, v_idx) => {
+        const comments = getComments(vuln.vuln_id);
         return <GridItem>
           <Panel>
             <TextContent>
               <Text component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Text>
-
+              {comments !== undefined ? <Text><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments}</Text> : ''}
             </TextContent>
             <Text><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Text>
             <Text><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Text>
-            <PanelHeader>
-
-            </PanelHeader>
             <Divider />
             <TextContent><Text component="h1">Checklist:</Text></TextContent>
             <PanelMain>

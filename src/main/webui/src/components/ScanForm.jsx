@@ -1,11 +1,14 @@
-import { ActionGroup, Button, FileUpload, Form, FormGroup, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
+import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, InputGroup, InputGroupItem, InputGroupText, TextArea, TextInput, preventedEvents } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import { GetGitHubLanguages, SendToMorpheus } from "../services/FormUtilsClient";
 import { PackageURL } from "packageurl-js";
+import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
+import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
+
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
-  const [cves, setCves] = React.useState(vulnRequest['cves'] || '');
+  const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
   const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'csv');
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
@@ -17,10 +20,44 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     setId(id);
     onFormUpdated({ id: id })
   };
-  const handleCvesChange = (_, cves) => {
-    setCves(cves);
-    onFormUpdated({ cves: cves })
+  const handleCveNameChange = (idx, name) => {
+    setCves((prevElements) => {
+      const updatedElems = prevElements.map((element, index) =>
+        index === idx ? { ...element, name: name } : element
+      );
+      onFormUpdated({ cves: updatedElems });
+      return updatedElems;
+    });
   };
+
+  const handleCveCommentsChange = (idx, comments) => {
+    setCves((prevElements) => {
+      const updatedElems = prevElements.map((element, index) =>
+        index === idx ? { ...element, comments: comments } : element
+      );
+      onFormUpdated({ cves: updatedElems });
+      return updatedElems;
+    });
+  };
+
+  const handleAddCve = () => {
+    setCves((prevCveList) => {
+      const updatedElems = [
+        ...prevCveList,
+        { name: '' }
+      ];
+      onFormUpdated({ cves: updatedElems });
+      return updatedElems
+    });
+  }
+
+  const handleDeleteCve = idx => {
+    setCves((prevCveList) => {
+      const updatedElems = prevCveList.filter((_, index) => index !== idx);
+      onFormUpdated({ cves: updatedElems });
+      return updatedElems
+    });
+  }
 
   const getProperty = (metadata, property) => {
     const found = metadata['properties'].find(e => e.name === property);
@@ -132,7 +169,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     }).finally(() => setCanSubmit(true));
   }
 
-  const REQUIRED_FIELDS = ['name', 'version', 'id', 'cves', 'commitRef', 'repository']
+  const REQUIRED_FIELDS = ['name', 'version', 'id', 'commitRef', 'repository']
 
   const onFormUpdated = (update) => {
     const updated = handleVulnRequestChange(update);
@@ -143,6 +180,20 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         return;
       }
     };
+    const updatedCves = updated['cves']
+    if (updatedCves === undefined || updatedCves.length === 0) {
+      setCanSubmit(false);
+      handleVulnRequestChange(update);
+      return;
+    }
+    for (let cve of updatedCves) {
+      if (cve.name === undefined || cve.name.trim() === '') {
+        setCanSubmit(false);
+        handleVulnRequestChange(update);
+        return;
+      }
+    }
+    
     if (updated.components === undefined || updated.components.length === 0) {
       setCanSubmit(false);
     } else {
@@ -166,9 +217,34 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     <FormGroup label="Request ID" isRequired fieldId="req-id">
       <TextInput isRequired type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated from the SBOM data" autoComplete="off"></TextInput>
     </FormGroup>
-    <FormGroup label="CVEs" isRequired fieldId="cves">
-      <TextInput isRequired type="text" id="cves" value={cves} onChange={handleCvesChange}></TextInput>
-    </FormGroup>
+    <FormSection title="CVEs">
+      {cves.map((cve, idx) => {
+        return <>
+          <FormGroup label="CVE" isRequired fieldId={`cve_${idx}_name`}>
+            <Flex>
+              <FlexItem>
+                <TextInput isRequired type="text" id={`cve_${idx}_name`} value={cve.name} onChange={event => handleCveNameChange(idx, event.target.value)}></TextInput>
+              </FlexItem>
+              <FlexItem>
+                <Button variant="danger" aria-label="Delete CVE" onClick={_ => handleDeleteCve(idx)}>
+                  <Remove2Icon />
+                </Button>
+              </FlexItem>
+            </Flex>
+          </FormGroup>
+          <FormGroup label="Comments" fieldId={`cve_${idx}_comments`}>
+            <TextArea id={`cve_${idx}_comments`} value={cve.comments} onChange={event => handleCveCommentsChange(idx, event.target.value)}></TextArea>
+          </FormGroup>
+        </>
+      })}
+      <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
+        <FlexItem>
+          <Button variant="primary" aria-label="Delete CVE" onClick={handleAddCve}>
+            <AddCircleOIcon /> Add a CVE
+          </Button>
+        </FlexItem>
+      </Flex>
+    </FormSection>
     <FormGroup label="SBOM Input Type" isRequired fieldId="sbom-type">
       <FormSelect value={sbomType} id="sbom-type" onChange={handleSbomTypeChange}>
         {sbomTypes.map((option, index) => <FormSelectOption isDisabled={option.disabled} key={index} value={option.value} label={option.label} />)}

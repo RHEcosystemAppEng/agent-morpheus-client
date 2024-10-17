@@ -138,9 +138,13 @@ public class ReportService {
       while (iterator.hasNext()) {
         var vuln = iterator.next();
         var vulnId = vuln.get("vuln_id").asText();
+        String vulnComments = null;
+        if (vuln.has("vuln_comments")) {
+          vulnComments = vuln.get("vuln_comments").asText();
+        }
         var status = vuln.get("justification").get("status").asText();
         var label = vuln.get("justification").get("label").asText();
-        cves.add(new VulnResult(vulnId, new Justification(status, label)));
+        cves.add(new VulnResult(vulnId, vulnComments, new Justification(status, label)));
       }
       return new Report(id, scan.get("started_at").asText(),
           scan.get("completed_at").asText(), image.get("name").asText(),
