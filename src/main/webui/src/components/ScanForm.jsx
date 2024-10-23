@@ -163,7 +163,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       }
     }
     
-    if (updated.components === undefined || updated.components.length === 0) {
+    if (updated.sbom === undefined || updated.sbom === {}) {
       setCanSubmit(false);
     } else {
       setCanSubmit(true);
