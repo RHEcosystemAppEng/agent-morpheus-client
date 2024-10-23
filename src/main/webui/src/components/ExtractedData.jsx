@@ -1,6 +1,14 @@
-import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm, PageSection, Text, TextContent } from "@patternfly/react-core";
+import { DescriptionList, DescriptionListDescription, DescriptionListGroup, DescriptionListTerm } from "@patternfly/react-core";
+import { countComponents } from '../services/FormUtilsClient';
 
 export default function ExtractedData({vulnRequest}) {
+
+  if(vulnRequest.sbom === undefined) {
+    return "Select a valid SBOM"
+  }
+
+  const components = countComponents(vulnRequest.sbom);
+
   return <DescriptionList isHorizontal>
     <DescriptionListGroup>
       <DescriptionListTerm>Container Image Name: </DescriptionListTerm>
@@ -20,7 +28,7 @@ export default function ExtractedData({vulnRequest}) {
     </DescriptionListGroup>
     <DescriptionListGroup>
       <DescriptionListTerm>Components: </DescriptionListTerm>
-      <DescriptionListDescription>{vulnRequest.components?.length}</DescriptionListDescription>
+      <DescriptionListDescription>{components}</DescriptionListDescription>
     </DescriptionListGroup>
   </DescriptionList>;
 }

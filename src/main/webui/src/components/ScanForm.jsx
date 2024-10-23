@@ -1,10 +1,9 @@
-import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, InputGroup, InputGroupItem, InputGroupText, TextArea, TextInput, preventedEvents } from "@patternfly/react-core";
+import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextArea, TextInput } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
-import { GetGitHubLanguages, SendToMorpheus } from "../services/FormUtilsClient";
-import { PackageURL } from "packageurl-js";
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
+import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
@@ -59,36 +58,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     });
   }
 
-  const getProperty = (metadata, property) => {
-    const found = metadata['properties'].find(e => e.name === property);
-    if (found) {
-      return found.value;
-    }
-    return '';
-  };
-
-  // Extract the system info from the purl when possible, if not try to retrieve it
-  // from the syft:package:type metadata property
-  const getSystem = (component) => {
-    const purl = component['purl'];
-    if (purl !== undefined) {
-      return PackageURL.fromString(purl).type;
-    }
-    return getProperty(component, "syft:package:type");
-  }
-
-  const getComponents = (components) => {
-    return components.map(component => {
-      const system = getSystem(component);
-      return JSON.stringify({
-        name: component['name'],
-        version: component['version'],
-        purl: component['purl'],
-        system: system
-      })
-    });
-  };
-
   const handleFileInputChange = (_, file) => {
     const fileReader = new FileReader();
     fileReader.readAsText(file, "UTF-8");
@@ -113,7 +82,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         newId = newId.substring(newId.indexOf('/') + 1).replace('/', '_');
         setId(newId);
       }
-      GetGitHubLanguages(repository).then(ghLanguages => {
+      getGitHubLanguages(repository).then(ghLanguages => {
         setLanguages(ghLanguages);
         onFormUpdated({
           id: newId,
@@ -121,8 +90,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
           version: version,
           repository: repository,
           commitRef: commitRef,
-          components: getComponents(loadedSbom['components']),
-          languages: ghLanguages
+          languages: ghLanguages,
+          sbom: loadedSbom
         });
       });
 
@@ -152,13 +121,13 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       version: '',
       repository: '',
       commitRef: '',
-      components: '',
+      components: ''
     });
   }
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    SendToMorpheus(vulnRequest).then(response => {
+    sendToMorpheus(vulnRequest).then(response => {
       if (response.ok) {
         onNewAlert('success', 'Analysis request sent to Morpheus');
       } else {
@@ -200,18 +169,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       setCanSubmit(true);
     }
   }
-
-  const sbomTypes = [{
-    value: 'csv',
-    label: 'CSV',
-    disabled: false
-  },
-  {
-    value: 'spdx+json',
-    label: 'SPDX (JSON)',
-    disabled: false
-  }
-  ]
 
   return <Form isHorizontal>
     <FormGroup label="Request ID" isRequired fieldId="req-id">
@@ -256,7 +213,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         onReadStarted={handleFileReadStarted}
         onReadFinished={handleFileReadFinished}
         isLoading={isLoading}
-        filenamePlaceholder="Drag and drop or upload a SPDX SBOM JSON file"
+        filenamePlaceholder="Drag and drop or upload a Syft generated CycloneDX SBOM JSON file"
         onFileInputChange={handleFileInputChange}
         onClearClick={handleClear}
         browseButtonText="Upload" />

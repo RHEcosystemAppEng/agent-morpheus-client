@@ -1,8 +1,26 @@
+import { PackageURL } from "packageurl-js";
 import { supportedLanguages } from "../Constants";
 
 const GITHUB_PREFIX = 'https://github.com/';
 
-export const GetGitHubLanguages = (repoUrl) => {
+const SPDX_SBOM = 'spdx+json';
+const CYCLONEDX_SBOM = 'cyclonedx+json';
+const CSV_SBOM = 'csv';
+
+export const sbomTypes = [
+  {
+    value: CSV_SBOM,
+    label: 'CSV',
+    disabled: false
+  },
+  {
+    value: CYCLONEDX_SBOM,
+    label: 'CycloneDX (JSON)',
+    disabled: false
+  }
+];
+
+export const getGitHubLanguages = (repoUrl) => {
   if (!repoUrl.startsWith(GITHUB_PREFIX)) {
     return Promise.resolve([]);
   }
@@ -20,7 +38,7 @@ export const GetGitHubLanguages = (repoUrl) => {
 }
 
 const getVulns = (cves) => {
-  if(cves === undefined) {
+  if (cves === undefined) {
     return [];
   }
   return cves.map(cve => ({ vuln_id: cve.name?.trim(), vuln_comments: cve.comments }));
@@ -199,7 +217,60 @@ const getExcludes = (languages) => {
   return result.flat();
 };
 
-export const BuildRequestJson = (data) => {
+export const getProperty = (metadata, property) => {
+  const found = metadata['properties'].find(e => e.name === property);
+  if (found) {
+    return found.value;
+  }
+  return '';
+};
+
+// Extract the system info from the purl when possible, if not try to retrieve it
+// from the syft:package:type metadata property
+const getSystem = (component) => {
+  const purl = component['purl'];
+  if (purl !== undefined) {
+    return PackageURL.fromString(purl).type;
+  }
+  return getProperty(component, "syft:package:type");
+}
+
+export const countComponents = (data) => {
+  return getComponents(data).length;
+}
+
+const getComponents = (sbom) => {
+  if (sbom === undefined) {
+    return [];
+  }
+  return sbom['components']?.map(component => {
+    const system = getSystem(component);
+    return JSON.stringify({
+      name: component['name'],
+      version: component['version'],
+      purl: component['purl'],
+      system: system
+    })
+  });
+};
+
+const buildSbomInfo = (data) => {
+  if (data.sbomType === CSV_SBOM) {
+    return {
+      _type: "manual",
+      packages: getComponents(data.sbom)?.map(c => JSON.parse(c))
+    }
+  }
+  if (data.sbomType === CYCLONEDX_SBOM) {
+    return {
+      _type: CYCLONEDX_SBOM,
+      sbom: data.sbom
+    }
+  }
+  return {};
+}
+
+export const buildRequestJson = (data) => {
   return {
     scan: {
       id: data.id,
@@ -224,22 +295,19 @@ export const BuildRequestJson = (data) => {
           exclude: []
         }
       ],
-      sbom_info: {
-        _type: "manual",
-        packages: data.components?.map(c => JSON.parse(c))
-      }
+      sbom_info: buildSbomInfo(data)
     }
   };
 }
 
-export const SendToMorpheus = (data) => {
- 
+export const sendToMorpheus = (data) => {
+
   return fetch('/form', {
     method: "POST",
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(BuildRequestJson(data))
+    body: JSON.stringify(buildRequestJson(data))
   });
 }

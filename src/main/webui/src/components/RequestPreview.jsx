@@ -1,5 +1,5 @@
 import { ClipboardCopyButton, CodeBlock, CodeBlockAction, CodeBlockCode, ExpandableSection } from "@patternfly/react-core";
-import { BuildRequestJson } from "../services/FormUtilsClient";
+import { buildRequestJson } from "../services/FormUtilsClient";
 
 export default function RequestPreview({ vulnRequest }) {
 
@@ -19,7 +19,7 @@ export default function RequestPreview({ vulnRequest }) {
 
   let code = ""
   if (vulnRequest !== undefined) {
-    code = JSON.stringify(BuildRequestJson(vulnRequest), null, 2);
+    code = JSON.stringify(buildRequestJson(vulnRequest), null, 2);
   }
   const actions = <React.Fragment>
     <CodeBlockAction>
