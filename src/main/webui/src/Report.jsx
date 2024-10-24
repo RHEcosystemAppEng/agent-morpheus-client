@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { viewReport } from "./services/ReportClient";
+import { getVulnComments } from "./services/CommentsClient";
 import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
@@ -11,10 +12,15 @@ export default function Report() {
   const navigate = useNavigate();
   const [report, setReport] = React.useState({});
   const [errorReport, setErrorReport] = React.useState({});
+  const [comments, setComments] = React.useState({});
 
   React.useEffect(() => {
     viewReport(params.id)
-      .then(r => setReport(r))
+      .then(r => {
+        setReport(r);
+        setReportComments(r);
+      })
+      .then(r => setReportComments(r))
       .catch(e => setErrorReport(e));
   }, []);
 
@@ -25,6 +31,17 @@ export default function Report() {
     element.download = `${params.id}-output.json`;
     document.body.appendChild(element);
     element.click();
+  }
+
+  const setReportComments = (report) => {
+    report.input.scan.vulns.forEach(v => {
+      getVulnComments(v.vuln_id).then(c => {
+        setComments(prevState => ({
+          ...prevState,
+          [v.vuln_id]: c,
+        }));
+      });
+    });
   }
 
   const showReport = () => {
@@ -67,17 +84,8 @@ export default function Report() {
       </>;
     }
 
-    const vulns = report.input.scan.vulns;
     const image = report.input.image
     const output = report.output;
-
-    const getComments = (vuln_id) => {
-      for(let v of vulns) {
-        if (v.vuln_id === vuln_id) {
-          return v.vuln_comments;
-        }
-      }
-    }
 
     return <Grid hasGutter>
       <GridItem>
@@ -91,12 +99,11 @@ export default function Report() {
       </GridItem>
 
       {output.map((vuln, v_idx) => {
-        const comments = getComments(vuln.vuln_id);
         return <GridItem>
           <Panel>
             <TextContent>
               <Text component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Text>
-              {comments !== undefined ? <Text><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments}</Text> : ''}
+              {comments[vuln.vuln_id] !== undefined ? <Text><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments[vuln.vuln_id]}</Text> : ''}
             </TextContent>
             <Text><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Text>
             <Text><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Text>

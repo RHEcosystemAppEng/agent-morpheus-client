@@ -41,7 +41,7 @@ const getVulns = (cves) => {
   if (cves === undefined) {
     return [];
   }
-  return cves.map(cve => ({ vuln_id: cve.name?.trim(), vuln_comments: cve.comments }));
+  return cves.map(cve => ({ vuln_id: cve.name?.trim() }));
 };
 
 const getIncludes = (languages) => {
@@ -312,9 +312,8 @@ export const buildRequestJson = (data) => {
   };
 }
 
-export const sendToMorpheus = (data) => {
-
-  return fetch('/form', {
+export const sendToMorpheus = async (data) => {
+  return await fetch('/form', {
     method: "POST",
     headers: {
       'Accept': 'application/json',

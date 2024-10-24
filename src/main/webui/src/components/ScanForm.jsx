@@ -4,6 +4,7 @@ import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
 import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
+import { setVulnComments } from "../services/CommentsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
@@ -127,7 +128,12 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    sendToMorpheus(vulnRequest).then(response => {
+    const promises = vulnRequest.cves.map((cve) => {
+      setVulnComments(cve.name, cve.comments);
+    });
+    Promise.all(promises)
+    .then(() => sendToMorpheus(vulnRequest))
+    .then(response => {
       if (response.ok) {
         onNewAlert('success', 'Analysis request sent to Morpheus');
       } else {
@@ -163,7 +169,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       }
     }
     
-    if (updated.sbom === undefined || updated.sbom === {}) {
+    if (updated.sbom === undefined || updated.sbom === '') {
       setCanSubmit(false);
     } else {
       setCanSubmit(true);
