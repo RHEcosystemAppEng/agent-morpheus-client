@@ -1,22 +1,27 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 
-import com.redhat.ecosystemappeng.morpheus.model.Report;
+import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.ReportFilter;
+import com.redhat.ecosystemappeng.morpheus.model.ReportSort;
+import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -48,8 +53,18 @@ public class ReportEndpoint {
   }
 
   @GET
-  public Collection<Report> list() {
-    return reportService.list();
+  public Response list(
+      @QueryParam("vulnId") String vulnId,
+      @QueryParam("sortBy") @DefaultValue("completedAt:DESC") List<String> sortBy,
+      @QueryParam("page") @DefaultValue("0") Integer page,
+      @QueryParam("pageSize") @DefaultValue("1000") Integer pageSize) {
+
+    var result = reportService.list(new ReportFilter(vulnId), new ReportSort(SortField.fromSortBy(sortBy)),
+        new Pagination(page, pageSize));
+    return Response.ok(result.results)
+        .header("X-Total-Pages", result.totalPages)
+        .header("X-Total-Elements", result.totalElements)
+        .build();
   }
 
   @GET

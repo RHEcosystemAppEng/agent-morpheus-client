@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,7 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.model.Justification;
+import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
+import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
+import com.redhat.ecosystemappeng.morpheus.model.ReportFilter;
+import com.redhat.ecosystemappeng.morpheus.model.ReportSort;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
 import io.quarkus.runtime.Startup;
@@ -91,11 +94,23 @@ public class ReportService {
     return r;
   }
 
-  public Collection<Report> list() {
+  private long count(ReportFilter filter) {
+    return reports.values().stream().filter(filter::filterByVulnId).count();
+  }
+
+  public PaginatedResult<Report> list(ReportFilter filter, ReportSort sort, Pagination pagination) {
     if (reports.isEmpty()) {
       loadReports();
     }
-    return reports.values();
+    var results = reports.values().stream().filter(filter::filterByVulnId).sorted(sort::compare);
+
+    if (pagination == null) {
+      return new PaginatedResult<>(reports.size(), 1, results);
+    }
+    var totalElements = count(filter);
+    var skip = pagination.size() * pagination.page();
+    var totalPages = (long) Math.ceil((double) totalElements / pagination.size());
+    return new PaginatedResult<>(totalElements, totalPages, results.skip(skip).limit(pagination.size()));
   }
 
   public String get(String id) throws IOException {
@@ -127,6 +142,13 @@ public class ReportService {
     }
   }
 
+  private String getText(JsonNode node) {
+    if (node.isNull()) {
+      return null;
+    }
+    return node.asText();
+  }
+
   private Report toReport(String id, JsonNode obj, String fileName) {
     try {
       var input = obj.get("input");
@@ -137,15 +159,15 @@ public class ReportService {
       var iterator = output.iterator();
       while (iterator.hasNext()) {
         var vuln = iterator.next();
-        var vulnId = vuln.get("vuln_id").asText();
+        var vulnId = getText(vuln.get("vuln_id"));
 
-        var status = vuln.get("justification").get("status").asText();
-        var label = vuln.get("justification").get("label").asText();
+        var status = getText(vuln.get("justification").get("status"));
+        var label = getText(vuln.get("justification").get("label"));
         cves.add(new VulnResult(vulnId, new Justification(status, label)));
       }
-      return new Report(id, scan.get("started_at").asText(),
-          scan.get("completed_at").asText(), image.get("name").asText(),
-          image.get("tag").asText(), cves, fileName);
+      return new Report(id, getText(scan.get("started_at")),
+          getText(scan.get("completed_at")), getText(image.get("name")),
+          getText(image.get("tag")), cves, fileName);
     } catch (Exception e) {
       LOGGER.infof("Ignoring invalid file: %s", fileName);
       return null;
