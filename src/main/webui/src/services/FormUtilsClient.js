@@ -230,9 +230,21 @@ export const getProperty = (metadata, property) => {
 const getSystem = (component) => {
   const purl = component['purl'];
   if (purl !== undefined) {
-    return PackageURL.fromString(purl).type;
+    try {
+      return PackageURL.fromString(purl).type;
+    } catch (e) {
+      // there's a parsing version, try to fetch it from the syft property
+    }
   }
-  return getProperty(component, "syft:package:type");
+  const prop = getProperty(component, "syft:package:type");
+  switch(prop) {
+    case 'go-module':
+      return 'golang';
+    case 'java-archive':
+      return 'maven';
+    default:
+      return prop;
+  }
 }
 
 export const countComponents = (data) => {
