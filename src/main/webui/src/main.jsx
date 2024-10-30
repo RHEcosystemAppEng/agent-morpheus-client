@@ -7,6 +7,8 @@ import { RouterProvider, createHashRouter } from 'react-router-dom'
 import Analysis from './Analysis'
 import Reports from './Reports'
 import Report from './Report'
+import Vulnerabilities from './Vulnerabilities'
+import Vulnerability from './Vulnerability'
 
 const router = createHashRouter([
   {
@@ -15,17 +17,25 @@ const router = createHashRouter([
     children: [
       {
         path: "/",
-        element: <Analysis/>,
+        element: <Analysis />,
         index: true
       },
       {
         path: "reports",
-        element: <Reports/>,
+        element: <Reports />,
       },
       {
         path: "reports/:id",
         element: <Report />
-      }
+      },
+      {
+        path: "vulnerabilities",
+        element: <Vulnerabilities />,
+      },
+      {
+        path: "vulnerabilities/:id",
+        element: <Vulnerability />,
+      },
     ]
   }
 ]);

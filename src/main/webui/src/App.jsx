@@ -1,12 +1,15 @@
-import { Avatar, Dropdown, DropdownItem, DropdownList, Masthead, MastheadMain, MastheadBrand, MastheadContent, MenuToggle, Nav, NavItem, NavList, Page, SkipToContent, Text, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem } from '@patternfly/react-core';
+import { Avatar, Dropdown, DropdownItem, DropdownList, Masthead, MastheadMain, MastheadBrand, MastheadContent, MenuToggle, Nav, NavItem, NavList, Page, SkipToContent, Text, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, MastheadToggle, PageToggleButton, PageSidebar, PageSidebarBody } from '@patternfly/react-core';
 import imgAvatar from '@patternfly/react-core/src/components/assets/avatarImg.svg';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ToastNotifications } from './components/Notifications';
+import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 
 export default function App() {
 
   const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'csv' });
   const [alerts, setAlerts] = React.useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+
   var loc = window.location, wss_uri;
   if (loc.protocol === "https:") {
     wss_uri = "wss:";
@@ -43,6 +46,10 @@ export default function App() {
     setAlerts(prevAlerts => prevAlerts.filter((_, idx) => idx !== deletePos));
   }
 
+  const onSidebarToggle = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   const handleVulnRequestChange = (changes) => {
     let updated = { ...vulnRequest }
     Object.assign(updated, changes)
@@ -53,32 +60,33 @@ export default function App() {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const location = useLocation();
-  let currTab = 0;
-  if (location.pathname.startsWith('/reports')) {
-    currTab = 1;
-  }
-  const [activeItem, setActiveItem] = React.useState(currTab);
-  const onNavSelect = (_event, selectedItem) => setActiveItem(selectedItem.itemId);
+
   const onDropdownToggle = () => setIsDropdownOpen(prevState => !prevState);
   const onDropdownSelect = () => setIsDropdownOpen(false);
 
-  const PageNav = <Nav onSelect={onNavSelect} aria-label="Nav" variant="horizontal">
+  const PageNav = <Nav aria-label="Nav">
     <NavList>
-      <NavItem itemId={0} isActive={activeItem === 0} to="#">
-        <Link to={'/'}>Request Analysis</Link>
+      <NavItem itemId={0} isActive={location.pathname === '/'} to="#">
+        Request Analysis
       </NavItem>
-      <NavItem itemId={1} isActive={activeItem === 1} to="#">
-        <Link to={'/reports'}>View Reports</Link>
+      <NavItem itemId={1} isActive={location.pathname.startsWith('/reports')} to="#/reports">
+        View Reports
+      </NavItem>
+      <NavItem itemId={2} isActive={location.pathname.startsWith('/vulnerabilities')} to="#/vulnerabilities">
+        Vulnerabilities
       </NavItem>
     </NavList>
   </Nav>;
+
   const userDropdownItems = <>
     <DropdownItem key="group 2 profile">My profile</DropdownItem>
     <DropdownItem key="group 2 logout">Logout</DropdownItem>
   </>;
+  const sidebar = <PageSidebar isSidebarOpen={isSidebarOpen} id='vertical-sidebar'>
+    <PageSidebarBody>{PageNav}</PageSidebarBody>
+  </PageSidebar>
   const headerToolbar = <Toolbar id="toolbar" isFullHeight isStatic>
     <ToolbarContent>
-      <ToolbarItem isOverflowContainer>{PageNav}</ToolbarItem>
       <ToolbarGroup variant="icon-button-group" align={{
         default: 'alignRight'
       }} spacer={{
@@ -113,6 +121,11 @@ export default function App() {
     </ToolbarContent>
   </Toolbar>;
   const Header = <Masthead>
+    <MastheadToggle>
+      <PageToggleButton variant="plain" aria-label='Global navigation' isSidebarOpen={isSidebarOpen} onSidebarToggle={onSidebarToggle} id='vertical-nav-toggle'>
+        <BarsIcon />
+      </PageToggleButton>
+    </MastheadToggle>
     <MastheadMain>
       <MastheadBrand>
         <Text>Agent Morpheus</Text>
@@ -123,7 +136,7 @@ export default function App() {
   const pageId = 'main-content-page-layout-horizontal-nav';
   const PageSkipToContent = <SkipToContent href={`#${pageId}`}>Skip to content</SkipToContent>;
   return <React.Fragment>
-    <Page header={Header} skipToContent={PageSkipToContent} mainContainerId={pageId}>
+    <Page header={Header} skipToContent={PageSkipToContent} mainContainerId={pageId} sidebar={sidebar}>
       <Outlet context={{ vulnRequest, handleVulnRequestChange, addAlert }} />
       <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
     </Page>

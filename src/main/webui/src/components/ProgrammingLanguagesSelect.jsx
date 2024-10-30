@@ -3,7 +3,7 @@ import { Select, SelectOption, SelectList, MenuToggle, TextInputGroup, TextInput
 import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon';
 import { supportedLanguages } from '../Constants';
 
-export const ProgrammingLanguagesSelect = ({selected, handleSelectedChange}) => {
+export const ProgrammingLanguagesSelect = ({ selected, handleSelectedChange }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
   const [selectOptions, setSelectOptions] = React.useState(supportedLanguages);

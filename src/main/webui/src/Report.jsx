@@ -1,15 +1,14 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { viewReport } from "./services/ReportClient";
-import { getVulnComments } from "./services/CommentsClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants } from "@patternfly/react-core";
+import { getComments } from "./services/VulnerabilityClient";
+import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, getUniqueId } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import JustificationBanner from "./components/JustificationBanner";
 
 export default function Report() {
 
-  const params = useParams()
-  const navigate = useNavigate();
+  const params = useParams();
   const [report, setReport] = React.useState({});
   const [errorReport, setErrorReport] = React.useState({});
   const [comments, setComments] = React.useState({});
@@ -35,7 +34,7 @@ export default function Report() {
 
   const setReportComments = (report) => {
     report.input.scan.vulns.forEach(v => {
-      getVulnComments(v.vuln_id).then(c => {
+      getComments(v.vuln_id).then(c => {
         setComments(prevState => ({
           ...prevState,
           [v.vuln_id]: c,
@@ -99,7 +98,8 @@ export default function Report() {
       </GridItem>
 
       {output.map((vuln, v_idx) => {
-        return <GridItem>
+        const uid = getUniqueId();
+        return <GridItem key={uid}>
           <Panel>
             <TextContent>
               <Text component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Text>
@@ -133,7 +133,7 @@ export default function Report() {
   }
   return <PageSection variant={PageSectionVariants.light}>
     <Breadcrumb>
-      <BreadcrumbItem className="pf-v5-u-primary-color-100" onClick={() => navigate("/reports")}>Reports</BreadcrumbItem>
+      <BreadcrumbItem className="pf-v5-u-primary-color-100" to="#/reports">Reports</BreadcrumbItem>
       <BreadcrumbItem>{params.id}</BreadcrumbItem>
     </Breadcrumb>
     {showReport()}

@@ -1,10 +1,10 @@
-import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextArea, TextInput } from "@patternfly/react-core";
+import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput, getUniqueId } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
+import { listVulnerabilities } from "../services/VulnerabilityClient";
 
 import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
-import { setVulnComments } from "../services/CommentsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
@@ -15,11 +15,13 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   const [isLoading, setIsLoading] = React.useState(false);
   const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
   const [canSubmit, setCanSubmit] = React.useState(false);
+  const [vulnerabilities, setVulnerabilities] = React.useState([]);
 
   const handleIdChange = (_, id) => {
     setId(id);
     onFormUpdated({ id: id })
   };
+
   const handleCveNameChange = (idx, name) => {
     setCves((prevElements) => {
       const updatedElems = prevElements.map((element, index) =>
@@ -30,15 +32,12 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     });
   };
 
-  const handleCveCommentsChange = (idx, comments) => {
-    setCves((prevElements) => {
-      const updatedElems = prevElements.map((element, index) =>
-        index === idx ? { ...element, comments: comments } : element
-      );
-      onFormUpdated({ cves: updatedElems });
-      return updatedElems;
-    });
-  };
+  React.useEffect(() => {
+    listVulnerabilities().then(vulns => vulns.map(v => v.id))
+    .then(vulns => {
+      setVulnerabilities(vulns);
+    })
+  }, []);
 
   const handleAddCve = () => {
     setCves((prevCveList) => {
@@ -128,20 +127,17 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    const promises = vulnRequest.cves.map((cve) => {
-      setVulnComments(cve.name, cve.comments);
-    });
     Promise.all(promises)
-    .then(() => sendToMorpheus(vulnRequest))
-    .then(response => {
-      if (response.ok) {
-        onNewAlert('success', 'Analysis request sent to Morpheus');
-      } else {
-        onNewAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
-      }
-    }).catch(error => {
-      onNewAlert('danger', `Unable to send request: ${error}`)
-    }).finally(() => setCanSubmit(true));
+      .then(() => sendToMorpheus(vulnRequest))
+      .then(response => {
+        if (response.ok) {
+          onNewAlert('success', 'Analysis request sent to Morpheus');
+        } else {
+          onNewAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
+        }
+      }).catch(error => {
+        onNewAlert('danger', `Unable to send request: ${error}`)
+      }).finally(() => setCanSubmit(true));
   }
 
   const REQUIRED_FIELDS = ['name', 'version', 'id', 'commitRef', 'repository']
@@ -168,7 +164,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         return;
       }
     }
-    
+
     if (updated.sbom === undefined || updated.sbom === '') {
       setCanSubmit(false);
     } else {
@@ -182,7 +178,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     </FormGroup>
     <FormSection title="CVEs">
       {cves.map((cve, idx) => {
-        return <>
+        const uid = getUniqueId();
+        return <div key={uid}>
           <FormGroup label="CVE" isRequired fieldId={`cve_${idx}_name`}>
             <Flex>
               <FlexItem>
@@ -195,10 +192,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
               </FlexItem>
             </Flex>
           </FormGroup>
-          <FormGroup label="Comments" fieldId={`cve_${idx}_comments`}>
-            <TextArea id={`cve_${idx}_comments`} value={cve.comments} onChange={event => handleCveCommentsChange(idx, event.target.value)}></TextArea>
-          </FormGroup>
-        </>
+        </div>
       })}
       <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
         <FlexItem>

@@ -10,7 +10,7 @@ public record SortField(String field, SortType type) {
     }
     return sortBy.stream()
         .map(s -> s.split(":"))
-        .map(v -> new SortField(v[0], SortType.valueOf(v[1])))
+        .map(v -> new SortField(v[0], SortType.valueOf(v[1].toUpperCase())))
         .toList();
   }
 }

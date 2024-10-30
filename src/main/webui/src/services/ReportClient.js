@@ -1,12 +1,18 @@
-class ClientRequestError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-}
+import { ClientRequestError } from "./ClientUtils";
 
-export const listReports = async () => {
-  const response = await fetch('/reports', {
+export const listReports = async (filter) => {
+  let queryParams = new URLSearchParams();
+  filter?.keys().forEach((p) => {
+    if(filter.has(p)) {
+      queryParams.set(p, filter.get(p));
+    }
+  });
+
+  let url = '/reports';
+  if(queryParams.size > 0) {
+    url += '?' + queryParams;
+  }
+  const response = await fetch(url, {
     headers: {
       'Accept': 'application/json'
     }

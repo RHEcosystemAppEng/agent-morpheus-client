@@ -1,21 +1,23 @@
-import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Modal, ModalVariant, Truncate } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Label, getUniqueId } from "@patternfly/react-core";
 import { deleteReport, listReports } from "../services/ReportClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { Link, useOutletContext, useSearchParams } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
+import { ConfirmationButton } from "./ConfirmationButton";
 
 export default function ReportsTable() {
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [vulnId, setVulnId] = React.useState(searchParams.get('vulnId') || '');
+
   const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);
-  const [confirmation, setConfirmation] = React.useState({ isOpen: false });
   const [activeSortDirection, setActiveSortDirection] = React.useState('desc');
-  const [activeSortIndex, setActiveSortIndex] = React.useState(1); // Completed At
-  const navigate = useNavigate();
+  const [activeSortIndex, setActiveSortIndex] = React.useState(2); // Completed At
 
   const loadReports = () => {
-    listReports().then(d => {
+    listReports(searchParams).then(d => {
       setReports(d)
     })
       .catch(e => {
@@ -23,25 +25,18 @@ export default function ReportsTable() {
       })
   }
 
+  const onRemoveFilter = () => {
+    const {vulnId, ...newSearchParams} = searchParams;
+    setSearchParams(newSearchParams);
+  };
+
   React.useEffect(() => {
+    setVulnId(searchParams.get('vulnId') || '');
     loadReports();
-  }, []);
+  }, [searchParams, vulnId]);
 
-  const onView = id => {
-    navigate(`/reports/${id}`);
-  }
-
-  const onDelete = () => {
-    deleteReport(confirmation.id).then(() => loadReports());
-    onCloseConfirmation();
-  }
-
-  const onConfirmDelete = id => {
-    setConfirmation({ isOpen: true, id: id });
-  }
-
-  const onCloseConfirmation = () => {
-    setConfirmation({ isOpen: false });
+  const onDelete = (id) => {
+    deleteReport(id).then(() => loadReports());
   }
 
   const getSortParams = columnIndex => ({
@@ -53,45 +48,21 @@ export default function ReportsTable() {
     onSort: (_event, index, direction) => {
       setActiveSortIndex(index);
       setActiveSortDirection(direction);
+      const field = columnNames[index].key;
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("sortBy", `${field}:${direction}` );
+      setSearchParams(newParams);
     },
     columnIndex
   });
 
-  const getSortableRowValues = report => {
-    const { id, completedAt } = report;
-    return [id, completedAt];
-  };
-
-  let sortedReports = reports;
-  if (activeSortIndex !== null) {
-    sortedReports = reports.sort((a, b) => {
-      let aValue = getSortableRowValues(a)[activeSortIndex];
-      let bValue = getSortableRowValues(b)[activeSortIndex];
-      if (aValue === "null" && bValue === "null") return 0;
-      if (typeof aValue === 'number') {
-        if (activeSortDirection === 'asc') {
-          return aValue - bValue;
-        }
-        return bValue - aValue;
-      }
-      if (activeSortDirection === 'asc') {
-        if (aValue === "null") return -1;
-        if (bValue === "null") return 1;
-        return aValue.localeCompare(bValue);
-      }
-      if (aValue === "null") return 1;
-      if (bValue === "null") return -1;
-      return bValue.localeCompare(aValue);
-    });
-  }
-
-  const columnNames = {
-    id: "ID",
-    imageName: "Image Name",
-    imageTag: "Image Tag",
-    vulns: "CVEs",
-    completedAt: "Completed At"
-  }
+  const columnNames = [
+    { key: 'id', label: 'ID' },
+    { key: 'vulns', label: 'CVEs' },
+    { key: 'completedAt', label: 'Completed At' },
+    { key: 'imageName', label: 'Image Name' },
+    { key: 'imageTag', label: 'Image Tag' }
+  ];
 
   const emptyTable = () => {
     return <Tr>
@@ -106,29 +77,36 @@ export default function ReportsTable() {
   }
 
   const reportsTable = () => {
-    return sortedReports.map(r => {
+    return reports.map(r => {
       return <Tr key={r.id}>
-        <Td dataLabel={columnNames.id} modifier="truncate">{r.id}</Td>
-        <Td dataLabel={columnNames.vulns} modifier="nowrap">{r.vulns.map(vuln => <div>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>)}</Td>
-        <Td dataLabel={columnNames.completedAt} modifier="nowrap">{r.completedAt !== 'null' ? r.completedAt : '-'}</Td>
-        <Td dataLabel={columnNames.imageName} modifier="truncate">{r.imageName}</Td>
-        <Td dataLabel={columnNames.imageTag} modifier="truncate">{r.imageTag}</Td>
-        <Td dataLabel="View"><Button variant="secondary" onClick={() => onView(r.id)}>View</Button></Td>
-        <Td dataLabel="Delete"><Button variant="danger" onClick={() => onConfirmDelete(r.id)}>Delete</Button>
+        <Td dataLabel={columnNames[0].label} modifier="truncate">{r.id}</Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
+          const uid = getUniqueId("div");
+          return <div key={uid}>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>
+        })}</Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
+        <Td dataLabel={columnNames[3].label} modifier="truncate">{r.imageName}</Td>
+        <Td dataLabel={columnNames[4].label} modifier="truncate">{r.imageTag}</Td>
+        <Td dataLabel="View"><Button component={Link} variant="secondary" to={`/reports/${r.id}`}>View</Button></Td>
+        <Td dataLabel="Delete">
+        <ConfirmationButton btnVariant="danger" 
+          onConfirm={() => onDelete(r.id)} 
+          message={`The report with id: ${r.id} will be permanently deleted.`}>Delete</ConfirmationButton>
         </Td>
       </Tr>
     });
   }
 
   return <>
+    {searchParams.get('vulnId') ? <Label color="blue" onClose={onRemoveFilter} >{searchParams.get('vulnId')}</Label> : ''}
     <Table>
       <Thead>
         <Tr>
-          <Th width={20} sort={getSortParams(0)}>{columnNames.id}</Th>
-          <Th width={10}>{columnNames.vulns}</Th>
-          <Th width={10} sort={getSortParams(1)}>{columnNames.completedAt}</Th>
-          <Th>{columnNames.imageName}</Th>
-          <Th>{columnNames.imageTag}</Th>
+          <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
+          <Th width={10}>{columnNames[1].label}</Th>
+          <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
+          <Th>{columnNames[3].label}</Th>
+          <Th>{columnNames[4].label}</Th>
           <Td colSpan={2}>Actions</Td>
         </Tr>
       </Thead>
@@ -136,12 +114,5 @@ export default function ReportsTable() {
         {reports.length == 0 ? emptyTable() : reportsTable()}
       </Tbody>
     </Table>
-    <Modal variant={ModalVariant.small} title="Permanently delete report?" isOpen={confirmation.isOpen}
-      onClose={onCloseConfirmation}
-      actions={[<Button key="confirm" variant="danger" onClick={onDelete}>Delete</Button>,
-      <Button key="close" variant="link" onClick={onCloseConfirmation}>Close</Button>]}
-    >
-      The report with id: {confirmation.id} will be permanently deleted.
-    </Modal>
   </>
 };
