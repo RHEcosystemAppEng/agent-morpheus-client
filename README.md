@@ -75,4 +75,3 @@ If you want to learn more about building native executables, please consult <htt
 Quinoa codestart added a tiny Vite app in src/main/webui. The page is configured to be visible on <a href="/app">/app</a>.
 
 [Related guide section...](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)
-
