@@ -2,6 +2,9 @@ package com.redhat.ecosystemappeng.morpheus.model;
 
 import java.util.List;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public record SortField(String field, SortType type) {
 
   public static List<SortField> fromSortBy(List<String> sortBy) {

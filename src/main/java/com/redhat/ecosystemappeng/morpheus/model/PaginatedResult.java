@@ -2,6 +2,9 @@ package com.redhat.ecosystemappeng.morpheus.model;
 
 import java.util.stream.Stream;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class PaginatedResult<T> {
 
   public final long totalElements;
