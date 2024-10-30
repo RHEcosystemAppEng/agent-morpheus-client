@@ -159,7 +159,8 @@ const getExcludes = (languages) => {
     switch (l) {
       case 'Go':
         return [
-          "test/**/*"
+          "test/**/*",
+          "vendor/**/*"
         ];
       case 'Java':
         return [
