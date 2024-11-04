@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.jboss.logging.Logger;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
-import com.redhat.ecosystemappeng.morpheus.model.ReportFilter;
-import com.redhat.ecosystemappeng.morpheus.model.ReportSort;
+import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
-import com.redhat.ecosystemappeng.morpheus.service.ReportService;
+import com.redhat.ecosystemappeng.morpheus.service.ReportRepositoryService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -22,10 +22,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 @Path("/reports")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -38,18 +36,24 @@ public class ReportEndpoint {
   NotificationSocket notificationSocket;
 
   @Inject
-  ReportService reportService;
+  ReportRepositoryService repository;
+
+  @Inject
+  ObjectMapper mapper;
 
   @POST
   public Response receive(String report) {
+    ReportReceivedEvent event = null;
     try {
-      var r = reportService.save(report);
+      var r = repository.save(report);
       LOGGER.infof("Received report %s", r.id());
-      notificationSocket.onMessage(r.id());
+      event = new ReportReceivedEvent(r.id(), r.name(), "Created");
+      notificationSocket.onMessage(mapper.writeValueAsString(event));
     } catch (IOException e) {
       LOGGER.warn("Unable to process received report", e);
+      event = new ReportReceivedEvent(null, null, e.getMessage());
     }
-    return Response.ok().build();
+    return Response.accepted(event).build();
   }
 
   @GET
@@ -59,7 +63,7 @@ public class ReportEndpoint {
       @QueryParam("page") @DefaultValue("0") Integer page,
       @QueryParam("pageSize") @DefaultValue("1000") Integer pageSize) {
 
-    var result = reportService.list(new ReportFilter(vulnId), new ReportSort(SortField.fromSortBy(sortBy)),
+    var result = repository.list(vulnId, SortField.fromSortBy(sortBy),
         new Pagination(page, pageSize));
     return Response.ok(result.results)
         .header("X-Total-Pages", result.totalPages)
@@ -70,25 +74,19 @@ public class ReportEndpoint {
   @GET
   @Path("/{id}")
   public String get(@PathParam("id") String id) throws InterruptedException {
-    try {
-      var report = reportService.get(id);
-      if (report == null) {
-        throw new NotFoundException(id);
-      }
-      return report;
-    } catch (IOException e) {
-      throw new ServerErrorException("Unable to retrieve requested Report with id " + id, Status.INTERNAL_SERVER_ERROR);
+    var report = repository.findById(id);
+    if (report == null) {
+      throw new NotFoundException(id);
     }
+    return report;
   }
 
   @DELETE
   @Path("/{id}")
   public Response remove(@PathParam("id") String id) {
-    try {
-      reportService.remove(id);
+    if (repository.remove(id)) {
       return Response.accepted().build();
-    } catch (IOException e) {
-      throw new ServerErrorException("Unable to remove requested Report with id " + id, Status.INTERNAL_SERVER_ERROR);
     }
+    return Response.serverError().build();
   }
 }

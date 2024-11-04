@@ -5,12 +5,12 @@ import java.util.Set;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record Report(String id,
-    String result,
+public record Report(
+    String id,
+    String name,
     String completedAt,
     String imageName,
     String imageTag,
-    Set<VulnResult> vulns,
-    String filePath) {
+    Set<VulnResult> vulns) {
 
 }

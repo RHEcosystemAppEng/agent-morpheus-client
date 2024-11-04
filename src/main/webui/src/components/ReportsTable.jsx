@@ -57,7 +57,7 @@ export default function ReportsTable() {
   });
 
   const columnNames = [
-    { key: 'id', label: 'ID' },
+    { key: 'name', label: 'ID' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'completedAt', label: 'Completed At' },
     { key: 'imageName', label: 'Image Name' },
@@ -79,7 +79,7 @@ export default function ReportsTable() {
   const reportsTable = () => {
     return reports.map(r => {
       return <Tr key={r.id}>
-        <Td dataLabel={columnNames[0].label} modifier="truncate">{r.id}</Td>
+        <Td dataLabel={columnNames[0].label} modifier="truncate">{r.name}</Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
           return <div key={uid}>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>
@@ -91,7 +91,7 @@ export default function ReportsTable() {
         <Td dataLabel="Delete">
         <ConfirmationButton btnVariant="danger" 
           onConfirm={() => onDelete(r.id)} 
-          message={`The report with id: ${r.id} will be permanently deleted.`}>Delete</ConfirmationButton>
+          message={`The report with id: ${r.name} will be permanently deleted.`}>Delete</ConfirmationButton>
         </Td>
       </Tr>
     });

@@ -26,14 +26,18 @@ export default function App() {
     });
 
     socket.addEventListener("message", (event) => {
-      console.log(`Received new report: ${event.data}`);
-      addAlert('Info', 'New report received', <p>Report: {event.data} reveived.<div><Link to={`/reports/${event.data}`} onClick={onLinkToReportClicked}>View</Link></div></p>)
-    })
+      const data = JSON.parse(event.data);
+      console.log(`Received new report: ${data}`);
+      if(data.result === "Created") {
+        addAlert('Info', 'New report received', <p>Report: {data.name} reveived.<div><Link to={`/reports/${data.id}`} onClick={onLinkToReportClicked}>View</Link></div></p>)
+      } else {
+        addAlert('Error', 'Error received', <p>Error: {data.result}</p>);
+      }
+    });
   }, []);
 
   const onLinkToReportClicked = () => {
     onDeleteAlert(-1);
-    setActiveItem(1);
   }
   const addAlert = (variant, title, content) => {
     setAlerts(prevAlerts => [...prevAlerts, { title: title, variant: variant, content: content }]);

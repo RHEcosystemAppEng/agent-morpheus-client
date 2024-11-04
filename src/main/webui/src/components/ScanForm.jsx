@@ -2,7 +2,6 @@ import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormS
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
-import { listVulnerabilities } from "../services/VulnerabilityClient";
 
 import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
 
@@ -15,7 +14,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   const [isLoading, setIsLoading] = React.useState(false);
   const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
   const [canSubmit, setCanSubmit] = React.useState(false);
-  const [vulnerabilities, setVulnerabilities] = React.useState([]);
 
   const handleIdChange = (_, id) => {
     setId(id);
@@ -31,13 +29,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       return updatedElems;
     });
   };
-
-  React.useEffect(() => {
-    listVulnerabilities().then(vulns => vulns.map(v => v.id))
-    .then(vulns => {
-      setVulnerabilities(vulns);
-    })
-  }, []);
 
   const handleAddCve = () => {
     setCves((prevCveList) => {
@@ -127,8 +118,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    Promise.all(promises)
-      .then(() => sendToMorpheus(vulnRequest))
+    sendToMorpheus(vulnRequest)
       .then(response => {
         if (response.ok) {
           onNewAlert('success', 'Analysis request sent to Morpheus');

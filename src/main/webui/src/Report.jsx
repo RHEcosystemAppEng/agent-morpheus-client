@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
-import { viewReport } from "./services/ReportClient";
+import { useNavigate, useParams } from "react-router-dom";
+import { deleteReport, viewReport } from "./services/ReportClient";
 import { getComments } from "./services/VulnerabilityClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, getUniqueId } from "@patternfly/react-core";
+import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Flex, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, getUniqueId } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import JustificationBanner from "./components/JustificationBanner";
+import { ConfirmationButton } from "./components/ConfirmationButton";
 
 export default function Report() {
 
@@ -12,12 +13,16 @@ export default function Report() {
   const [report, setReport] = React.useState({});
   const [errorReport, setErrorReport] = React.useState({});
   const [comments, setComments] = React.useState({});
+  const [name, setName] = React.useState();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     viewReport(params.id)
       .then(r => {
+
         setReport(r);
         setReportComments(r);
+        setName(r.input.scan.id);
       })
       .then(r => setReportComments(r))
       .catch(e => setErrorReport(e));
@@ -27,9 +32,13 @@ export default function Report() {
     const element = document.createElement("a");
     const file = new Blob([JSON.stringify(report)], { type: 'application/json' });
     element.href = URL.createObjectURL(file);
-    element.download = `${params.id}-output.json`;
+    element.download = `${name}.json`;
     document.body.appendChild(element);
     element.click();
+  }
+
+  const onDelete = () => {
+    deleteReport(params.id).then(() => navigate('/reports'));
   }
 
   const setReportComments = (report) => {
@@ -89,7 +98,7 @@ export default function Report() {
     return <Grid hasGutter>
       <GridItem>
         <TextContent>
-          <Text component="h1">{params.id}</Text>
+          <Text component="h1">{name}</Text>
         </TextContent>
       </GridItem>
       <GridItem>
@@ -127,14 +136,20 @@ export default function Report() {
         </GridItem>
       })}
       <GridItem>
-        <Button variant="secondary" onClick={onDownload}>Download</Button>
+        <Flex columnGap={{ default: 'columnGapSm' }}>
+          <Button variant="secondary" onClick={onDownload}>Download</Button>
+          <ConfirmationButton btnVariant="danger"
+            onConfirm={() => onDelete()}
+            message={`The report with id: ${name} will be permanently deleted.`}>Delete</ConfirmationButton>
+          <Button variant="primary" onClick={() => navigate(-1)}>Back</Button>
+        </Flex>
       </GridItem>
     </Grid>
   }
   return <PageSection variant={PageSectionVariants.light}>
     <Breadcrumb>
       <BreadcrumbItem className="pf-v5-u-primary-color-100" to="#/reports">Reports</BreadcrumbItem>
-      <BreadcrumbItem>{params.id}</BreadcrumbItem>
+      <BreadcrumbItem>{name}</BreadcrumbItem>
     </Breadcrumb>
     {showReport()}
   </PageSection>;
