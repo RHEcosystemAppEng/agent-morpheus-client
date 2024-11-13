@@ -1,4 +1,4 @@
-import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput, getUniqueId } from "@patternfly/react-core";
+import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
 import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
@@ -20,7 +20,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     onFormUpdated({ id: id })
   };
 
-  const handleCveNameChange = (idx, name) => {
+  const handleCveChange = (idx, name) => {
+
     setCves((prevElements) => {
       const updatedElems = prevElements.map((element, index) =>
         index === idx ? { ...element, name: name } : element
@@ -168,12 +169,11 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     </FormGroup>
     <FormSection title="CVEs">
       {cves.map((cve, idx) => {
-        const uid = getUniqueId();
-        return <div key={uid}>
+        return <div key={`cve_${idx}_group`}>
           <FormGroup label="CVE" isRequired fieldId={`cve_${idx}_name`}>
             <Flex>
               <FlexItem>
-                <TextInput isRequired type="text" id={`cve_${idx}_name`} value={cve.name} onChange={event => handleCveNameChange(idx, event.target.value)}></TextInput>
+                <TextInput isRequired type="text" id={`cve_${idx}_name`} value={cve.name || ""} onChange={event => handleCveChange(idx, event.target.value)}></TextInput>
               </FlexItem>
               <FlexItem>
                 <Button variant="danger" aria-label="Delete CVE" onClick={_ => handleDeleteCve(idx)}>
