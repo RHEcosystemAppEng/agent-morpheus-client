@@ -3,19 +3,13 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 import java.util.Collections;
 import java.util.Set;
 
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.client.MorpheusService;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -51,6 +45,9 @@ public class FormEndpoint {
       return morpheusService.submit(request);
     } catch (WebApplicationException e) {
       return e.getResponse();
+    } catch (ProcessingException e) {
+      LOGGER.infof(e, "Unable to process Morpheus request");
+      return Response.serverError().build();
     }
   }
 }

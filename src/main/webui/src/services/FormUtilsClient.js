@@ -1,5 +1,5 @@
 import { PackageURL } from "packageurl-js";
-import { supportedLanguages } from "../Constants";
+import {productNames, supportedLanguages} from "../Constants";
 
 const GITHUB_PREFIX = 'https://github.com/';
 
@@ -19,6 +19,8 @@ export const sbomTypes = [
     disabled: false
   }
 ];
+
+
 
 export const getGitHubLanguages = (repoUrl) => {
   if (!repoUrl.startsWith(GITHUB_PREFIX)) {
@@ -283,11 +285,18 @@ const buildSbomInfo = (data) => {
   return {};
 }
 
+const getProduct = (theProduct) => {
+  return {
+    full_name: theProduct,
+    id: productNames.filter(product=> product.product_name === theProduct).map(prod => prod.product_id)[0]
+  }
+};
 export const buildRequestJson = (data) => {
   return {
     scan: {
       id: data.id,
-      vulns: getVulns(data.cves)
+      vulns: getVulns(data.cves),
+      product: getProduct(data.product)
     },
     image: {
       name: data.name,

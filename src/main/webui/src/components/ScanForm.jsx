@@ -4,12 +4,14 @@ import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
 import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
+import {productNames} from "../Constants.js";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
   const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'csv');
+  const [product, setProduct] = React.useState(vulnRequest['product'] || '');
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
   const [isLoading, setIsLoading] = React.useState(false);
   const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
@@ -93,6 +95,11 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     setSbomType(type);
     onFormUpdated({ sbomType: type });
   }
+    const handleProductChange = (_, product) => {
+    setProduct(product);
+    onFormUpdated({ product: product });
+  }
+
   const handleFileReadStarted = (_event, _fileHandle) => {
     setIsLoading(true);
   };
@@ -192,6 +199,11 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         </FlexItem>
       </Flex>
     </FormSection>
+    <FormGroup label="Product Name" isRequired fieldId="product-name">
+      <FormSelect value={product} id="product-name" onChange={handleProductChange}>
+        {productNames.map((option, index) => <FormSelectOption isDisabled={option.disabled} key={index} value={ option.product_name } label={option.product_name} />)}
+      </FormSelect>
+    </FormGroup>
     <FormGroup label="SBOM Input Type" isRequired fieldId="sbom-type">
       <FormSelect value={sbomType} id="sbom-type" onChange={handleSbomTypeChange}>
         {sbomTypes.map((option, index) => <FormSelectOption isDisabled={option.disabled} key={index} value={option.value} label={option.label} />)}
