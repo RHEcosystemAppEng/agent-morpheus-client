@@ -7,7 +7,6 @@ import java.util.zip.GZIPInputStream;
 
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.reactive.RestMulti;
 
 import com.redhat.ecosystemappeng.morpheus.model.sbom.InvalidSbomException;
 import com.redhat.ecosystemappeng.morpheus.model.sbom.Product;

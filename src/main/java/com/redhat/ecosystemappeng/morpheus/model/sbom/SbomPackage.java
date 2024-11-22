@@ -22,6 +22,7 @@ public record SbomPackage(
     String purl,
     List<SecurityRef> securityRefs,
     String packageFileName, //rpms
+    String generatedBy,
     List<String> dependencies) {
 
 }

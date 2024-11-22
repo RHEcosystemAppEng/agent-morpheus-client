@@ -38,7 +38,7 @@ public class SbomPackageRepositoryService implements PanacheMongoRepositoryBase<
 
         // Step 3: Project only the necessary fields
         Aggregates.project(Projections.fields(
-            Projections.include("_id", "name", "directDependencies._id", "directDependencies.name"))));
+            Projections.include("_id", "name", "versionInfo", "purl", "directDependencies._id", "directDependencies.name", "directDependencies.versionInfo", "directDependencies.purl"))));
 
     // Run the aggregation and return the result
     return mongoCollection().aggregate(pipeline, Document.class).allowDiskUse(true).into(new ArrayList<>());

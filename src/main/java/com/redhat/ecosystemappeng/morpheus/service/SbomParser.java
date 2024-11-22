@@ -90,6 +90,11 @@ public class SbomParser {
     return new UpdateOneModel<SbomPackage>(Filters.eq("_id", from), update);
   }
 
+  public WriteModel<SbomPackage> buildGeneratesWrite(String id, String generatedById) {
+    var update = Updates.set("generatedBy", generatedById);
+    return new UpdateOneModel<SbomPackage>(Filters.eq("_id", id), update);
+  }
+
   private String importRelationships(ArrayNode relNodes, Set<String> packageIds) {
     String rootNodeRef = null;
     var batch = new ArrayList<WriteModel<SbomPackage>>();
@@ -121,6 +126,12 @@ public class SbomParser {
           case "PROVIDED_DEPENDENCY_OF":
           case "DEPENDENCY_OF":
             batch.add(buildDependencyWrite(relatedElementId, elementId));
+            break;
+          case "GENERATES":
+            batch.add(buildGeneratesWrite(relatedElementId, elementId));
+            break;
+          case "GENERATED_BY":
+            batch.add(buildGeneratesWrite(elementId, relatedElementId));
             break;
           default:
             // ignore
@@ -159,7 +170,7 @@ public class SbomParser {
       }
     }
     return new SbomPackage(id, name, version, supplier, homepage, downloadLocation, purl, secRefs,
-        packageFileName, Collections.emptyList());
+        packageFileName, null, Collections.emptyList());
   }
 
   private Set<String> importPackages(JsonNode tree) {
