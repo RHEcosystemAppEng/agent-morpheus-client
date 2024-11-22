@@ -294,14 +294,16 @@ export const buildRequestJson = (data) => {
       tag: data.version,
       source_info: [
         {
-          type: "code",
+          type: "git",
+          source_type: "code",
           git_repo: data.repository,
           ref: data.commitRef,
           include: getIncludes(data.languages),
           exclude: getExcludes(data.languages)
         },
         {
-          type: "doc",
+          type: "git",
+          source_type: "doc",
           git_repo: data.repository,
           ref: data.commitRef,
           include: getIncludes(["Docs"]),
