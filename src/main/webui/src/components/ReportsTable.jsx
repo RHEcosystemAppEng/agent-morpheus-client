@@ -58,6 +58,9 @@ export default function ReportsTable() {
 
   const columnNames = [
     { key: 'name', label: 'ID' },
+    { key: 'componentName', label: 'Component' },
+    { key: 'productName', label: 'Product Name' },
+    { key: 'productVersion', label: 'Product Version' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'completedAt', label: 'Completed At' },
     { key: 'imageName', label: 'Image Name' },
@@ -80,13 +83,16 @@ export default function ReportsTable() {
     return reports.map(r => {
       return <Tr key={r.id}>
         <Td dataLabel={columnNames[0].label} modifier="truncate">{r.name}</Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
+        <Td dataLabel={columnNames[1].label} modifier="truncate">{r.componentName}</Td>
+        <Td dataLabel={columnNames[2].label} modifier="truncate">{r.productName}</Td>
+        <Td dataLabel={columnNames[3].label} modifier="truncate">{r.productVersion}</Td>
+        <Td dataLabel={columnNames[4].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
           return <div key={uid}>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>
         })}</Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
-        <Td dataLabel={columnNames[3].label} modifier="truncate">{r.imageName}</Td>
-        <Td dataLabel={columnNames[4].label} modifier="truncate">{r.imageTag}</Td>
+        <Td dataLabel={columnNames[5].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
+        <Td dataLabel={columnNames[6].label} modifier="truncate">{r.imageName}</Td>
+        <Td dataLabel={columnNames[7].label} modifier="truncate">{r.imageTag}</Td>
         <Td dataLabel="View"><Button component={Link} variant="secondary" to={`/reports/${r.id}`}>View</Button></Td>
         <Td dataLabel="Delete">
         <ConfirmationButton btnVariant="danger" 
@@ -103,10 +109,13 @@ export default function ReportsTable() {
       <Thead>
         <Tr>
           <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
-          <Th width={10}>{columnNames[1].label}</Th>
-          <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
+          <Th>{columnNames[1].label}</Th>
+          <Th>{columnNames[2].label}</Th>
           <Th>{columnNames[3].label}</Th>
-          <Th>{columnNames[4].label}</Th>
+          <Th width={10}>{columnNames[4].label}</Th>
+          <Th width={10} sort={getSortParams(2)}>{columnNames[5].label}</Th>
+          <Th>{columnNames[6].label}</Th>
+          <Th>{columnNames[7].label}</Th>
           <Td colSpan={2}>Actions</Td>
         </Tr>
       </Thead>

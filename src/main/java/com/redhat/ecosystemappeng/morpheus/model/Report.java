@@ -8,6 +8,9 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public record Report(
     String id,
     String name,
+    String componentName,
+    String productName,
+    String productVersion,
     String completedAt,
     String imageName,
     String imageTag,

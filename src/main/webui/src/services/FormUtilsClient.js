@@ -287,6 +287,11 @@ export const buildRequestJson = (data) => {
   return {
     scan: {
       id: data.id,
+      metadata: {
+        "com.redhat/ecosystemappeng/agent-morpheus/product-name": data.prodName,
+        "com.redhat/ecosystemappeng/agent-morpheus/product-version": data.prodVersion,
+        "com.redhat/ecosystemappeng/agent-morpheus/component": data.name
+      },
       vulns: getVulns(data.cves)
     },
     image: {

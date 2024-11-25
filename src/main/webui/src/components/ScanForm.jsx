@@ -7,6 +7,8 @@ import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../s
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
+  const [prodName, setProdName] = React.useState(vulnRequest['prodName'] || '');
+  const [prodVersion, setProdVersion] = React.useState(vulnRequest['prodVersion'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
   const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'csv');
@@ -18,6 +20,16 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   const handleIdChange = (_, id) => {
     setId(id);
     onFormUpdated({ id: id })
+  };
+
+  const handleProdNameChange = (_, prodName) => {
+    setProdName(prodName);
+    onFormUpdated({ prodName: prodName })
+  };
+
+  const handleProdVersionChange = (_, prodVersion) => {
+    setProdVersion(prodVersion);
+    onFormUpdated({ prodVersion: prodVersion })
   };
 
   const handleCveChange = (idx, name) => {
@@ -166,6 +178,12 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   return <Form isHorizontal>
     <FormGroup label="Request ID" isRequired fieldId="req-id">
       <TextInput isRequired type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated from the SBOM data" autoComplete="off"></TextInput>
+    </FormGroup>
+    <FormGroup label="Product Name" isRequired fieldId="prod-name">
+      <TextInput isRequired type="text" id="prod-name" value={prodName} onChange={handleProdNameChange}></TextInput>
+    </FormGroup>
+    <FormGroup label="Product Version" isRequired fieldId="prod-version">
+      <TextInput isRequired type="text" id="prod-version" value={prodVersion} onChange={handleProdVersionChange}></TextInput>
     </FormGroup>
     <FormSection title="CVEs">
       {cves.map((cve, idx) => {

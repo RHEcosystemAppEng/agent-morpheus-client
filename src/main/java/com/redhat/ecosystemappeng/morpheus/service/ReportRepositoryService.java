@@ -51,6 +51,7 @@ public class ReportRepositoryService {
     }
     var input = doc.get("input", Document.class);
     var scan = input.get("scan", Document.class);
+    var metadata = scan.get("metadata", Document.class);
     var image = input.get("image", Document.class);
     var output = doc.getList("output", Document.class);
     var vulnIds = new HashSet<VulnResult>();
@@ -63,8 +64,16 @@ public class ReportRepositoryService {
     });
     var id = doc.get(RepositoryConstants.ID_KEY, ObjectId.class).toHexString();
 
-    return new Report(id, scan.getString(RepositoryConstants.ID_SORT), scan.getString("completed_at"), image.getString("name"),
-        image.getString("tag"), vulnIds);
+    return new Report(
+      id, 
+      scan.getString(RepositoryConstants.ID_SORT), 
+      metadata.getString("com.redhat/ecosystemappeng/agent-morpheus/component"), 
+      metadata.getString("com.redhat/ecosystemappeng/agent-morpheus/product-name"), 
+      metadata.getString("com.redhat/ecosystemappeng/agent-morpheus/product-version"), 
+      scan.getString("completed_at"), 
+      image.getString("name"),
+      image.getString("tag"), vulnIds
+    );
   }
 
   public Report save(String data) throws IOException {
