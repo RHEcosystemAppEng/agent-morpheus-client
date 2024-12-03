@@ -52,16 +52,12 @@ const getIncludes = (languages) => {
     switch (l) {
       case 'Go':
         return [
-          "**/*.go",
-          "go.*"
+          "**/*.go"
         ];
 
       case 'Python':
         return [
           "**/*.py", // All Python source files
-          "requirements.txt", // Pip dependencies
-          "Pipfile", // Pipenv dependencies
-          "Pipfile.lock", // Locked Pipenv dependencies
           "pyproject.toml", // PEP 518/517 build system
           "setup.py", // Setuptools configuration
           "setup.cfg" // Alternate setuptools configuration
@@ -70,8 +66,6 @@ const getIncludes = (languages) => {
       case 'Java':
         return [
           "**/*.java", // All Java source files
-          "pom.xml", // Maven build file
-          "build.gradle", // Gradle build script
           "settings.gradle", // Gradle settings file
           "src/main/**/*" // Main Java source files
         ];
@@ -80,9 +74,6 @@ const getIncludes = (languages) => {
         return [
           "**/*.js", // All JavaScript source files
           "**/*.jsx", // JSX files for React
-          "package.json", // Node.js project file
-          "package-lock.json", // Locked versions of Node dependencies
-          "yarn.lock", // Yarn lockfile for dependencies
           "webpack.config.js", // Webpack configuration
           "rollup.config.js", // Rollup configuration
           "babel.config.js", // Babel configuration
@@ -100,9 +91,6 @@ const getIncludes = (languages) => {
         return [
           "**/*.ts", // All TypeScript source files
           "**/*.tsx", // TSX files for React (TypeScript)
-          "package.json", // Node.js project file
-          "package-lock.json", // Locked versions of Node dependencies
-          "yarn.lock", // Yarn lockfile for dependencies
           "tsconfig.json", // TypeScript configuration
           "tsconfig.*.json", // TypeScript environment-specific configurations
           "webpack.config.js", // Webpack configuration
@@ -160,7 +148,9 @@ const getExcludes = (languages) => {
       case 'Go':
         return [
           "test/**/*",
-          "vendor/**/*"
+          "vendor/**/*",
+          "go.mod",
+          "go.sum"
         ];
       case 'Java':
         return [
@@ -173,6 +163,8 @@ const getExcludes = (languages) => {
           "test/**/*",  // Test source files
           "tests/**/*",  // Alternate test directories
           "src/test/**/*",  // Test files in the test source set
+          "pom.xml",
+          "build.gradle"
         ];
       case 'JavaScript':
         return [
@@ -183,6 +175,9 @@ const getExcludes = (languages) => {
           "tests/**/*",  // Alternate test directories
           "example/**/*",  // Example files or directories
           "examples/**/*",  // Alternate example directories
+          "package.json",
+          "package-lock.json",
+          "yarn.lock"
         ];
       case 'TypeScript':
         return [
@@ -193,6 +188,9 @@ const getExcludes = (languages) => {
           "tests/**/*",  // Alternate test directories
           "example/**/*",  // Example files or directories
           "examples/**/*",  // Alternate example directories
+          "package.json",
+          "package-lock.json",
+          "yarn.lock"
         ];
       case 'Python':
         return [
@@ -209,7 +207,9 @@ const getExcludes = (languages) => {
           "*.pyc",  // Python compiled bytecode files
           "*.pyo",  // Optimized bytecode files
           "*.pyd",  // Windows compiled files
-          ".github/**/*",  // GitHub workflows and configurations
+          "requirements.txt",
+          "Pipfile",
+          "Pipfile.lock"
         ];
       default:
         return []
