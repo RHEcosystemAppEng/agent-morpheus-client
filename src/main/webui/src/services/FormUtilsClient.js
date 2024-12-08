@@ -148,7 +148,7 @@ const getExcludes = (languages) => {
       case 'Go':
         return [
           "test/**/*",
-          "vendor/**/*",
+          "**/vendor/**/*",
           "go.mod",
           "go.sum"
         ];
