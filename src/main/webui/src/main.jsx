@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { RouterProvider, createHashRouter } from 'react-router-dom'
 import Analysis from './Analysis'
+import ComponentAnalysis from './ComponentAnalysis'
 import Reports from './Reports'
 import Report from './Report'
 import Vulnerabilities from './Vulnerabilities'
@@ -35,6 +36,10 @@ const router = createHashRouter([
       {
         path: "vulnerabilities/:id",
         element: <Vulnerability />,
+      },
+      {
+        path: "component_analysis/",
+        element: <ComponentAnalysis />,
       },
     ]
   }

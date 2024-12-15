@@ -79,6 +79,9 @@ export default function App() {
       <NavItem itemId={2} isActive={location.pathname.startsWith('/vulnerabilities')} to="#/vulnerabilities">
         Vulnerabilities
       </NavItem>
+      <NavItem itemId={3} isActive={location.pathname.startsWith('/component_analysis')} to="#/component_analysis">
+        Request Component Analysis
+      </NavItem>
     </NavList>
   </Nav>;
 
