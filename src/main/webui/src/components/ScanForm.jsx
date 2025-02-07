@@ -1,24 +1,44 @@
 import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
-import { ProgrammingLanguagesSelect } from "./ProgrammingLanguagesSelect";
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
-import { getGitHubLanguages, sendToMorpheus, sbomTypes, getProperty } from "../services/FormUtilsClient";
+import { sendToMorpheus, sbomTypes } from "../services/FormUtilsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
-  const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'csv');
+  const [metadata, setMetadata] = React.useState(vulnRequest['metadata'] || [{}]);
+  const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'manual');
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
   const [isLoading, setIsLoading] = React.useState(false);
-  const [languages, setLanguages] = React.useState(vulnRequest['languages'] || []);
   const [canSubmit, setCanSubmit] = React.useState(false);
 
   const handleIdChange = (_, id) => {
     setId(id);
     onFormUpdated({ id: id })
   };
+
+  const handleMetadataChange = (idx, field, newValue) => {
+    const updatedMetadata = [...metadata];
+    updatedMetadata[idx][field] = newValue;
+    setMetadata(updatedMetadata);
+    onFormUpdated({ metadata: updatedMetadata });
+  };
+
+  const handleAddMetadata = () => {
+    setMetadata((prevMetadata) => {
+      const updatedElems = [...prevMetadata, { name: "", value: ""}];
+      onFormUpdated({ metadata: updatedElems });
+      return updatedElems;
+    });
+  }
+
+  const handleDeleteMetadata = idx => {
+    const updatedMetadata = metadata.filter((_, i) => i !== idx);
+    setMetadata(updatedMetadata);
+    onFormUpdated({ metadata: updatedMetadata });
+  }
 
   const handleCveChange = (idx, name) => {
 
@@ -56,37 +76,9 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
     fileReader.onload = e => {
       const loadedSbom = JSON.parse(e.target.result)
       setSbom(loadedSbom);
-      const metadata = loadedSbom['metadata']
-      const component = metadata['component']
-      const commitUrl = getProperty(metadata, "syft:image:labels:io.openshift.build.commit.url");
-      const repository = getProperty(metadata, "syft:image:labels:io.openshift.build.source-location");
-      const commitRef = commitUrl.substring(commitUrl.lastIndexOf('/') + 1);
-      const name = component['name'];
-      const version = component['version'];
-
-      var newId = id;
-      if (id === '') {
-        var suffix = version;
-        if (suffix.startsWith('sha256')) {
-          suffix = suffix.substring(0, 16);
-        }
-        newId = `${name}:${suffix}`;
-        newId = newId.substring(newId.indexOf('/') + 1).replace('/', '_');
-        setId(newId);
-      }
-      getGitHubLanguages(repository).then(ghLanguages => {
-        setLanguages(ghLanguages);
-        onFormUpdated({
-          id: newId,
-          name: name,
-          version: version,
-          repository: repository,
-          commitRef: commitRef,
-          languages: ghLanguages,
-          sbom: loadedSbom
-        });
+      onFormUpdated({
+        sbom: loadedSbom
       });
-
     }
     setFilename(file.name);
   }
@@ -100,21 +92,11 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   const handleFileReadFinished = (_event, _fileHandle) => {
     setIsLoading(false);
   };
-  const handleLanguagesChange = (languages) => {
-    setLanguages(languages)
-    onFormUpdated({ languages: languages })
-  }
 
   const handleClear = _ => {
     setFilename('');
     setSbom('');
-    onFormUpdated({
-      name: '',
-      version: '',
-      repository: '',
-      commitRef: '',
-      components: ''
-    });
+    onFormUpdated();
   }
 
   const onSubmitForm = () => {
@@ -131,25 +113,30 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       }).finally(() => setCanSubmit(true));
   }
 
-  const REQUIRED_FIELDS = ['name', 'version', 'id', 'commitRef', 'repository']
-
   const onFormUpdated = (update) => {
+    if(update === undefined) {
+      setCanSubmit(false);
+    }
     const updated = handleVulnRequestChange(update);
-    for (let f in REQUIRED_FIELDS) {
-      if (updated[REQUIRED_FIELDS[f]] === undefined || updated[REQUIRED_FIELDS[f]].trim() === '') {
-        setCanSubmit(false);
-        handleVulnRequestChange(update);
-        return;
-      }
-    };
-    const updatedCves = updated['cves']
+    
+    const updatedCves = updated['cves'];    
     if (updatedCves === undefined || updatedCves.length === 0) {
       setCanSubmit(false);
       handleVulnRequestChange(update);
       return;
     }
-    for (let cve of updatedCves) {
-      if (cve.name === undefined || cve.name.trim() === '') {
+    for (let value of updatedCves) {
+      if (value.name === undefined || value.name.trim() === '') {
+        setCanSubmit(false);
+        handleVulnRequestChange(update);
+        return;
+      }
+    }
+
+    const metadata = updated['metadata'];
+    for (let idx in metadata) {
+      const pair = metadata[idx];
+      if (pair.name === undefined || pair.name.trim() === '' || pair.value === undefined || pair.value.trim() === '') {
         setCanSubmit(false);
         handleVulnRequestChange(update);
         return;
@@ -164,9 +151,37 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   }
 
   return <Form isHorizontal>
-    <FormGroup label="Request ID" isRequired fieldId="req-id">
-      <TextInput isRequired type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated from the SBOM data" autoComplete="off"></TextInput>
+    <FormGroup label="Request ID" fieldId="req-id">
+      <TextInput type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated" autoComplete="off"></TextInput>
     </FormGroup>
+    <FormSection title="Metadata">
+      {metadata.map((m, idx) => {
+        return <div key={`metadata_${idx}_pair`}>
+          <FormGroup fieldId={`metadata_${idx}_pair`}>
+            <Flex>
+              <FlexItem>
+                <TextInput isRequired type="text" id={`metadata_${idx}_name`} value={m.name || ""} onChange={event => handleMetadataChange(idx, "name", event.target.value)} placeholder="Name"></TextInput>
+              </FlexItem>
+              <FlexItem>
+                <TextInput isRequired type="text" id={`metadata_${idx}_value`} value={m.value || ""} onChange={event => handleMetadataChange(idx, "value", event.target.value)} placeholder="Value"></TextInput>
+              </FlexItem>
+              <FlexItem>
+                <Button variant="danger" aria-label="Delete Metadata" onClick={_ => handleDeleteMetadata(idx)}>
+                  <Remove2Icon />
+                </Button>
+              </FlexItem>
+            </Flex>
+          </FormGroup>
+        </div>
+      })}
+      <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
+        <FlexItem>
+          <Button variant="primary" aria-label="Add Metadata" onClick={handleAddMetadata}>
+            <AddCircleOIcon /> Add Metadata
+          </Button>
+        </FlexItem>
+      </Flex>
+    </FormSection>
     <FormSection title="CVEs">
       {cves.map((cve, idx) => {
         return <div key={`cve_${idx}_group`}>
@@ -186,7 +201,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       })}
       <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
         <FlexItem>
-          <Button variant="primary" aria-label="Delete CVE" onClick={handleAddCve}>
+          <Button variant="primary" aria-label="Add CVE" onClick={handleAddCve}>
             <AddCircleOIcon /> Add a CVE
           </Button>
         </FlexItem>
@@ -207,9 +222,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         onFileInputChange={handleFileInputChange}
         onClearClick={handleClear}
         browseButtonText="Upload" />
-    </FormGroup>
-    <FormGroup label="Programming Languages" isRequired fieldId="languages">
-      <ProgrammingLanguagesSelect selected={languages} handleSelectedChange={handleLanguagesChange} />
     </FormGroup>
     <ActionGroup>
       <Button variant="primary" isDisabled={!canSubmit} onClick={onSubmitForm}>Submit</Button>

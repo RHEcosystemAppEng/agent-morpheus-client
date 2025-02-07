@@ -106,7 +106,7 @@ export default function Report() {
         <Text><span className="pf-v5-u-font-weight-bold">Tag:</span> {image.tag}</Text>
       </GridItem>
 
-      {output.map((vuln, v_idx) => {
+      {output?.map((vuln, v_idx) => {
         const uid = getUniqueId();
         return <GridItem key={uid}>
           <Panel>

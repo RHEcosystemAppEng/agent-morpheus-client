@@ -6,7 +6,7 @@ import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 
 export default function App() {
 
-  const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'csv' });
+  const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'manual' });
   const [alerts, setAlerts] = React.useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
@@ -28,7 +28,7 @@ export default function App() {
     socket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       console.log(`Received new report: ${data}`);
-      if(data.result === "Created") {
+      if(data.result === "Completed") {
         addAlert('Info', 'New report received', <p>Report: {data.name} reveived.<div><Link to={`/reports/${data.id}`} onClick={onLinkToReportClicked}>View</Link></div></p>)
       } else {
         addAlert('Error', 'Error received', <p>Error: {data.result}</p>);

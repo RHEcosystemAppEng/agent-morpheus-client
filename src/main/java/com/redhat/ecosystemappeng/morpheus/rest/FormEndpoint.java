@@ -45,7 +45,7 @@ public class FormEndpoint {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response submitRequest(String request) {
+  public Response submitForm(String request) {
     LOGGER.infof("Received request", request);
     try {
       return morpheusService.submit(request);
@@ -53,4 +53,5 @@ public class FormEndpoint {
       return e.getResponse();
     }
   }
+
 }

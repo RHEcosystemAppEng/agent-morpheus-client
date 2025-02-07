@@ -1,6 +1,9 @@
 import { Label } from "@patternfly/react-core"
 
 export default function JustificationBanner ({ justification }) {
+  if (justification === null) {
+    return <></>
+  }
   if (justification.status === "FALSE") {
     return <Label color="green">{justification.label}</Label>
   }
