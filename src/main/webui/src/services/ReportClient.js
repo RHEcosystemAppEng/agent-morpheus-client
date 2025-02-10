@@ -1,13 +1,14 @@
 import { ClientRequestError } from "./ClientUtils";
 
-export const listReports = async (filter) => {
+export const listReports = async (filter, page, perPage) => {
   let queryParams = new URLSearchParams();
   filter?.keys().forEach((p) => {
     if(filter.has(p)) {
       queryParams.set(p, filter.get(p));
     }
   });
-
+  queryParams.set("page", page - 1);
+  queryParams.set("pageSize", perPage);
   let url = '/reports';
   if(queryParams.size > 0) {
     url += '?' + queryParams;
@@ -20,7 +21,11 @@ export const listReports = async (filter) => {
   if (!response.ok) {
     throw new ClientRequestError(response.status, response.statusText);
   }
-  return await response.json();
+  return {
+    reports: await response.json(),
+    totalPages: response.headers.get('X-Total-Pages'),
+    totalElements: response.headers.get('X-Total-Elements')
+  };
 
 };
 

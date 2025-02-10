@@ -1,4 +1,4 @@
-import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Label, getUniqueId } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Label, Pagination, getUniqueId } from "@patternfly/react-core";
 import { deleteReport, listReports } from "../services/ReportClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
@@ -15,10 +15,24 @@ export default function ReportsTable() {
   const [reports, setReports] = React.useState([]);
   const [activeSortDirection, setActiveSortDirection] = React.useState('desc');
   const [activeSortIndex, setActiveSortIndex] = React.useState(2); // Completed At
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(20);
+  const [totalElements, setTotalElements] = React.useState(0);
+
+  const onSetPage = (_event, newPage) => {
+    setPage(newPage);
+    loadReports();
+  }
+  const onPerPageSelect = (_event, newPerPage, newPage) => {
+    setPerPage(newPerPage);
+    setPage(newPage);
+    loadReports();
+  }
 
   const loadReports = () => {
-    listReports(searchParams).then(d => {
-      setReports(d)
+    listReports(searchParams, page, perPage).then(d => {
+      setReports(d.reports);
+      setTotalElements(d.totalElements);
     })
       .catch(e => {
         addAlert('danger', 'Unable to load reports table')
@@ -99,6 +113,7 @@ export default function ReportsTable() {
 
   return <>
     {searchParams.get('vulnId') ? <Label color="blue" onClose={onRemoveFilter} >{searchParams.get('vulnId')}</Label> : ''}
+    <Pagination itemCount={totalElements} perPage={perPage} page={page} onSetPage={onSetPage} widgetId="top-pagination" onPerPageSelect={onPerPageSelect} ouiaId="PaginationTop" />
     <Table>
       <Thead>
         <Tr>

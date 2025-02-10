@@ -76,7 +76,7 @@ public class ReportEndpoint {
       @Context UriInfo uriInfo,
       @QueryParam(SORT_BY) @DefaultValue("completedAt:DESC") List<String> sortBy,
       @QueryParam(PAGE) @DefaultValue("0") Integer page,
-      @QueryParam(PAGE_SIZE) @DefaultValue("1000") Integer pageSize) {
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
 
     var filter = uriInfo.getQueryParameters().entrySet().stream().filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getFirst()));
