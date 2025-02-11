@@ -37,6 +37,7 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
+import io.quarkus.oidc.UserInfo;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -73,6 +74,9 @@ public class ReportService {
 
   @Inject
   NotificationSocket notificationSocket;
+
+  @Inject
+  UserInfo userInfo;
 
   private Map<String, Collection<String>> includes;
   private Map<String, Collection<String>> excludes;
@@ -156,11 +160,11 @@ public class ReportService {
 
     var report = objectMapper.createObjectNode();
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
+    var metadata = objectMapper.createObjectNode().put("user", getUser());
     if (request.metadata() != null) {
-      var metadata = objectMapper.createObjectNode();
       request.metadata().entrySet().forEach(e -> metadata.put(e.getKey(), e.getValue()));
-      report.set("metadata", metadata);
     }
+    report.set("metadata", metadata);
 
     try {
       morpheusService.submit(objectMapper.writeValueAsString(input));
@@ -172,6 +176,20 @@ public class ReportService {
     }
 
     return scan.id();
+  }
+
+  private String getUser() {
+    var defaultName = "anonymous";
+    if(userInfo != null) {
+      var metadata = userInfo.getObject("metadata");
+      if(metadata != null) {
+        var name = metadata.getString("name");
+        if(name != null) {
+          return name;
+        }
+      }
+    } 
+    return defaultName;
   }
 
   private Scan buildScan(ReportRequest request) {

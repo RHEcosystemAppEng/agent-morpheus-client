@@ -3,12 +3,14 @@ import imgAvatar from '@patternfly/react-core/src/components/assets/avatarImg.sv
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ToastNotifications } from './components/Notifications';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
+import { getUserInfo, logoutUser } from './services/UserClient';
 
 export default function App() {
 
   const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'manual' });
   const [alerts, setAlerts] = React.useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [userName, setUserName] = React.useState('');
 
   var loc = window.location, wss_uri;
   if (loc.protocol === "https:") {
@@ -34,6 +36,8 @@ export default function App() {
         addAlert('Error', 'Error received', <p>Error: {data.result}</p>);
       }
     });
+    getUserInfo().then(userInfo => setUserName(userInfo.metadata.name));
+
   }, []);
 
   const onLinkToReportClicked = () => {
@@ -61,6 +65,10 @@ export default function App() {
     return updated;
   };
 
+  const handleLogout = () => {
+    logoutUser().then(() => window.location.replace("/app"));
+  }
+
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   const location = useLocation();
@@ -83,8 +91,7 @@ export default function App() {
   </Nav>;
 
   const userDropdownItems = <>
-    <DropdownItem key="group 2 profile">My profile</DropdownItem>
-    <DropdownItem key="group 2 logout">Logout</DropdownItem>
+    <DropdownItem key="group 2 logout" onClick={handleLogout}>Logout</DropdownItem>
   </>;
   const sidebar = <PageSidebar isSidebarOpen={isSidebarOpen} id='vertical-sidebar'>
     <PageSidebarBody>{PageNav}</PageSidebarBody>
@@ -117,7 +124,7 @@ export default function App() {
         <Dropdown isOpen={isDropdownOpen} onSelect={onDropdownSelect} onOpenChange={setIsDropdownOpen} popperProps={{
           position: 'right'
         }} toggle={toggleRef => <MenuToggle ref={toggleRef} isExpanded={isDropdownOpen} onClick={onDropdownToggle} icon={<Avatar src={imgAvatar} alt="" />} isFullHeight>
-          Kermit
+          {userName}
         </MenuToggle>}>
           <DropdownList>{userDropdownItems}</DropdownList>
         </Dropdown>
