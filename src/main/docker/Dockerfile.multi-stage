@@ -13,7 +13,7 @@ COPY --chown=quarkus:quarkus src /code/src
 RUN ./mvnw verify -B -Pnative -Dmaven.test.skip=true -Dquarkus.native.native-image-xmx=8g
 
 ## Stage 2 : create the docker final image
-FROM registry.redhat.io/ubi9/ubi-minimal:9.4
+FROM registry.redhat.io/ubi9/ubi-minimal:9.5
 
 LABEL description="Red Hat Agent Morpheus - UI"
 LABEL io.k8s.description="Red Hat Agent Morpheus - UI"
