@@ -14,12 +14,9 @@ import java.time.Instant;
 import java.util.Date;
 
 import io.quarkus.oidc.UserInfo;
-import io.quarkus.security.Authenticated;
-import io.quarkus.security.UnauthorizedException;
 import io.quarkus.security.identity.CurrentIdentityAssociation;
 
 @Path("/user")
-@Authenticated
 public class TokenResource {
 
   @Inject
@@ -38,10 +35,6 @@ public class TokenResource {
   @POST
   @Path("/logout")
   public Response logout() {
-    if (identity.getIdentity().isAnonymous()) {
-      throw new UnauthorizedException("Not authenticated");
-    }
-
     final NewCookie removeCookie = new NewCookie.Builder("q_session")
         .maxAge(0)
         .expiry(Date.from(Instant.EPOCH))

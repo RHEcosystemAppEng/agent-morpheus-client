@@ -36,7 +36,13 @@ export default function App() {
         addAlert('Error', 'Error received', <p>Error: {data.result}</p>);
       }
     });
-    getUserInfo().then(userInfo => setUserName(userInfo.metadata.name));
+    getUserInfo().then(userInfo => {
+      if(userInfo.metadata === undefined) {
+        setUserName("Anonymous");
+      } else {
+        setUserName(userInfo.metadata?.name);
+      }
+    });
 
   }, []);
 
