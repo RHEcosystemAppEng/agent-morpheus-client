@@ -40,6 +40,6 @@ public class TokenResource {
         .expiry(Date.from(Instant.EPOCH))
         .path("/")
         .build();
-    return Response.status(Status.SEE_OTHER).cookie(removeCookie).location(URI.create("/app")).build();
+    return Response.noContent().cookie(removeCookie).build();
   }
 }
