@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteReport, viewReport } from "./services/ReportClient";
 import { getComments } from "./services/VulnerabilityClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, EmptyStateHeader, EmptyStateIcon, Flex, Grid, GridItem, PageSection, PageSectionVariants, Panel, PanelHeader, PanelMain, PanelMainBody, Skeleton, Text, TextContent, TextList, TextListItem, TextListItemVariants, TextListVariants, getUniqueId } from "@patternfly/react-core";
+import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Panel, PanelMain, PanelMainBody, Skeleton, Content, ContentVariants, getUniqueId } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import JustificationBanner from "./components/JustificationBanner";
@@ -55,15 +55,13 @@ export default function Report() {
   const showReport = () => {
     if (errorReport.status !== undefined) {
       if (errorReport.status === 404) {
-        return <EmptyState>
-          <EmptyStateHeader titleText="Report not found" headingLevel="h4" icon={<EmptyStateIcon icon={CubesIcon} />} />
+        return <EmptyState  headingLevel="h4" icon={CubesIcon}  titleText="Report not found">
           <EmptyStateBody>
             The selected report with id: {params.id} has not been found. Go back to the reports page and select a different one.
           </EmptyStateBody>
         </EmptyState>;
       } else {
-        return <EmptyState>
-          <EmptyStateHeader titleText="Could not retrieve the selected report" headingLevel="h4" icon={<EmptyStateIcon icon={ExclamationCircleIcon} />} />
+        return <EmptyState  headingLevel="h4" icon={ExclamationCircleIcon}  titleText="Could not retrieve the selected report">
           <EmptyStateBody>
             <p>{errorReport.status}: {errorReport.message}</p>
             The selected report with id: {params.id} could not be retrieved. Go back to the reports page and select a different one.
@@ -97,39 +95,39 @@ export default function Report() {
 
     return <Grid hasGutter>
       <GridItem>
-        <TextContent>
-          <Text component="h1">{name}</Text>
-        </TextContent>
+        <Content>
+          <Content component="h1">{name}</Content>
+        </Content>
       </GridItem>
       <GridItem>
-        <Text><span className="pf-v5-u-font-weight-bold">Image:</span> {image.name}</Text>
-        <Text><span className="pf-v5-u-font-weight-bold">Tag:</span> {image.tag}</Text>
+        <Content component="p"><span className="pf-v5-u-font-weight-bold">Image:</span> {image.name}</Content>
+        <Content component="p"><span className="pf-v5-u-font-weight-bold">Tag:</span> {image.tag}</Content>
       </GridItem>
 
       {output?.map((vuln, v_idx) => {
         const uid = getUniqueId();
         return <GridItem key={uid}>
           <Panel>
-            <TextContent>
-              <Text component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Text>
-              {comments[vuln.vuln_id] !== undefined ? <Text><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments[vuln.vuln_id]}</Text> : ''}
-            </TextContent>
-            <Text><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Text>
-            <Text><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Text>
+            <Content>
+              <Content component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Content>
+              {comments[vuln.vuln_id] !== undefined ? <Content component="p"><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments[vuln.vuln_id]}</Content> : ''}
+            </Content>
+            <Content component="p"><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Content>
+            <Content component="p"><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Content>
             <Divider />
-            <TextContent><Text component="h1">Checklist:</Text></TextContent>
+            <Content><Content component="h1">Checklist:</Content></Content>
             <PanelMain>
               <PanelMainBody>
-                <TextList component={TextListVariants.ol}>
+                <Content component={ContentVariants.ol}>
                   {vuln.checklist.map((item, i_idx) => {
-                    return <TextListItem key={`${v_idx}_${i_idx}`}>
-                      <TextList component={TextListVariants.dl}>
-                        <TextListItem key={`${v_idx}_${i_idx}_question`} component={TextListItemVariants.dt}><Text className="pf-v5-u-font-weight-bold">Q: {item.input}</Text></TextListItem>
-                        <TextListItem component={TextListItemVariants.dd}>A: {item.response}</TextListItem>
-                      </TextList>
-                    </TextListItem>
+                    return <Content component="li" key={`${v_idx}_${i_idx}`}>
+                      <Content component={ContentVariants.dl}>
+                        <Content key={`${v_idx}_${i_idx}_question`} component={ContentVariants.dt}><Content component="p" className="pf-v5-u-font-weight-bold">Q: {item.input}</Content></Content>
+                        <Content component={ContentVariants.dd}>A: {item.response}</Content>
+                      </Content>
+                    </Content>
                   })}
-                </TextList>
+                </Content>
               </PanelMainBody>
             </PanelMain>
           </Panel>
@@ -146,7 +144,7 @@ export default function Report() {
       </GridItem>
     </Grid>
   }
-  return <PageSection variant={PageSectionVariants.light}>
+  return <PageSection hasBodyWrapper={false} >
     <Breadcrumb>
       <BreadcrumbItem className="pf-v5-u-primary-color-100" to="#/reports">Reports</BreadcrumbItem>
       <BreadcrumbItem>{name}</BreadcrumbItem>

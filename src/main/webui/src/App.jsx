@@ -1,4 +1,4 @@
-import { Avatar, Dropdown, DropdownItem, DropdownList, Masthead, MastheadMain, MastheadBrand, MastheadContent, MenuToggle, Nav, NavItem, NavList, Page, SkipToContent, Text, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, MastheadToggle, PageToggleButton, PageSidebar, PageSidebarBody } from '@patternfly/react-core';
+import { Avatar, Dropdown, DropdownItem, DropdownList, Masthead, MastheadMain, MastheadLogo, MastheadContent, MenuToggle, Nav, NavItem, NavList, Page, SkipToContent, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, MastheadToggle, MastheadBrand, PageToggleButton, PageSidebar, PageSidebarBody, Title } from '@patternfly/react-core';
 import imgAvatar from '@patternfly/react-core/src/components/assets/avatarImg.svg';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ToastNotifications } from './components/Notifications';
@@ -43,7 +43,6 @@ export default function App() {
         setUserName(userInfo.metadata?.name);
       }
     });
-
   }, []);
 
   const onLinkToReportClicked = () => {
@@ -104,11 +103,11 @@ export default function App() {
   </PageSidebar>
   const headerToolbar = <Toolbar id="toolbar" isFullHeight isStatic>
     <ToolbarContent>
-      <ToolbarGroup variant="icon-button-group" align={{
-        default: 'alignRight'
-      }} spacer={{
-        default: 'spacerNone',
-        md: 'spacerMd'
+      <ToolbarGroup variant="action-group-plain" align={{
+        default: "alignEnd"
+      }} gap={{
+        default: "gapNone",
+        md: "gapMd"
       }}>
 
         <ToolbarItem visibility={{
@@ -138,14 +137,13 @@ export default function App() {
     </ToolbarContent>
   </Toolbar>;
   const Header = <Masthead>
-    <MastheadToggle>
+    <MastheadMain><MastheadToggle>
       <PageToggleButton variant="plain" aria-label='Global navigation' isSidebarOpen={isSidebarOpen} onSidebarToggle={onSidebarToggle} id='vertical-nav-toggle'>
         <BarsIcon />
       </PageToggleButton>
     </MastheadToggle>
-    <MastheadMain>
       <MastheadBrand>
-        <Text>Agent Morpheus</Text>
+        <Title headingLevel='h2'>Agent Morpheus - GUI</Title>
       </MastheadBrand>
     </MastheadMain>
     <MastheadContent>{headerToolbar}</MastheadContent>
@@ -153,7 +151,7 @@ export default function App() {
   const pageId = 'main-content-page-layout-horizontal-nav';
   const PageSkipToContent = <SkipToContent href={`#${pageId}`}>Skip to content</SkipToContent>;
   return <React.Fragment>
-    <Page header={Header} skipToContent={PageSkipToContent} mainContainerId={pageId} sidebar={sidebar}>
+    <Page masthead={Header} skipToContent={PageSkipToContent} mainContainerId={pageId} sidebar={sidebar}>
       <Outlet context={{ vulnRequest, handleVulnRequestChange, addAlert }} />
       <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
     </Page>

@@ -1,4 +1,10 @@
-import { Button, Modal, ModalVariant } from "@patternfly/react-core";
+import {
+	Button
+} from '@patternfly/react-core';
+import {
+	Modal,
+	ModalVariant
+} from '@patternfly/react-core/deprecated';
 
 export const ConfirmationButton = ({ btnVariant, onConfirm, children, message }) => {
   const [isOpen, setIsOpen] = React.useState(false);

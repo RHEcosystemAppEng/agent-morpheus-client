@@ -7,7 +7,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      './assets': path.resolve(__dirname, './assets'),
+      // Commenting. No assets to include ATM.
+      // './assets': path.resolve(__dirname, './assets'),
     }
   }
 })

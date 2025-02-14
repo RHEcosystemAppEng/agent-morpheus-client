@@ -166,8 +166,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
                 <TextInput isRequired type="text" id={`metadata_${idx}_value`} value={m.value || ""} onChange={event => handleMetadataChange(idx, "value", event.target.value)} placeholder="Value"></TextInput>
               </FlexItem>
               <FlexItem>
-                <Button variant="danger" aria-label="Delete Metadata" onClick={_ => handleDeleteMetadata(idx)}>
-                  <Remove2Icon />
+                <Button icon={<Remove2Icon />} variant="danger" aria-label="Delete Metadata" onClick={_ => handleDeleteMetadata(idx)}>
+                  
                 </Button>
               </FlexItem>
             </Flex>
@@ -176,8 +176,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       })}
       <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
         <FlexItem>
-          <Button variant="primary" aria-label="Add Metadata" onClick={handleAddMetadata}>
-            <AddCircleOIcon /> Add Metadata
+          <Button icon={<AddCircleOIcon />} variant="primary" aria-label="Add Metadata" onClick={handleAddMetadata}>
+             Add Metadata
           </Button>
         </FlexItem>
       </Flex>
@@ -191,8 +191,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
                 <TextInput isRequired type="text" id={`cve_${idx}_name`} value={cve.name || ""} onChange={event => handleCveChange(idx, event.target.value)}></TextInput>
               </FlexItem>
               <FlexItem>
-                <Button variant="danger" aria-label="Delete CVE" onClick={_ => handleDeleteCve(idx)}>
-                  <Remove2Icon />
+                <Button icon={<Remove2Icon />} variant="danger" aria-label="Delete CVE" onClick={_ => handleDeleteCve(idx)}>
+                  
                 </Button>
               </FlexItem>
             </Flex>
@@ -201,8 +201,8 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       })}
       <Flex justifyContent={{ default: 'justifyContentFlexStart' }}>
         <FlexItem>
-          <Button variant="primary" aria-label="Add CVE" onClick={handleAddCve}>
-            <AddCircleOIcon /> Add a CVE
+          <Button icon={<AddCircleOIcon />} variant="primary" aria-label="Add CVE" onClick={handleAddCve}>
+             Add a CVE
           </Button>
         </FlexItem>
       </Flex>

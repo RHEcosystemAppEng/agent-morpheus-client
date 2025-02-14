@@ -1,4 +1,4 @@
-import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant, Label, Pagination, getUniqueId } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Label, Pagination, getUniqueId } from "@patternfly/react-core";
 import { deleteReport, listReports } from "../services/ReportClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
@@ -82,9 +82,8 @@ export default function ReportsTable() {
     return <Tr>
       <Td colSpan={6}>
         <Bullseye>
-          <EmptyState variant={EmptyStateVariant.sm}>
-            <EmptyStateHeader icon={<EmptyStateIcon icon={SearchIcon} />} titleText="No reports found" headingLevel="h2" />
-          </EmptyState>
+          <EmptyState  headingLevel="h2" icon={SearchIcon}  titleText="No reports found" variant={EmptyStateVariant.sm}>
+            </EmptyState>
         </Bullseye>
       </Td>
     </Tr>;

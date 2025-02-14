@@ -1,13 +1,13 @@
-import { Grid, GridItem, PageSection, PageSectionVariants, Text, TextContent } from "@patternfly/react-core";
+import { Grid, GridItem, PageSection, Content,  } from "@patternfly/react-core";
 import VulnerabilitiesTable from "./components/VulnerabilitiesTable";
 
 export default function Vulnerabilities() {
-  return <PageSection variant={PageSectionVariants.light}>
+  return <PageSection hasBodyWrapper={false} >
     <Grid hasGutter>
       <GridItem>
-        <TextContent>
-          <Text component="h1">Vulnerabilities</Text>
-        </TextContent>
+        <Content>
+          <Content component="h1">Vulnerabilities</Content>
+        </Content>
       </GridItem>
       <GridItem>
         <VulnerabilitiesTable />

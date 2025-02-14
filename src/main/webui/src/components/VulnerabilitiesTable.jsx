@@ -1,4 +1,4 @@
-import { Bullseye, Button, EmptyState, EmptyStateHeader, EmptyStateIcon, EmptyStateVariant } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateVariant } from "@patternfly/react-core";
 import { deleteVulnerability, listVulnerabilities } from "../services/VulnerabilityClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
@@ -52,9 +52,8 @@ export default function VulnerabilitiesTable() {
     return <Tr>
       <Td colSpan={6}>
         <Bullseye>
-          <EmptyState variant={EmptyStateVariant.sm}>
-            <EmptyStateHeader icon={<EmptyStateIcon icon={SearchIcon} />} titleText="No vulnerabilities found" headingLevel="h2" />
-          </EmptyState>
+          <EmptyState  headingLevel="h2" icon={SearchIcon}  titleText="No vulnerabilities found" variant={EmptyStateVariant.sm}>
+            </EmptyState>
         </Bullseye>
       </Td>
     </Tr>;

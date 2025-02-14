@@ -1,5 +1,5 @@
-import '../css/patternfly.css'
-import '../css/patternfly-addons.css'
+import '@patternfly/patternfly/patternfly.css'
+import '@patternfly/patternfly/patternfly-addons.css'
 
 import ReactDOM from 'react-dom/client'
 import App from './App'
