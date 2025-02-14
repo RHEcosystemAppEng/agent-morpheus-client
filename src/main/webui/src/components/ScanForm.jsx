@@ -106,7 +106,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
         if (response.ok) {
           onNewAlert('success', 'Analysis request sent to Morpheus');
         } else {
-          onNewAlert('danger', `Unable to send request: ${response.status}:${response.statusText}`)
+          response.json().then(json => onNewAlert('danger', `Unable to send request: ${response.status}:${json.error}`)); 
         }
       }).catch(error => {
         onNewAlert('danger', `Unable to send request: ${error}`)

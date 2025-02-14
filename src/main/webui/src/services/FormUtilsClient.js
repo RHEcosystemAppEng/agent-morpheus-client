@@ -15,6 +15,9 @@ export const sbomTypes = [
 ];
 
 const buildMetadata = (metadata) => {
+  if(metadata === undefined) {
+    return {};
+  }
   return Object.fromEntries(metadata.map((e) => [e.name, e.value]));
 };
 

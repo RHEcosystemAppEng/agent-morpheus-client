@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
@@ -58,7 +59,9 @@ public class ReportEndpoint {
       var id = reportService.submit(request);
       return Response.accepted(objectMapper.createObjectNode().put("id", id)).build();
     } catch (IllegalArgumentException e) {
-      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
+      return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+    } catch (ClientWebApplicationException e) {
+      return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getResponse().readEntity(String.class))).build();
     } catch (Exception e) {
       LOGGER.error("Unable to submit new analysis request", e);
       return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
@@ -68,6 +71,7 @@ public class ReportEndpoint {
   @POST
   public Response receive(String report) {
     var scanId = reportService.save(report);
+    LOGGER.debugf("Received report: %s", scanId);
     return Response.accepted(objectMapper.createObjectNode().put("id", scanId)).build();
   }
 

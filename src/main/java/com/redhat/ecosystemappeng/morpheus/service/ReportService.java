@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -42,6 +43,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 
 @ApplicationScoped
 public class ReportService {
@@ -51,8 +53,7 @@ public class ReportService {
   private static final String COMMIT_ID_PROPERTY = "syft:image:labels:io.openshift.build.commit.id";
   private static final String SOURCE_LOCATION_PROPERTY = "syft:image:labels:io.openshift.build.source-location";
   private static final String PACKAGE_TYPE_PROPERTY = "syft:package:type";
-  private static final String LIBRARY_TYPE = "library";
-  private static final Object OPERATING_SYSTEM_TYPE = "operating-system";
+  private static final Pattern PURL_PKG_TYPE = Pattern.compile("pkg\\:(\\w+)\\/.*");
 
   @RestClient
   GitHubService gitHubService;
@@ -197,7 +198,7 @@ public class ReportService {
     if (id == null) {
       id = UUID.randomUUID().toString();
     }
-    return new Scan(id, request.vulnerabilities().stream().map(VulnId::new).toList());
+    return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
   }
 
   private Image buildImage(ReportRequest request) {
@@ -242,19 +243,22 @@ public class ReportService {
   public JsonNode buildManualSbom(JsonNode sbom) {
     ArrayNode packages = objectMapper.createArrayNode();
     sbom.get("components").forEach(c -> {
-      var pkgType = getProperty(c, "type");
-      if (!LIBRARY_TYPE.equals(pkgType) && !OPERATING_SYSTEM_TYPE.equals(pkgType)) {
-        var pkg = objectMapper.createObjectNode();
-        pkg.put("name", getProperty(c, "name"));
-        pkg.put("version", getProperty(c, "version"));
-        pkg.put("purl", getProperty(c, "purl"));
-        var system = getComponentProperty(c.withArray("properties"));
-        if (system != null) {
-          pkg.put("system", system);
+      var pkg = objectMapper.createObjectNode();
+      pkg.put("name", getProperty(c, "name"));
+      pkg.put("version", getProperty(c, "version"));
+      var purl = getProperty(c, "purl");
+      pkg.put("purl", purl);
+      var system = getComponentProperty(c.withArray("properties"));
+      if (system == null && purl != null) {
+        var matcher = PURL_PKG_TYPE.matcher(purl);
+        if(matcher.matches()) {
+          system = matcher.group(1);
         }
+      }
+      if (system != null) {
+        pkg.put("system", system);
         packages.add(pkg);
       }
-
     });
     return packages;
   }
