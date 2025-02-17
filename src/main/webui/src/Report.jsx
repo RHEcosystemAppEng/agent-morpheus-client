@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteReport, viewReport } from "./services/ReportClient";
 import { getComments } from "./services/VulnerabilityClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Panel, PanelMain, PanelMainBody, Skeleton, Content, ContentVariants, getUniqueId } from "@patternfly/react-core";
+import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Panel, Skeleton, Content, ContentVariants, getUniqueId, List, ListComponent, ListItem } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import JustificationBanner from "./components/JustificationBanner";
@@ -100,8 +100,8 @@ export default function Report() {
         </Content>
       </GridItem>
       <GridItem>
-        <Content component="p"><span className="pf-v5-u-font-weight-bold">Image:</span> {image.name}</Content>
-        <Content component="p"><span className="pf-v5-u-font-weight-bold">Tag:</span> {image.tag}</Content>
+        <Content component="p"><span className="pf-v6-u-font-weight-bold">Image:</span> {image.name}</Content>
+        <Content component="p"><span className="pf-v6-u-font-weight-bold">Tag:</span> {image.tag}</Content>
       </GridItem>
 
       {output?.map((vuln, v_idx) => {
@@ -110,26 +110,20 @@ export default function Report() {
           <Panel>
             <Content>
               <Content component="h2">{vuln.vuln_id} <JustificationBanner justification={vuln.justification} /></Content>
-              {comments[vuln.vuln_id] !== undefined ? <Content component="p"><span className="pf-v5-u-font-weight-bold">User Comments:</span> {comments[vuln.vuln_id]}</Content> : ''}
+              {comments[vuln.vuln_id] !== undefined ? <Content component="p"><span className="pf-v6-u-font-weight-bold">User Comments:</span> {comments[vuln.vuln_id]}</Content> : ''}
             </Content>
-            <Content component="p"><span className="pf-v5-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Content>
-            <Content component="p"><span className="pf-v5-u-font-weight-bold">Summary:</span> {vuln.summary}</Content>
+            <Content component="p"><span className="pf-v6-u-font-weight-bold">Reason:</span> {vuln.justification.reason}</Content>
+            <Content component="p"><span className="pf-v6-u-font-weight-bold">Summary:</span> {vuln.summary}</Content>
             <Divider />
-            <Content><Content component="h1">Checklist:</Content></Content>
-            <PanelMain>
-              <PanelMainBody>
-                <Content component={ContentVariants.ol}>
-                  {vuln.checklist.map((item, i_idx) => {
-                    return <Content component="li" key={`${v_idx}_${i_idx}`}>
-                      <Content component={ContentVariants.dl}>
-                        <Content key={`${v_idx}_${i_idx}_question`} component={ContentVariants.dt}><Content component="p" className="pf-v5-u-font-weight-bold">Q: {item.input}</Content></Content>
-                        <Content component={ContentVariants.dd}>A: {item.response}</Content>
-                      </Content>
-                    </Content>
-                  })}
-                </Content>
-              </PanelMainBody>
-            </PanelMain>
+            <Content component="h1">Checklist:</Content>
+            <List component={ListComponent.ol}>
+              {vuln.checklist.map((item, i_idx) => {
+                return <ListItem className="pf-v6-u-pt-m" key={`${v_idx}_${i_idx}`}>
+                    <Content key={`${v_idx}_${i_idx}_question`} component={ContentVariants.dt}>Q: {item.input}</Content>
+                    <Content key={`${v_idx}_${i_idx}_response`} component={ContentVariants.dd}>A: {item.response}</Content>
+                </ListItem>
+              })}
+            </List>
           </Panel>
         </GridItem>
       })}
@@ -146,7 +140,7 @@ export default function Report() {
   }
   return <PageSection hasBodyWrapper={false} >
     <Breadcrumb>
-      <BreadcrumbItem className="pf-v5-u-primary-color-100" to="#/reports">Reports</BreadcrumbItem>
+      <BreadcrumbItem to="#/reports">Reports</BreadcrumbItem>
       <BreadcrumbItem>{name}</BreadcrumbItem>
     </Breadcrumb>
     {showReport()}

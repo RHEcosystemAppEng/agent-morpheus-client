@@ -159,7 +159,7 @@ public class ReportRepositoryService {
     queryFilter.entrySet().forEach(e -> {
       switch (e.getKey()) {
         case "vulnId":
-          filters.add(Filters.in("output.vuln_id", queryFilter.get(e.getValue())));
+          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
           break;
         case "completed":
           if(Boolean.parseBoolean(e.getValue())) {
