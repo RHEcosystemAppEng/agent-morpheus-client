@@ -56,8 +56,8 @@ public class ReportEndpoint {
   @Path("/new")
   public Response submit(ReportRequest request) {
     try {
-      var id = reportService.submit(request);
-      return Response.accepted(objectMapper.createObjectNode().put("id", id)).build();
+      var req = reportService.submit(request);
+      return Response.accepted(req).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
     } catch (ClientWebApplicationException e) {
@@ -72,7 +72,7 @@ public class ReportEndpoint {
   public Response receive(String report) {
     var scanId = reportService.save(report);
     LOGGER.debugf("Received report: %s", scanId);
-    return Response.accepted(objectMapper.createObjectNode().put("id", scanId)).build();
+    return Response.accepted(scanId).build();
   }
 
   @GET

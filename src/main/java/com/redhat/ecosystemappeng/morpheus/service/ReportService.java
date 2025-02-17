@@ -30,6 +30,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
+import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
@@ -43,7 +44,6 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
 
 @ApplicationScoped
 public class ReportService {
@@ -110,8 +110,9 @@ public class ReportService {
     return repository.remove(id);
   }
 
-  public String save(String report) {
+  public ReportRequestId save(String report) {
     String scanId = null;
+    String id = null;
     try {
       var reportJson = objectMapper.readTree(report);
       var scan = reportJson.get("input").get("scan");
@@ -120,6 +121,9 @@ public class ReportService {
       List<String> existing = null;
       if (scanId != null) {
         existing = repository.findByName(scanId).stream().map(Report::id).toList();
+        if(existing.size() == 1) {
+          id = existing.get(0);
+        }
       } else {
         scanId = UUID.randomUUID().toString();
       }
@@ -129,13 +133,14 @@ public class ReportService {
 
         var created = repository.save(report);
         existing = List.of(created.id());
+        id = created.id();
       } else {
         LOGGER.infof("Complete existing report %s", scanId);
         repository.updateWithOutput(existing, reportJson);
       }
 
-      for (String id : existing) {
-        var event = new ReportReceivedEvent(id, scanId, "Completed");
+      for (String existingId : existing) {
+        var event = new ReportReceivedEvent(existingId, scanId, "Completed");
         notificationSocket.onMessage(objectMapper.writeValueAsString(event));
       }
     } catch (IOException e) {
@@ -147,10 +152,10 @@ public class ReportService {
         LOGGER.warn("Unable to emit error event", e);
       }
     }
-    return scanId;
+    return new ReportRequestId(id, scanId);
   }
 
-  public String submit(ReportRequest request) throws JsonProcessingException, IOException {
+  public ReportRequestId submit(ReportRequest request) throws JsonProcessingException, IOException {
     var id = request.id();
     if (id == null) {
       id = UUID.randomUUID().toString();
@@ -169,14 +174,14 @@ public class ReportService {
 
     try {
       morpheusService.submit(objectMapper.writeValueAsString(input));
-      repository.save(report.toPrettyString());
+      var created = repository.save(report.toPrettyString());
+      return new ReportRequestId(created.id(), scan.id());
     } catch (JsonProcessingException e) {
       ObjectNode obj = (ObjectNode) report.get("input").get("scan");
       obj.set("error", objectMapper.createObjectNode().put("type", "ProcessingError").put("message", e.getMessage()));
-      repository.save(report.toPrettyString());
+      var created = repository.save(report.toPrettyString());
+      return new ReportRequestId(created.id(), scan.id());
     }
-
-    return scan.id();
   }
 
   private String getUser() {

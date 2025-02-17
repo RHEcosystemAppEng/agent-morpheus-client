@@ -158,6 +158,9 @@ public class ReportRepositoryService {
     List<Bson> filters = new ArrayList<>();
     queryFilter.entrySet().forEach(e -> {
       switch (e.getKey()) {
+        case "reportId":
+          filters.add(Filters.eq("input.scan.id", e.getValue()));
+          break;
         case "vulnId":
           filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
           break;
