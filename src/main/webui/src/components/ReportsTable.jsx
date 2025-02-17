@@ -21,12 +21,10 @@ export default function ReportsTable() {
 
   const onSetPage = (_event, newPage) => {
     setPage(newPage);
-    loadReports();
   }
   const onPerPageSelect = (_event, newPerPage, newPage) => {
     setPerPage(newPerPage);
     setPage(newPage);
-    loadReports();
   }
 
   const loadReports = () => {
@@ -47,7 +45,7 @@ export default function ReportsTable() {
   React.useEffect(() => {
     setVulnId(searchParams.get('vulnId') || '');
     loadReports();
-  }, [searchParams, vulnId]);
+  }, [searchParams, vulnId, page, perPage]);
 
   const onDelete = (id) => {
     deleteReport(id).then(() => loadReports());
