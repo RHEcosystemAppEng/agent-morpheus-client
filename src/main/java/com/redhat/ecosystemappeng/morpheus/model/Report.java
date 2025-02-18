@@ -9,6 +9,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public record Report(
     String id,
     String name,
+    String startedAt,
     String completedAt,
     String imageName,
     String imageTag,

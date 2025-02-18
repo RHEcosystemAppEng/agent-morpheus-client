@@ -1,6 +1,6 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
-import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,10 +36,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-@RegisterForReflection(targets = {Document.class})
+@RegisterForReflection(targets = { Document.class })
 public class ReportRepositoryService {
 
   private static final String COLLECTION = "reports";
+  private static final Map<String, String> BOOLEAN_FILTERS = Map.of(
+      "completed", "input.scan.completed_at",
+      "sent", "metadata.sent_at",
+      "failed", "error");
 
   @Inject
   MongoClient mongoClient;
@@ -85,46 +89,54 @@ public class ReportRepositoryService {
 
     var id = doc.get(RepositoryConstants.ID_KEY, ObjectId.class).toHexString();
 
-    return new Report(id, scan.getString(RepositoryConstants.ID_SORT), scan.getString("completed_at"),
+    return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
+        scan.getString("started_at"),
+        scan.getString("completed_at"),
         image.getString("name"),
         image.getString("tag"), vulnIds,
         metadata);
   }
 
-  public List<String> updateWithOutput(List<String> ids, JsonNode report)
+  public void updateWithOutput(List<String> ids, JsonNode report)
       throws JsonMappingException, JsonProcessingException {
-    List<Document> outputDocs = objectMapper.readValue(report.get("output").toPrettyString(), new TypeReference<List<Document>>() {
+    List<Document> outputDocs = objectMapper.readValue(report.get("output").toPrettyString(),
+        new TypeReference<List<Document>>() {
 
-    });
+        });
     var scan = report.get("input").get("scan").toPrettyString();
     var info = report.get("info").toPrettyString();
-    var updates = Updates.combine(Updates.set("input.scan", Document.parse(scan)), Updates.set("info", Document.parse(info)),
+    var updates = Updates.combine(Updates.set("input.scan", Document.parse(scan)),
+        Updates.set("info", Document.parse(info)),
         Updates.set("output", outputDocs));
     var bulk = ids.stream()
         .map(id -> new UpdateOneModel<Document>(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id)), updates))
         .toList();
     getCollection().bulkWrite(bulk);
-    return ids;
-
   }
 
-  public List<String> updateWithError(String scanId, String errorType, String errorMessage) {
-    var reports = findByName(scanId);
-    var ids = new ArrayList<String>();
+  public void updateWithError(String id, String errorType, String errorMessage) {
     var error = new Document("type", errorType).append("message", errorMessage);
-    var updates = Updates.set("error", error);
-    var bulk = reports.stream().map(r -> {
-      ids.add(r.id());
-      return new UpdateOneModel<Document>(new Document(RepositoryConstants.ID_KEY, r.id()), updates);
-    }).toList();
-    getCollection().bulkWrite(bulk);
-    return ids;
+    getCollection().updateOne(new Document(RepositoryConstants.ID_KEY, new ObjectId(id)), Updates.set("error", error));
   }
 
-  public Report save(String data) throws IOException {
+  public Report save(String data) {
     var doc = Document.parse(data);
     var inserted = getCollection().insertOne(doc);
     return get(inserted.getInsertedId().asObjectId().getValue());
+  }
+
+  public void setAsSent(String id) {
+    var objId = new ObjectId(id);
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
+        Updates.set("metadata.sent_at", Instant.now().toString()));
+  }
+
+  public void setAsSubmitted(String id, String byUser) {
+    var objId = new ObjectId(id);
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
+        List.of(
+            Updates.set("metadata.submitted_at", Instant.now().toString()),
+            Updates.set("metadata.user", byUser)));
   }
 
   private Report get(ObjectId id) {
@@ -157,23 +169,25 @@ public class ReportRepositoryService {
     List<Report> reports = new ArrayList<>();
     List<Bson> filters = new ArrayList<>();
     queryFilter.entrySet().forEach(e -> {
-      switch (e.getKey()) {
-        case "reportId":
-          filters.add(Filters.eq("input.scan.id", e.getValue()));
-          break;
-        case "vulnId":
-          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
-          break;
-        case "completed":
-          if(Boolean.parseBoolean(e.getValue())) {
-            filters.add(Filters.ne("input.scan.completed_at", null));
-          } else {
-            filters.add(Filters.eq("input.scan.completed_at", null));
-          }
-          break;
-        default:
-          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
-          break;
+      if (BOOLEAN_FILTERS.containsKey(e.getKey())) {
+        var field = BOOLEAN_FILTERS.get(e.getKey());
+        if (Boolean.parseBoolean(e.getValue())) {
+          filters.add(Filters.ne(field, null));
+        } else {
+          filters.add(Filters.eq(field, null));
+        }
+      } else {
+        switch (e.getKey()) {
+          case "reportId":
+            filters.add(Filters.eq("input.scan.id", e.getValue()));
+            break;
+          case "vulnId":
+            filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
+            break;
+          default:
+            filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
+            break;
+        }
       }
     });
     var filter = Filters.empty();
