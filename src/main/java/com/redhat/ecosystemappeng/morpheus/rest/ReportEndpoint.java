@@ -1,5 +1,6 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
+import java.rmi.ServerError;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
@@ -25,6 +27,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -69,6 +72,19 @@ public class ReportEndpoint {
       LOGGER.error("Unable to submit new analysis request", e);
       return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
     }
+  }
+
+  @POST
+  @Path("/{id}/retry")
+  public Response retry(@PathParam("id") String id) {
+    try {
+      if(reportService.retry(id)) {
+        return Response.accepted(id).build();
+      }
+    } catch (JsonProcessingException e) {
+      throw new ServerErrorException(Status.INTERNAL_SERVER_ERROR, e);
+    }
+    throw new NotFoundException(id);
   }
 
   @POST

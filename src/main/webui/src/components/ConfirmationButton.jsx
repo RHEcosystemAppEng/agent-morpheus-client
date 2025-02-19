@@ -6,7 +6,7 @@ import {
 	ModalVariant
 } from '@patternfly/react-core/deprecated';
 
-export const ConfirmationButton = ({ btnVariant, onConfirm, children, message }) => {
+export const ConfirmationButton = ({ btnVariant, onConfirm, children, message, icon }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const onClick = () => {
@@ -18,7 +18,7 @@ export const ConfirmationButton = ({ btnVariant, onConfirm, children, message })
   };
 
   return <>
-    <Button variant={btnVariant} onClick={() => onClick()}>{children}</Button>
+    <Button icon={icon} variant={btnVariant} onClick={() => onClick()}>{children}</Button>
     <Modal variant={ModalVariant.small} title="Are you sure?" isOpen={isOpen}
       onClose={onCloseConfirmation}
       actions={[<Button key="confirm" variant={btnVariant} onClick={onConfirm}>{children}</Button>,

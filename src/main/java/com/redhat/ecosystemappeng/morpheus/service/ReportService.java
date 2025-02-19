@@ -19,6 +19,7 @@ import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -101,11 +102,25 @@ public class ReportService {
   }
 
   public String get(String id) {
+    LOGGER.debugf("Get report %s", id);
     return repository.findById(id);
   }
 
   public boolean remove(String id) {
+    LOGGER.debugf("Remove report %s", id);
     return repository.remove(id);
+  }
+
+  public boolean retry(String id) throws JsonProcessingException {
+    var report = get(id);
+    if(report == null) {
+      return false;
+    }
+    repository.setAsRetried(id, getUser());
+    LOGGER.debugf("Retry report %s", id);
+    queueService.queue(id, objectMapper.readTree(report));
+
+    return true;
   }
 
   public ReportRequestId receive(String report) {

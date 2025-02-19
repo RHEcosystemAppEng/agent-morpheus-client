@@ -39,6 +39,16 @@ export const deleteReport = async (reportId) => {
   return true;
 };
 
+export const retryReport = async (reportId) => {
+  const response = await fetch(`/reports/${reportId}/retry`, {
+    method: 'POST'
+  });
+  if (!response.ok) {
+    throw new ClientRequestError(response.status, response.statusText);
+  }
+  return true;
+};
+
 export const viewReport = async (reportId) => {
   const response = await fetch(`/reports/${reportId}`, {
     headers: {

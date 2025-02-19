@@ -1,15 +1,15 @@
-import { Bullseye, Button, EmptyState, EmptyStateVariant, Label, Pagination, getUniqueId } from "@patternfly/react-core";
-import { deleteReport, listReports } from "../services/ReportClient";
-import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
-import SearchIcon from '@patternfly/react-icons/dist/esm/icons/search-icon';
-import { Link, useOutletContext, useSearchParams } from "react-router-dom";
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, getUniqueId } from "@patternfly/react-core";
+import { deleteReport, listReports, retryReport } from "../services/ReportClient";
+import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
+import { useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
-import { ConfirmationButton } from "./ConfirmationButton";
+import { StatusLabel } from "./StatusLabel";
 
 export default function ReportsTable() {
 
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [vulnId, setVulnId] = React.useState(searchParams.get('vulnId') || '');
 
   const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);
@@ -18,6 +18,10 @@ export default function ReportsTable() {
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(20);
   const [totalElements, setTotalElements] = React.useState(0);
+  const [modalItem, setModalItem] = React.useState(null);
+  const [isModalOpen, setModalOpen] = React.useState(false);
+  const [statusIsExpanded, setStatusIsExpanded] = React.useState(false);
+  const [statusSelected, setStatusSelected] = React.useState('');
 
   const onSetPage = (_event, newPage) => {
     setPage(newPage);
@@ -37,18 +41,46 @@ export default function ReportsTable() {
       })
   }
 
-  const onRemoveFilter = () => {
-    const {vulnId, ...newSearchParams} = searchParams;
-    setSearchParams(newSearchParams);
+  const onRemoveFilter = (param) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete(param);
+    setSearchParams(newParams);
   };
 
-  React.useEffect(() => {
-    setVulnId(searchParams.get('vulnId') || '');
-    loadReports();
-  }, [searchParams, vulnId, page, perPage]);
+  const onStatusToggle = () => {
+    setStatusIsExpanded(!statusIsExpanded);
+  }
 
-  const onDelete = (id) => {
-    deleteReport(id).then(() => loadReports());
+  const onStatusSelect = (_event, selection) => {
+    setStatusSelected(selection);
+    setStatusIsExpanded(false);
+    const newParams = new URLSearchParams(searchParams);
+    if(selection === 'any') {
+      newParams.delete("status");
+      setSearchParams(newParams);
+    } else {
+      newParams.set("status", selection);
+      setSearchParams(newParams);
+    }
+  } 
+
+  React.useEffect(() => {
+    setStatusSelected(searchParams.get('status') || 'any');
+    loadReports();
+  }, [searchParams, page, perPage]);
+
+  const onConfirmDelete = () => {
+    setModalOpen(false);
+    deleteReport(modalItem?.id).then(() => loadReports());
+  }
+
+  const onCloseModal = () => {
+    setModalItem(null);
+    setModalOpen(false);
+  }
+
+  const onRetry = (id) => {
+    retryReport(id).then(() => loadReports());
   }
 
   const getSortParams = columnIndex => ({
@@ -62,55 +94,108 @@ export default function ReportsTable() {
       setActiveSortDirection(direction);
       const field = columnNames[index].key;
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("sortBy", `${field}:${direction}` );
+      newParams.set("sortBy", `${field}:${direction}`);
       setSearchParams(newParams);
     },
     columnIndex
   });
 
+  const statusFilter = {
+    any: "Any",
+    completed: "Completed",
+    failed: "Failed",
+    queued: "Queued",
+    sent: "Sent"
+  };
+
+  const colorFilters = {
+    "batch_id": "blue",
+    "user": "orange",
+    "vulnId": "red"
+  };
+
   const columnNames = [
     { key: 'name', label: 'ID' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'completedAt', label: 'Completed At' },
-    { key: 'imageName', label: 'Image Name' },
-    { key: 'imageTag', label: 'Image Tag' }
+    { key: 'state', label: 'State' }
   ];
 
   const emptyTable = () => {
     return <Tr>
       <Td colSpan={6}>
         <Bullseye>
-          <EmptyState  headingLevel="h2" icon={SearchIcon}  titleText="No reports found" variant={EmptyStateVariant.sm}>
-            </EmptyState>
+          <EmptyState headingLevel="h2" icon={SearchIcon} titleText="No reports found" variant={EmptyStateVariant.sm}>
+          </EmptyState>
         </Bullseye>
       </Td>
     </Tr>;
-  }
+  };
 
   const reportsTable = () => {
     return reports.map(r => {
+      const rowActions = [
+        {
+          title: 'View',
+          isOutsideDropdown: true,
+          onClick: () => navigate(`/reports/${r.id}`)
+        },
+        {
+          title: 'Retry',
+          onClick: () => onRetry(r.id)
+        },
+        {
+          title: 'Delete',
+          onClick: () => {
+            setModalItem(r);
+            setModalOpen(true);
+          }
+        }
+      ];
       return <Tr key={r.id}>
-        <Td dataLabel={columnNames[0].label} modifier="truncate">{r.name}</Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
           return <div key={uid}>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>
         })}</Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
-        <Td dataLabel={columnNames[3].label} modifier="truncate">{r.imageName}</Td>
-        <Td dataLabel={columnNames[4].label} modifier="truncate">{r.imageTag}</Td>
-        <Td dataLabel="View"><Button component={Link} variant="secondary" to={`/reports/${r.id}`}>View</Button></Td>
-        <Td dataLabel="Delete">
-        <ConfirmationButton btnVariant="danger" 
-          onConfirm={() => onDelete(r.id)} 
-          message={`The report with id: ${r.name} will be permanently deleted.`}>Delete</ConfirmationButton>
+        <Td dataLabel={columnNames[3].label}><StatusLabel type={r.state} /></Td>
+        <Td dataLabel="Actions">
+          <ActionsColumn items={rowActions} />
         </Td>
       </Tr>
     });
   }
 
+  let filterLabels = [];
+  searchParams.forEach((value, key) => {
+    if(key !== 'status') {
+      let color = "grey";
+      if(colorFilters[key] !== undefined) {
+        color = colorFilters[key];
+      }
+      filterLabels.push(<Label color={color} onClose={() => onRemoveFilter(key)} >{key}={value}</Label>);
+    }
+  });
+
   return <>
-    {searchParams.get('vulnId') ? <Label color="blue" onClose={onRemoveFilter} >{searchParams.get('vulnId')}</Label> : ''}
-    <Pagination itemCount={totalElements} perPage={perPage} page={page} onSetPage={onSetPage} widgetId="top-pagination" onPerPageSelect={onPerPageSelect} ouiaId="PaginationTop" />
+    <Toolbar>
+      <ToolbarContent>
+        <ToolbarItem>
+          Status: <Select toggle={toggleRef => <MenuToggle ref={toggleRef} 
+              onClick={() => onStatusToggle()} 
+              isExpanded={statusIsExpanded} >{statusFilter[statusSelected]}</MenuToggle>}
+              onSelect={onStatusSelect} onOpenChange={isOpen => setStatusIsExpanded(isOpen)}
+              selected={statusSelected} isOpen={statusIsExpanded}>
+                {Object.keys(statusFilter).map((option, index) => <SelectOption key={index} value={option}>{statusFilter[option]}</SelectOption>)}
+          </Select>
+          {filterLabels}
+        </ToolbarItem>
+        <ToolbarItem variant="pagination">
+          <Pagination itemCount={totalElements} perPage={perPage} page={page} onSetPage={onSetPage} widgetId="top-pagination" onPerPageSelect={onPerPageSelect} ouiaId="PaginationTop" />
+        </ToolbarItem>
+      </ToolbarContent>
+    </Toolbar>
     <Table>
       <Thead>
         <Tr>
@@ -118,13 +203,26 @@ export default function ReportsTable() {
           <Th width={10}>{columnNames[1].label}</Th>
           <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
           <Th>{columnNames[3].label}</Th>
-          <Th>{columnNames[4].label}</Th>
-          <Td colSpan={2}>Actions</Td>
+          {/* <Th>{columnNames[4].label}</Th>
+          <Th>{columnNames[5].label}</Th> */}
+          <Td>Actions</Td>
         </Tr>
       </Thead>
       <Tbody>
         {reports.length == 0 ? emptyTable() : reportsTable()}
       </Tbody>
     </Table>
+    <Modal variant={ModalVariant.small} isOpen={isModalOpen}
+      onClose={onCloseModal}
+    >
+      <ModalHeader title="Are you sure?" />
+      <ModalBody>
+        The report with id: {modalItem?.name} will be permanently deleted.
+      </ModalBody>
+      <ModalFooter>
+        <Button key="confirm" variant="danger" onClick={onConfirmDelete}>Delete</Button>
+        <Button key="close" variant="link" onClick={onCloseModal}>Close</Button>
+      </ModalFooter>
+    </Modal>
   </>
 };

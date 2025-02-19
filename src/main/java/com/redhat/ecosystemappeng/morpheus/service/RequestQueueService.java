@@ -2,6 +2,7 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -16,11 +17,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.client.MorpheusService;
+import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.Report;
 
 import io.quarkus.scheduler.Scheduled;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
 
 /**
  * This Service is not implemented to support a Clustered environment
@@ -68,6 +71,12 @@ public class RequestQueueService {
     moveToActive();
   }
 
+  @PostConstruct
+  void loadExistingQueue() {
+    repository.list(Map.of("status", "queued"), Collections.emptyList(), new Pagination(0, maxSize)).results.map(Report::id).forEach(pending::add);;
+    LOGGER.debugf("Loaded %d elements from existing pending queue", pending.size());
+  }
+
   private void moveToActive() {
     while (active.size() < maxActive) {
       var nextId = pending.poll();
@@ -107,7 +116,7 @@ public class RequestQueueService {
       repository.setAsSent(id);
       active.put(id, LocalDateTime.now());
       LOGGER.debugf("Report %s sent to Morpheus", id);
-    } catch (WebApplicationException e) {
+    } catch (Exception e) {
       LOGGER.error("Unable to submit request", e);
       repository.updateWithError(id, "morpheus-request-error", e.getMessage());
     }

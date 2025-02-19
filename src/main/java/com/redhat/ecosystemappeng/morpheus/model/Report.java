@@ -13,6 +13,7 @@ public record Report(
     String completedAt,
     String imageName,
     String imageTag,
+    String state,
     Set<VulnResult> vulns,
     Map<String, String> metadata) {
 

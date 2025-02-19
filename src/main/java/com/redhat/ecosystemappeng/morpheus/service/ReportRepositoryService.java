@@ -40,10 +40,14 @@ import jakarta.inject.Inject;
 public class ReportRepositoryService {
 
   private static final String COLLECTION = "reports";
-  private static final Map<String, String> BOOLEAN_FILTERS = Map.of(
-      "completed", "input.scan.completed_at",
-      "sent", "metadata.sent_at",
-      "failed", "error");
+  private static final Map<String, Bson> STATUS_FILTERS = Map.of(
+      "completed", Filters.ne("input.scan.completed_at", null),
+      "sent",
+      Filters.and(Filters.ne("metadata.sent_at", null), Filters.eq("error", null),
+          Filters.eq("input.scan.completed_at", null)),
+      "failed", Filters.ne("error", null),
+      "queued", Filters.and(Filters.ne("metadata.submitted_at", null), Filters.eq("metadata.sent_at", null),
+          Filters.eq("error", null), Filters.eq("input.scan.completed_at", null)));
 
   @Inject
   MongoClient mongoClient;
@@ -93,8 +97,37 @@ public class ReportRepositoryService {
         scan.getString("started_at"),
         scan.getString("completed_at"),
         image.getString("name"),
-        image.getString("tag"), vulnIds,
+        image.getString("tag"),
+        getStatus(doc, metadata),
+        vulnIds,
         metadata);
+  }
+
+  private String getStatus(Document doc, Map<String, String> metadata) {
+    if (doc.containsKey("error")) {
+      var error = doc.get("error", Document.class);
+      if (error.getString("type").equals("timeout")) {
+        return "expired";
+      }
+      return "failed";
+    }
+    var input = doc.get("input", Document.class);
+    if (input != null) {
+      var scan = input.get("scan", Document.class);
+      if (scan.getString("completed_at") != null) {
+        return "completed";
+      }
+    }
+    if (metadata != null) {
+      if (metadata.get("sent_at") != null) {
+        return "sent";
+      }
+      if (metadata.get("submitted_at") != null) {
+        return "queued";
+      }
+    }
+
+    return "unknown";
   }
 
   public void updateWithOutput(List<String> ids, JsonNode report)
@@ -107,7 +140,8 @@ public class ReportRepositoryService {
     var info = report.get("info").toPrettyString();
     var updates = Updates.combine(Updates.set("input.scan", Document.parse(scan)),
         Updates.set("info", Document.parse(info)),
-        Updates.set("output", outputDocs));
+        Updates.set("output", outputDocs),
+        Updates.unset("error"));
     var bulk = ids.stream()
         .map(id -> new UpdateOneModel<Document>(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id)), updates))
         .toList();
@@ -139,6 +173,15 @@ public class ReportRepositoryService {
             Updates.set("metadata.user", byUser)));
   }
 
+  public void setAsRetried(String id, String byUser) {
+    var objId = new ObjectId(id);
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
+        Updates.combine(
+            Updates.set("metadata.submitted_at", Instant.now().toString()),
+            Updates.set("metadata.user", byUser),
+            Updates.unset("error")));
+  }
+
   private Report get(ObjectId id) {
     var doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     return toReport(doc);
@@ -158,36 +201,29 @@ public class ReportRepositoryService {
   private static final Map<String, String> SORT_MAPPINGS = Map.of(
       "completedAt", "input.scan.completed_at",
       "name", "input.scan.id",
-      "image_name", "input.image.name",
-      "image_tag", "input.image.tag",
-      "vuln_id", "output.vuln_id",
-      "justification_status", "output.justification.status",
-      "justification_label", "output.justification.label");
+      "vuln_id", "output.vuln_id");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
     List<Report> reports = new ArrayList<>();
     List<Bson> filters = new ArrayList<>();
     queryFilter.entrySet().forEach(e -> {
-      if (BOOLEAN_FILTERS.containsKey(e.getKey())) {
-        var field = BOOLEAN_FILTERS.get(e.getKey());
-        if (Boolean.parseBoolean(e.getValue())) {
-          filters.add(Filters.ne(field, null));
-        } else {
-          filters.add(Filters.eq(field, null));
-        }
-      } else {
-        switch (e.getKey()) {
-          case "reportId":
-            filters.add(Filters.eq("input.scan.id", e.getValue()));
-            break;
-          case "vulnId":
-            filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
-            break;
-          default:
-            filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
-            break;
-        }
+
+      switch (e.getKey()) {
+        case "reportId":
+          filters.add(Filters.eq("input.scan.id", e.getValue()));
+          break;
+        case "vulnId":
+          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
+          break;
+        case "status":
+          var field = e.getValue();
+          filters.add(STATUS_FILTERS.get(field));
+          break;
+        default:
+          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
+          break;
+
       }
     });
     var filter = Filters.empty();
