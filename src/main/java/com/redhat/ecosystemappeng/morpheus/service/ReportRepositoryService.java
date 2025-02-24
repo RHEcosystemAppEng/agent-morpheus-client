@@ -256,4 +256,8 @@ public class ReportRepositoryService {
   public boolean remove(String id) {
     return getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
   }
+
+  public void removeBefore(Instant threshold) {
+    getCollection().deleteMany(Filters.lt("metadata.submitted_at", threshold));
+  }
 }
