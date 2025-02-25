@@ -4,9 +4,10 @@ import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/reac
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
-import { useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
+import { useOutletContext, useSearchParams, useNavigate, Link } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
+import { getMetadataColor } from "../Constants";
 
 export default function ReportsTable() {
 
@@ -153,12 +154,6 @@ export default function ReportsTable() {
     sent: "Sent"
   };
 
-  const colorFilters = {
-    "batch_id": "blue",
-    "user": "orange",
-    "vulnId": "red"
-  };
-
   const columnNames = [
     { key: 'name', label: 'ID' },
     { key: 'vulns', label: 'CVEs' },
@@ -206,7 +201,9 @@ export default function ReportsTable() {
         <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
-          return <div key={uid}>{vuln.vulnId} <JustificationBanner justification={vuln.justification} /></div>
+          return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`} style={{ color: "black"}}>
+          {vuln.vulnId} 
+        </Link><JustificationBanner justification={vuln.justification} /></div>
         })}</Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
         <Td dataLabel={columnNames[3].label}><StatusLabel type={r.state} /></Td>
@@ -220,10 +217,7 @@ export default function ReportsTable() {
   let filterLabels = [];
   searchParams.forEach((value, key) => {
     if(key !== 'status') {
-      let color = "grey";
-      if(colorFilters[key] !== undefined) {
-        color = colorFilters[key];
-      }
+      let color = getMetadataColor(key);
       filterLabels.push(<Label color={color} onClose={() => onRemoveFilter(key)} >{key}={value}</Label>);
     }
   });

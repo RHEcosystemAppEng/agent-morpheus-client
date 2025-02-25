@@ -267,6 +267,12 @@ public class ReportRepositoryService {
           var field = e.getValue();
           filters.add(STATUS_FILTERS.get(field));
           break;
+        case "imageName":
+          filters.add(Filters.eq("input.image.name", e.getValue()));
+          break;
+        case "imageTag":
+          filters.add(Filters.eq("input.image.tag", e.getValue()));
+          break;
         default:
           filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
           break;

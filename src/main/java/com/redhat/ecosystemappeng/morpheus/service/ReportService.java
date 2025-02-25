@@ -201,8 +201,6 @@ public class ReportService {
     var scanId = request.id();
     if (scanId == null) {
       scanId = UUID.randomUUID().toString();
-    } else {
-
     }
     var scan = buildScan(request);
     var image = buildImage(request);
@@ -210,7 +208,7 @@ public class ReportService {
 
     var report = objectMapper.createObjectNode();
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
-
+    report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
     repository.setAsSubmitted(created.id(), getUser());
     queueService.queue(created.id(), report);
