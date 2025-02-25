@@ -28,6 +28,19 @@ export const listReports = async (filter, page, perPage) => {
   };
 
 };
+export const deleteReports = async (filter) => {
+  let url = '/reports';
+  if(filter.size > 0) {
+    url += '?' + filter.toString();
+  }
+  const response = await fetch(url, {
+    method: 'DELETE'
+  });
+  if (!response.ok) {
+    throw new ClientRequestError(response.status, response.statusText);
+  }
+  return true;
+};
 
 export const deleteReport = async (reportId) => {
   const response = await fetch(`/reports/${reportId}`, {

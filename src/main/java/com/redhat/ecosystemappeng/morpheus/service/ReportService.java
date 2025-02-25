@@ -129,6 +129,16 @@ public class ReportService {
     return repository.remove(id);
   }
 
+  public boolean remove(Collection<String> ids) {
+    LOGGER.debugf("Remove reports %s", ids);
+    return repository.remove(ids);
+  }
+  
+  public boolean remove(Map<String, String> query) {
+    LOGGER.debugf("Remove reports with filter: %s", query);
+    return repository.remove(query);
+  }
+
   public boolean retry(String id) throws JsonProcessingException {
     var report = get(id);
     if(report == null) {

@@ -1,6 +1,7 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
 import java.rmi.ServerError;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -63,11 +64,13 @@ public class ReportEndpoint {
       var req = reportService.submit(request);
       return Response.accepted(req).build();
     } catch (IllegalArgumentException e) {
-      return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+      return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage()))
+          .build();
     } catch (ClientWebApplicationException e) {
       return Response.status(e.getResponse().getStatus()).entity(e.getResponse().getEntity()).build();
     } catch (RequestQueueExceededException e) {
-      return Response.status(Status.TOO_MANY_REQUESTS).entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+      return Response.status(Status.TOO_MANY_REQUESTS)
+          .entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
     } catch (Exception e) {
       LOGGER.error("Unable to submit new analysis request", e);
       return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
@@ -78,7 +81,7 @@ public class ReportEndpoint {
   @Path("/{id}/retry")
   public Response retry(@PathParam("id") String id) {
     try {
-      if(reportService.retry(id)) {
+      if (reportService.retry(id)) {
         return Response.accepted(id).build();
       }
     } catch (JsonProcessingException e) {
@@ -127,5 +130,18 @@ public class ReportEndpoint {
       return Response.accepted().build();
     }
     return Response.serverError().build();
+  }
+
+  @DELETE
+  public Response removeMany(@QueryParam("reportIds") List<String> reportIds, @Context UriInfo uriInfo) {
+    if (reportIds.isEmpty()) {
+      var filter = uriInfo.getQueryParameters().entrySet().stream()
+          .filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
+          .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getFirst()));
+      reportService.remove(filter);
+    } else {
+      reportService.remove(reportIds);
+    }
+    return Response.accepted().build();
   }
 }

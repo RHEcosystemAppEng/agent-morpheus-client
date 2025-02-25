@@ -2,6 +2,7 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -206,30 +207,7 @@ public class ReportRepositoryService {
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
     List<Report> reports = new ArrayList<>();
-    List<Bson> filters = new ArrayList<>();
-    queryFilter.entrySet().forEach(e -> {
-
-      switch (e.getKey()) {
-        case "reportId":
-          filters.add(Filters.eq("input.scan.id", e.getValue()));
-          break;
-        case "vulnId":
-          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
-          break;
-        case "status":
-          var field = e.getValue();
-          filters.add(STATUS_FILTERS.get(field));
-          break;
-        default:
-          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
-          break;
-
-      }
-    });
-    var filter = Filters.empty();
-    if (!filters.isEmpty()) {
-      filter = Filters.and(filters);
-    }
+    var filter = buildQueryFilter(queryFilter);
 
     List<Bson> sorts = new ArrayList<>();
     sortFields.forEach(sf -> {
@@ -257,7 +235,48 @@ public class ReportRepositoryService {
     return getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
   }
 
+  public boolean remove(Collection<String> ids) {
+    return getCollection()
+        .deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids.stream()
+            .map(id -> new ObjectId(id)).toList()))
+        .wasAcknowledged();
+  }
+
+  public boolean remove(Map<String, String> queryFilter) {
+
+    var filter = buildQueryFilter(queryFilter);
+    return getCollection().deleteMany(filter).wasAcknowledged();
+  }
+
   public void removeBefore(Instant threshold) {
     getCollection().deleteMany(Filters.lt("metadata.submitted_at", threshold));
+  }
+
+  private Bson buildQueryFilter(Map<String, String> queryFilter) {
+    List<Bson> filters = new ArrayList<>();
+    queryFilter.entrySet().forEach(e -> {
+
+      switch (e.getKey()) {
+        case "reportId":
+          filters.add(Filters.eq("input.scan.id", e.getValue()));
+          break;
+        case "vulnId":
+          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
+          break;
+        case "status":
+          var field = e.getValue();
+          filters.add(STATUS_FILTERS.get(field));
+          break;
+        default:
+          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
+          break;
+
+      }
+    });
+    var filter = Filters.empty();
+    if (!filters.isEmpty()) {
+      filter = Filters.and(filters);
+    }
+    return filter;
   }
 }

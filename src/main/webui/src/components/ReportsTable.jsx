@@ -1,7 +1,8 @@
 import { Bullseye, Button, EmptyState, EmptyStateVariant, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, getUniqueId } from "@patternfly/react-core";
-import { deleteReport, listReports, retryReport } from "../services/ReportClient";
+import { deleteReports, listReports, retryReport } from "../services/ReportClient";
 import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
+import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
@@ -18,10 +19,11 @@ export default function ReportsTable() {
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(20);
   const [totalElements, setTotalElements] = React.useState(0);
-  const [modalItem, setModalItem] = React.useState(null);
   const [isModalOpen, setModalOpen] = React.useState(false);
   const [statusIsExpanded, setStatusIsExpanded] = React.useState(false);
   const [statusSelected, setStatusSelected] = React.useState('');
+  const [deleteItems, setDeleteItems] = React.useState([]);
+  const [deleteAll, setDeleteAll] = React.useState(false);
 
   const onSetPage = (_event, newPage) => {
     setPage(newPage);
@@ -71,11 +73,19 @@ export default function ReportsTable() {
 
   const onConfirmDelete = () => {
     setModalOpen(false);
-    deleteReport(modalItem?.id).then(() => loadReports());
+    let filter = new URLSearchParams();
+    if(deleteAll) {
+      filter = new URLSearchParams(searchParams);
+    } else {
+      deleteItems.forEach(v => filter.append("reportIds", v.reportId));
+    }
+    deleteReports(filter).then(() => loadReports());
+    setDeleteItems([]);
+    setDeleteAll(false);
   }
 
   const onCloseModal = () => {
-    setModalItem(null);
+    setDeleteItems([]);
     setModalOpen(false);
   }
 
@@ -99,6 +109,40 @@ export default function ReportsTable() {
     },
     columnIndex
   });
+
+  const showDeleteButton = () => deleteAll || deleteItems.length > 0;
+
+  const getAbsoluteIndex = rowIndex => {
+    return rowIndex + (page * perPage);
+  }
+
+  const onSelectItem = (reportId, rowIndex, isSelecting) => {
+    if(deleteAll) {
+      setDeleteAll(false);
+      isSelecting = true;
+    }
+    var pos = getAbsoluteIndex(rowIndex);
+    if(isSelecting) {
+      let idx = deleteItems.findIndex((element) => element.id === pos);
+      if(idx === -1) {
+        const newItems = [...deleteItems, {id: pos, reportId: reportId}];
+        setDeleteItems(newItems);
+      }
+    } else {
+      const newItems = deleteItems.filter((item) => item.id != pos);
+      setDeleteItems(newItems);
+    }
+  };
+
+  const isSelectedItem = rowIndex => {
+    const pos = getAbsoluteIndex(rowIndex);
+    return deleteAll || deleteItems.findIndex((element) => element.id === pos) !== -1;
+  }
+
+  const onDeleteAll = isSelecting => {
+    setDeleteAll(isSelecting);
+    setDeleteItems([]);
+  }
 
   const statusFilter = {
     any: "Any",
@@ -133,7 +177,7 @@ export default function ReportsTable() {
   };
 
   const reportsTable = () => {
-    return reports.map(r => {
+    return reports.map((r, rowIndex) => {
       const rowActions = [
         {
           title: 'View',
@@ -147,12 +191,17 @@ export default function ReportsTable() {
         {
           title: 'Delete',
           onClick: () => {
-            setModalItem(r);
+            onSelectItem(r.id, rowIndex, true);
             setModalOpen(true);
           }
         }
       ];
       return <Tr key={r.id}>
+        <Td select={{
+          rowIndex,
+          onSelect: (_event, isSelecting) => onSelectItem(r.id, rowIndex, isSelecting),
+          isSelected: isSelectedItem(rowIndex)
+        }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
@@ -191,6 +240,9 @@ export default function ReportsTable() {
           </Select>
           {filterLabels}
         </ToolbarItem>
+        <ToolbarItem>
+          {showDeleteButton() ? <Button variant="danger" onClick={setModalOpen} aria-label="delete" icon={<TrashIcon />}>Delete</Button> : ""}
+        </ToolbarItem>
         <ToolbarItem variant="pagination">
           <Pagination itemCount={totalElements} perPage={perPage} page={page} onSetPage={onSetPage} widgetId="top-pagination" onPerPageSelect={onPerPageSelect} ouiaId="PaginationTop" />
         </ToolbarItem>
@@ -199,12 +251,14 @@ export default function ReportsTable() {
     <Table>
       <Thead>
         <Tr>
+          <Th select={{
+            onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
+            isSelected: deleteAll
+          }} aria-label="All Selected"/>
           <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
           <Th width={10}>{columnNames[1].label}</Th>
           <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
           <Th>{columnNames[3].label}</Th>
-          {/* <Th>{columnNames[4].label}</Th>
-          <Th>{columnNames[5].label}</Th> */}
           <Td>Actions</Td>
         </Tr>
       </Thead>
@@ -217,7 +271,7 @@ export default function ReportsTable() {
     >
       <ModalHeader title="Are you sure?" />
       <ModalBody>
-        The report with id: {modalItem?.name} will be permanently deleted.
+        {deleteAll ? "All items will be permanently deleted" : `${deleteItems.length} reports will be permanently deleted.`}
       </ModalBody>
       <ModalFooter>
         <Button key="confirm" variant="danger" onClick={onConfirmDelete}>Delete</Button>
