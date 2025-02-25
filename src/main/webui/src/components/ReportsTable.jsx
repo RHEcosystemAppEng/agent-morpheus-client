@@ -3,6 +3,7 @@ import { deleteReports, listReports, retryReport } from "../services/ReportClien
 import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
+import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
 import { useOutletContext, useSearchParams, useNavigate } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
@@ -244,6 +245,7 @@ export default function ReportsTable() {
           {showDeleteButton() ? <Button variant="danger" onClick={setModalOpen} aria-label="delete" icon={<TrashIcon />}>Delete</Button> : ""}
         </ToolbarItem>
         <ToolbarItem variant="pagination">
+        <Button variant="plain" aria-label="Action" onClick={loadReports} icon={<SyncAltIcon />} />
           <Pagination itemCount={totalElements} perPage={perPage} page={page} onSetPage={onSetPage} widgetId="top-pagination" onPerPageSelect={onPerPageSelect} ouiaId="PaginationTop" />
         </ToolbarItem>
       </ToolbarContent>
