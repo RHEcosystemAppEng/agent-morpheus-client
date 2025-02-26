@@ -3,75 +3,89 @@
 This project is a Quarkus + React web application implemented to interact with Agent Morpheus service
 for sending requests to evaluate vulnerabilities on specific SBOMs.
 
+## Development
+
+Check this other documents for:
+
+* [Configuration](./docs/configuration.md)
+* [Development](./docs/development.md)
+
 ## Using the application
 
 Open http://localhost:8080/app/index.html
 
-In the _Request Analysis_ tab you will access a form where you can load a CycloneDX SBOM and type a list of CVEs to inspect.
-The Request ID will be used to trace the request and will be generated from the SBOM data but can be updated before submitting the request.
+### Request Analysis
 
-The Programming Languages will be pre-populated using the repository information and are used to decide which file patterns to use when analysing
-the repository for vulnerabilities. Add or remove depending on your needs.
+In the _Request Analysis_ tab you will access a form where you can load a CycloneDX SBOM and type a list of CVEs to inspect.
+The Request ID will be used to trace the request and will be generated from the SBOM data but can be updated before submitting the request. 
+If not provided a UUID will be generated.
+
+![form](./docs/images/form.png)
+
+The Metadata can include any key/pair set of values. You can add a `batch_id` if this request is related to others and you will
+be able to group them when browsing the reports. Note that the `user` will be automatically added as a metadata parameter.
 
 After submitting the request you can go to the _View Reports_ tab where you can manage all the received reports.
 
-## Running the application in dev mode
+There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after
+a certain time a callback response is not received, the report will be _expired_ (failed).
 
-You can run your application in dev mode that enables live coding using:
+### View Reports
 
-```shell script
-./mvnw compile quarkus:dev
-```
+This table shows all the reports and allows sorting by _ID_ and _Completed at_ columns. There is a _Status_ dropdown that can be
+used to filter by Status. You can use any metadata as a query parameter for advanced filtering. e.g. `?batch_id=001`
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+![reports_table](./docs/images/reports_table.png)
 
-## Packaging and running the application
+* The _ID_ link will take you to the report's detail.
+* Click the CVE to filter reports with the same CVE.
+* Use the Actions to _Retry_ or _Delete_ the selected report.
 
-The application can be packaged using:
+The checkboxes can be used to delete multiple reports. You can delete all the reports by checking the top checkbox.
+It is important to mention that the selection will affect all the reports with the current filter but if no filter is
+selected, all the reports can be deleted.
 
-```shell script
-./mvnw package
-```
+The available _States_ displayed in the table are:
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+* _Completed_: The report has been sent and completed in Morpheus.
+* _Sent_: The report has been sent but not yet analyzed (or received)
+* _Queued_: The report is in the waiting queue and will be sent as soon as there is space in the pool.
+* _Failed_: The report has either timeout or failed
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+You can click on the refresh icon to reload the table.
 
-If you want to build an _über-jar_, execute the following command:
+### Report
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
+When you click _View_ on a report in the table you will see all the details of the given report.
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+![report](./docs/images/report.png)
 
-## Creating a native executable
+The first part includes some details about the report like the image and tag or all the available timestamps and
+metadata.
 
-You can create a native executable using:
+The _Image_, _Tag_, _metadata_ elements and the CVE are clickable and will take you to the _View Reports_ table but
+filtering all the reports sharing this element. e.g. All reports related to the `ose-console` image.
 
-```shell script
-./mvnw package -Dnative
-```
+The second part of the report shows the result of the analysis of each of the selected CVEs with the _Justification Label_,
+the _Reason_, _Summary_ and finally, the _Checklist_.
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+Each element in the checklist includes a Q/A with the generated checklist item and the justification.
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
+At the bottom of the report you will find buttons to:
 
-You can then execute your native executable with: `./target/agent-morpheus-client-1.0.0-SNAPSHOT-runner`
+* _Download_ the raw Json report.
+* _Delete_ the report.
+* _Back_ to the previous screen.
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+### Vulnerabilities
 
-## Related Guides
+This table is meant to manage and show the Vulnerabilities additional data that can be used from Morpheus if the UI is
+configured as an additional Intel Source.
 
-- Quinoa ([guide](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)): Develop, build, and serve your npm-compatible web applications such as React, Angular, Vue, Lit, Svelte, Astro, SolidJS, and others alongside Quarkus.
+![vulnerabilities](./docs/images/vulnerabilities.png)
 
-## Provided Code
+If you add/edit a vulnerability a Text area will appear and let you add any free text about the vulnerability that you
+want the analysis to use.
 
-### Quinoa
-
-Quinoa codestart added a tiny Vite app in src/main/webui. The page is configured to be visible on <a href="/app">/app</a>.
-
-[Related guide section...](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)
+Finally the _Reports_ button will show you all the reports related to this vulnerability and the _Delete_ button will
+remove it from the table.
