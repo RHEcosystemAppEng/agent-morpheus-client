@@ -51,10 +51,10 @@ public class ReportRepositoryService {
   private static final Map<String, Bson> STATUS_FILTERS = Map.of(
       "completed", Filters.ne("input.scan.completed_at", null),
       "sent",
-      Filters.and(Filters.ne("metadata.sent_at", null), Filters.eq("error", null),
+      Filters.and(Filters.ne("metadata." + SENT_AT, null), Filters.eq("error", null),
           Filters.eq("input.scan.completed_at", null)),
       "failed", Filters.ne("error", null),
-      "queued", Filters.and(Filters.ne("metadata.submitted_at", null), Filters.eq("metadata.sent_at", null),
+      "queued", Filters.and(Filters.ne("metadata." + SUBMITTED_AT, null), Filters.eq("metadata." + SENT_AT, null),
           Filters.eq("error", null), Filters.eq("input.scan.completed_at", null)));
 
   @Inject
@@ -177,14 +177,14 @@ public class ReportRepositoryService {
   public void setAsSent(String id) {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
-        Updates.set("metadata.sent_at", Instant.now()));
+        Updates.set("metadata." + SENT_AT, Instant.now()));
   }
 
   public void setAsSubmitted(String id, String byUser) {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
         List.of(
-            Updates.set("metadata.submitted_at", Instant.now()),
+            Updates.set("metadata." + SUBMITTED_AT, Instant.now()),
             Updates.set("metadata.user", byUser)));
   }
 
@@ -192,7 +192,7 @@ public class ReportRepositoryService {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
         Updates.combine(
-            Updates.set("metadata.submitted_at", Instant.now()),
+            Updates.set("metadata." + SUBMITTED_AT, Instant.now()),
             Updates.set("metadata.user", byUser),
             Updates.unset("error")));
   }
@@ -263,7 +263,7 @@ public class ReportRepositoryService {
   }
 
   public void removeBefore(Instant threshold) {
-    var count = getCollection().deleteMany(Filters.lt("metadata.submitted_at", threshold)).getDeletedCount();
+    var count = getCollection().deleteMany(Filters.lt("metadata." + SUBMITTED_AT, threshold)).getDeletedCount();
     LOGGER.debugf("Removed %s reports before %s", count, threshold);
   }
 
