@@ -3,14 +3,12 @@ package com.redhat.ecosystemappeng.morpheus.service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -36,7 +34,6 @@ import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
-import io.quarkus.runtime.Startup;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -68,27 +65,6 @@ public class ReportRepositoryService {
 
   @Inject
   ObjectMapper objectMapper;
-
-  @Startup
-  public void migrateOldData() {
-    METADATA_DATES.stream().forEach(field -> {
-      var filter = Filters.and(Filters.exists("metadata." + field), Filters.type("metadata." + field, "string"));
-
-      // Update pipeline to convert the nested String to Date
-      Document updateOperation = new Document("$set",
-          new Document("metadata." + field,
-              new Document("$dateFromString",
-                  new Document("dateString", "$metadata." + field) // Refers to the nested field
-      )));
-      getCollection().updateMany(filter, Collections.singletonList(updateOperation));
-
-      // Populate missing fields with current time
-      filter = Filters.not(Filters.exists("metadata." + field));
-      var update = Updates.set("metadata." + field, Instant.now());
-      getCollection().updateMany(filter, update);
-    });
-
-  }
 
   private MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
