@@ -3,7 +3,7 @@ import imgAvatar from '@patternfly/react-core/src/components/assets/avatarImg.sv
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ToastNotifications } from './components/Notifications';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
-import { getUserInfo, logoutUser } from './services/UserClient';
+import { getUserName, logoutUser } from './services/UserClient';
 
 export default function App() {
 
@@ -36,13 +36,7 @@ export default function App() {
         addAlert('Error', 'Error received', <p>Error: {data.result}</p>);
       }
     });
-    getUserInfo().then(userInfo => {
-      if(userInfo.metadata === undefined) {
-        setUserName("Anonymous");
-      } else {
-        setUserName(userInfo.metadata?.name);
-      }
-    });
+    getUserName().then(userName => setUserName(userName));
   }, []);
 
   const onLinkToReportClicked = () => {

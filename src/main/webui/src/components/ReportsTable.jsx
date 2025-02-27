@@ -1,17 +1,17 @@
-import { Bullseye, Button, EmptyState, EmptyStateVariant, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, getUniqueId } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, Tooltip, getUniqueId } from "@patternfly/react-core";
 import { deleteReports, listReports, retryReport } from "../services/ReportClient";
 import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
-import { useOutletContext, useSearchParams, useNavigate, Link } from "react-router-dom";
+import { RedoIcon } from '@patternfly/react-icons/dist/esm/icons/redo-icon';
+import { useOutletContext, useSearchParams, Link } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
 
 export default function ReportsTable() {
 
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { addAlert } = useOutletContext();
@@ -87,7 +87,6 @@ export default function ReportsTable() {
   }
 
   const onCloseModal = () => {
-    setDeleteItems([]);
     setModalOpen(false);
   }
 
@@ -116,6 +115,11 @@ export default function ReportsTable() {
 
   const getAbsoluteIndex = rowIndex => {
     return rowIndex + (page * perPage);
+  }
+
+  const onSelectOnlyItem = (reportId, rowIndex) => {
+    setDeleteAll(false);
+    setDeleteItems([{ id: getAbsoluteIndex(rowIndex), reportId: reportId }]);
   }
 
   const onSelectItem = (reportId, rowIndex, isSelecting) => {
@@ -176,20 +180,17 @@ export default function ReportsTable() {
     return reports.map((r, rowIndex) => {
       const rowActions = [
         {
-          title: 'View',
-          isOutsideDropdown: true,
-          onClick: () => navigate(`/reports/${r.id}`)
-        },
-        {
           title: 'Retry',
-          onClick: () => onRetry(r.id)
+          onClick: () => onRetry(r.id),
+          isOutsideDropdown: true
         },
         {
           title: 'Delete',
           onClick: () => {
             onSelectItem(r.id, rowIndex, true);
             setModalOpen(true);
-          }
+          },
+          isOutsideDropdown: true
         }
       ];
       return <Tr key={r.id}>
@@ -198,17 +199,25 @@ export default function ReportsTable() {
           onSelect: (_event, isSelecting) => onSelectItem(r.id, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
-        <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap"><Link to={`/reports/${r.id}`} >{r.name}</Link></Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
-          return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`} style={{ color: "black"}}>
+          return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`}>
           {vuln.vulnId} 
         </Link><JustificationBanner justification={vuln.justification} /></div>
         })}</Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
         <Td dataLabel={columnNames[3].label}><StatusLabel type={r.state} /></Td>
         <Td dataLabel="Actions">
-          <ActionsColumn items={rowActions} />
+          <Flex columnGap={{ default: 'columnGapSm' }}>
+            <Tooltip content="Submit again the report to Morpheus">
+              <Button onClick={() => onRetry(r.id)} variant="stateful" aria-label="retry" state="read" icon={<RedoIcon/>}/>
+            </Tooltip>
+            <Button onClick={() => {
+              onSelectOnlyItem(r.id, rowIndex); 
+              setModalOpen(true);
+            }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
+          </Flex>
         </Td>
       </Tr>
     });

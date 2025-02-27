@@ -1,0 +1,15 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "url": "/morpheus/scan",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.scan[?(@.id =~ /error.*/i)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 500
+  }
+}

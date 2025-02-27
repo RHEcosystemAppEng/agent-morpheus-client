@@ -1,0 +1,5575 @@
+{
+  "input": {
+    "scan": {
+      "id": "bae675d4-e827-4fb5-b08a-7b7e5066a0f6",
+      "type": null,
+      "started_at": "2025-02-24T07:12:14.218414",
+      "completed_at": "2025-02-24T07:12:15.038386",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-1485",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "registry.redhat.io/openshift4/ose-console",
+      "tag": "sha256:94a0d7feec34600a858c8e383ee0e8d5f4a077f6bbc327dcad8762acfcf40679",
+      "source_info": [
+        {
+          "type": "git",
+          "source_type": "code",
+          "git_repo": "https://github.com/openshift/console",
+          "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
+          "includes": [
+            "**/*.ts",
+            "**/*.tsx",
+            "tsconfig.json",
+            "tsconfig.*.json",
+            "webpack.config.js",
+            "webpack.config.ts",
+            "rollup.config.js",
+            "rollup.config.ts",
+            "babel.config.js",
+            ".babelrc",
+            ".eslintrc.js",
+            ".eslintrc.json",
+            "*.config.js",
+            "*.config.ts",
+            "*.json",
+            "src/**/*",
+            "public/**/*",
+            "assets/**/*",
+            "**/*.go",
+            "**/*.js",
+            "**/*.jsx",
+            "webpack.config.js",
+            "rollup.config.js",
+            "babel.config.js",
+            ".babelrc",
+            ".eslintrc.js",
+            ".eslintrc.json",
+            "tsconfig.json",
+            "*.config.js",
+            "*.config.json",
+            "public/**/*",
+            "src/**/*",
+            "Dockerfile*",
+            "docker-compose.yml",
+            "*.dockerfile",
+            "*.dockerignore",
+            "docker-compose.*.yml",
+            "*.sh",
+            "scripts/**/*",
+            "*.env",
+            "*.yaml",
+            "*.yml",
+            "*.json",
+            "config/**/*",
+            "conf.d/**/*"
+          ],
+          "excludes": [
+            "node_modules/**/*",
+            "dist/**/*",
+            "build/**/*",
+            "test/**/*",
+            "tests/**/*",
+            "example/**/*",
+            "examples/**/*",
+            "package.json",
+            "package-lock.json",
+            "yarn.lock",
+            "test/**/*",
+            "**/vendor/**/*",
+            "go.mod",
+            "go.sum",
+            "node_modules/**/*",
+            "dist/**/*",
+            "build/**/*",
+            "test/**/*",
+            "tests/**/*",
+            "example/**/*",
+            "examples/**/*",
+            "package.json",
+            "package-lock.json",
+            "yarn.lock"
+          ]
+        },
+        {
+          "type": "git",
+          "source_type": "doc",
+          "git_repo": "https://github.com/openshift/console",
+          "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
+          "includes": [
+            "**/*.md",
+            "docs/**/*.rst"
+          ],
+          "excludes": []
+        }
+      ],
+      "sbom_info": {
+        "_type": "manual",
+        "packages": [
+          {
+            "name": "acl",
+            "version": "2.2.53-3.el8",
+            "purl": "pkg:rpm/redhat/acl@2.2.53-3.el8?arch=x86_64&upstream=acl-2.2.53-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "audit-libs",
+            "version": "3.1.2-1.el8",
+            "purl": "pkg:rpm/redhat/audit-libs@3.1.2-1.el8?arch=x86_64&upstream=audit-3.1.2-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "basesystem",
+            "version": "11-5.el8",
+            "purl": "pkg:rpm/redhat/basesystem@11-5.el8?arch=noarch&upstream=basesystem-11-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bash",
+            "version": "4.4.20-5.el8",
+            "purl": "pkg:rpm/redhat/bash@4.4.20-5.el8?arch=x86_64&upstream=bash-4.4.20-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bind-libs",
+            "version": "32:9.11.36-16.el8_10.2",
+            "purl": "pkg:rpm/redhat/bind-libs@9.11.36-16.el8_10.2?arch=x86_64&epoch=32&upstream=bind-9.11.36-16.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bind-libs-lite",
+            "version": "32:9.11.36-16.el8_10.2",
+            "purl": "pkg:rpm/redhat/bind-libs-lite@9.11.36-16.el8_10.2?arch=x86_64&epoch=32&upstream=bind-9.11.36-16.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bind-license",
+            "version": "32:9.11.36-16.el8_10.2",
+            "purl": "pkg:rpm/redhat/bind-license@9.11.36-16.el8_10.2?arch=noarch&epoch=32&upstream=bind-9.11.36-16.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bind-utils",
+            "version": "32:9.11.36-16.el8_10.2",
+            "purl": "pkg:rpm/redhat/bind-utils@9.11.36-16.el8_10.2?arch=x86_64&epoch=32&upstream=bind-9.11.36-16.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "brotli",
+            "version": "1.0.6-3.el8",
+            "purl": "pkg:rpm/redhat/brotli@1.0.6-3.el8?arch=x86_64&upstream=brotli-1.0.6-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "bzip2-libs",
+            "version": "1.0.6-27.el8_10",
+            "purl": "pkg:rpm/redhat/bzip2-libs@1.0.6-27.el8_10?arch=x86_64&upstream=bzip2-1.0.6-27.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "ca-certificates",
+            "version": "2024.2.69_v8.0.303-80.0.el8_10",
+            "purl": "pkg:rpm/redhat/ca-certificates@2024.2.69_v8.0.303-80.0.el8_10?arch=noarch&upstream=ca-certificates-2024.2.69_v8.0.303-80.0.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "chardet",
+            "version": "3.0.4",
+            "purl": "pkg:pypi/chardet@3.0.4",
+            "system": "python"
+          },
+          {
+            "name": "chkconfig",
+            "version": "1.19.2-1.el8",
+            "purl": "pkg:rpm/redhat/chkconfig@1.19.2-1.el8?arch=x86_64&upstream=chkconfig-1.19.2-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "coreutils-single",
+            "version": "8.30-15.el8",
+            "purl": "pkg:rpm/redhat/coreutils-single@8.30-15.el8?arch=x86_64&upstream=coreutils-8.30-15.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "cracklib",
+            "version": "2.9.6-15.el8",
+            "purl": "pkg:rpm/redhat/cracklib@2.9.6-15.el8?arch=x86_64&upstream=cracklib-2.9.6-15.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "cracklib-dicts",
+            "version": "2.9.6-15.el8",
+            "purl": "pkg:rpm/redhat/cracklib-dicts@2.9.6-15.el8?arch=x86_64&upstream=cracklib-2.9.6-15.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "crypto-policies",
+            "version": "20230731-1.git3177e06.el8",
+            "purl": "pkg:rpm/redhat/crypto-policies@20230731-1.git3177e06.el8?arch=noarch&upstream=crypto-policies-20230731-1.git3177e06.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "crypto-policies-scripts",
+            "version": "20230731-1.git3177e06.el8",
+            "purl": "pkg:rpm/redhat/crypto-policies-scripts@20230731-1.git3177e06.el8?arch=noarch&upstream=crypto-policies-20230731-1.git3177e06.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "cryptsetup-libs",
+            "version": "2.3.7-7.el8",
+            "purl": "pkg:rpm/redhat/cryptsetup-libs@2.3.7-7.el8?arch=x86_64&upstream=cryptsetup-2.3.7-7.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "curl",
+            "version": "7.61.1-34.el8_10.2",
+            "purl": "pkg:rpm/redhat/curl@7.61.1-34.el8_10.2?arch=x86_64&upstream=curl-7.61.1-34.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "cyrus-sasl-lib",
+            "version": "2.1.27-6.el8_5",
+            "purl": "pkg:rpm/redhat/cyrus-sasl-lib@2.1.27-6.el8_5?arch=x86_64&upstream=cyrus-sasl-2.1.27-6.el8_5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus",
+            "version": "1:1.12.8-26.el8",
+            "purl": "pkg:rpm/redhat/dbus@1.12.8-26.el8?arch=x86_64&epoch=1&upstream=dbus-1.12.8-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus-common",
+            "version": "1:1.12.8-26.el8",
+            "purl": "pkg:rpm/redhat/dbus-common@1.12.8-26.el8?arch=noarch&epoch=1&upstream=dbus-1.12.8-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus-daemon",
+            "version": "1:1.12.8-26.el8",
+            "purl": "pkg:rpm/redhat/dbus-daemon@1.12.8-26.el8?arch=x86_64&epoch=1&upstream=dbus-1.12.8-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus-glib",
+            "version": "0.110-2.el8",
+            "purl": "pkg:rpm/redhat/dbus-glib@0.110-2.el8?arch=x86_64&upstream=dbus-glib-0.110-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus-libs",
+            "version": "1:1.12.8-26.el8",
+            "purl": "pkg:rpm/redhat/dbus-libs@1.12.8-26.el8?arch=x86_64&epoch=1&upstream=dbus-1.12.8-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dbus-python",
+            "version": "1.2.4",
+            "purl": "pkg:pypi/dbus-python@1.2.4",
+            "system": "python"
+          },
+          {
+            "name": "dbus-tools",
+            "version": "1:1.12.8-26.el8",
+            "purl": "pkg:rpm/redhat/dbus-tools@1.12.8-26.el8?arch=x86_64&epoch=1&upstream=dbus-1.12.8-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "decorator",
+            "version": "4.2.1",
+            "purl": "pkg:pypi/decorator@4.2.1",
+            "system": "python"
+          },
+          {
+            "name": "device-mapper",
+            "version": "8:1.02.181-14.el8",
+            "purl": "pkg:rpm/redhat/device-mapper@1.02.181-14.el8?arch=x86_64&epoch=8&upstream=lvm2-2.03.14-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "device-mapper-libs",
+            "version": "8:1.02.181-14.el8",
+            "purl": "pkg:rpm/redhat/device-mapper-libs@1.02.181-14.el8?arch=x86_64&epoch=8&upstream=lvm2-2.03.14-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "diffutils",
+            "version": "3.6-6.el8",
+            "purl": "pkg:rpm/redhat/diffutils@3.6-6.el8?arch=x86_64&upstream=diffutils-3.6-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dmidecode",
+            "version": "1:3.5-1.el8",
+            "purl": "pkg:rpm/redhat/dmidecode@3.5-1.el8?arch=x86_64&epoch=1&upstream=dmidecode-3.5-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dnf",
+            "version": "4.7.0-20.el8",
+            "purl": "pkg:rpm/redhat/dnf@4.7.0-20.el8?arch=noarch&upstream=dnf-4.7.0-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dnf-data",
+            "version": "4.7.0-20.el8",
+            "purl": "pkg:rpm/redhat/dnf-data@4.7.0-20.el8?arch=noarch&upstream=dnf-4.7.0-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "dnf-plugin-subscription-manager",
+            "version": "1.28.42-1.el8",
+            "purl": "pkg:rpm/redhat/dnf-plugin-subscription-manager@1.28.42-1.el8?arch=x86_64&upstream=subscription-manager-1.28.42-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "elfutils-default-yama-scope",
+            "version": "0.190-2.el8",
+            "purl": "pkg:rpm/redhat/elfutils-default-yama-scope@0.190-2.el8?arch=noarch&upstream=elfutils-0.190-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "elfutils-libelf",
+            "version": "0.190-2.el8",
+            "purl": "pkg:rpm/redhat/elfutils-libelf@0.190-2.el8?arch=x86_64&upstream=elfutils-0.190-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "elfutils-libs",
+            "version": "0.190-2.el8",
+            "purl": "pkg:rpm/redhat/elfutils-libs@0.190-2.el8?arch=x86_64&upstream=elfutils-0.190-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "ethtool",
+            "version": "0.14",
+            "purl": "pkg:pypi/ethtool@0.14",
+            "system": "python"
+          },
+          {
+            "name": "expat",
+            "version": "2.2.5-16.el8_10",
+            "purl": "pkg:rpm/redhat/expat@2.2.5-16.el8_10?arch=x86_64&upstream=expat-2.2.5-16.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "file-libs",
+            "version": "5.33-26.el8",
+            "purl": "pkg:rpm/redhat/file-libs@5.33-26.el8?arch=x86_64&upstream=file-5.33-26.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "filesystem",
+            "version": "3.8-6.el8",
+            "purl": "pkg:rpm/redhat/filesystem@3.8-6.el8?arch=x86_64&upstream=filesystem-3.8-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "findutils",
+            "version": "1:4.6.0-23.el8_10",
+            "purl": "pkg:rpm/redhat/findutils@4.6.0-23.el8_10?arch=x86_64&epoch=1&upstream=findutils-4.6.0-23.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "fstrm",
+            "version": "0.6.1-3.el8",
+            "purl": "pkg:rpm/redhat/fstrm@0.6.1-3.el8?arch=x86_64&upstream=fstrm-0.6.1-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gawk",
+            "version": "4.2.1-4.el8",
+            "purl": "pkg:rpm/redhat/gawk@4.2.1-4.el8?arch=x86_64&upstream=gawk-4.2.1-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gdb-gdbserver",
+            "version": "8.2-20.el8",
+            "purl": "pkg:rpm/redhat/gdb-gdbserver@8.2-20.el8?arch=x86_64&upstream=gdb-8.2-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gdbm",
+            "version": "1:1.18-2.el8",
+            "purl": "pkg:rpm/redhat/gdbm@1.18-2.el8?arch=x86_64&epoch=1&upstream=gdbm-1.18-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gdbm-libs",
+            "version": "1:1.18-2.el8",
+            "purl": "pkg:rpm/redhat/gdbm-libs@1.18-2.el8?arch=x86_64&epoch=1&upstream=gdbm-1.18-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "github.com/BurntSushi/toml",
+            "version": "v1.2.1",
+            "purl": "pkg:golang/github.com/BurntSushi/toml@v1.2.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/MakeNowJust/heredoc",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/MakeNowJust/heredoc@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/goutils",
+            "version": "v1.1.1",
+            "purl": "pkg:golang/github.com/Masterminds/goutils@v1.1.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/semver",
+            "version": "v1.5.0",
+            "purl": "pkg:golang/github.com/Masterminds/semver@v1.5.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/semver/v3",
+            "version": "v3.2.1",
+            "purl": "pkg:golang/github.com/Masterminds/semver@v3.2.1#v3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/sprig",
+            "version": "v2.22.0+incompatible",
+            "purl": "pkg:golang/github.com/Masterminds/sprig@v2.22.0%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/sprig/v3",
+            "version": "v3.2.3",
+            "purl": "pkg:golang/github.com/Masterminds/sprig@v3.2.3#v3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/Masterminds/squirrel",
+            "version": "v1.5.4",
+            "purl": "pkg:golang/github.com/Masterminds/squirrel@v1.5.4",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/ProtonMail/go-crypto",
+            "version": "v0.0.0-20210428141323-04723f9f07d7",
+            "purl": "pkg:golang/github.com/ProtonMail/go-crypto@v0.0.0-20210428141323-04723f9f07d7",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/asaskevich/govalidator",
+            "version": "v0.0.0-20200428143746-21a406dcc535",
+            "purl": "pkg:golang/github.com/asaskevich/govalidator@v0.0.0-20200428143746-21a406dcc535",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/beorn7/perks",
+            "version": "v1.0.1",
+            "purl": "pkg:golang/github.com/beorn7/perks@v1.0.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/blang/semver",
+            "version": "v3.5.1+incompatible",
+            "purl": "pkg:golang/github.com/blang/semver@v3.5.1%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/blang/semver/v4",
+            "version": "v4.0.0",
+            "purl": "pkg:golang/github.com/blang/semver@v4.0.0#v4",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/cespare/xxhash/v2",
+            "version": "v2.2.0",
+            "purl": "pkg:golang/github.com/cespare/xxhash@v2.2.0#v2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/chai2010/gettext-go",
+            "version": "v1.0.2",
+            "purl": "pkg:golang/github.com/chai2010/gettext-go@v1.0.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/cloudevents/sdk-go/v2",
+            "version": "v2.14.0",
+            "purl": "pkg:golang/github.com/cloudevents/sdk-go@v2.14.0#v2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/containerd/containerd",
+            "version": "v1.7.0",
+            "purl": "pkg:golang/github.com/containerd/containerd@v1.7.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/containerd/continuity",
+            "version": "v0.3.0",
+            "purl": "pkg:golang/github.com/containerd/continuity@v0.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/coreos/go-oidc",
+            "version": "v2.1.0+incompatible",
+            "purl": "pkg:golang/github.com/coreos/go-oidc@v2.1.0%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/coreos/pkg",
+            "version": "v0.0.0-20180928190104-399ea9e2e55f",
+            "purl": "pkg:golang/github.com/coreos/pkg@v0.0.0-20180928190104-399ea9e2e55f",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/cyphar/filepath-securejoin",
+            "version": "v0.2.3",
+            "purl": "pkg:golang/github.com/cyphar/filepath-securejoin@v0.2.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/davecgh/go-spew",
+            "version": "v1.1.1",
+            "purl": "pkg:golang/github.com/davecgh/go-spew@v1.1.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/devfile/api/v2",
+            "version": "v2.2.0",
+            "purl": "pkg:golang/github.com/devfile/api@v2.2.0#v2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/devfile/library",
+            "version": "v1.2.1-0.20221017204048-ec4b02cbe9c7",
+            "purl": "pkg:golang/github.com/devfile/library@v1.2.1-0.20221017204048-ec4b02cbe9c7",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/devfile/registry-support/index/generator",
+            "version": "v0.0.0-20220624203950-e7282a4695b6",
+            "purl": "pkg:golang/github.com/devfile/registry-support@v0.0.0-20220624203950-e7282a4695b6#index/generator",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/devfile/registry-support/registry-library",
+            "version": "v0.0.0-20220913214140-36887a7907aa",
+            "purl": "pkg:golang/github.com/devfile/registry-support@v0.0.0-20220913214140-36887a7907aa#registry-library",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/cli",
+            "version": "v20.10.21+incompatible",
+            "purl": "pkg:golang/github.com/docker/cli@v20.10.21%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/distribution",
+            "version": "v2.8.2+incompatible",
+            "purl": "pkg:golang/github.com/docker/distribution@v2.8.2%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/docker-credential-helpers",
+            "version": "v0.7.0",
+            "purl": "pkg:golang/github.com/docker/docker-credential-helpers@v0.7.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/go-connections",
+            "version": "v0.4.0",
+            "purl": "pkg:golang/github.com/docker/go-connections@v0.4.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/go-metrics",
+            "version": "v0.0.1",
+            "purl": "pkg:golang/github.com/docker/go-metrics@v0.0.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/docker/go-units",
+            "version": "v0.5.0",
+            "purl": "pkg:golang/github.com/docker/go-units@v0.5.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/emicklei/go-restful/v3",
+            "version": "v3.10.1",
+            "purl": "pkg:golang/github.com/emicklei/go-restful@v3.10.1#v3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/emirpasic/gods",
+            "version": "v1.12.0",
+            "purl": "pkg:golang/github.com/emirpasic/gods@v1.12.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/evanphx/json-patch",
+            "version": "v5.6.0+incompatible",
+            "purl": "pkg:golang/github.com/evanphx/json-patch@v5.6.0%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/exponent-io/jsonpath",
+            "version": "v0.0.0-20151013193312-d6023ce2651d",
+            "purl": "pkg:golang/github.com/exponent-io/jsonpath@v0.0.0-20151013193312-d6023ce2651d",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/fatih/color",
+            "version": "v1.13.0",
+            "purl": "pkg:golang/github.com/fatih/color@v1.13.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/fsnotify/fsnotify",
+            "version": "v1.6.0",
+            "purl": "pkg:golang/github.com/fsnotify/fsnotify@v1.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/ghodss/yaml",
+            "version": "v1.0.1-0.20190212211648-25d852aebe32",
+            "purl": "pkg:golang/github.com/ghodss/yaml@v1.0.1-0.20190212211648-25d852aebe32",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-errors/errors",
+            "version": "v1.4.2",
+            "purl": "pkg:golang/github.com/go-errors/errors@v1.4.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-git/gcfg",
+            "version": "v1.5.0",
+            "purl": "pkg:golang/github.com/go-git/gcfg@v1.5.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-git/go-billy/v5",
+            "version": "v5.3.1",
+            "purl": "pkg:golang/github.com/go-git/go-billy@v5.3.1#v5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-git/go-git/v5",
+            "version": "v5.4.2",
+            "purl": "pkg:golang/github.com/go-git/go-git@v5.4.2#v5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-gorp/gorp/v3",
+            "version": "v3.1.0",
+            "purl": "pkg:golang/github.com/go-gorp/gorp@v3.1.0#v3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-logr/logr",
+            "version": "v1.2.3",
+            "purl": "pkg:golang/github.com/go-logr/logr@v1.2.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-logr/stdr",
+            "version": "v1.2.2",
+            "purl": "pkg:golang/github.com/go-logr/stdr@v1.2.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-openapi/jsonpointer",
+            "version": "v0.19.6",
+            "purl": "pkg:golang/github.com/go-openapi/jsonpointer@v0.19.6",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-openapi/jsonreference",
+            "version": "v0.20.1",
+            "purl": "pkg:golang/github.com/go-openapi/jsonreference@v0.20.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/go-openapi/swag",
+            "version": "v0.22.3",
+            "purl": "pkg:golang/github.com/go-openapi/swag@v0.22.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gobwas/glob",
+            "version": "v0.2.3",
+            "purl": "pkg:golang/github.com/gobwas/glob@v0.2.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gogo/protobuf",
+            "version": "v1.3.2",
+            "purl": "pkg:golang/github.com/gogo/protobuf@v1.3.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/golang/groupcache",
+            "version": "v0.0.0-20210331224755-41bb18bfe9da",
+            "purl": "pkg:golang/github.com/golang/groupcache@v0.0.0-20210331224755-41bb18bfe9da",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/golang/mock",
+            "version": "v1.6.0",
+            "purl": "pkg:golang/github.com/golang/mock@v1.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/golang/protobuf",
+            "version": "v1.5.3",
+            "purl": "pkg:golang/github.com/golang/protobuf@v1.5.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/btree",
+            "version": "v1.0.1",
+            "purl": "pkg:golang/github.com/google/btree@v1.0.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/gnostic",
+            "version": "v0.5.7-v3refs",
+            "purl": "pkg:golang/github.com/google/gnostic@v0.5.7-v3refs",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/go-cmp",
+            "version": "v0.5.9",
+            "purl": "pkg:golang/github.com/google/go-cmp@v0.5.9",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/gofuzz",
+            "version": "v1.2.0",
+            "purl": "pkg:golang/github.com/google/gofuzz@v1.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/shlex",
+            "version": "v0.0.0-20191202100458-e7afc7fbc510",
+            "purl": "pkg:golang/github.com/google/shlex@v0.0.0-20191202100458-e7afc7fbc510",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/google/uuid",
+            "version": "v1.3.0",
+            "purl": "pkg:golang/github.com/google/uuid@v1.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gorilla/mux",
+            "version": "v1.8.0",
+            "purl": "pkg:golang/github.com/gorilla/mux@v1.8.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gorilla/websocket",
+            "version": "v1.4.2",
+            "purl": "pkg:golang/github.com/gorilla/websocket@v1.4.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gosuri/uitable",
+            "version": "v0.0.4",
+            "purl": "pkg:golang/github.com/gosuri/uitable@v0.0.4",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/graph-gophers/graphql-go",
+            "version": "v1.3.0",
+            "purl": "pkg:golang/github.com/graph-gophers/graphql-go@v1.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/gregjones/httpcache",
+            "version": "v0.0.0-20180305231024-9cad4c3443a7",
+            "purl": "pkg:golang/github.com/gregjones/httpcache@v0.0.0-20180305231024-9cad4c3443a7",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/errwrap",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/hashicorp/errwrap@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/go-cleanhttp",
+            "version": "v0.5.2",
+            "purl": "pkg:golang/github.com/hashicorp/go-cleanhttp@v0.5.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/go-multierror",
+            "version": "v1.1.1",
+            "purl": "pkg:golang/github.com/hashicorp/go-multierror@v1.1.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/go-retryablehttp",
+            "version": "v0.6.8",
+            "purl": "pkg:golang/github.com/hashicorp/go-retryablehttp@v0.6.8",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/go-version",
+            "version": "v1.4.0",
+            "purl": "pkg:golang/github.com/hashicorp/go-version@v1.4.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/hashicorp/hcl",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/hashicorp/hcl@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/helm/chart-testing/v3",
+            "version": "v3.4.0",
+            "purl": "pkg:golang/github.com/helm/chart-testing@v3.4.0#v3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/huandu/xstrings",
+            "version": "v1.4.0",
+            "purl": "pkg:golang/github.com/huandu/xstrings@v1.4.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/imdario/mergo",
+            "version": "v0.3.13",
+            "purl": "pkg:golang/github.com/imdario/mergo@v0.3.13",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/jbenet/go-context",
+            "version": "v0.0.0-20150711004518-d14ea06fba99",
+            "purl": "pkg:golang/github.com/jbenet/go-context@v0.0.0-20150711004518-d14ea06fba99",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/jmoiron/sqlx",
+            "version": "v1.3.5",
+            "purl": "pkg:golang/github.com/jmoiron/sqlx@v1.3.5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/josharian/intern",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/josharian/intern@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/json-iterator/go",
+            "version": "v1.1.12",
+            "purl": "pkg:golang/github.com/json-iterator/go@v1.1.12",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/kevinburke/ssh_config",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/kevinburke/ssh_config@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/klauspost/compress",
+            "version": "v1.16.0",
+            "purl": "pkg:golang/github.com/klauspost/compress@v1.16.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/lann/builder",
+            "version": "v0.0.0-20180802200727-47ae307949d0",
+            "purl": "pkg:golang/github.com/lann/builder@v0.0.0-20180802200727-47ae307949d0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/lann/ps",
+            "version": "v0.0.0-20150810152359-62de8c46ede0",
+            "purl": "pkg:golang/github.com/lann/ps@v0.0.0-20150810152359-62de8c46ede0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/lib/pq",
+            "version": "v1.10.9",
+            "purl": "pkg:golang/github.com/lib/pq@v1.10.9",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/liggitt/tabwriter",
+            "version": "v0.0.0-20181228230101-89fcab3d43de",
+            "purl": "pkg:golang/github.com/liggitt/tabwriter@v0.0.0-20181228230101-89fcab3d43de",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/magiconair/properties",
+            "version": "v1.8.5",
+            "purl": "pkg:golang/github.com/magiconair/properties@v1.8.5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mailru/easyjson",
+            "version": "v0.7.7",
+            "purl": "pkg:golang/github.com/mailru/easyjson@v0.7.7",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mattn/go-colorable",
+            "version": "v0.1.13",
+            "purl": "pkg:golang/github.com/mattn/go-colorable@v0.1.13",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mattn/go-isatty",
+            "version": "v0.0.17",
+            "purl": "pkg:golang/github.com/mattn/go-isatty@v0.0.17",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mattn/go-runewidth",
+            "version": "v0.0.9",
+            "purl": "pkg:golang/github.com/mattn/go-runewidth@v0.0.9",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mattn/go-shellwords",
+            "version": "v1.0.12",
+            "purl": "pkg:golang/github.com/mattn/go-shellwords@v1.0.12",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/matttproud/golang_protobuf_extensions",
+            "version": "v1.0.4",
+            "purl": "pkg:golang/github.com/matttproud/golang_protobuf_extensions@v1.0.4",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/copystructure",
+            "version": "v1.2.0",
+            "purl": "pkg:golang/github.com/mitchellh/copystructure@v1.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/go-homedir",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/mitchellh/go-homedir@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/go-wordwrap",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/mitchellh/go-wordwrap@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/hashstructure/v2",
+            "version": "v2.0.2",
+            "purl": "pkg:golang/github.com/mitchellh/hashstructure@v2.0.2#v2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/mapstructure",
+            "version": "v1.4.3",
+            "purl": "pkg:golang/github.com/mitchellh/mapstructure@v1.4.3",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/mitchellh/reflectwalk",
+            "version": "v1.0.2",
+            "purl": "pkg:golang/github.com/mitchellh/reflectwalk@v1.0.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/moby/locker",
+            "version": "v1.0.1",
+            "purl": "pkg:golang/github.com/moby/locker@v1.0.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/moby/moby",
+            "version": "v0.7.3-0.20190826074503-38ab9da00309",
+            "purl": "pkg:golang/github.com/moby/moby@v0.7.3-0.20190826074503-38ab9da00309",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/moby/spdystream",
+            "version": "v0.2.0",
+            "purl": "pkg:golang/github.com/moby/spdystream@v0.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/moby/term",
+            "version": "v0.0.0-20221205130635-1aeaba878587",
+            "purl": "pkg:golang/github.com/moby/term@v0.0.0-20221205130635-1aeaba878587",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/modern-go/concurrent",
+            "version": "v0.0.0-20180306012644-bacd9c7ef1dd",
+            "purl": "pkg:golang/github.com/modern-go/concurrent@v0.0.0-20180306012644-bacd9c7ef1dd",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/modern-go/reflect2",
+            "version": "v1.0.2",
+            "purl": "pkg:golang/github.com/modern-go/reflect2@v1.0.2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/monochromegane/go-gitignore",
+            "version": "v0.0.0-20200626010858-205db1a8cc00",
+            "purl": "pkg:golang/github.com/monochromegane/go-gitignore@v0.0.0-20200626010858-205db1a8cc00",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/morikuni/aec",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/morikuni/aec@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/munnerz/goautoneg",
+            "version": "v0.0.0-20191010083416-a7dc8b61c822",
+            "purl": "pkg:golang/github.com/munnerz/goautoneg@v0.0.0-20191010083416-a7dc8b61c822",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/onsi/gomega",
+            "version": "v1.27.4",
+            "purl": "pkg:golang/github.com/onsi/gomega@v1.27.4",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/opencontainers/go-digest",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/github.com/opencontainers/go-digest@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/opencontainers/image-spec",
+            "version": "v1.1.0-rc2.0.20221005185240-3a7f492d3f1b",
+            "purl": "pkg:golang/github.com/opencontainers/image-spec@v1.1.0-rc2.0.20221005185240-3a7f492d3f1b",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/opencontainers/runc",
+            "version": "v1.0.0-rc8.0.20190926150303-84373aaa560b",
+            "purl": "pkg:golang/github.com/opencontainers/runc@v1.0.0-rc8.0.20190926150303-84373aaa560b",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/openshift/api",
+            "version": "v0.0.0-20220803132145-8e34324aa580",
+            "purl": "pkg:golang/github.com/openshift/api@v0.0.0-20220803132145-8e34324aa580",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/openshift/console",
+            "version": "v6.0.6-22206-g350e1eabfd",
+            "purl": "pkg:golang/github.com/openshift/console@v6.0.6-22206-g350e1eabfd",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/openshift/library-go",
+            "version": "v0.0.0-20200424095618-2aeb4725dadf",
+            "purl": "pkg:golang/github.com/openshift/library-go@v0.0.0-20200424095618-2aeb4725dadf",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/opentracing/opentracing-go",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/opentracing/opentracing-go@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/operator-framework/api",
+            "version": "v0.7.1",
+            "purl": "pkg:golang/github.com/operator-framework/api@v0.7.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/operator-framework/kubectl-operator",
+            "version": "v0.3.0",
+            "purl": "pkg:golang/github.com/operator-framework/kubectl-operator@v0.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/operator-framework/operator-lifecycle-manager",
+            "version": "v0.0.0-20200521062108-408ca95d458f",
+            "purl": "pkg:golang/github.com/operator-framework/operator-lifecycle-manager@v0.0.0-20200521062108-408ca95d458f",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/operator-framework/operator-registry",
+            "version": "v1.12.5",
+            "purl": "pkg:golang/github.com/operator-framework/operator-registry@v1.12.5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/pelletier/go-toml",
+            "version": "v1.9.5",
+            "purl": "pkg:golang/github.com/pelletier/go-toml@v1.9.5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/peterbourgon/diskv",
+            "version": "v2.0.1+incompatible",
+            "purl": "pkg:golang/github.com/peterbourgon/diskv@v2.0.1%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/pkg/errors",
+            "version": "v0.9.1",
+            "purl": "pkg:golang/github.com/pkg/errors@v0.9.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/pquerna/cachecontrol",
+            "version": "v0.1.0",
+            "purl": "pkg:golang/github.com/pquerna/cachecontrol@v0.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/prometheus/client_golang",
+            "version": "v1.14.0",
+            "purl": "pkg:golang/github.com/prometheus/client_golang@v1.14.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/prometheus/client_model",
+            "version": "v0.3.0",
+            "purl": "pkg:golang/github.com/prometheus/client_model@v0.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/prometheus/common",
+            "version": "v0.37.0",
+            "purl": "pkg:golang/github.com/prometheus/common@v0.37.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/prometheus/procfs",
+            "version": "v0.8.0",
+            "purl": "pkg:golang/github.com/prometheus/procfs@v0.8.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/rawagner/graphql-transport-ws",
+            "version": "v0.0.0-20200817140314-dcfbf0388067",
+            "purl": "pkg:golang/github.com/rawagner/graphql-transport-ws@v0.0.0-20200817140314-dcfbf0388067",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/redhat-certification/chart-verifier",
+            "version": "v0.0.0-20220927162416-f4f07c9860f7",
+            "purl": "pkg:golang/github.com/redhat-certification/chart-verifier@v0.0.0-20220927162416-f4f07c9860f7",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/rubenv/sql-migrate",
+            "version": "v1.3.1",
+            "purl": "pkg:golang/github.com/rubenv/sql-migrate@v1.3.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/russross/blackfriday/v2",
+            "version": "v2.1.0",
+            "purl": "pkg:golang/github.com/russross/blackfriday@v2.1.0#v2",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/sergi/go-diff",
+            "version": "v1.2.0",
+            "purl": "pkg:golang/github.com/sergi/go-diff@v1.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/shopspring/decimal",
+            "version": "v1.3.1",
+            "purl": "pkg:golang/github.com/shopspring/decimal@v1.3.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/sirupsen/logrus",
+            "version": "v1.9.0",
+            "purl": "pkg:golang/github.com/sirupsen/logrus@v1.9.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/afero",
+            "version": "v1.6.0",
+            "purl": "pkg:golang/github.com/spf13/afero@v1.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/cast",
+            "version": "v1.5.0",
+            "purl": "pkg:golang/github.com/spf13/cast@v1.5.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/cobra",
+            "version": "v1.6.1",
+            "purl": "pkg:golang/github.com/spf13/cobra@v1.6.1",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/jwalterweatherman",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/spf13/jwalterweatherman@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/pflag",
+            "version": "v1.0.5",
+            "purl": "pkg:golang/github.com/spf13/pflag@v1.0.5",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/spf13/viper",
+            "version": "v1.10.0",
+            "purl": "pkg:golang/github.com/spf13/viper@v1.10.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/subosito/gotenv",
+            "version": "v1.2.0",
+            "purl": "pkg:golang/github.com/subosito/gotenv@v1.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/xanzy/ssh-agent",
+            "version": "v0.3.0",
+            "purl": "pkg:golang/github.com/xanzy/ssh-agent@v0.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/xeipuuv/gojsonpointer",
+            "version": "v0.0.0-20190905194746-02993c407bfb",
+            "purl": "pkg:golang/github.com/xeipuuv/gojsonpointer@v0.0.0-20190905194746-02993c407bfb",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/xeipuuv/gojsonreference",
+            "version": "v0.0.0-20180127040603-bd5ef7bd5415",
+            "purl": "pkg:golang/github.com/xeipuuv/gojsonreference@v0.0.0-20180127040603-bd5ef7bd5415",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/xeipuuv/gojsonschema",
+            "version": "v1.2.0",
+            "purl": "pkg:golang/github.com/xeipuuv/gojsonschema@v1.2.0",
+            "system": "golang"
+          },
+          {
+            "name": "github.com/xlab/treeprint",
+            "version": "v1.1.0",
+            "purl": "pkg:golang/github.com/xlab/treeprint@v1.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "glib2",
+            "version": "2.56.4-165.el8_10",
+            "purl": "pkg:rpm/redhat/glib2@2.56.4-165.el8_10?arch=x86_64&upstream=glib2-2.56.4-165.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "glibc",
+            "version": "2.28-251.el8_10.5",
+            "purl": "pkg:rpm/redhat/glibc@2.28-251.el8_10.5?arch=x86_64&upstream=glibc-2.28-251.el8_10.5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "glibc-common",
+            "version": "2.28-251.el8_10.5",
+            "purl": "pkg:rpm/redhat/glibc-common@2.28-251.el8_10.5?arch=x86_64&upstream=glibc-2.28-251.el8_10.5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "glibc-gconv-extra",
+            "version": "2.28-251.el8_10.5",
+            "purl": "pkg:rpm/redhat/glibc-gconv-extra@2.28-251.el8_10.5?arch=x86_64&upstream=glibc-2.28-251.el8_10.5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "glibc-langpack-en",
+            "version": "2.28-251.el8_10.5",
+            "purl": "pkg:rpm/redhat/glibc-langpack-en@2.28-251.el8_10.5?arch=x86_64&upstream=glibc-2.28-251.el8_10.5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "glibc-minimal-langpack",
+            "version": "2.28-251.el8_10.5",
+            "purl": "pkg:rpm/redhat/glibc-minimal-langpack@2.28-251.el8_10.5?arch=x86_64&upstream=glibc-2.28-251.el8_10.5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gmp",
+            "version": "1:6.1.2-11.el8",
+            "purl": "pkg:rpm/redhat/gmp@6.1.2-11.el8?arch=x86_64&epoch=1&upstream=gmp-6.1.2-11.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gnupg2",
+            "version": "2.2.20-3.el8_6",
+            "purl": "pkg:rpm/redhat/gnupg2@2.2.20-3.el8_6?arch=x86_64&upstream=gnupg2-2.2.20-3.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gnutls",
+            "version": "3.6.16-8.el8_9.3",
+            "purl": "pkg:rpm/redhat/gnutls@3.6.16-8.el8_9.3?arch=x86_64&upstream=gnutls-3.6.16-8.el8_9.3.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "go.opentelemetry.io/otel",
+            "version": "v1.14.0",
+            "purl": "pkg:golang/go.opentelemetry.io/otel@v1.14.0",
+            "system": "golang"
+          },
+          {
+            "name": "go.opentelemetry.io/otel/trace",
+            "version": "v1.14.0",
+            "purl": "pkg:golang/go.opentelemetry.io/otel/trace@v1.14.0",
+            "system": "golang"
+          },
+          {
+            "name": "go.starlark.net",
+            "version": "v0.0.0-20200306205701-8dd3e2ee1dd5",
+            "purl": "pkg:golang/go.starlark.net@v0.0.0-20200306205701-8dd3e2ee1dd5",
+            "system": "golang"
+          },
+          {
+            "name": "go.uber.org/atomic",
+            "version": "v1.7.0",
+            "purl": "pkg:golang/go.uber.org/atomic@v1.7.0",
+            "system": "golang"
+          },
+          {
+            "name": "go.uber.org/multierr",
+            "version": "v1.6.0",
+            "purl": "pkg:golang/go.uber.org/multierr@v1.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "go.uber.org/zap",
+            "version": "v1.19.1",
+            "purl": "pkg:golang/go.uber.org/zap@v1.19.1",
+            "system": "golang"
+          },
+          {
+            "name": "gobject-introspection",
+            "version": "1.56.1-1.el8",
+            "purl": "pkg:rpm/redhat/gobject-introspection@1.56.1-1.el8?arch=x86_64&upstream=gobject-introspection-1.56.1-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "golang.org/x/crypto",
+            "version": "v0.5.0",
+            "purl": "pkg:golang/golang.org/x/crypto@v0.5.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/mod",
+            "version": "v0.9.0",
+            "purl": "pkg:golang/golang.org/x/mod@v0.9.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/net",
+            "version": "v0.8.0",
+            "purl": "pkg:golang/golang.org/x/net@v0.8.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/oauth2",
+            "version": "v0.4.0",
+            "purl": "pkg:golang/golang.org/x/oauth2@v0.4.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/sync",
+            "version": "v0.1.0",
+            "purl": "pkg:golang/golang.org/x/sync@v0.1.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/sys",
+            "version": "v0.6.0",
+            "purl": "pkg:golang/golang.org/x/sys@v0.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/term",
+            "version": "v0.6.0",
+            "purl": "pkg:golang/golang.org/x/term@v0.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/text",
+            "version": "v0.9.0",
+            "purl": "pkg:golang/golang.org/x/text@v0.9.0",
+            "system": "golang"
+          },
+          {
+            "name": "golang.org/x/time",
+            "version": "v0.0.0-20220210224613-90d013bbcef8",
+            "purl": "pkg:golang/golang.org/x/time@v0.0.0-20220210224613-90d013bbcef8",
+            "system": "golang"
+          },
+          {
+            "name": "google.golang.org/genproto",
+            "version": "v0.0.0-20230306155012-7f2fa6fef1f4",
+            "purl": "pkg:golang/google.golang.org/genproto@v0.0.0-20230306155012-7f2fa6fef1f4",
+            "system": "golang"
+          },
+          {
+            "name": "google.golang.org/grpc",
+            "version": "v1.53.0",
+            "purl": "pkg:golang/google.golang.org/grpc@v1.53.0",
+            "system": "golang"
+          },
+          {
+            "name": "google.golang.org/protobuf",
+            "version": "v1.28.1",
+            "purl": "pkg:golang/google.golang.org/protobuf@v1.28.1",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/inf.v0",
+            "version": "v0.9.1",
+            "purl": "pkg:golang/gopkg.in/inf.v0@v0.9.1",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/ini.v1",
+            "version": "v1.66.2",
+            "purl": "pkg:golang/gopkg.in/ini.v1@v1.66.2",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/square/go-jose.v2",
+            "version": "v2.6.0",
+            "purl": "pkg:golang/gopkg.in/square/go-jose.v2@v2.6.0",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/warnings.v0",
+            "version": "v0.1.2",
+            "purl": "pkg:golang/gopkg.in/warnings.v0@v0.1.2",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/yaml.v2",
+            "version": "v2.4.0",
+            "purl": "pkg:golang/gopkg.in/yaml.v2@v2.4.0",
+            "system": "golang"
+          },
+          {
+            "name": "gopkg.in/yaml.v3",
+            "version": "v3.0.1",
+            "purl": "pkg:golang/gopkg.in/yaml.v3@v3.0.1",
+            "system": "golang"
+          },
+          {
+            "name": "gpg",
+            "version": "1.13.1",
+            "purl": "pkg:pypi/gpg@1.13.1",
+            "system": "python"
+          },
+          {
+            "name": "gpg-pubkey",
+            "version": "d4082792-5b32db75",
+            "purl": "pkg:rpm/redhat/gpg-pubkey@d4082792-5b32db75?distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gpg-pubkey",
+            "version": "fd431d51-4ae0493b",
+            "purl": "pkg:rpm/redhat/gpg-pubkey@fd431d51-4ae0493b?distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gpgme",
+            "version": "1.13.1-12.el8",
+            "purl": "pkg:rpm/redhat/gpgme@1.13.1-12.el8?arch=x86_64&upstream=gpgme-1.13.1-12.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "grep",
+            "version": "3.1-6.el8",
+            "purl": "pkg:rpm/redhat/grep@3.1-6.el8?arch=x86_64&upstream=grep-3.1-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "gzip",
+            "version": "1.9-13.el8_5",
+            "purl": "pkg:rpm/redhat/gzip@1.9-13.el8_5?arch=x86_64&upstream=gzip-1.9-13.el8_5.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "helm.sh/helm/v3",
+            "version": "v3.12.1",
+            "purl": "pkg:golang/helm.sh/helm/v3@v3.12.1",
+            "system": "golang"
+          },
+          {
+            "name": "hostname",
+            "version": "3.20-6.el8",
+            "purl": "pkg:rpm/redhat/hostname@3.20-6.el8?arch=x86_64&upstream=hostname-3.20-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "idna",
+            "version": "2.5",
+            "purl": "pkg:pypi/idna@2.5",
+            "system": "python"
+          },
+          {
+            "name": "ima-evm-utils",
+            "version": "1.3.2-12.el8",
+            "purl": "pkg:rpm/redhat/ima-evm-utils@1.3.2-12.el8?arch=x86_64&upstream=ima-evm-utils-1.3.2-12.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "info",
+            "version": "6.5-7.el8",
+            "purl": "pkg:rpm/redhat/info@6.5-7.el8?arch=x86_64&upstream=texinfo-6.5-7.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "iniparse",
+            "version": "0.4",
+            "purl": "pkg:pypi/iniparse@0.4",
+            "system": "python"
+          },
+          {
+            "name": "iproute",
+            "version": "6.2.0-6.el8_10",
+            "purl": "pkg:rpm/redhat/iproute@6.2.0-6.el8_10?arch=x86_64&upstream=iproute-6.2.0-6.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "isc",
+            "version": "2.0",
+            "purl": "pkg:pypi/isc@2.0",
+            "system": "python"
+          },
+          {
+            "name": "json-c",
+            "version": "0.13.1-3.el8",
+            "purl": "pkg:rpm/redhat/json-c@0.13.1-3.el8?arch=x86_64&upstream=json-c-0.13.1-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "json-glib",
+            "version": "1.4.4-1.el8",
+            "purl": "pkg:rpm/redhat/json-glib@1.4.4-1.el8?arch=x86_64&upstream=json-glib-1.4.4-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "k8s.io/api",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/api@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/apiextensions-apiserver",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/apiextensions-apiserver@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/apimachinery",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/apimachinery@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/apiserver",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/apiserver@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/cli-runtime",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/cli-runtime@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/client-go",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/client-go@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/component-base",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/component-base@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/helm",
+            "version": "v2.17.0+incompatible",
+            "purl": "pkg:golang/k8s.io/helm@v2.17.0%2Bincompatible",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/klog",
+            "version": "v1.0.0",
+            "purl": "pkg:golang/k8s.io/klog@v1.0.0",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/klog/v2",
+            "version": "v2.90.1",
+            "purl": "pkg:golang/k8s.io/klog/v2@v2.90.1",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/kube-openapi",
+            "version": "v0.0.0-20230501164219-8b0f38b5fd1f",
+            "purl": "pkg:golang/k8s.io/kube-openapi@v0.0.0-20230501164219-8b0f38b5fd1f",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/kubectl",
+            "version": "v0.27.2",
+            "purl": "pkg:golang/k8s.io/kubectl@v0.27.2",
+            "system": "golang"
+          },
+          {
+            "name": "k8s.io/utils",
+            "version": "v0.0.0-20230220204549-a5ecb0141aa5",
+            "purl": "pkg:golang/k8s.io/utils@v0.0.0-20230220204549-a5ecb0141aa5",
+            "system": "golang"
+          },
+          {
+            "name": "keyutils-libs",
+            "version": "1.5.10-9.el8",
+            "purl": "pkg:rpm/redhat/keyutils-libs@1.5.10-9.el8?arch=x86_64&upstream=keyutils-1.5.10-9.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "kmod-libs",
+            "version": "25-20.el8",
+            "purl": "pkg:rpm/redhat/kmod-libs@25-20.el8?arch=x86_64&upstream=kmod-25-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "krb5-libs",
+            "version": "1.18.2-30.el8_10",
+            "purl": "pkg:rpm/redhat/krb5-libs@1.18.2-30.el8_10?arch=x86_64&upstream=krb5-1.18.2-30.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "langpacks-en",
+            "version": "1.0-12.el8",
+            "purl": "pkg:rpm/redhat/langpacks-en@1.0-12.el8?arch=noarch&upstream=langpacks-1.0-12.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libacl",
+            "version": "2.2.53-3.el8",
+            "purl": "pkg:rpm/redhat/libacl@2.2.53-3.el8?arch=x86_64&upstream=acl-2.2.53-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libarchive",
+            "version": "3.3.3-5.el8",
+            "purl": "pkg:rpm/redhat/libarchive@3.3.3-5.el8?arch=x86_64&upstream=libarchive-3.3.3-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libassuan",
+            "version": "2.5.1-3.el8",
+            "purl": "pkg:rpm/redhat/libassuan@2.5.1-3.el8?arch=x86_64&upstream=libassuan-2.5.1-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libattr",
+            "version": "2.4.48-3.el8",
+            "purl": "pkg:rpm/redhat/libattr@2.4.48-3.el8?arch=x86_64&upstream=attr-2.4.48-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libblkid",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/libblkid@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libbpf",
+            "version": "0.5.0-1.el8",
+            "purl": "pkg:rpm/redhat/libbpf@0.5.0-1.el8?arch=x86_64&upstream=libbpf-0.5.0-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libcap",
+            "version": "2.48-6.el8_9",
+            "purl": "pkg:rpm/redhat/libcap@2.48-6.el8_9?arch=x86_64&upstream=libcap-2.48-6.el8_9.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libcap-ng",
+            "version": "0.7.11-1.el8",
+            "purl": "pkg:rpm/redhat/libcap-ng@0.7.11-1.el8?arch=x86_64&upstream=libcap-ng-0.7.11-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libcom_err",
+            "version": "1.45.6-5.el8",
+            "purl": "pkg:rpm/redhat/libcom_err@1.45.6-5.el8?arch=x86_64&upstream=e2fsprogs-1.45.6-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libcomps",
+            "version": "0.1.18",
+            "purl": "pkg:pypi/libcomps@0.1.18",
+            "system": "python"
+          },
+          {
+            "name": "libcomps",
+            "version": "0.1.18-1.el8",
+            "purl": "pkg:rpm/redhat/libcomps@0.1.18-1.el8?arch=x86_64&upstream=libcomps-0.1.18-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libcurl",
+            "version": "7.61.1-34.el8_10.2",
+            "purl": "pkg:rpm/redhat/libcurl@7.61.1-34.el8_10.2?arch=x86_64&upstream=curl-7.61.1-34.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libdb",
+            "version": "5.3.28-42.el8_4",
+            "purl": "pkg:rpm/redhat/libdb@5.3.28-42.el8_4?arch=x86_64&upstream=libdb-5.3.28-42.el8_4.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libdb-utils",
+            "version": "5.3.28-42.el8_4",
+            "purl": "pkg:rpm/redhat/libdb-utils@5.3.28-42.el8_4?arch=x86_64&upstream=libdb-5.3.28-42.el8_4.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libdnf",
+            "version": "0.63.0-20.el8_10",
+            "purl": "pkg:rpm/redhat/libdnf@0.63.0-20.el8_10?arch=x86_64&upstream=libdnf-0.63.0-20.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libfdisk",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/libfdisk@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libffi",
+            "version": "3.1-24.el8",
+            "purl": "pkg:rpm/redhat/libffi@3.1-24.el8?arch=x86_64&upstream=libffi-3.1-24.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libgcc",
+            "version": "8.5.0-22.el8_10",
+            "purl": "pkg:rpm/redhat/libgcc@8.5.0-22.el8_10?arch=x86_64&upstream=gcc-8.5.0-22.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libgcrypt",
+            "version": "1.8.5-7.el8_6",
+            "purl": "pkg:rpm/redhat/libgcrypt@1.8.5-7.el8_6?arch=x86_64&upstream=libgcrypt-1.8.5-7.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libgpg-error",
+            "version": "1.31-1.el8",
+            "purl": "pkg:rpm/redhat/libgpg-error@1.31-1.el8?arch=x86_64&upstream=libgpg-error-1.31-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libidn2",
+            "version": "2.2.0-1.el8",
+            "purl": "pkg:rpm/redhat/libidn2@2.2.0-1.el8?arch=x86_64&upstream=libidn2-2.2.0-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libksba",
+            "version": "1.3.5-9.el8_7",
+            "purl": "pkg:rpm/redhat/libksba@1.3.5-9.el8_7?arch=x86_64&upstream=libksba-1.3.5-9.el8_7.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libmaxminddb",
+            "version": "1.2.0-10.el8_9.1",
+            "purl": "pkg:rpm/redhat/libmaxminddb@1.2.0-10.el8_9.1?arch=x86_64&upstream=libmaxminddb-1.2.0-10.el8_9.1.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libmetalink",
+            "version": "0.1.3-7.el8",
+            "purl": "pkg:rpm/redhat/libmetalink@0.1.3-7.el8?arch=x86_64&upstream=libmetalink-0.1.3-7.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libmnl",
+            "version": "1.0.4-6.el8",
+            "purl": "pkg:rpm/redhat/libmnl@1.0.4-6.el8?arch=x86_64&upstream=libmnl-1.0.4-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libmodulemd",
+            "version": "2.13.0-1.el8",
+            "purl": "pkg:rpm/redhat/libmodulemd@2.13.0-1.el8?arch=x86_64&upstream=libmodulemd-2.13.0-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libmount",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/libmount@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libnghttp2",
+            "version": "1.33.0-6.el8_10.1",
+            "purl": "pkg:rpm/redhat/libnghttp2@1.33.0-6.el8_10.1?arch=x86_64&upstream=nghttp2-1.33.0-6.el8_10.1.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libnl3",
+            "version": "3.7.0-1.el8",
+            "purl": "pkg:rpm/redhat/libnl3@3.7.0-1.el8?arch=x86_64&upstream=libnl3-3.7.0-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libnsl2",
+            "version": "1.2.0-2.20180605git4a062cf.el8",
+            "purl": "pkg:rpm/redhat/libnsl2@1.2.0-2.20180605git4a062cf.el8?arch=x86_64&upstream=libnsl2-1.2.0-2.20180605git4a062cf.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libpsl",
+            "version": "0.20.2-6.el8",
+            "purl": "pkg:rpm/redhat/libpsl@0.20.2-6.el8?arch=x86_64&upstream=libpsl-0.20.2-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libpwquality",
+            "version": "1.4.4-6.el8",
+            "purl": "pkg:rpm/redhat/libpwquality@1.4.4-6.el8?arch=x86_64&upstream=libpwquality-1.4.4-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "librepo",
+            "version": "1.14.2-5.el8",
+            "purl": "pkg:rpm/redhat/librepo@1.14.2-5.el8?arch=x86_64&upstream=librepo-1.14.2-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libreport-filesystem",
+            "version": "2.9.5-15.el8",
+            "purl": "pkg:rpm/redhat/libreport-filesystem@2.9.5-15.el8?arch=x86_64&upstream=libreport-2.9.5-15.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "librhsm",
+            "version": "0.0.3-5.el8",
+            "purl": "pkg:rpm/redhat/librhsm@0.0.3-5.el8?arch=x86_64&upstream=librhsm-0.0.3-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libseccomp",
+            "version": "2.5.2-1.el8",
+            "purl": "pkg:rpm/redhat/libseccomp@2.5.2-1.el8?arch=x86_64&upstream=libseccomp-2.5.2-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libselinux",
+            "version": "2.9-8.el8",
+            "purl": "pkg:rpm/redhat/libselinux@2.9-8.el8?arch=x86_64&upstream=libselinux-2.9-8.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libsemanage",
+            "version": "2.9-9.el8_6",
+            "purl": "pkg:rpm/redhat/libsemanage@2.9-9.el8_6?arch=x86_64&upstream=libsemanage-2.9-9.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libsepol",
+            "version": "2.9-3.el8",
+            "purl": "pkg:rpm/redhat/libsepol@2.9-3.el8?arch=x86_64&upstream=libsepol-2.9-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libsigsegv",
+            "version": "2.11-5.el8",
+            "purl": "pkg:rpm/redhat/libsigsegv@2.11-5.el8?arch=x86_64&upstream=libsigsegv-2.11-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libsmartcols",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/libsmartcols@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libsolv",
+            "version": "0.7.20-6.el8",
+            "purl": "pkg:rpm/redhat/libsolv@0.7.20-6.el8?arch=x86_64&upstream=libsolv-0.7.20-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libssh",
+            "version": "0.9.6-14.el8",
+            "purl": "pkg:rpm/redhat/libssh@0.9.6-14.el8?arch=x86_64&upstream=libssh-0.9.6-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libssh-config",
+            "version": "0.9.6-14.el8",
+            "purl": "pkg:rpm/redhat/libssh-config@0.9.6-14.el8?arch=noarch&upstream=libssh-0.9.6-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libstdc++",
+            "version": "8.5.0-22.el8_10",
+            "purl": "pkg:rpm/redhat/libstdc%2B%2B@8.5.0-22.el8_10?arch=x86_64&upstream=gcc-8.5.0-22.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libtasn1",
+            "version": "4.13-4.el8_7",
+            "purl": "pkg:rpm/redhat/libtasn1@4.13-4.el8_7?arch=x86_64&upstream=libtasn1-4.13-4.el8_7.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libtirpc",
+            "version": "1.1.4-12.el8_10",
+            "purl": "pkg:rpm/redhat/libtirpc@1.1.4-12.el8_10?arch=x86_64&upstream=libtirpc-1.1.4-12.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libunistring",
+            "version": "0.9.9-3.el8",
+            "purl": "pkg:rpm/redhat/libunistring@0.9.9-3.el8?arch=x86_64&upstream=libunistring-0.9.9-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libusbx",
+            "version": "1.0.23-4.el8",
+            "purl": "pkg:rpm/redhat/libusbx@1.0.23-4.el8?arch=x86_64&upstream=libusbx-1.0.23-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libuser",
+            "version": "0.62-26.el8_10",
+            "purl": "pkg:rpm/redhat/libuser@0.62-26.el8_10?arch=x86_64&upstream=libuser-0.62-26.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libutempter",
+            "version": "1.1.6-14.el8",
+            "purl": "pkg:rpm/redhat/libutempter@1.1.6-14.el8?arch=x86_64&upstream=libutempter-1.1.6-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libuuid",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/libuuid@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libverto",
+            "version": "0.3.2-2.el8",
+            "purl": "pkg:rpm/redhat/libverto@0.3.2-2.el8?arch=x86_64&upstream=libverto-0.3.2-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libxcrypt",
+            "version": "4.1.1-6.el8",
+            "purl": "pkg:rpm/redhat/libxcrypt@4.1.1-6.el8?arch=x86_64&upstream=libxcrypt-4.1.1-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libxkbcommon",
+            "version": "0.9.1-1.el8",
+            "purl": "pkg:rpm/redhat/libxkbcommon@0.9.1-1.el8?arch=x86_64&upstream=libxkbcommon-0.9.1-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libxml2",
+            "version": "2.9.7-18.el8_10.1",
+            "purl": "pkg:rpm/redhat/libxml2@2.9.7-18.el8_10.1?arch=x86_64&upstream=libxml2-2.9.7-18.el8_10.1.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libyaml",
+            "version": "0.1.7-5.el8",
+            "purl": "pkg:rpm/redhat/libyaml@0.1.7-5.el8?arch=x86_64&upstream=libyaml-0.1.7-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "libzstd",
+            "version": "1.4.4-1.el8",
+            "purl": "pkg:rpm/redhat/libzstd@1.4.4-1.el8?arch=x86_64&upstream=zstd-1.4.4-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "lsof",
+            "version": "4.93.2-1.el8",
+            "purl": "pkg:rpm/redhat/lsof@4.93.2-1.el8?arch=x86_64&upstream=lsof-4.93.2-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "lua-libs",
+            "version": "5.3.4-12.el8",
+            "purl": "pkg:rpm/redhat/lua-libs@5.3.4-12.el8?arch=x86_64&upstream=lua-5.3.4-12.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "lz4-libs",
+            "version": "1.8.3-3.el8_4",
+            "purl": "pkg:rpm/redhat/lz4-libs@1.8.3-3.el8_4?arch=x86_64&upstream=lz4-1.8.3-3.el8_4.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "mpfr",
+            "version": "3.1.6-1.el8",
+            "purl": "pkg:rpm/redhat/mpfr@3.1.6-1.el8?arch=x86_64&upstream=mpfr-3.1.6-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "ncurses-base",
+            "version": "6.1-10.20180224.el8",
+            "purl": "pkg:rpm/redhat/ncurses-base@6.1-10.20180224.el8?arch=noarch&upstream=ncurses-6.1-10.20180224.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "ncurses-libs",
+            "version": "6.1-10.20180224.el8",
+            "purl": "pkg:rpm/redhat/ncurses-libs@6.1-10.20180224.el8?arch=x86_64&upstream=ncurses-6.1-10.20180224.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "nettle",
+            "version": "3.4.1-7.el8",
+            "purl": "pkg:rpm/redhat/nettle@3.4.1-7.el8?arch=x86_64&upstream=nettle-3.4.1-7.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "npth",
+            "version": "1.5-4.el8",
+            "purl": "pkg:rpm/redhat/npth@1.5-4.el8?arch=x86_64&upstream=npth-1.5-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "openldap",
+            "version": "2.4.46-20.el8_10",
+            "purl": "pkg:rpm/redhat/openldap@2.4.46-20.el8_10?arch=x86_64&upstream=openldap-2.4.46-20.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "openssl",
+            "version": "1:1.1.1k-14.el8_6",
+            "purl": "pkg:rpm/redhat/openssl@1.1.1k-14.el8_6?arch=x86_64&epoch=1&upstream=openssl-1.1.1k-14.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "openssl-libs",
+            "version": "1:1.1.1k-14.el8_6",
+            "purl": "pkg:rpm/redhat/openssl-libs@1.1.1k-14.el8_6?arch=x86_64&epoch=1&upstream=openssl-1.1.1k-14.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "openssl-pkcs11",
+            "version": "0.4.10-3.el8",
+            "purl": "pkg:rpm/redhat/openssl-pkcs11@0.4.10-3.el8?arch=x86_64&upstream=openssl-pkcs11-0.4.10-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "oras.land/oras-go",
+            "version": "v1.2.2",
+            "purl": "pkg:golang/oras.land/oras-go@v1.2.2",
+            "system": "golang"
+          },
+          {
+            "name": "p11-kit",
+            "version": "0.23.22-2.el8",
+            "purl": "pkg:rpm/redhat/p11-kit@0.23.22-2.el8?arch=x86_64&upstream=p11-kit-0.23.22-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "p11-kit-trust",
+            "version": "0.23.22-2.el8",
+            "purl": "pkg:rpm/redhat/p11-kit-trust@0.23.22-2.el8?arch=x86_64&upstream=p11-kit-0.23.22-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "pam",
+            "version": "1.3.1-36.el8_10",
+            "purl": "pkg:rpm/redhat/pam@1.3.1-36.el8_10?arch=x86_64&upstream=pam-1.3.1-36.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "passwd",
+            "version": "0.80-4.el8",
+            "purl": "pkg:rpm/redhat/passwd@0.80-4.el8?arch=x86_64&upstream=passwd-0.80-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "pcre",
+            "version": "8.42-6.el8",
+            "purl": "pkg:rpm/redhat/pcre@8.42-6.el8?arch=x86_64&upstream=pcre-8.42-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "pcre2",
+            "version": "10.32-3.el8_6",
+            "purl": "pkg:rpm/redhat/pcre2@10.32-3.el8_6?arch=x86_64&upstream=pcre2-10.32-3.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "pip",
+            "version": "9.0.3",
+            "purl": "pkg:pypi/pip@9.0.3",
+            "system": "python"
+          },
+          {
+            "name": "platform-python",
+            "version": "3.6.8-69.el8_10",
+            "purl": "pkg:rpm/redhat/platform-python@3.6.8-69.el8_10?arch=x86_64&upstream=python3-3.6.8-69.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "platform-python-pip",
+            "version": "9.0.3-24.el8",
+            "purl": "pkg:rpm/redhat/platform-python-pip@9.0.3-24.el8?arch=noarch&upstream=python-pip-9.0.3-24.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "platform-python-setuptools",
+            "version": "39.2.0-8.el8_10",
+            "purl": "pkg:rpm/redhat/platform-python-setuptools@39.2.0-8.el8_10?arch=noarch&upstream=python-setuptools-39.2.0-8.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "ply",
+            "version": "3.9",
+            "purl": "pkg:pypi/ply@3.9",
+            "system": "python"
+          },
+          {
+            "name": "popt",
+            "version": "1.18-1.el8",
+            "purl": "pkg:rpm/redhat/popt@1.18-1.el8?arch=x86_64&upstream=popt-1.18-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "procps-ng",
+            "version": "3.3.15-14.el8",
+            "purl": "pkg:rpm/redhat/procps-ng@3.3.15-14.el8?arch=x86_64&upstream=procps-ng-3.3.15-14.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "protobuf-c",
+            "version": "1.3.0-8.el8",
+            "purl": "pkg:rpm/redhat/protobuf-c@1.3.0-8.el8?arch=x86_64&upstream=protobuf-c-1.3.0-8.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "psmisc",
+            "version": "23.1-5.el8",
+            "purl": "pkg:rpm/redhat/psmisc@23.1-5.el8?arch=x86_64&upstream=psmisc-23.1-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "publicsuffix-list-dafsa",
+            "version": "20180723-1.el8",
+            "purl": "pkg:rpm/redhat/publicsuffix-list-dafsa@20180723-1.el8?arch=noarch&upstream=publicsuffix-list-20180723-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "pygobject",
+            "version": "3.28.3",
+            "purl": "pkg:pypi/pygobject@3.28.3",
+            "system": "python"
+          },
+          {
+            "name": "pyinotify",
+            "version": "0.9.6",
+            "purl": "pkg:pypi/pyinotify@0.9.6",
+            "system": "python"
+          },
+          {
+            "name": "pysocks",
+            "version": "1.6.8",
+            "purl": "pkg:pypi/pysocks@1.6.8",
+            "system": "python"
+          },
+          {
+            "name": "python-dateutil",
+            "version": "2.6.1",
+            "purl": "pkg:pypi/python-dateutil@2.6.1",
+            "system": "python"
+          },
+          {
+            "name": "python3-bind",
+            "version": "32:9.11.36-16.el8_10.2",
+            "purl": "pkg:rpm/redhat/python3-bind@9.11.36-16.el8_10.2?arch=noarch&epoch=32&upstream=bind-9.11.36-16.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-chardet",
+            "version": "3.0.4-7.el8",
+            "purl": "pkg:rpm/redhat/python3-chardet@3.0.4-7.el8?arch=noarch&upstream=python-chardet-3.0.4-7.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-cloud-what",
+            "version": "1.28.42-1.el8",
+            "purl": "pkg:rpm/redhat/python3-cloud-what@1.28.42-1.el8?arch=x86_64&upstream=subscription-manager-1.28.42-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-dateutil",
+            "version": "1:2.6.1-6.el8",
+            "purl": "pkg:rpm/redhat/python3-dateutil@2.6.1-6.el8?arch=noarch&epoch=1&upstream=python-dateutil-2.6.1-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-dbus",
+            "version": "1.2.4-15.el8",
+            "purl": "pkg:rpm/redhat/python3-dbus@1.2.4-15.el8?arch=x86_64&upstream=dbus-python-1.2.4-15.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-decorator",
+            "version": "4.2.1-2.el8",
+            "purl": "pkg:rpm/redhat/python3-decorator@4.2.1-2.el8?arch=noarch&upstream=python-decorator-4.2.1-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-dnf",
+            "version": "4.7.0-20.el8",
+            "purl": "pkg:rpm/redhat/python3-dnf@4.7.0-20.el8?arch=noarch&upstream=dnf-4.7.0-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-dnf-plugins-core",
+            "version": "4.0.21-25.el8",
+            "purl": "pkg:rpm/redhat/python3-dnf-plugins-core@4.0.21-25.el8?arch=noarch&upstream=dnf-plugins-core-4.0.21-25.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-ethtool",
+            "version": "0.14-5.el8",
+            "purl": "pkg:rpm/redhat/python3-ethtool@0.14-5.el8?arch=x86_64&upstream=python-ethtool-0.14-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-gobject-base",
+            "version": "3.28.3-2.el8",
+            "purl": "pkg:rpm/redhat/python3-gobject-base@3.28.3-2.el8?arch=x86_64&upstream=pygobject3-3.28.3-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-gpg",
+            "version": "1.13.1-12.el8",
+            "purl": "pkg:rpm/redhat/python3-gpg@1.13.1-12.el8?arch=x86_64&upstream=gpgme-1.13.1-12.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-hawkey",
+            "version": "0.63.0-20.el8_10",
+            "purl": "pkg:rpm/redhat/python3-hawkey@0.63.0-20.el8_10?arch=x86_64&upstream=libdnf-0.63.0-20.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-idna",
+            "version": "2.5-7.el8_10",
+            "purl": "pkg:rpm/redhat/python3-idna@2.5-7.el8_10?arch=noarch&upstream=python-idna-2.5-7.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-iniparse",
+            "version": "0.4-31.el8",
+            "purl": "pkg:rpm/redhat/python3-iniparse@0.4-31.el8?arch=noarch&upstream=python-iniparse-0.4-31.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-inotify",
+            "version": "0.9.6-13.el8",
+            "purl": "pkg:rpm/redhat/python3-inotify@0.9.6-13.el8?arch=noarch&upstream=python-inotify-0.9.6-13.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-libcomps",
+            "version": "0.1.18-1.el8",
+            "purl": "pkg:rpm/redhat/python3-libcomps@0.1.18-1.el8?arch=x86_64&upstream=libcomps-0.1.18-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-libdnf",
+            "version": "0.63.0-20.el8_10",
+            "purl": "pkg:rpm/redhat/python3-libdnf@0.63.0-20.el8_10?arch=x86_64&upstream=libdnf-0.63.0-20.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-librepo",
+            "version": "1.14.2-5.el8",
+            "purl": "pkg:rpm/redhat/python3-librepo@1.14.2-5.el8?arch=x86_64&upstream=librepo-1.14.2-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-libs",
+            "version": "3.6.8-69.el8_10",
+            "purl": "pkg:rpm/redhat/python3-libs@3.6.8-69.el8_10?arch=x86_64&upstream=python3-3.6.8-69.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-pip",
+            "version": "9.0.3-24.el8",
+            "purl": "pkg:rpm/redhat/python3-pip@9.0.3-24.el8?arch=noarch&upstream=python-pip-9.0.3-24.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-pip-wheel",
+            "version": "9.0.3-24.el8",
+            "purl": "pkg:rpm/redhat/python3-pip-wheel@9.0.3-24.el8?arch=noarch&upstream=python-pip-9.0.3-24.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-ply",
+            "version": "3.9-9.el8",
+            "purl": "pkg:rpm/redhat/python3-ply@3.9-9.el8?arch=noarch&upstream=python-ply-3.9-9.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-pysocks",
+            "version": "1.6.8-3.el8",
+            "purl": "pkg:rpm/redhat/python3-pysocks@1.6.8-3.el8?arch=noarch&upstream=python-pysocks-1.6.8-3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-requests",
+            "version": "2.20.0-3.el8_8",
+            "purl": "pkg:rpm/redhat/python3-requests@2.20.0-3.el8_8?arch=noarch&upstream=python-requests-2.20.0-3.el8_8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-rpm",
+            "version": "4.14.3-31.el8",
+            "purl": "pkg:rpm/redhat/python3-rpm@4.14.3-31.el8?arch=x86_64&upstream=rpm-4.14.3-31.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-setuptools",
+            "version": "39.2.0-8.el8_10",
+            "purl": "pkg:rpm/redhat/python3-setuptools@39.2.0-8.el8_10?arch=noarch&upstream=python-setuptools-39.2.0-8.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-setuptools-wheel",
+            "version": "39.2.0-8.el8_10",
+            "purl": "pkg:rpm/redhat/python3-setuptools-wheel@39.2.0-8.el8_10?arch=noarch&upstream=python-setuptools-39.2.0-8.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-six",
+            "version": "1.11.0-8.el8",
+            "purl": "pkg:rpm/redhat/python3-six@1.11.0-8.el8?arch=noarch&upstream=python-six-1.11.0-8.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-subscription-manager-rhsm",
+            "version": "1.28.42-1.el8",
+            "purl": "pkg:rpm/redhat/python3-subscription-manager-rhsm@1.28.42-1.el8?arch=x86_64&upstream=subscription-manager-1.28.42-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-syspurpose",
+            "version": "1.28.42-1.el8",
+            "purl": "pkg:rpm/redhat/python3-syspurpose@1.28.42-1.el8?arch=x86_64&upstream=subscription-manager-1.28.42-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-systemd",
+            "version": "234-8.el8",
+            "purl": "pkg:rpm/redhat/python3-systemd@234-8.el8?arch=x86_64&upstream=python-systemd-234-8.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python3-urllib3",
+            "version": "1.24.2-8.el8_10",
+            "purl": "pkg:rpm/redhat/python3-urllib3@1.24.2-8.el8_10?arch=noarch&upstream=python-urllib3-1.24.2-8.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "python36",
+            "version": "3.6.8-39.module+el8.10.0+20784+edafcd43",
+            "purl": "pkg:rpm/redhat/python36@3.6.8-39.module%2Bel8.10.0%2B20784%2Bedafcd43?arch=x86_64&upstream=python36-3.6.8-39.module%2Bel8.10.0%2B20784%2Bedafcd43.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "readline",
+            "version": "7.0-10.el8",
+            "purl": "pkg:rpm/redhat/readline@7.0-10.el8?arch=x86_64&upstream=readline-7.0-10.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "redhat-release",
+            "version": "8.10-0.3.el8",
+            "purl": "pkg:rpm/redhat/redhat-release@8.10-0.3.el8?arch=x86_64&upstream=redhat-release-8.10-0.3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "redhat-release-eula",
+            "version": "8.10-0.3.el8",
+            "purl": "pkg:rpm/redhat/redhat-release-eula@8.10-0.3.el8?arch=x86_64&upstream=redhat-release-8.10-0.3.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "requests",
+            "version": "2.20.0",
+            "purl": "pkg:pypi/requests@2.20.0",
+            "system": "python"
+          },
+          {
+            "name": "rootfiles",
+            "version": "8.1-22.el8",
+            "purl": "pkg:rpm/redhat/rootfiles@8.1-22.el8?arch=noarch&upstream=rootfiles-8.1-22.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "rpm",
+            "version": "4.14.3",
+            "purl": "pkg:pypi/rpm@4.14.3",
+            "system": "python"
+          },
+          {
+            "name": "rpm",
+            "version": "4.14.3-31.el8",
+            "purl": "pkg:rpm/redhat/rpm@4.14.3-31.el8?arch=x86_64&upstream=rpm-4.14.3-31.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "rpm-build-libs",
+            "version": "4.14.3-31.el8",
+            "purl": "pkg:rpm/redhat/rpm-build-libs@4.14.3-31.el8?arch=x86_64&upstream=rpm-4.14.3-31.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "rpm-libs",
+            "version": "4.14.3-31.el8",
+            "purl": "pkg:rpm/redhat/rpm-libs@4.14.3-31.el8?arch=x86_64&upstream=rpm-4.14.3-31.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "rsync",
+            "version": "3.1.3-19.el8_7.1",
+            "purl": "pkg:rpm/redhat/rsync@3.1.3-19.el8_7.1?arch=x86_64&upstream=rsync-3.1.3-19.el8_7.1.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "sed",
+            "version": "4.5-5.el8",
+            "purl": "pkg:rpm/redhat/sed@4.5-5.el8?arch=x86_64&upstream=sed-4.5-5.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "setup",
+            "version": "2.12.2-9.el8",
+            "purl": "pkg:rpm/redhat/setup@2.12.2-9.el8?arch=noarch&upstream=setup-2.12.2-9.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "setuptools",
+            "version": "39.2.0",
+            "purl": "pkg:pypi/setuptools@39.2.0",
+            "system": "python"
+          },
+          {
+            "name": "shadow-utils",
+            "version": "2:4.6-22.el8",
+            "purl": "pkg:rpm/redhat/shadow-utils@4.6-22.el8?arch=x86_64&epoch=2&upstream=shadow-utils-4.6-22.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "shared-mime-info",
+            "version": "1.9-4.el8",
+            "purl": "pkg:rpm/redhat/shared-mime-info@1.9-4.el8?arch=x86_64&upstream=shared-mime-info-1.9-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "sigs.k8s.io/controller-runtime",
+            "version": "v0.12.1",
+            "purl": "pkg:golang/sigs.k8s.io/controller-runtime@v0.12.1",
+            "system": "golang"
+          },
+          {
+            "name": "sigs.k8s.io/json",
+            "version": "v0.0.0-20221116044647-bc3834ca7abd",
+            "purl": "pkg:golang/sigs.k8s.io/json@v0.0.0-20221116044647-bc3834ca7abd",
+            "system": "golang"
+          },
+          {
+            "name": "sigs.k8s.io/kustomize/api",
+            "version": "v0.13.2",
+            "purl": "pkg:golang/sigs.k8s.io/kustomize/api@v0.13.2",
+            "system": "golang"
+          },
+          {
+            "name": "sigs.k8s.io/kustomize/kyaml",
+            "version": "v0.14.1",
+            "purl": "pkg:golang/sigs.k8s.io/kustomize/kyaml@v0.14.1",
+            "system": "golang"
+          },
+          {
+            "name": "sigs.k8s.io/structured-merge-diff/v4",
+            "version": "v4.2.3",
+            "purl": "pkg:golang/sigs.k8s.io/structured-merge-diff/v4@v4.2.3",
+            "system": "golang"
+          },
+          {
+            "name": "sigs.k8s.io/yaml",
+            "version": "v1.3.0",
+            "purl": "pkg:golang/sigs.k8s.io/yaml@v1.3.0",
+            "system": "golang"
+          },
+          {
+            "name": "six",
+            "version": "1.11.0",
+            "purl": "pkg:pypi/six@1.11.0",
+            "system": "python"
+          },
+          {
+            "name": "socat",
+            "version": "1.7.4.1-1.el8",
+            "purl": "pkg:rpm/redhat/socat@1.7.4.1-1.el8?arch=x86_64&upstream=socat-1.7.4.1-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "sqlite-libs",
+            "version": "3.26.0-19.el8_9",
+            "purl": "pkg:rpm/redhat/sqlite-libs@3.26.0-19.el8_9?arch=x86_64&upstream=sqlite-3.26.0-19.el8_9.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "stdlib",
+            "version": "go1.20.12",
+            "purl": "pkg:golang/stdlib@1.20.12",
+            "system": "golang"
+          },
+          {
+            "name": "subscription-manager",
+            "version": "1.28.42",
+            "purl": "pkg:pypi/subscription-manager@1.28.42",
+            "system": "python"
+          },
+          {
+            "name": "subscription-manager",
+            "version": "1.28.42-1.el8",
+            "purl": "pkg:rpm/redhat/subscription-manager@1.28.42-1.el8?arch=x86_64&upstream=subscription-manager-1.28.42-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "subscription-manager-rhsm-certificates",
+            "version": "20220623-1.el8",
+            "purl": "pkg:rpm/redhat/subscription-manager-rhsm-certificates@20220623-1.el8?arch=noarch&upstream=subscription-manager-rhsm-certificates-20220623-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "syspurpose",
+            "version": "1.28.42",
+            "purl": "pkg:pypi/syspurpose@1.28.42",
+            "system": "python"
+          },
+          {
+            "name": "systemd",
+            "version": "239-82.el8_10.2",
+            "purl": "pkg:rpm/redhat/systemd@239-82.el8_10.2?arch=x86_64&upstream=systemd-239-82.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "systemd-libs",
+            "version": "239-82.el8_10.2",
+            "purl": "pkg:rpm/redhat/systemd-libs@239-82.el8_10.2?arch=x86_64&upstream=systemd-239-82.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "systemd-pam",
+            "version": "239-82.el8_10.2",
+            "purl": "pkg:rpm/redhat/systemd-pam@239-82.el8_10.2?arch=x86_64&upstream=systemd-239-82.el8_10.2.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "systemd-python",
+            "version": "234",
+            "purl": "pkg:pypi/systemd-python@234",
+            "system": "python"
+          },
+          {
+            "name": "tar",
+            "version": "2:1.30-9.el8",
+            "purl": "pkg:rpm/redhat/tar@1.30-9.el8?arch=x86_64&epoch=2&upstream=tar-1.30-9.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "tpm2-tss",
+            "version": "2.3.2-6.el8",
+            "purl": "pkg:rpm/redhat/tpm2-tss@2.3.2-6.el8?arch=x86_64&upstream=tpm2-tss-2.3.2-6.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "tzdata",
+            "version": "2024b-4.el8",
+            "purl": "pkg:rpm/redhat/tzdata@2024b-4.el8?arch=noarch&upstream=tzdata-2024b-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "urllib3",
+            "version": "1.24.2",
+            "purl": "pkg:pypi/urllib3@1.24.2",
+            "system": "python"
+          },
+          {
+            "name": "usermode",
+            "version": "1.113-2.el8",
+            "purl": "pkg:rpm/redhat/usermode@1.113-2.el8?arch=x86_64&upstream=usermode-1.113-2.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "util-linux",
+            "version": "2.32.1-46.el8",
+            "purl": "pkg:rpm/redhat/util-linux@2.32.1-46.el8?arch=x86_64&upstream=util-linux-2.32.1-46.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "vim-minimal",
+            "version": "2:8.0.1763-19.el8_6.4",
+            "purl": "pkg:rpm/redhat/vim-minimal@8.0.1763-19.el8_6.4?arch=x86_64&epoch=2&upstream=vim-8.0.1763-19.el8_6.4.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "virt-what",
+            "version": "1.25-4.el8",
+            "purl": "pkg:rpm/redhat/virt-what@1.25-4.el8?arch=x86_64&upstream=virt-what-1.25-4.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "wget",
+            "version": "1.19.5-12.el8_10",
+            "purl": "pkg:rpm/redhat/wget@1.19.5-12.el8_10?arch=x86_64&upstream=wget-1.19.5-12.el8_10.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "which",
+            "version": "2.21-20.el8",
+            "purl": "pkg:rpm/redhat/which@2.21-20.el8?arch=x86_64&upstream=which-2.21-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "xkeyboard-config",
+            "version": "2.28-1.el8",
+            "purl": "pkg:rpm/redhat/xkeyboard-config@2.28-1.el8?arch=noarch&upstream=xkeyboard-config-2.28-1.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "xz-libs",
+            "version": "5.2.4-4.el8_6",
+            "purl": "pkg:rpm/redhat/xz-libs@5.2.4-4.el8_6?arch=x86_64&upstream=xz-5.2.4-4.el8_6.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "yum",
+            "version": "4.7.0-20.el8",
+            "purl": "pkg:rpm/redhat/yum@4.7.0-20.el8?arch=noarch&upstream=dnf-4.7.0-20.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          },
+          {
+            "name": "zlib",
+            "version": "1.2.11-25.el8",
+            "purl": "pkg:rpm/redhat/zlib@1.2.11-25.el8?arch=x86_64&upstream=zlib-1.2.11-25.el8.src.rpm&distro=rhel-8.10",
+            "system": "rpm"
+          }
+        ]
+      }
+    }
+  },
+  "metadata": {
+    "submitted_at": "2025-02-24T07:11:41.123398Z",
+    "user": "zgrinber@redhat.com",
+    "sent_at": "2025-02-24T07:11:43.437450Z"
+  },
+  "info": {
+    "vdb": {
+      "code_vdb_path": null,
+      "doc_vdb_path": null
+    },
+    "intel": [
+      {
+        "vuln_id": "CVE-2024-1485",
+        "ghsa": {
+          "ghsa_id": "GHSA-84xv-jfrm-h4gm",
+          "cve_id": "CVE-2024-1485",
+          "summary": "registry-support: decompress can delete files outside scope via relative paths",
+          "description": "A vulnerability was found in the decompression function of registry-support. This issue can be triggered by an unauthenticated remote attacker when tricking a user into opening a specially modified .tar archive, leading to the cleanup process following relative paths to overwrite or delete files outside the intended scope.",
+          "severity": "medium",
+          "vulnerabilities": [
+            {
+              "package": {
+                "ecosystem": "go",
+                "name": "github.com/devfile/registry-support/registry-library"
+              },
+              "vulnerable_version_range": "< 0.0.0-20240206",
+              "first_patched_version": "0.0.0-20240206",
+              "vulnerable_functions": []
+            }
+          ],
+          "cvss": {
+            "score": 8,
+            "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:H"
+          },
+          "cwes": [
+            {
+              "cwe_id": "CWE-23",
+              "name": "Relative Path Traversal"
+            }
+          ],
+          "published_at": "2024-02-14T00:35:42Z",
+          "updated_at": "2024-11-18T16:26:37Z",
+          "url": "https://api.github.com/advisories/GHSA-84xv-jfrm-h4gm",
+          "html_url": "https://github.com/advisories/GHSA-84xv-jfrm-h4gm",
+          "type": "reviewed",
+          "repository_advisory_url": null,
+          "source_code_location": "https://github.com/devfile/registry-support",
+          "identifiers": [
+            {
+              "value": "GHSA-84xv-jfrm-h4gm",
+              "type": "GHSA"
+            },
+            {
+              "value": "CVE-2024-1485",
+              "type": "CVE"
+            }
+          ],
+          "references": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2024-1485",
+            "https://github.com/devfile/registry-support/commit/0e44b9ca6d03fac4fc3f77d37656d56dc5defe0d",
+            "https://access.redhat.com/security/cve/CVE-2024-1485",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2264106",
+            "https://github.com/devfile/registry-support/pull/197",
+            "https://github.com/advisories/GHSA-84xv-jfrm-h4gm"
+          ],
+          "github_reviewed_at": "2024-02-21T23:18:42Z",
+          "nvd_published_at": "2024-02-14T00:15:46Z",
+          "withdrawn_at": null,
+          "cvss_severities": {
+            "cvss_v3": {
+              "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:H",
+              "score": 8
+            },
+            "cvss_v4": {
+              "vector_string": "CVSS:4.0/AV:N/AC:H/AT:N/PR:N/UI:A/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H",
+              "score": 4.6
+            }
+          },
+          "credits": [
+            {
+              "user": {
+                "login": "cebarks",
+                "id": 551065,
+                "node_id": "MDQ6VXNlcjU1MTA2NQ==",
+                "avatar_url": "https://avatars.githubusercontent.com/u/551065?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/cebarks",
+                "html_url": "https://github.com/cebarks",
+                "followers_url": "https://api.github.com/users/cebarks/followers",
+                "following_url": "https://api.github.com/users/cebarks/following{/other_user}",
+                "gists_url": "https://api.github.com/users/cebarks/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/cebarks/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/cebarks/subscriptions",
+                "organizations_url": "https://api.github.com/users/cebarks/orgs",
+                "repos_url": "https://api.github.com/users/cebarks/repos",
+                "events_url": "https://api.github.com/users/cebarks/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/cebarks/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "type": "analyst"
+            }
+          ],
+          "epss": {
+            "percentage": 0.00068,
+            "percentile": 0.31869
+          }
+        },
+        "nvd": {
+          "cve_id": "CVE-2024-1485",
+          "cve_description": "A flaw was found in the decompression function of registry-support. This issue can be triggered if an unauthenticated remote attacker tricks a user into parsing a devfile which uses the `parent` or `plugin` keywords. This could download a malicious archive and cause the cleanup process to overwrite or delete files outside of the archive, which should not be allowed.",
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:H/A:H",
+          "cvss_base_score": 9.3,
+          "cvss_severity": "CRITICAL",
+          "cwe_name": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal') (4.16)",
+          "cwe_description": "The product uses external input to construct a pathname that is intended to identify a file or directory that is located underneath a restricted parent directory, but the product does not properly neutralize special elements within the pathname that can cause the pathname to resolve to a location that is outside of the restricted directory.",
+          "cwe_extended_description": "Many file operations are intended to take place within a restricted directory. By using special elements such as \"..\" and \"/\" separators, attackers can escape outside of the restricted location to access files or directories that are elsewhere on the system. One of the most common special elements is the \"../\" sequence, which in most modern operating systems is interpreted as the parent directory of the current location. This is referred to as relative path traversal. Path traversal also covers the use of absolute pathnames such as \"/usr/local/bin\" to access unexpected files. This is referred to as absolute path traversal.",
+          "configurations": [
+            {
+              "package": "registry-support",
+              "system": null,
+              "versionStartExcluding": null,
+              "versionEndExcluding": "0.0.0-20240206",
+              "versionStartIncluding": null,
+              "versionEndIncluding": null
+            },
+            {
+              "package": "openshift",
+              "system": null,
+              "versionStartExcluding": null,
+              "versionEndExcluding": null,
+              "versionStartIncluding": "4.0",
+              "versionEndIncluding": "4.0"
+            }
+          ],
+          "vendor_names": [
+            "Devfile",
+            "Redhat"
+          ],
+          "references": [
+            "https://access.redhat.com/security/cve/CVE-2024-1485",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2264106",
+            "https://github.com/advisories/GHSA-84xv-jfrm-h4gm",
+            "https://github.com/devfile/registry-support/commit/0e44b9ca6d03fac4fc3f77d37656d56dc5defe0d",
+            "https://github.com/devfile/registry-support/pull/197",
+            "https://access.redhat.com/security/cve/CVE-2024-1485",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2264106",
+            "https://github.com/advisories/GHSA-84xv-jfrm-h4gm",
+            "https://github.com/devfile/registry-support/commit/0e44b9ca6d03fac4fc3f77d37656d56dc5defe0d",
+            "https://github.com/devfile/registry-support/pull/197"
+          ],
+          "disputed": false,
+          "published_at": "2024-02-14T00:15:46.783",
+          "updated_at": "2024-11-21T08:50:41.090"
+        },
+        "rhsa": {
+          "bugzilla": {
+            "description": "registry-support: decompress can delete files outside scope via relative paths",
+            "id": "2264106",
+            "url": "https://bugzilla.redhat.com/show_bug.cgi?id=2264106"
+          },
+          "details": [
+            "A flaw was found in the decompression function of registry-support. This issue can be triggered if an unauthenticated remote attacker tricks a user into parsing a devfile which uses the `parent` or `plugin` keywords. This could download a malicious archive and cause the cleanup process to overwrite or delete files outside of the archive, which should not be allowed.",
+            "A flaw was found in the decompression function of registry-support. This issue can be triggered if an unauthenticated remote attacker tricks a user into parsing a devfile which uses the `parent` or `plugin` keywords. This could download a malicious archive and cause the cleanup process to overwrite or delete files outside of the archive, which should not be allowed."
+          ],
+          "statement": "Red Hat Openshift has a \"Low\" rated impact due to the affected code being shipped, but unused.",
+          "package_state": [
+            {
+              "product_name": "OpenShift Developer Tools and Services",
+              "fix_state": "Affected",
+              "package_name": "odo",
+              "cpe": "cpe:/a:redhat:ocp_tools"
+            },
+            {
+              "product_name": "Red Hat OpenShift Container Platform 4",
+              "fix_state": "Will not fix",
+              "package_name": "openshift4/ose-console",
+              "cpe": "cpe:/a:redhat:openshift:4"
+            }
+          ],
+          "upstream_fix": null,
+          "cvss3": {
+            "cvss3_base_score": 8,
+            "cvss3_scoring_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:H",
+            "status": "draft"
+          },
+          "threat_severity": "Important",
+          "public_date": "2024-02-05T00:00:00Z",
+          "cwe": "CWE-349->CWE-23",
+          "acknowledgement": "Red Hat would like to thank Joern Schneeweisz (GitLab Security Research Team) for reporting this issue.",
+          "references": [
+            "https://www.cve.org/CVERecord?id=CVE-2024-1485\nhttps://nvd.nist.gov/vuln/detail/CVE-2024-1485\nhttps://github.com/advisories/GHSA-84xv-jfrm-h4gm\nhttps://github.com/devfile/registry-support/commit/0e44b9ca6d03fac4fc3f77d37656d56dc5defe0d\nhttps://github.com/devfile/registry-support/pull/197"
+          ],
+          "name": "CVE-2024-1485",
+          "mitigation": {
+            "value": "Limit or block the parsing of devfiles from untrusted sources.",
+            "lang": "en:us"
+          },
+          "csaw": false
+        },
+        "ubuntu": {
+          "description": null,
+          "notes": null,
+          "notices": null,
+          "priority": null,
+          "ubuntu_description": null,
+          "impact": null
+        },
+        "epss": {
+          "epss": 0.00068,
+          "percentile": 0.32438,
+          "date": "2025-02-18",
+          "cve": "CVE-2024-1485"
+        },
+        "plugin_data": [],
+        "has_sufficient_intel_for_agent": true
+      }
+    ],
+    "sbom": {
+      "packages": [
+        {
+          "name": "acl",
+          "version": "2.2.53-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "audit-libs",
+          "version": "3.1.2-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "basesystem",
+          "version": "11-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bash",
+          "version": "4.4.20-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bind-libs",
+          "version": "32:9.11.36-16.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bind-libs-lite",
+          "version": "32:9.11.36-16.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bind-license",
+          "version": "32:9.11.36-16.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bind-utils",
+          "version": "32:9.11.36-16.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "brotli",
+          "version": "1.0.6-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "bzip2-libs",
+          "version": "1.0.6-27.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "ca-certificates",
+          "version": "2024.2.69_v8.0.303-80.0.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "chardet",
+          "version": "3.0.4",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "chkconfig",
+          "version": "1.19.2-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "coreutils-single",
+          "version": "8.30-15.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "cracklib",
+          "version": "2.9.6-15.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "cracklib-dicts",
+          "version": "2.9.6-15.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "crypto-policies",
+          "version": "20230731-1.git3177e06.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "crypto-policies-scripts",
+          "version": "20230731-1.git3177e06.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "cryptsetup-libs",
+          "version": "2.3.7-7.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "curl",
+          "version": "7.61.1-34.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "cyrus-sasl-lib",
+          "version": "2.1.27-6.el8_5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus",
+          "version": "1:1.12.8-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus-common",
+          "version": "1:1.12.8-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus-daemon",
+          "version": "1:1.12.8-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus-glib",
+          "version": "0.110-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus-libs",
+          "version": "1:1.12.8-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dbus-python",
+          "version": "1.2.4",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "dbus-tools",
+          "version": "1:1.12.8-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "decorator",
+          "version": "4.2.1",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "device-mapper",
+          "version": "8:1.02.181-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "device-mapper-libs",
+          "version": "8:1.02.181-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "diffutils",
+          "version": "3.6-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dmidecode",
+          "version": "1:3.5-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dnf",
+          "version": "4.7.0-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dnf-data",
+          "version": "4.7.0-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "dnf-plugin-subscription-manager",
+          "version": "1.28.42-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "elfutils-default-yama-scope",
+          "version": "0.190-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "elfutils-libelf",
+          "version": "0.190-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "elfutils-libs",
+          "version": "0.190-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "ethtool",
+          "version": "0.14",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "expat",
+          "version": "2.2.5-16.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "file-libs",
+          "version": "5.33-26.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "filesystem",
+          "version": "3.8-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "findutils",
+          "version": "1:4.6.0-23.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "fstrm",
+          "version": "0.6.1-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gawk",
+          "version": "4.2.1-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gdb-gdbserver",
+          "version": "8.2-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gdbm",
+          "version": "1:1.18-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gdbm-libs",
+          "version": "1:1.18-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "github.com/BurntSushi/toml",
+          "version": "v1.2.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/MakeNowJust/heredoc",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/goutils",
+          "version": "v1.1.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/semver",
+          "version": "v1.5.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/semver/v3",
+          "version": "v3.2.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/sprig",
+          "version": "v2.22.0+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/sprig/v3",
+          "version": "v3.2.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/Masterminds/squirrel",
+          "version": "v1.5.4",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/ProtonMail/go-crypto",
+          "version": "v0.0.0-20210428141323-04723f9f07d7",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/asaskevich/govalidator",
+          "version": "v0.0.0-20200428143746-21a406dcc535",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/beorn7/perks",
+          "version": "v1.0.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/blang/semver",
+          "version": "v3.5.1+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/blang/semver/v4",
+          "version": "v4.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/cespare/xxhash/v2",
+          "version": "v2.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/chai2010/gettext-go",
+          "version": "v1.0.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/cloudevents/sdk-go/v2",
+          "version": "v2.14.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/containerd/containerd",
+          "version": "v1.7.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/containerd/continuity",
+          "version": "v0.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/coreos/go-oidc",
+          "version": "v2.1.0+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/coreos/pkg",
+          "version": "v0.0.0-20180928190104-399ea9e2e55f",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/cyphar/filepath-securejoin",
+          "version": "v0.2.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/davecgh/go-spew",
+          "version": "v1.1.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/devfile/api/v2",
+          "version": "v2.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/devfile/library",
+          "version": "v1.2.1-0.20221017204048-ec4b02cbe9c7",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/devfile/registry-support/index/generator",
+          "version": "v0.0.0-20220624203950-e7282a4695b6",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/devfile/registry-support/registry-library",
+          "version": "v0.0.0-20220913214140-36887a7907aa",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/cli",
+          "version": "v20.10.21+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/distribution",
+          "version": "v2.8.2+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/docker-credential-helpers",
+          "version": "v0.7.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/go-connections",
+          "version": "v0.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/go-metrics",
+          "version": "v0.0.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/docker/go-units",
+          "version": "v0.5.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/emicklei/go-restful/v3",
+          "version": "v3.10.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/emirpasic/gods",
+          "version": "v1.12.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/evanphx/json-patch",
+          "version": "v5.6.0+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/exponent-io/jsonpath",
+          "version": "v0.0.0-20151013193312-d6023ce2651d",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/fatih/color",
+          "version": "v1.13.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/fsnotify/fsnotify",
+          "version": "v1.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/ghodss/yaml",
+          "version": "v1.0.1-0.20190212211648-25d852aebe32",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-errors/errors",
+          "version": "v1.4.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-git/gcfg",
+          "version": "v1.5.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-git/go-billy/v5",
+          "version": "v5.3.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-git/go-git/v5",
+          "version": "v5.4.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-gorp/gorp/v3",
+          "version": "v3.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-logr/logr",
+          "version": "v1.2.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-logr/stdr",
+          "version": "v1.2.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-openapi/jsonpointer",
+          "version": "v0.19.6",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-openapi/jsonreference",
+          "version": "v0.20.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/go-openapi/swag",
+          "version": "v0.22.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gobwas/glob",
+          "version": "v0.2.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gogo/protobuf",
+          "version": "v1.3.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/golang/groupcache",
+          "version": "v0.0.0-20210331224755-41bb18bfe9da",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/golang/mock",
+          "version": "v1.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/golang/protobuf",
+          "version": "v1.5.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/btree",
+          "version": "v1.0.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/gnostic",
+          "version": "v0.5.7-v3refs",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/go-cmp",
+          "version": "v0.5.9",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/gofuzz",
+          "version": "v1.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/shlex",
+          "version": "v0.0.0-20191202100458-e7afc7fbc510",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/google/uuid",
+          "version": "v1.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gorilla/mux",
+          "version": "v1.8.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gorilla/websocket",
+          "version": "v1.4.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gosuri/uitable",
+          "version": "v0.0.4",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/graph-gophers/graphql-go",
+          "version": "v1.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/gregjones/httpcache",
+          "version": "v0.0.0-20180305231024-9cad4c3443a7",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/errwrap",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/go-cleanhttp",
+          "version": "v0.5.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/go-multierror",
+          "version": "v1.1.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/go-retryablehttp",
+          "version": "v0.6.8",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/go-version",
+          "version": "v1.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/hashicorp/hcl",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/helm/chart-testing/v3",
+          "version": "v3.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/huandu/xstrings",
+          "version": "v1.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/imdario/mergo",
+          "version": "v0.3.13",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/jbenet/go-context",
+          "version": "v0.0.0-20150711004518-d14ea06fba99",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/jmoiron/sqlx",
+          "version": "v1.3.5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/josharian/intern",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/json-iterator/go",
+          "version": "v1.1.12",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/kevinburke/ssh_config",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/klauspost/compress",
+          "version": "v1.16.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/lann/builder",
+          "version": "v0.0.0-20180802200727-47ae307949d0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/lann/ps",
+          "version": "v0.0.0-20150810152359-62de8c46ede0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/lib/pq",
+          "version": "v1.10.9",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/liggitt/tabwriter",
+          "version": "v0.0.0-20181228230101-89fcab3d43de",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/magiconair/properties",
+          "version": "v1.8.5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mailru/easyjson",
+          "version": "v0.7.7",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mattn/go-colorable",
+          "version": "v0.1.13",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mattn/go-isatty",
+          "version": "v0.0.17",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mattn/go-runewidth",
+          "version": "v0.0.9",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mattn/go-shellwords",
+          "version": "v1.0.12",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/matttproud/golang_protobuf_extensions",
+          "version": "v1.0.4",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/copystructure",
+          "version": "v1.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/go-homedir",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/go-wordwrap",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/hashstructure/v2",
+          "version": "v2.0.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/mapstructure",
+          "version": "v1.4.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/mitchellh/reflectwalk",
+          "version": "v1.0.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/moby/locker",
+          "version": "v1.0.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/moby/moby",
+          "version": "v0.7.3-0.20190826074503-38ab9da00309",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/moby/spdystream",
+          "version": "v0.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/moby/term",
+          "version": "v0.0.0-20221205130635-1aeaba878587",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/modern-go/concurrent",
+          "version": "v0.0.0-20180306012644-bacd9c7ef1dd",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/modern-go/reflect2",
+          "version": "v1.0.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/monochromegane/go-gitignore",
+          "version": "v0.0.0-20200626010858-205db1a8cc00",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/morikuni/aec",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/munnerz/goautoneg",
+          "version": "v0.0.0-20191010083416-a7dc8b61c822",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/onsi/gomega",
+          "version": "v1.27.4",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/opencontainers/go-digest",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/opencontainers/image-spec",
+          "version": "v1.1.0-rc2.0.20221005185240-3a7f492d3f1b",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/opencontainers/runc",
+          "version": "v1.0.0-rc8.0.20190926150303-84373aaa560b",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/openshift/api",
+          "version": "v0.0.0-20220803132145-8e34324aa580",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/openshift/console",
+          "version": "v6.0.6-22206-g350e1eabfd",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/openshift/library-go",
+          "version": "v0.0.0-20200424095618-2aeb4725dadf",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/opentracing/opentracing-go",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/operator-framework/api",
+          "version": "v0.7.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/operator-framework/kubectl-operator",
+          "version": "v0.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/operator-framework/operator-lifecycle-manager",
+          "version": "v0.0.0-20200521062108-408ca95d458f",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/operator-framework/operator-registry",
+          "version": "v1.12.5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/pelletier/go-toml",
+          "version": "v1.9.5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/peterbourgon/diskv",
+          "version": "v2.0.1+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/pkg/errors",
+          "version": "v0.9.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/pquerna/cachecontrol",
+          "version": "v0.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/prometheus/client_golang",
+          "version": "v1.14.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/prometheus/client_model",
+          "version": "v0.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/prometheus/common",
+          "version": "v0.37.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/prometheus/procfs",
+          "version": "v0.8.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/rawagner/graphql-transport-ws",
+          "version": "v0.0.0-20200817140314-dcfbf0388067",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/redhat-certification/chart-verifier",
+          "version": "v0.0.0-20220927162416-f4f07c9860f7",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/rubenv/sql-migrate",
+          "version": "v1.3.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/russross/blackfriday/v2",
+          "version": "v2.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/sergi/go-diff",
+          "version": "v1.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/shopspring/decimal",
+          "version": "v1.3.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/sirupsen/logrus",
+          "version": "v1.9.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/afero",
+          "version": "v1.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/cast",
+          "version": "v1.5.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/cobra",
+          "version": "v1.6.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/jwalterweatherman",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/pflag",
+          "version": "v1.0.5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/spf13/viper",
+          "version": "v1.10.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/subosito/gotenv",
+          "version": "v1.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/xanzy/ssh-agent",
+          "version": "v0.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/xeipuuv/gojsonpointer",
+          "version": "v0.0.0-20190905194746-02993c407bfb",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/xeipuuv/gojsonreference",
+          "version": "v0.0.0-20180127040603-bd5ef7bd5415",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/xeipuuv/gojsonschema",
+          "version": "v1.2.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "github.com/xlab/treeprint",
+          "version": "v1.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "glib2",
+          "version": "2.56.4-165.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "glibc",
+          "version": "2.28-251.el8_10.5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "glibc-common",
+          "version": "2.28-251.el8_10.5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "glibc-gconv-extra",
+          "version": "2.28-251.el8_10.5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "glibc-langpack-en",
+          "version": "2.28-251.el8_10.5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "glibc-minimal-langpack",
+          "version": "2.28-251.el8_10.5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gmp",
+          "version": "1:6.1.2-11.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gnupg2",
+          "version": "2.2.20-3.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gnutls",
+          "version": "3.6.16-8.el8_9.3",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "go.opentelemetry.io/otel",
+          "version": "v1.14.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "go.opentelemetry.io/otel/trace",
+          "version": "v1.14.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "go.starlark.net",
+          "version": "v0.0.0-20200306205701-8dd3e2ee1dd5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "go.uber.org/atomic",
+          "version": "v1.7.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "go.uber.org/multierr",
+          "version": "v1.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "go.uber.org/zap",
+          "version": "v1.19.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gobject-introspection",
+          "version": "1.56.1-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "golang.org/x/crypto",
+          "version": "v0.5.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/mod",
+          "version": "v0.9.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/net",
+          "version": "v0.8.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/oauth2",
+          "version": "v0.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/sync",
+          "version": "v0.1.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/sys",
+          "version": "v0.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/term",
+          "version": "v0.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/text",
+          "version": "v0.9.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "golang.org/x/time",
+          "version": "v0.0.0-20220210224613-90d013bbcef8",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "google.golang.org/genproto",
+          "version": "v0.0.0-20230306155012-7f2fa6fef1f4",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "google.golang.org/grpc",
+          "version": "v1.53.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "google.golang.org/protobuf",
+          "version": "v1.28.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/inf.v0",
+          "version": "v0.9.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/ini.v1",
+          "version": "v1.66.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/square/go-jose.v2",
+          "version": "v2.6.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/warnings.v0",
+          "version": "v0.1.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/yaml.v2",
+          "version": "v2.4.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gopkg.in/yaml.v3",
+          "version": "v3.0.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "gpg",
+          "version": "1.13.1",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "gpg-pubkey",
+          "version": "d4082792-5b32db75",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gpg-pubkey",
+          "version": "fd431d51-4ae0493b",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gpgme",
+          "version": "1.13.1-12.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "grep",
+          "version": "3.1-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "gzip",
+          "version": "1.9-13.el8_5",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "helm.sh/helm/v3",
+          "version": "v3.12.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "hostname",
+          "version": "3.20-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "idna",
+          "version": "2.5",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "ima-evm-utils",
+          "version": "1.3.2-12.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "info",
+          "version": "6.5-7.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "iniparse",
+          "version": "0.4",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "iproute",
+          "version": "6.2.0-6.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "isc",
+          "version": "2.0",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "json-c",
+          "version": "0.13.1-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "json-glib",
+          "version": "1.4.4-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "k8s.io/api",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/apiextensions-apiserver",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/apimachinery",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/apiserver",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/cli-runtime",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/client-go",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/component-base",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/helm",
+          "version": "v2.17.0+incompatible",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/klog",
+          "version": "v1.0.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/klog/v2",
+          "version": "v2.90.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/kube-openapi",
+          "version": "v0.0.0-20230501164219-8b0f38b5fd1f",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/kubectl",
+          "version": "v0.27.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "k8s.io/utils",
+          "version": "v0.0.0-20230220204549-a5ecb0141aa5",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "keyutils-libs",
+          "version": "1.5.10-9.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "kmod-libs",
+          "version": "25-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "krb5-libs",
+          "version": "1.18.2-30.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "langpacks-en",
+          "version": "1.0-12.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libacl",
+          "version": "2.2.53-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libarchive",
+          "version": "3.3.3-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libassuan",
+          "version": "2.5.1-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libattr",
+          "version": "2.4.48-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libblkid",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libbpf",
+          "version": "0.5.0-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libcap",
+          "version": "2.48-6.el8_9",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libcap-ng",
+          "version": "0.7.11-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libcom_err",
+          "version": "1.45.6-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libcomps",
+          "version": "0.1.18",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "libcomps",
+          "version": "0.1.18-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libcurl",
+          "version": "7.61.1-34.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libdb",
+          "version": "5.3.28-42.el8_4",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libdb-utils",
+          "version": "5.3.28-42.el8_4",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libdnf",
+          "version": "0.63.0-20.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libfdisk",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libffi",
+          "version": "3.1-24.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libgcc",
+          "version": "8.5.0-22.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libgcrypt",
+          "version": "1.8.5-7.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libgpg-error",
+          "version": "1.31-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libidn2",
+          "version": "2.2.0-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libksba",
+          "version": "1.3.5-9.el8_7",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libmaxminddb",
+          "version": "1.2.0-10.el8_9.1",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libmetalink",
+          "version": "0.1.3-7.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libmnl",
+          "version": "1.0.4-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libmodulemd",
+          "version": "2.13.0-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libmount",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libnghttp2",
+          "version": "1.33.0-6.el8_10.1",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libnl3",
+          "version": "3.7.0-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libnsl2",
+          "version": "1.2.0-2.20180605git4a062cf.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libpsl",
+          "version": "0.20.2-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libpwquality",
+          "version": "1.4.4-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "librepo",
+          "version": "1.14.2-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libreport-filesystem",
+          "version": "2.9.5-15.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "librhsm",
+          "version": "0.0.3-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libseccomp",
+          "version": "2.5.2-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libselinux",
+          "version": "2.9-8.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libsemanage",
+          "version": "2.9-9.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libsepol",
+          "version": "2.9-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libsigsegv",
+          "version": "2.11-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libsmartcols",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libsolv",
+          "version": "0.7.20-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libssh",
+          "version": "0.9.6-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libssh-config",
+          "version": "0.9.6-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libstdc++",
+          "version": "8.5.0-22.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libtasn1",
+          "version": "4.13-4.el8_7",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libtirpc",
+          "version": "1.1.4-12.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libunistring",
+          "version": "0.9.9-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libusbx",
+          "version": "1.0.23-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libuser",
+          "version": "0.62-26.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libutempter",
+          "version": "1.1.6-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libuuid",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libverto",
+          "version": "0.3.2-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libxcrypt",
+          "version": "4.1.1-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libxkbcommon",
+          "version": "0.9.1-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libxml2",
+          "version": "2.9.7-18.el8_10.1",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libyaml",
+          "version": "0.1.7-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "libzstd",
+          "version": "1.4.4-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "lsof",
+          "version": "4.93.2-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "lua-libs",
+          "version": "5.3.4-12.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "lz4-libs",
+          "version": "1.8.3-3.el8_4",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "mpfr",
+          "version": "3.1.6-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "ncurses-base",
+          "version": "6.1-10.20180224.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "ncurses-libs",
+          "version": "6.1-10.20180224.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "nettle",
+          "version": "3.4.1-7.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "npth",
+          "version": "1.5-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "openldap",
+          "version": "2.4.46-20.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "openssl",
+          "version": "1:1.1.1k-14.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "openssl-libs",
+          "version": "1:1.1.1k-14.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "openssl-pkcs11",
+          "version": "0.4.10-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "oras.land/oras-go",
+          "version": "v1.2.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "p11-kit",
+          "version": "0.23.22-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "p11-kit-trust",
+          "version": "0.23.22-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "pam",
+          "version": "1.3.1-36.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "passwd",
+          "version": "0.80-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "pcre",
+          "version": "8.42-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "pcre2",
+          "version": "10.32-3.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "pip",
+          "version": "9.0.3",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "platform-python",
+          "version": "3.6.8-69.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "platform-python-pip",
+          "version": "9.0.3-24.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "platform-python-setuptools",
+          "version": "39.2.0-8.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "ply",
+          "version": "3.9",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "popt",
+          "version": "1.18-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "procps-ng",
+          "version": "3.3.15-14.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "protobuf-c",
+          "version": "1.3.0-8.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "psmisc",
+          "version": "23.1-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "publicsuffix-list-dafsa",
+          "version": "20180723-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "pygobject",
+          "version": "3.28.3",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "pyinotify",
+          "version": "0.9.6",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "pysocks",
+          "version": "1.6.8",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.6.1",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "python3-bind",
+          "version": "32:9.11.36-16.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-chardet",
+          "version": "3.0.4-7.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-cloud-what",
+          "version": "1.28.42-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-dateutil",
+          "version": "1:2.6.1-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-dbus",
+          "version": "1.2.4-15.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-decorator",
+          "version": "4.2.1-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-dnf",
+          "version": "4.7.0-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-dnf-plugins-core",
+          "version": "4.0.21-25.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-ethtool",
+          "version": "0.14-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-gobject-base",
+          "version": "3.28.3-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-gpg",
+          "version": "1.13.1-12.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-hawkey",
+          "version": "0.63.0-20.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-idna",
+          "version": "2.5-7.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-iniparse",
+          "version": "0.4-31.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-inotify",
+          "version": "0.9.6-13.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-libcomps",
+          "version": "0.1.18-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-libdnf",
+          "version": "0.63.0-20.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-librepo",
+          "version": "1.14.2-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-libs",
+          "version": "3.6.8-69.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-pip",
+          "version": "9.0.3-24.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-pip-wheel",
+          "version": "9.0.3-24.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-ply",
+          "version": "3.9-9.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-pysocks",
+          "version": "1.6.8-3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-requests",
+          "version": "2.20.0-3.el8_8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-rpm",
+          "version": "4.14.3-31.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-setuptools",
+          "version": "39.2.0-8.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-setuptools-wheel",
+          "version": "39.2.0-8.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-six",
+          "version": "1.11.0-8.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-subscription-manager-rhsm",
+          "version": "1.28.42-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-syspurpose",
+          "version": "1.28.42-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-systemd",
+          "version": "234-8.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python3-urllib3",
+          "version": "1.24.2-8.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "python36",
+          "version": "3.6.8-39.module+el8.10.0+20784+edafcd43",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "readline",
+          "version": "7.0-10.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "redhat-release",
+          "version": "8.10-0.3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "redhat-release-eula",
+          "version": "8.10-0.3.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "requests",
+          "version": "2.20.0",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "rootfiles",
+          "version": "8.1-22.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "rpm",
+          "version": "4.14.3",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "rpm",
+          "version": "4.14.3-31.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "rpm-build-libs",
+          "version": "4.14.3-31.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "rpm-libs",
+          "version": "4.14.3-31.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "rsync",
+          "version": "3.1.3-19.el8_7.1",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "sed",
+          "version": "4.5-5.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "setup",
+          "version": "2.12.2-9.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "setuptools",
+          "version": "39.2.0",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "shadow-utils",
+          "version": "2:4.6-22.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "shared-mime-info",
+          "version": "1.9-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "sigs.k8s.io/controller-runtime",
+          "version": "v0.12.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "sigs.k8s.io/json",
+          "version": "v0.0.0-20221116044647-bc3834ca7abd",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "sigs.k8s.io/kustomize/api",
+          "version": "v0.13.2",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "sigs.k8s.io/kustomize/kyaml",
+          "version": "v0.14.1",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "sigs.k8s.io/structured-merge-diff/v4",
+          "version": "v4.2.3",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "sigs.k8s.io/yaml",
+          "version": "v1.3.0",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "six",
+          "version": "1.11.0",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "socat",
+          "version": "1.7.4.1-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "sqlite-libs",
+          "version": "3.26.0-19.el8_9",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "stdlib",
+          "version": "go1.20.12",
+          "path": null,
+          "system": "golang"
+        },
+        {
+          "name": "subscription-manager",
+          "version": "1.28.42",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "subscription-manager",
+          "version": "1.28.42-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "subscription-manager-rhsm-certificates",
+          "version": "20220623-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "syspurpose",
+          "version": "1.28.42",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "systemd",
+          "version": "239-82.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "systemd-libs",
+          "version": "239-82.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "systemd-pam",
+          "version": "239-82.el8_10.2",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "systemd-python",
+          "version": "234",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "tar",
+          "version": "2:1.30-9.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "tpm2-tss",
+          "version": "2.3.2-6.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "tzdata",
+          "version": "2024b-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "urllib3",
+          "version": "1.24.2",
+          "path": null,
+          "system": "python"
+        },
+        {
+          "name": "usermode",
+          "version": "1.113-2.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "util-linux",
+          "version": "2.32.1-46.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "vim-minimal",
+          "version": "2:8.0.1763-19.el8_6.4",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "virt-what",
+          "version": "1.25-4.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "wget",
+          "version": "1.19.5-12.el8_10",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "which",
+          "version": "2.21-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "xkeyboard-config",
+          "version": "2.28-1.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "xz-libs",
+          "version": "5.2.4-4.el8_6",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "yum",
+          "version": "4.7.0-20.el8",
+          "path": null,
+          "system": "rpm"
+        },
+        {
+          "name": "zlib",
+          "version": "1.2.11-25.el8",
+          "path": null,
+          "system": "rpm"
+        }
+      ]
+    },
+    "vulnerable_dependencies": [
+      {
+        "vuln_id": "CVE-2024-1485",
+        "vuln_package_intel_sources": [],
+        "vulnerable_sbom_packages": []
+      }
+    ]
+  },
+  "output": [
+    {
+      "vuln_id": "CVE-2024-1485",
+      "checklist": [
+        {
+          "input": "Verify Usage of `parent` or `plugin` Keywords: Review the code within the container image to check if devfiles are being parsed that use the `parent` or `plugin` keywords. This is the specific trigger for the vulnerability, and identifying such usage is crucial for assessing exploitability.",
+          "response": "The usage of `parent` or `plugin` keywords in the code within the container image can be verified by accessing the container image's file system and searching for `devfile.yaml` or `devfile.json` files that contain these keywords.",
+          "intermediate_steps": null
+        },
+        {
+          "input": "Assess Devfile Parsing Logic: Evaluate how devfiles are parsed within the application. Are there any validation or sanitization checks in place for devfile contents, especially for the `parent` or `plugin` keywords? Understanding the parsing logic will help in determining the likelihood of exploitation.",
+          "response": "Unfortunately, I was unable to find any specific information about the devfile parsing logic within the application, including any validation or sanitization checks for devfile contents, especially for the `parent` or `plugin` keywords. However, I can suggest that the application likely uses a parsing library or framework to process devfiles, and it's possible that this library or framework includes some level of validation or sanitization. Without further information or access to the application's codebase, it's difficult to determine the exact parsing logic and potential vulnerabilities.",
+          "intermediate_steps": null
+        },
+        {
+          "input": "Inspect Cleanup Process: Investigate the cleanup process after decompression. Are there any safeguards in place to prevent overwriting or deleting files outside of the intended archive directory? The vulnerability specifically mentions the cleanup process as a vector for exploitation, so assessing its security is vital.",
+          "response": "Unfortunately, I couldn't find specific information about the cleanup process and its potential vulnerabilities in container images. However, based on my understanding of the vulnerability, I can infer that the cleanup process after decompression is a critical component that requires careful attention to prevent potential security risks. It is essential to ensure that the cleanup process is properly implemented and secured to prevent overwriting or deleting files outside of the intended archive directory.",
+          "intermediate_steps": null
+        },
+        {
+          "input": "Review User Interaction: Since the CVE mentions that an unauthenticated remote attacker needs to trick a user into parsing a malicious devfile, assess the user interaction points within the application. Are there any mechanisms in place that could prevent or limit the parsing of untrusted devfiles by users?",
+          "response": "Based on general knowledge of application security, common mechanisms that could prevent or limit the parsing of untrusted devfiles by users include input validation and sanitization, secure file upload handling, and user authentication and authorization. However, without specific information about the application's architecture and security features, it is impossible to determine if these mechanisms are in place.",
+          "intermediate_steps": null
+        }
+      ],
+      "summary": "Based on the provided Checklist and Findings, the CVE is **potentially exploitable**. \n\nThe investigation found that the usage of `parent` or `plugin` keywords in the code within the container image can be verified, which is a specific trigger for the vulnerability. However, the assessment of devfile parsing logic, cleanup process, and user interaction points were inconclusive due to lack of specific information. Therefore, it is crucial to further investigate these areas to determine the likelihood of exploitation.",
+      "justification": {
+        "label": "uncertain",
+        "reason": "The analysis is inconclusive due to a lack of specific information regarding devfile parsing logic, cleanup process, and user interaction points, making it uncertain whether the package is exploitable.",
+        "status": "UNKNOWN"
+      }
+    }
+  ]
+}

@@ -42,8 +42,7 @@ For development the external calls will be mocked using WireMock. The report beh
 will depend on the preffix used in the report ID.
 
 * `error-` will fail to process
-* `timeout-` will not generate a report result
-* `after-<duration>` will reply after `<duration>`
+* `timeout-` will generate a report result after 5 seconds
 * any other request will be immediately replied with a success
 
 ## Database (MongoDB)

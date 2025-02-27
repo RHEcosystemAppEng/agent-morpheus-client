@@ -115,7 +115,7 @@ export default function Report() {
     if (report.metadata !== undefined) {
       Object.keys(report.metadata).forEach(k => {
         if (time_meta_fields.includes(k)) {
-          timestamps.push({ key: k, value: report.metadata[k] });
+          timestamps.push({ key: k, value: report.metadata[k]["$date"] });
         } else {
           metadata.push({ key: k, value: report.metadata[k] });
         }

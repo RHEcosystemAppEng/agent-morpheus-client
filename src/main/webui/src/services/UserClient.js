@@ -1,7 +1,7 @@
 import { ClientRequestError } from "./ClientUtils";
 
-export const getUserInfo = async () => {
-  const response = await fetch('/user/info', {
+export const getUserName = async () => {
+  const response = await fetch('/user', {
     headers: {
       'Accept': 'application/json'
     }
@@ -9,7 +9,7 @@ export const getUserInfo = async () => {
   if (!response.ok) {
     throw new ClientRequestError(response.status, response.statusText);
   }
-  return await response.json();
+  return (await response.json()).name;
 
 };
 

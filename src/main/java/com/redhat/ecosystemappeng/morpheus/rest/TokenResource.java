@@ -11,23 +11,18 @@ import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.Date;
 
-import io.quarkus.oidc.UserInfo;
-import io.quarkus.security.identity.CurrentIdentityAssociation;
+import com.redhat.ecosystemappeng.morpheus.service.UserService;
 
 @Path("/user")
 public class TokenResource {
 
   @Inject
-  UserInfo userInfo;
-
-  @Inject
-  CurrentIdentityAssociation identity;
+  UserService userService;
 
   @GET
-  @Path("/info")
   @Produces("application/json")
-  public String getUserInfo() {
-    return userInfo.getUserInfoString();
+  public String getUserName() {
+    return String.format("{\"name\": \"%s\"}", userService.getUserName());
   }
 
   @POST

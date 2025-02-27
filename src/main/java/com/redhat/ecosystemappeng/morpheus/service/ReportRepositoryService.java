@@ -3,15 +3,19 @@ package com.redhat.ecosystemappeng.morpheus.service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,6 +36,7 @@ import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
+import io.quarkus.runtime.Startup;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,6 +45,11 @@ import jakarta.inject.Inject;
 @RegisterForReflection(targets = { Document.class })
 public class ReportRepositoryService {
 
+  private static final Logger LOGGER = Logger.getLogger(ReportRepositoryService.class);
+
+  private static final String SENT_AT = "sent_at";
+  private static final String SUBMITTED_AT = "submitted_at";
+  private static final Collection<String> METADATA_DATES = List.of(SUBMITTED_AT, SENT_AT);
   private static final String COLLECTION = "reports";
   private static final Map<String, Bson> STATUS_FILTERS = Map.of(
       "completed", Filters.ne("input.scan.completed_at", null),
@@ -59,6 +69,27 @@ public class ReportRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
+  @Startup
+  public void migrateOldData() {
+    METADATA_DATES.stream().forEach(field -> {
+      var filter = Filters.and(Filters.exists("metadata." + field), Filters.type("metadata." + field, "string"));
+
+      // Update pipeline to convert the nested String to Date
+      Document updateOperation = new Document("$set",
+          new Document("metadata." + field,
+              new Document("$dateFromString",
+                  new Document("dateString", "$metadata." + field) // Refers to the nested field
+      )));
+      getCollection().updateMany(filter, Collections.singletonList(updateOperation));
+
+      // Populate missing fields with current time
+      filter = Filters.not(Filters.exists("metadata." + field));
+      var update = Updates.set("metadata." + field, Instant.now());
+      getCollection().updateMany(filter, update);
+    });
+
+  }
+
   private MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
@@ -74,7 +105,14 @@ public class ReportRepositoryService {
     var metadataField = doc.get("metadata", Document.class);
     var metadata = new HashMap<String, String>();
     if (metadataField != null) {
-      metadataField.keySet().forEach(key -> metadata.put(key, metadataField.getString(key)));
+      metadataField.keySet().forEach(key -> {
+        if (METADATA_DATES.contains(key)) {
+          Date date = metadataField.getDate(key);
+          metadata.put(key, date.toInstant().toString());
+        } else {
+          metadata.put(key, metadataField.getString(key));
+        }
+      });
     }
     var vulnIds = new HashSet<VulnResult>();
     if (output != null) {
@@ -120,10 +158,10 @@ public class ReportRepositoryService {
       }
     }
     if (metadata != null) {
-      if (metadata.get("sent_at") != null) {
+      if (metadata.get(SENT_AT) != null) {
         return "sent";
       }
-      if (metadata.get("submitted_at") != null) {
+      if (metadata.get(SUBMITTED_AT) != null) {
         return "queued";
       }
     }
@@ -163,14 +201,14 @@ public class ReportRepositoryService {
   public void setAsSent(String id) {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
-        Updates.set("metadata.sent_at", Instant.now().toString()));
+        Updates.set("metadata.sent_at", Instant.now()));
   }
 
   public void setAsSubmitted(String id, String byUser) {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
         List.of(
-            Updates.set("metadata.submitted_at", Instant.now().toString()),
+            Updates.set("metadata.submitted_at", Instant.now()),
             Updates.set("metadata.user", byUser)));
   }
 
@@ -178,7 +216,7 @@ public class ReportRepositoryService {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
         Updates.combine(
-            Updates.set("metadata.submitted_at", Instant.now().toString()),
+            Updates.set("metadata.submitted_at", Instant.now()),
             Updates.set("metadata.user", byUser),
             Updates.unset("error")));
   }
@@ -249,7 +287,8 @@ public class ReportRepositoryService {
   }
 
   public void removeBefore(Instant threshold) {
-    getCollection().deleteMany(Filters.lt("metadata.submitted_at", threshold));
+    var count = getCollection().deleteMany(Filters.lt("metadata.submitted_at", threshold)).getDeletedCount();
+    LOGGER.debugf("Removed %s reports before %s", count, threshold);
   }
 
   private Bson buildQueryFilter(Map<String, String> queryFilter) {

@@ -40,9 +40,8 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
-import io.quarkus.oidc.UserInfo;
+import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduler;
-import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -79,8 +78,7 @@ public class ReportService {
   NotificationSocket notificationSocket;
 
   @Inject
-  UserInfo userInfo;
-
+  UserService userService;
 
   @Inject
   Scheduler scheduler;
@@ -94,7 +92,7 @@ public class ReportService {
   @ConfigProperty(name = "morpheus.purge.after", defaultValue = "7d")
   Duration purgeAfter;
 
-  @PostConstruct
+  @Startup
   void loadConfig() throws FileNotFoundException, IOException {
     includes = getMappingConfig(includesPath);
     excludes = getMappingConfig(excludesPath);
@@ -144,7 +142,7 @@ public class ReportService {
     if(report == null) {
       return false;
     }
-    repository.setAsRetried(id, getUser());
+    repository.setAsRetried(id, userService.getUserName());
     LOGGER.debugf("Retry report %s", id);
     queueService.queue(id, objectMapper.readTree(report));
 
@@ -185,7 +183,7 @@ public class ReportService {
         notificationSocket.onMessage(objectMapper.writeValueAsString(event));
         queueService.received(existingId);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOGGER.warn("Unable to process received report", e);
       var event = new ReportReceivedEvent(null, scanId, e.getMessage());
       try {
@@ -210,23 +208,9 @@ public class ReportService {
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
-    repository.setAsSubmitted(created.id(), getUser());
+    repository.setAsSubmitted(created.id(), userService.getUserName());
     queueService.queue(created.id(), report);
     return new ReportRequestId(created.id(), scan.id());
-  }
-
-  private String getUser() {
-    var defaultName = "anonymous";
-    if(userInfo != null) {
-      var metadata = userInfo.getObject("metadata");
-      if(metadata != null) {
-        var name = metadata.getString("name");
-        if(name != null) {
-          return name;
-        }
-      }
-    } 
-    return defaultName;
   }
 
   private Scan buildScan(ReportRequest request) {
