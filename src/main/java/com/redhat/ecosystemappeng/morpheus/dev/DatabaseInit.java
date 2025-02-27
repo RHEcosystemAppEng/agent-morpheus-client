@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class DatabaseInit {
   @ConfigProperty(name = "morpheus.repository.reports-path", defaultValue = "src/test/resources/devservices/reports")
   String reportsPath;
 
+  @SuppressWarnings("unchecked")
   @Startup
   void init() {
     var count = mongoClient.getDatabase(dbName).getCollection("reports").countDocuments();
@@ -62,6 +64,9 @@ public class DatabaseInit {
       Files.walk(folder.toPath()).filter(Files::isRegularFile).forEach(f -> {
         try {
           var doc = mapper.readValue(f.toFile(), Document.class);
+          var metadata = doc.get("metadata", java.util.LinkedHashMap.class);
+          metadata.put("submitted_at", Instant.parse((String)metadata.get("submitted_at")));
+          metadata.put("sent_at", Instant.parse((String)metadata.get("sent_at")));
           docs.add(doc);
         } catch (IOException e) {
           LOGGER.errorf("Ignoring invalid document: %s", f, e);
