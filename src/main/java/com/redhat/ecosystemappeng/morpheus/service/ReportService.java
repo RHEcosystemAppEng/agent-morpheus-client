@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import io.opentelemetry.context.Context;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
@@ -164,7 +165,7 @@ public class ReportService {
           id = existing.get(0);
         }
       } else {
-        scanId = UUID.randomUUID().toString();
+        scanId = calculateReportId();
       }
 
       if (existing == null || existing.isEmpty()) {
@@ -198,7 +199,7 @@ public class ReportService {
   public ReportRequestId submit(ReportRequest request) throws JsonProcessingException, IOException {
     var scanId = request.id();
     if (scanId == null) {
-      scanId = UUID.randomUUID().toString();
+      scanId = calculateReportId();
     }
     var scan = buildScan(request);
     var image = buildImage(request);
@@ -216,9 +217,24 @@ public class ReportService {
   private Scan buildScan(ReportRequest request) {
     var id = request.id();
     if (id == null) {
-      id = UUID.randomUUID().toString();
+      id = calculateReportId();
     }
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
+  }
+// Try to fetch from tracing context the traceId, so report/scan id will be aligned with request traceID Propagated along the analysis request lifetime.
+  private static String calculateReportId() {
+    String id;
+    String tracingContextString = Context.current().toString();
+    int traceIdStartIndex = tracingContextString.indexOf("traceId");
+    int traceIdStartIndexOfValue = traceIdStartIndex + 8;
+    if(traceIdStartIndex > -1 &&  traceIdStartIndex + 8 < tracingContextString.length() ) {
+      id = tracingContextString.substring(traceIdStartIndexOfValue, traceIdStartIndex + 40);
+    }
+    // Only if failed to get the traceId, Generate it using a random UUID
+    else {
+      id = UUID.randomUUID().toString();
+    }
+    return id;
   }
 
   private Image buildImage(ReportRequest request) {
