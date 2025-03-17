@@ -25,6 +25,10 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Gauge;
+
 /**
  * This Service is not implemented to support a Clustered environment
  */
@@ -54,6 +58,14 @@ public class RequestQueueService {
   private Queue<String> pending = new LinkedList<>();
   private Map<String, LocalDateTime> active = new HashMap<>();
   private LocalDateTime lastCheck = LocalDateTime.now();
+
+  @Inject
+  public RequestQueueService(MeterRegistry meterRegistry) {
+    Gauge.builder("morpheus.request.queue.config.max-active", () -> maxActive).register(meterRegistry);
+    Gauge.builder("morpheus.request.queue.config.max-size", () -> maxSize).register(meterRegistry);
+    meterRegistry.gaugeCollectionSize("morpheus.request.queue.pending", Tags.empty(), pending);
+    meterRegistry.gaugeMapSize("morpheus.request.queue.active", Tags.empty(), active);
+  }
 
   @Scheduled(every = "10s")
   void checkQueue() {

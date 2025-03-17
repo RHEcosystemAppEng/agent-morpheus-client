@@ -66,11 +66,11 @@ public class ReportRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
-  private MongoCollection<Document> getCollection() {
+  public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  private Report toReport(Document doc) {
+  public Report toReport(Document doc) {
     if (doc == null) {
       return null;
     }

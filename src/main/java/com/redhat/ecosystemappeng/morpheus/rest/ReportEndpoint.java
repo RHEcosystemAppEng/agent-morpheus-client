@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.redhat.ecosystemappeng.morpheus.tracing.TraceToMdc;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
@@ -88,6 +90,7 @@ public class ReportEndpoint {
     throw new NotFoundException(id);
   }
 
+  @TraceToMdc
   @POST
   public Response receive(String report) {
     var reqId = reportService.receive(report);
