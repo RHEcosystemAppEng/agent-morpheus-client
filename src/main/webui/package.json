@@ -18,6 +18,7 @@
     "@patternfly/react-icons": "^6.1.0",
     "@patternfly/react-styles": "^6.1.0",
     "@patternfly/react-table": "^6.1.0",
+    "axios": "^1.8.4",
     "packageurl-js": "^2.0.1",
     "react-router-dom": "^6.26.2",
     "victory": "^37.3.6"
