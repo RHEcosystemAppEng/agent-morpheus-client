@@ -78,13 +78,16 @@ export default function App() {
   const PageNav = <Nav aria-label="Nav">
     <NavList>
       <NavItem itemId={0} isActive={location.pathname === '/'} to="#">
-        Request Analysis
+        Request Component Analysis
       </NavItem>
       <NavItem itemId={1} isActive={location.pathname.startsWith('/reports')} to="#/reports">
         View Reports
       </NavItem>
       <NavItem itemId={2} isActive={location.pathname.startsWith('/vulnerabilities')} to="#/vulnerabilities">
         Vulnerabilities
+      </NavItem>
+      <NavItem itemId={3} isActive={location.pathname === '/product'} to="#/product">
+        Request Product Analysis
       </NavItem>
     </NavList>
   </Nav>;
