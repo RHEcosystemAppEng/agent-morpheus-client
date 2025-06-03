@@ -1,5 +1,5 @@
 import { Bullseye, EmptyState, EmptyStateVariant, ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput } from "@patternfly/react-core";
-import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
@@ -20,6 +20,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   const [canSubmit, setCanSubmit] = React.useState(false);
   const [selectedComponents, setSelectedComponents] = React.useState([]);
   const [selectAll, setSelectAll] = React.useState(true);
+  const [formData, setFormData] = React.useState({});
 
   React.useEffect(() => {
     if (ociComponents.length > 0) {
@@ -33,13 +34,44 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
       setSelectedComponents([]);
       setSelectAll(false);
     }
-
-    onFormUpdated()
   }, [ociComponents]);
 
-  const handleIdChange = (_, id) => {
+
+  React.useEffect(() => {
+    const updated = formData;
+
+    const updatedCves = updated['cves'];
+    if (!updatedCves || updatedCves.length === 0) {
+      setCanSubmit(false);
+      return;
+    }
+
+    for (let value of updatedCves) {
+      if (!value.name || value.name.trim() === '') {
+        setCanSubmit(false);
+        return;
+      }
+    }
+
+    const metadata = updated['metadata'] || [];
+    for (let pair of metadata) {
+      if (!pair.name || pair.name.trim() === '' || !pair.value || pair.value.trim() === '') {
+        setCanSubmit(false);
+        return;
+      }
+    }
+
+    if (selectedComponents.length === 0) {
+      setCanSubmit(false);
+      return;
+    }
+
+    setCanSubmit(true);
+  }, [formData, selectedComponents]);
+
+  const handleProdIdChange = (_, id) => {
     setProdId(id);
-    onFormUpdated({ id: id })
+    onFormUpdated({ prodId: id })
   };
 
   const handleMetadataChange = (idx, field, newValue) => {
@@ -106,11 +138,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     const repositoryUrl = params.get("repository_url");
     const tag = params.get("tag");
   
-    if (repositoryUrl && tag) {
-      return `${repositoryUrl}:${tag}`;
-    }
-  
-    return null;
+    return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
   };  
 
   const generateSbomFromImage = async (imageName) => {
@@ -122,31 +150,34 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
       });
   
       if (!response.ok) {
-        throw new Error("Failed to generate SBOM");
+        const error = await response.text();
+        return { error: `Could not generate SBOM. status: ${response.status}, error: ${error}` };
       }
   
       const sbom = await response.json();
-      setSboms(prev => [...prev, sbom]);
-      // Now you can pass this SBOM to your parsing function
+      return { sbom };
     } catch (error) {
-      console.error("Error generating SBOM:", error);
+      return { error: `Could not generate SBOM. ${error.message}` };
     }
   };
 
-  const generateComponentSboms = async (comps) => {
-    // for (const comp of comps) {
-    //   const imageName = handleImageExtraction(comp.reference);
-    //   if (imageName) {
-    //     await generateSbomFromImage(imageName);
-    //   } else {
-    //     console.warn("Invalid package manager referenceLocator format:", comp.reference);
-    //   }
-    // }
-    const imageName = handleImageExtraction(comps[0].reference);
-    if (imageName) {
-      await generateSbomFromImage(imageName);
-    } else {
-      console.warn("Invalid package manager referenceLocator format:", comps[0].reference);
+  const submitSbomToMorpheus = async (sbom, ref) => {
+    const update = { sbom: sbom }
+    const updated = handleVulnRequestChange(update);
+
+    if (updated.sbom === undefined || updated.sbom === '') {
+      return { error: `Could not submit analysis request, invalid SBOM for ${ref}` };
+    }
+    try {
+      const response = await sendToMorpheus(updated);
+      if (!response.ok) {
+        const json = await response.json();
+        return { error: `Could not submit analysis request. status: ${response.status}, error: ${json.error}` };
+      }
+      onNewAlert('success', `Analysis request sent to Morpheus for ${ref}`);
+      return {};
+    } catch (error) {
+      return { error: `Could not submit analysis request, ${error.message}` };
     }
   };
 
@@ -231,66 +262,63 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     setIsLoading(false);
   };
 
-  const handleClear = _ => {
-    setFilename('');
-    setSboms('');
+  const handleClear = () => {
     setProdSbom({});
+    setFilename('');
     setOciComponents([]);
     setRpmComponents([]);
-    onFormUpdated();
-  }
+    setSelectedComponents([]);
+    setSelectAll(false);
+  };
 
-  const onSubmitForm = () => {
+  const onSubmitForm = async () => {
     setCanSubmit(false);
-    sendToMorpheus(vulnRequest)
-      .then(response => {
-        if (response.ok) {
-          onNewAlert('success', 'Analysis request sent to Morpheus');
-        } else {
-          response.json().then(json => onNewAlert('danger', `Unable to send request: ${response.status}:${json.error}`)); 
-        }
-      }).catch(error => {
-        onNewAlert('danger', `Unable to send request: ${error}`)
-      }).finally(() => setCanSubmit(true));
-  }
 
-  const onFormUpdated = (update) => {
-    if(!update) {
-      setCanSubmit(false);
-    }
-
-    const updated = handleVulnRequestChange(update);
-    const updatedCves = updated['cves'];    
-
-    if (updatedCves === undefined || updatedCves.length === 0) {
-      setCanSubmit(false);
-      return;
-    }
-
-    for (let value of updatedCves) {
-      if (value.name === undefined || value.name.trim() === '') {
-        setCanSubmit(false);
-        return;
-      }
-    }
+    const failures = {
+      generation: [],
+      submission: []
+    };
     
-    const metadata = updated['metadata'];
-
-    for (let idx in metadata) {
-      const pair = metadata[idx];
-      if (pair.name === undefined || pair.name.trim() === '' || pair.value === undefined || pair.value.trim() === '') {
-        setCanSubmit(false);
+    const tasks = selectedComponents.map(async (comp) => {
+      const imageName = handleImageExtraction(comp.ref);
+      if (!imageName) {
+        failures.generation.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
         return;
       }
-    }
+  
+      const { sbom, error: genError } = await generateSbomFromImage(imageName);
 
-    if (selectedComponents.length === 0) {
-      setCanSubmit(false);
-      return
+      if (genError) {
+        failures.generation.push({ ref: comp.ref, error: genError });
+        return;
+      }
+  
+      setSboms(prev => [...prev, sbom]);
+      
+      const { error: submitError } = await submitSbomToMorpheus(sbom, comp.ref);
+      if (submitError) {
+        failures.submission.push({ ref: comp.ref, error: submitError });
+      }
+    });
+  
+    await Promise.allSettled(tasks);
+  
+    if (failures.generation.length || failures.submission.length) {
+      onNewAlert('danger', 'Failures occurred while submitting request')
     }
 
     setCanSubmit(true);
   }
+
+  const onFormUpdated = (update) => {
+    if (!update) {
+      setFormData({});
+      return;
+    }
+  
+    const updated = handleVulnRequestChange(update);
+    setFormData(updated);
+  };
 
   const columnNames = [
     { key: 'image', label: 'Component' },
@@ -345,8 +373,6 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     } else {
       setSelectedComponents([]);
     }
-
-    onFormUpdated()
   };
 
   const onSelectItem = (ref, rowIndex, isSelecting) => {
@@ -354,12 +380,10 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   
     if (isSelecting && idx === -1) {
       setSelectedComponents([...selectedComponents, { idx: rowIndex, ref: ref }]);
-      onFormUpdated()
     } else if (!isSelecting && idx !== -1) {
       const newItems = selectedComponents.filter((item) => item.idx !== rowIndex);
       setSelectedComponents(newItems);
       setSelectAll(false);
-      onFormUpdated()
     }
   
     if (isSelecting) {
@@ -376,7 +400,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
 
   return <Form isHorizontal>
     <FormGroup label="Request ID" fieldId="req-id">
-      <TextInput type="text" id="req-id" value={prodId} onChange={handleIdChange} placeholder="Leave blank and will be generated" autoComplete="off"></TextInput>
+      <TextInput type="text" id="req-id" value={prodId} onChange={handleProdIdChange} placeholder="Leave blank and will be generated" autoComplete="off"></TextInput>
     </FormGroup>
     <FormSection title="Metadata">
       {metadata.map((m, idx) => {
