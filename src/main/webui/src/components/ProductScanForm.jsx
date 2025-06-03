@@ -18,6 +18,24 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   const [filename, setFilename] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
+  const [selectedComponents, setSelectedComponents] = React.useState([]);
+  const [selectAll, setSelectAll] = React.useState(true);
+
+  React.useEffect(() => {
+    if (ociComponents.length > 0) {
+      const allSelected = ociComponents.map((r, i) => ({
+        idx: i,
+        ref: r.reference,
+      }));
+      setSelectedComponents(allSelected);
+      setSelectAll(true);
+    } else {
+      setSelectedComponents([]);
+      setSelectAll(false);
+    }
+
+    onFormUpdated()
+  }, [ociComponents]);
 
   const handleIdChange = (_, id) => {
     setProdId(id);
@@ -109,7 +127,6 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   
       const sbom = await response.json();
       setSboms(prev => [...prev, sbom]);
-      console.log("Generated SBOM:", sbom);
       // Now you can pass this SBOM to your parsing function
     } catch (error) {
       console.error("Error generating SBOM:", error);
@@ -118,18 +135,18 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
 
   const generateComponentSboms = async (comps) => {
     // for (const comp of comps) {
-    //   const imageName = handleImageExtraction(comp.referenceLocator);
+    //   const imageName = handleImageExtraction(comp.reference);
     //   if (imageName) {
     //     await generateSbomFromImage(imageName);
     //   } else {
-    //     console.warn("Invalid package manager referenceLocator format:", comp.referenceLocator);
+    //     console.warn("Invalid package manager referenceLocator format:", comp.reference);
     //   }
     // }
-    const imageName = handleImageExtraction(comps[0].referenceLocator);
+    const imageName = handleImageExtraction(comps[0].reference);
     if (imageName) {
       await generateSbomFromImage(imageName);
     } else {
-      console.warn("Invalid package manager referenceLocator format:", comp.referenceLocator);
+      console.warn("Invalid package manager referenceLocator format:", comps[0].reference);
     }
   };
 
@@ -177,12 +194,12 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
             ref.referenceType === "purl"
         );
   
-        const referenceLocator = purlRef ? purlRef.referenceLocator : "";
-        const component = { name, version, referenceLocator };
+        const reference = purlRef ? purlRef.referenceLocator : "";
+        const component = { name, version, reference };
 
-        if (referenceLocator.startsWith("pkg:rpm")) {
+        if (reference.startsWith("pkg:rpm")) {
           rpmComps.push(component);
-        } else if (referenceLocator.startsWith("pkg:oci")) {
+        } else if (reference.startsWith("pkg:oci")) {
           ociComps.push(component);
         }
       });
@@ -238,40 +255,41 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   }
 
   const onFormUpdated = (update) => {
-    if(update === undefined) {
+    if(!update) {
       setCanSubmit(false);
     }
+
     const updated = handleVulnRequestChange(update);
-    
     const updatedCves = updated['cves'];    
+
     if (updatedCves === undefined || updatedCves.length === 0) {
       setCanSubmit(false);
-      handleVulnRequestChange(update);
       return;
     }
+
     for (let value of updatedCves) {
       if (value.name === undefined || value.name.trim() === '') {
         setCanSubmit(false);
-        handleVulnRequestChange(update);
         return;
       }
     }
     
     const metadata = updated['metadata'];
+
     for (let idx in metadata) {
       const pair = metadata[idx];
       if (pair.name === undefined || pair.name.trim() === '' || pair.value === undefined || pair.value.trim() === '') {
         setCanSubmit(false);
-        handleVulnRequestChange(update);
         return;
       }
     }
 
-    if (sboms.length == 0) {
+    if (selectedComponents.length === 0) {
       setCanSubmit(false);
-    } else {
-      setCanSubmit(true);
+      return
     }
+
+    setCanSubmit(true);
   }
 
   const columnNames = [
@@ -290,14 +308,71 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     </Tr>;
   };
 
+  const componentHeaders = () => {
+    return <Tr>
+      <Th select={{
+        onSelect: (_event, isSelecting) => onSelectAll(isSelecting),
+        isSelected: selectAll
+      }} aria-label="All Selected"/>
+      <Th width={10}>{columnNames[0].label}</Th>
+      <Th width={10}>{columnNames[1].label}</Th>
+    </Tr>;
+  };
+
   const componentsTable = () => {
-    return ociComponents.map((comp, compIndex) => {
-      return <Tr key={comp.referenceLocator}>
-        <Td dataLabel={columnNames[0].label} modifier="nowrap">{comp.name}</Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap">{comp.version}</Td>
+    return ociComponents.map((r, rowIndex) => {
+      return <Tr key={r.reference}>
+        <Td select={{
+          rowIndex,
+          onSelect: (_event, isSelecting) => onSelectItem(r.reference, rowIndex, isSelecting),
+          isSelected: isSelectedItem(rowIndex)
+        }}> </Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.version}</Td>
       </Tr>
     });
-  }
+  } 
+
+  const onSelectAll = (isSelecting) => {
+    setSelectAll(isSelecting);
+
+    if (isSelecting) {
+      const allSelected = ociComponents.map((r, i) => ({
+        idx: i,
+        ref: r.reference,
+      }));
+      setSelectedComponents(allSelected);
+    } else {
+      setSelectedComponents([]);
+    }
+
+    onFormUpdated()
+  };
+
+  const onSelectItem = (ref, rowIndex, isSelecting) => {
+    const idx = selectedComponents.findIndex((e) => e.idx === rowIndex);
+  
+    if (isSelecting && idx === -1) {
+      setSelectedComponents([...selectedComponents, { idx: rowIndex, ref: ref }]);
+      onFormUpdated()
+    } else if (!isSelecting && idx !== -1) {
+      const newItems = selectedComponents.filter((item) => item.idx !== rowIndex);
+      setSelectedComponents(newItems);
+      setSelectAll(false);
+      onFormUpdated()
+    }
+  
+    if (isSelecting) {
+      const total = ociComponents.length;
+      if (selectedComponents.length + 1 === total) {
+        setSelectAll(true);
+      }
+    }
+  };
+
+  const isSelectedItem = (rowIndex) => {
+    return selectedComponents.findIndex((e) => e.idx === rowIndex) !== -1;
+  };
 
   return <Form isHorizontal>
     <FormGroup label="Request ID" fieldId="req-id">
@@ -375,17 +450,10 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     <FormGroup label="Components" fieldId="components">
       <Table style={{ border: '1px solid #ccc' }}>
         <Thead>
-          <Tr>
-            {/* <Th select={{
-              onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
-              isSelected: deleteAll
-            }} aria-label="All Selected"/> */}
-            <Th width={10}>{columnNames[0].label}</Th>
-            <Th width={10}>{columnNames[1].label}</Th>
-          </Tr>
+          {ociComponents.length === 0 ? null : componentHeaders()}
         </Thead>
         <Tbody>
-          {ociComponents.length == 0 ? emptyTable() : componentsTable()}
+          {ociComponents.length === 0 ? emptyTable() : componentsTable()}
         </Tbody>
       </Table>
     </FormGroup>
