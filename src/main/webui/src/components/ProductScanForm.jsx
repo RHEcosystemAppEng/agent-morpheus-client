@@ -130,14 +130,56 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     onFormUpdated({ sbomType: type });
   }
 
-  const handleImageExtraction = (ref) => {
+  const parseReferenceParams = (ref) => {
     const queryString = ref.split('?')[1];
-    if (!queryString) return null;
+    if (!queryString) return;
   
     const params = new URLSearchParams(queryString);
     const repositoryUrl = params.get("repository_url");
     const tag = params.get("tag");
   
+    return {repositoryUrl, tag};
+  };  
+
+  const lookupCachedSbom = async (ref) => {
+    let url = '/reports';
+    const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
+
+    const filterUrl = `${url}?imageName=${imageName}&imageTag=${imageTag}`
+    const reportListResponse = await fetch(filterUrl, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!reportListResponse.ok) {
+      const error = await reportListResponse.text();
+      concole.error(`Could not retrieve report List for ${ref} from cached reports. status: ${reportListResponse.status}, error: ${error}`);
+      return
+    }
+
+    const reportList = await reportListResponse.json();
+    if (reportList.length === 0) return;
+
+    const id = reportList[0]["id"];
+    const reportResponse = await fetch(`${url}/${id}`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!reportResponse.ok) {
+      const error = await reportResponse.text();
+      concole.error(`Could not retrieve report for ${ref} from cached reports. status: ${reportResponse.status}, error: ${error}`);
+      return
+    }
+
+    const report = await reportResponse.json();
+    return report?.input?.image?.sbom_info;
+  };
+
+  const parseImageFromReference = (ref) => {
+    const {repositoryUrl, tag} = parseReferenceParams(ref);
     return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
   };  
 
@@ -274,27 +316,37 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   const onSubmitForm = async () => {
     setCanSubmit(false);
 
+    onNewAlert('info', 'Please wait, request processing...')
+
     const failures = {
       generation: [],
       submission: []
     };
     
     const tasks = selectedComponents.map(async (comp) => {
-      const imageName = handleImageExtraction(comp.ref);
-      if (!imageName) {
-        failures.generation.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
-        return;
-      }
-  
-      const { sbom, error: genError } = await generateSbomFromImage(imageName);
 
-      if (genError) {
-        failures.generation.push({ ref: comp.ref, error: genError });
-        return;
+      let sbom = await lookupCachedSbom(comp.ref);
+
+      if (!sbom) {
+
+        const imageName = parseImageFromReference(comp.ref);
+        if (!imageName) {
+          failures.generation.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
+          return;
+        }
+    
+        const result = await generateSbomFromImage(imageName);
+
+        if (result.error) {
+          failures.generation.push({ ref: comp.ref, error: result.error });
+          return;
+        }
+
+        sbom = result.sbom;
       }
   
       setSboms(prev => [...prev, sbom]);
-      
+
       const { error: submitError } = await submitSbomToMorpheus(sbom, comp.ref);
       if (submitError) {
         failures.submission.push({ ref: comp.ref, error: submitError });
