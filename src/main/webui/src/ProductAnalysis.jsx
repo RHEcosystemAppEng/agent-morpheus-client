@@ -4,7 +4,7 @@ import { useOutletContext } from "react-router-dom";
 
 export default function Product() {
 
-  const {vulnRequest, handleVulnRequestChange, addAlert} = useOutletContext();
+  const {handleVulnRequestChange, addAlert} = useOutletContext();
 
   return <PageSection hasBodyWrapper={false} >
     <Grid hasGutter>
@@ -14,7 +14,7 @@ export default function Product() {
         </Content>
       </GridItem>
       <GridItem>
-        <ProductScanForm vulnRequest={vulnRequest} handleVulnRequestChange={handleVulnRequestChange} onNewAlert={addAlert} />
+        <ProductScanForm handleVulnRequestChange={handleVulnRequestChange} onNewAlert={addAlert} />
       </GridItem>
     </Grid>
   </PageSection>;

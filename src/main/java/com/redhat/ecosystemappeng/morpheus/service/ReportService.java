@@ -209,6 +209,7 @@ public class ReportService {
     if (scanId == null) {
       scanId = getTraceIdFromContext(Context.current());
     }
+    var prodId = request.prodId();
     var scan = buildScan(request);
     var image = buildImage(request);
     var input = new ReportInput(scan, image);
@@ -217,7 +218,7 @@ public class ReportService {
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
-    repository.setAsSubmitted(created.id(), userService.getUserName());
+    repository.setAsSubmitted(created.id(), userService.getUserName(), prodId);
     queueService.queue(created.id(), report);
     return new ReportRequestId(created.id(), scan.id());
   }

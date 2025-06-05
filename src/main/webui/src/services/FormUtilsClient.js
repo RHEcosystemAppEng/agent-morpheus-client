@@ -24,6 +24,7 @@ const buildMetadata = (metadata) => {
 export const buildRequestJson = (data) => {
   return {
     id: data.id,
+    prodId: data.prodId,
     vulnerabilities: data.cves.map(e => e.name),
     metadata: buildMetadata(data.metadata),
     sbom_info_type: data.sbomType,

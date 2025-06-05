@@ -6,8 +6,9 @@ import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-
 
 import { sendToMorpheus, sbomTypes } from "../services/FormUtilsClient";
 
-export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
+export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [prodId, setProdId] = React.useState('');
+  const [defaultProdId, setDefaultProdId] = React.useState('');
   const [cves, setCves] = React.useState([{}]);
   const [metadata, setMetadata] = React.useState([{}]);
   const [sbomType, setSbomType] = React.useState('manual');
@@ -130,7 +131,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     onFormUpdated({ sbomType: type });
   }
 
-  const parseReferenceParams = (ref) => {
+  const parseReferenceParams = ref => {
     const queryString = ref.split('?')[1];
     if (!queryString) return;
   
@@ -141,7 +142,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     return {repositoryUrl, tag};
   };  
 
-  const lookupCachedSbom = async (ref) => {
+  const lookupCachedSbom = async ref => {
     let url = '/reports';
     const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
 
@@ -178,12 +179,12 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     return report?.input?.image?.sbom_info;
   };
 
-  const parseImageFromReference = (ref) => {
+  const parseImageFromReference = ref => {
     const {repositoryUrl, tag} = parseReferenceParams(ref);
     return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
   };  
 
-  const generateSbomFromImage = async (imageName) => {
+  const generateSbomFromImage = async imageName => {
     try {
       const response = await fetch('/generate-sbom', {
         method: 'POST',
@@ -204,7 +205,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
   };
 
   const submitSbomToMorpheus = async (sbom, ref) => {
-    const update = { sbom: sbom }
+    const update = { sbom: sbom, prodId: prodId || defaultProdId }
     const updated = handleVulnRequestChange(update);
 
     if (updated.sbom === undefined || updated.sbom === '') {
@@ -223,7 +224,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     }
   };
 
-  const handleProductSbomParsing = (sbom) => {
+  const handleProductSbomParsing = sbom => {
     if (!sbom) return;
   
     try {
@@ -242,6 +243,13 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
       }
       
       const productSpdxId = describesRel.relatedSpdxElement;
+
+      const prodPkg = packages.find(p => p.SPDXID === productSpdxId);
+      
+      const prodName = prodPkg?.name || sbom.name;
+      const prodVersion = prodPkg?.versionInfo || sbom.spdxVersion;
+      
+      setDefaultProdId([prodName, prodVersion, productSpdxId].join(':'));
   
       // Step 2: Find all components related to the product with "PACKAGE_OF"
       const componentIds = relationships
@@ -318,10 +326,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
 
     onNewAlert('info', 'Please wait, request processing...')
 
-    const failures = {
-      generation: [],
-      submission: []
-    };
+    const failures = [];
     
     const tasks = selectedComponents.map(async (comp) => {
 
@@ -331,14 +336,14 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
 
         const imageName = parseImageFromReference(comp.ref);
         if (!imageName) {
-          failures.generation.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
+          failures.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
           return;
         }
     
         const result = await generateSbomFromImage(imageName);
 
         if (result.error) {
-          failures.generation.push({ ref: comp.ref, error: result.error });
+          failures.push({ ref: comp.ref, error: result.error });
           return;
         }
 
@@ -349,20 +354,20 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
 
       const { error: submitError } = await submitSbomToMorpheus(sbom, comp.ref);
       if (submitError) {
-        failures.submission.push({ ref: comp.ref, error: submitError });
+        failures.push({ ref: comp.ref, error: submitError });
       }
     });
   
     await Promise.allSettled(tasks);
   
-    if (failures.generation.length || failures.submission.length) {
+    if (failures.length) {
       onNewAlert('danger', 'Failures occurred while submitting request')
     }
 
     setCanSubmit(true);
   }
 
-  const onFormUpdated = (update) => {
+  const onFormUpdated = update => {
     if (!update) {
       setFormData({});
       return;
@@ -413,7 +418,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     });
   } 
 
-  const onSelectAll = (isSelecting) => {
+  const onSelectAll = isSelecting => {
     setSelectAll(isSelecting);
 
     if (isSelecting) {
@@ -446,7 +451,7 @@ export const ProductScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAle
     }
   };
 
-  const isSelectedItem = (rowIndex) => {
+  const isSelectedItem = rowIndex => {
     return selectedComponents.findIndex((e) => e.idx === rowIndex) !== -1;
   };
 

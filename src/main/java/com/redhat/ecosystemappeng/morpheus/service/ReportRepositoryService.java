@@ -36,6 +36,7 @@ import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -182,12 +183,18 @@ public class ReportRepositoryService {
         Updates.set("metadata." + SENT_AT, Instant.now()));
   }
 
-  public void setAsSubmitted(String id, String byUser) {
+  public void setAsSubmitted(String id, String byUser, @Nullable String prodId) {
     var objId = new ObjectId(id);
-    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
-        List.of(
-            Updates.set("metadata." + SUBMITTED_AT, Instant.now()),
-            Updates.set("metadata.user", byUser)));
+
+    List<Bson> updates = new ArrayList<>();
+    updates.add(Updates.set("metadata." + SUBMITTED_AT, Instant.now()));
+    updates.add(Updates.set("metadata.user", byUser));
+
+    if (prodId != null && !prodId.isEmpty()) {
+        updates.add(Updates.set("metadata.product_id", prodId));
+    }
+
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId), updates);
   }
 
   public void setAsRetried(String id, String byUser) {

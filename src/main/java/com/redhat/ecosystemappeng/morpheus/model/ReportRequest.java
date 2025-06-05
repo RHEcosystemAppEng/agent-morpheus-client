@@ -10,7 +10,12 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.SbomInfoType;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record ReportRequest(String id, Collection<String> vulnerabilities, JsonNode sbom,
-    @JsonProperty("sbom_info_type") SbomInfoType sbomInfoType, Map<String, String> metadata) {
+public record ReportRequest(
+    String id, 
+    String prodId, 
+    Collection<String> vulnerabilities, 
+    JsonNode sbom,
+    @JsonProperty("sbom_info_type") SbomInfoType sbomInfoType, 
+    Map<String, String> metadata) {
 
 }
