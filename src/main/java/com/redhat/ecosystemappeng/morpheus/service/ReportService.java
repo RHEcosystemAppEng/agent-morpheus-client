@@ -231,7 +231,10 @@ public class ReportService {
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
   }
 
-  private Image buildImage(ReportRequest request) {
+  private Image buildImage(ReportRequest request) throws JsonProcessingException, IOException {
+    if (request.image() != null){
+      return objectMapper.treeToValue(request.image(), Image.class);
+    }
     var sbom = request.sbom();
     var metadata = sbom.get("metadata");
     var component = metadata.get("component");

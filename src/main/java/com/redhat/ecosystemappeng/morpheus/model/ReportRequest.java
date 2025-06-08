@@ -14,6 +14,7 @@ public record ReportRequest(
     String id, 
     String prodId, 
     Collection<String> vulnerabilities, 
+    JsonNode image,
     JsonNode sbom,
     @JsonProperty("sbom_info_type") SbomInfoType sbomInfoType, 
     Map<String, String> metadata) {

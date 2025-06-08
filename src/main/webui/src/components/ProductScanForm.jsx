@@ -142,7 +142,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     return {repositoryUrl, tag};
   };  
 
-  const lookupCachedSbom = async ref => {
+  const lookupCachedComponent = async ref => {
     let url = '/reports';
     const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
 
@@ -176,7 +176,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     }
 
     const report = await reportResponse.json();
-    return report?.input?.image?.sbom_info;
+    return report?.input?.image;
   };
 
   const parseImageFromReference = ref => {
@@ -184,7 +184,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
   };  
 
-  const generateSbomFromImage = async imageName => {
+  const generateSbom = async imageName => {
     try {
       const response = await fetch('/generate-sbom', {
         method: 'POST',
@@ -204,12 +204,12 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     }
   };
 
-  const submitSbomToMorpheus = async (sbom, ref) => {
-    const update = { sbom: sbom, prodId: prodId || defaultProdId }
+  const submitSbomToMorpheus = async (image, sbom, ref) => {
+    const update = { image: image, sbom: sbom, prodId: prodId || defaultProdId }
     const updated = handleVulnRequestChange(update);
 
-    if (updated.sbom === undefined || updated.sbom === '') {
-      return { error: `Could not submit analysis request, invalid SBOM for ${ref}` };
+    if ((!updated.sbom || updated.sbom === '') && (!updated.image || updated.image === '')) {
+      return { error: `Could not submit analysis request, missing SBOM for ${ref}` };
     }
     try {
       const response = await sendToMorpheus(updated);
@@ -330,9 +330,10 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     
     const tasks = selectedComponents.map(async (comp) => {
 
-      let sbom = await lookupCachedSbom(comp.ref);
+      let sbom = undefined;
+      const image = await lookupCachedComponent(comp.ref);
 
-      if (!sbom) {
+      if (!image) {
 
         const imageName = parseImageFromReference(comp.ref);
         if (!imageName) {
@@ -340,7 +341,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
           return;
         }
     
-        const result = await generateSbomFromImage(imageName);
+        const result = await generateSbom(imageName);
 
         if (result.error) {
           failures.push({ ref: comp.ref, error: result.error });
@@ -348,11 +349,11 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
         }
 
         sbom = result.sbom;
+        setSboms(prev => [...prev, sbom]);
       }
   
-      setSboms(prev => [...prev, sbom]);
 
-      const { error: submitError } = await submitSbomToMorpheus(sbom, comp.ref);
+      const { error: submitError } = await submitSbomToMorpheus(image, sbom, comp.ref);
       if (submitError) {
         failures.push({ ref: comp.ref, error: submitError });
       }

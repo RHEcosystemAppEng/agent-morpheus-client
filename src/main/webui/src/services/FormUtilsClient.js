@@ -28,6 +28,7 @@ export const buildRequestJson = (data) => {
     vulnerabilities: data.cves.map(e => e.name),
     metadata: buildMetadata(data.metadata),
     sbom_info_type: data.sbomType,
+    image: data.image,
     sbom: data.sbom
   };
 }
