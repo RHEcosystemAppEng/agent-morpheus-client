@@ -58,10 +58,15 @@ public class ReportEndpoint {
 
   @POST
   @Path("/new")
-  public Response submit(ReportRequest request) {
+  public Response newRequest(@QueryParam("submit") @DefaultValue("true") boolean sendToMorpheus, ReportRequest request) {
     try {
-      var req = reportService.submit(request);
-      return Response.accepted(req).build();
+      var res = reportService.process(request);
+
+      if (sendToMorpheus) {
+        reportService.submit(res.reportRequestId().id(), res.report());
+      }
+
+      return Response.accepted(res).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage()))
           .build();

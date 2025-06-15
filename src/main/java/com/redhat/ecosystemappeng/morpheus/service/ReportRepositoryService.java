@@ -36,7 +36,6 @@ import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -48,6 +47,7 @@ public class ReportRepositoryService {
 
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
+  private static final String PRODUCT_ID = "product_id";
   private static final Collection<String> METADATA_DATES = List.of(SUBMITTED_AT, SENT_AT);
   private static final String COLLECTION = "reports";
   private static final Map<String, Bson> STATUS_FILTERS = Map.of(
@@ -58,7 +58,11 @@ public class ReportRepositoryService {
       "failed", Filters.ne("error", null),
       "queued", Filters.and(Filters.ne("metadata." + SUBMITTED_AT, null), Filters.eq("metadata." + SENT_AT, null),
           Filters.eq("error", null), Filters.eq("input.scan.completed_at", null)),
-      "expired", Filters.and(Filters.ne("error", null),Filters.eq("error.type", "expired")));;
+      "expired", Filters.and(Filters.ne("error", null),Filters.eq("error.type", "expired")),
+      "pending", Filters.and(
+        Filters.eq("metadata." + SENT_AT, null),
+        Filters.eq("metadata." + SUBMITTED_AT, null),
+        Filters.ne("metadata." + PRODUCT_ID, null)));
 
   @Inject
   MongoClient mongoClient;
@@ -143,6 +147,9 @@ public class ReportRepositoryService {
       if (metadata.get(SUBMITTED_AT) != null) {
         return "queued";
       }
+      if (metadata.get(PRODUCT_ID) != null) {
+        return "pending";
+      }
     }
 
     return "unknown";
@@ -183,16 +190,12 @@ public class ReportRepositoryService {
         Updates.set("metadata." + SENT_AT, Instant.now()));
   }
 
-  public void setAsSubmitted(String id, String byUser, @Nullable String prodId) {
+  public void setAsSubmitted(String id, String byUser) {
     var objId = new ObjectId(id);
 
     List<Bson> updates = new ArrayList<>();
     updates.add(Updates.set("metadata." + SUBMITTED_AT, Instant.now()));
     updates.add(Updates.set("metadata.user", byUser));
-
-    if (prodId != null && !prodId.isEmpty()) {
-        updates.add(Updates.set("metadata.product_id", prodId));
-    }
 
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId), updates);
   }

@@ -29,6 +29,7 @@ import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
@@ -204,12 +205,11 @@ public class ReportService {
     return new ReportRequestId(id, scanId);
   }
 
-  public ReportRequestId submit(ReportRequest request) throws JsonProcessingException, IOException {
+  public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
     var scanId = request.id();
     if (scanId == null) {
       scanId = getTraceIdFromContext(Context.current());
     }
-    var prodId = request.prodId();
     var scan = buildScan(request);
     var image = buildImage(request);
     var input = new ReportInput(scan, image);
@@ -218,9 +218,13 @@ public class ReportService {
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
-    repository.setAsSubmitted(created.id(), userService.getUserName(), prodId);
-    queueService.queue(created.id(), report);
-    return new ReportRequestId(created.id(), scan.id());
+    var reportRequestId = new ReportRequestId(created.id(), scan.id());
+    return new ReportData(reportRequestId, report);
+  }
+
+  public void submit(String id, JsonNode report) throws JsonProcessingException, IOException {
+    repository.setAsSubmitted(id, userService.getUserName());
+    queueService.queue(id, report);
   }
 
   private Scan buildScan(ReportRequest request) {

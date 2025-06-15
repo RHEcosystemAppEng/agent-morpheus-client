@@ -2,7 +2,7 @@ import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormS
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
-import { sendToMorpheus, sbomTypes } from "../services/FormUtilsClient";
+import { newMorpheusRequest, sbomTypes } from "../services/FormUtilsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
   const [id, setId] = React.useState(vulnRequest['id'] || '');
@@ -101,7 +101,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    sendToMorpheus(vulnRequest)
+    newMorpheusRequest(vulnRequest)
       .then(response => {
         if (response.ok) {
           onNewAlert('success', 'Analysis request sent to Morpheus');

@@ -4,7 +4,7 @@ import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
-import { sendToMorpheus, sbomTypes } from "../services/FormUtilsClient";
+import { newMorpheusRequest, sbomTypes } from "../services/FormUtilsClient";
 
 export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [prodId, setProdId] = React.useState('');
@@ -72,7 +72,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
 
   const handleProdIdChange = (_, id) => {
     setProdId(id);
-    onFormUpdated({ prodId: id })
   };
 
   const handleMetadataChange = (idx, field, newValue) => {
@@ -204,21 +203,29 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     }
   };
 
-  const submitSbomToMorpheus = async (image, sbom, ref) => {
-    const update = { image: image, sbom: sbom, prodId: prodId || defaultProdId }
+  const generateMorpheusPayload = async (image, sbom, ref) => {
+    
+    const prodIdEntry = { name: 'product_id', value: prodId || defaultProdId };
+    const updatedMetadata = [...metadata, prodIdEntry];
+    setMetadata(updatedMetadata);
+
+    const update = { image: image, sbom: sbom, metadata: updatedMetadata }
     const updated = handleVulnRequestChange(update);
 
     if ((!updated.sbom || updated.sbom === '') && (!updated.image || updated.image === '')) {
       return { error: `Could not submit analysis request, missing SBOM for ${ref}` };
     }
     try {
-      const response = await sendToMorpheus(updated);
+      const response = await newMorpheusRequest(updated, false);
+      
       if (!response.ok) {
         const json = await response.json();
         return { error: `Could not submit analysis request. status: ${response.status}, error: ${json.error}` };
       }
+
       onNewAlert('success', `Analysis request sent to Morpheus for ${ref}`);
-      return {};
+      const reportData = await response.json();
+      return reportData.report;
     } catch (error) {
       return { error: `Could not submit analysis request, ${error.message}` };
     }
@@ -326,6 +333,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
 
     onNewAlert('info', 'Please wait, request processing...')
 
+    const payloads = [];
     const failures = [];
     
     const tasks = selectedComponents.map(async (comp) => {
@@ -341,21 +349,23 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
           return;
         }
     
-        const result = await generateSbom(imageName);
+        const genResult = await generateSbom(imageName);
 
-        if (result.error) {
-          failures.push({ ref: comp.ref, error: result.error });
+        if (genResult.error) {
+          failures.push({ ref: comp.ref, error: genResult.error });
           return;
         }
 
-        sbom = result.sbom;
+        sbom = genResult.sbom;
         setSboms(prev => [...prev, sbom]);
       }
   
+      const payload = await generateMorpheusPayload(image, sbom, comp.ref);
 
-      const { error: submitError } = await submitSbomToMorpheus(image, sbom, comp.ref);
-      if (submitError) {
-        failures.push({ ref: comp.ref, error: submitError });
+      if (payload.error) {
+        failures.push({ ref: comp.ref, error: payload.error });
+      } else {
+        payloads.push(payload);
       }
     });
   

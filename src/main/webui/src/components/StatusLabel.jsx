@@ -10,6 +10,7 @@ export const StatusLabel = ({type}) => {
     case "queued": return <Label icon={<InfoCircleIcon />} color="yellow">{msg}</Label>
     case "sent": return <Label status="info">{msg}</Label>
     case "expired": return <Label color="purple" icon={<OutlinedClockIcon />}>{msg}</Label>;
+    case "pending": return <Label color="teal" icon={<OutlinedClockIcon />}>{msg}</Label>
     default: return <Label color="grey">{msg}</Label>
   }
   

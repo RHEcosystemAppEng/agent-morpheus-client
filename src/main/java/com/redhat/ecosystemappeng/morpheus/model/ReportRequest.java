@@ -12,7 +12,6 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public record ReportRequest(
     String id, 
-    String prodId, 
     Collection<String> vulnerabilities, 
     JsonNode image,
     JsonNode sbom,

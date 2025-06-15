@@ -156,7 +156,8 @@ export default function ReportsTable() {
     expired: "Expired",
     failed: "Failed",
     queued: "Queued",
-    sent: "Sent"
+    sent: "Sent",
+    pending: "Pending"
   };
 
   const columnNames = [
