@@ -4,7 +4,8 @@ import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
-import { newMorpheusRequest, sbomTypes } from "../services/FormUtilsClient";
+import { sbomTypes } from "../services/FormUtilsClient";
+import { generateMorpheusRequest } from "../services/productScanClient";
 
 export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [prodId, setProdId] = React.useState('');
@@ -15,7 +16,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [prodSbom, setProdSbom] = React.useState({});
   const [ociComponents, setOciComponents] = React.useState([]);
   const [rpmComponents, setRpmComponents] = React.useState([]);
-  const [sboms, setSboms] = React.useState([]);
   const [filename, setFilename] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
@@ -36,7 +36,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       setSelectAll(false);
     }
   }, [ociComponents]);
-
 
   React.useEffect(() => {
     const updated = formData;
@@ -129,107 +128,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     setSbomType(type);
     onFormUpdated({ sbomType: type });
   }
-
-  const parseReferenceParams = ref => {
-    const queryString = ref.split('?')[1];
-    if (!queryString) return;
-  
-    const params = new URLSearchParams(queryString);
-    const repositoryUrl = params.get("repository_url");
-    const tag = params.get("tag");
-  
-    return {repositoryUrl, tag};
-  };  
-
-  const lookupCachedComponent = async ref => {
-    let url = '/reports';
-    const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
-
-    const filterUrl = `${url}?imageName=${imageName}&imageTag=${imageTag}`
-    const reportListResponse = await fetch(filterUrl, {
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!reportListResponse.ok) {
-      const error = await reportListResponse.text();
-      concole.error(`Could not retrieve report List for ${ref} from cached reports. status: ${reportListResponse.status}, error: ${error}`);
-      return
-    }
-
-    const reportList = await reportListResponse.json();
-    if (reportList.length === 0) return;
-
-    const id = reportList[0]["id"];
-    const reportResponse = await fetch(`${url}/${id}`, {
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!reportResponse.ok) {
-      const error = await reportResponse.text();
-      concole.error(`Could not retrieve report for ${ref} from cached reports. status: ${reportResponse.status}, error: ${error}`);
-      return
-    }
-
-    const report = await reportResponse.json();
-    return report?.input?.image;
-  };
-
-  const parseImageFromReference = ref => {
-    const {repositoryUrl, tag} = parseReferenceParams(ref);
-    return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
-  };  
-
-  const generateSbom = async imageName => {
-    try {
-      const response = await fetch('/generate-sbom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageName })
-      });
-  
-      if (!response.ok) {
-        const error = await response.text();
-        return { error: `Could not generate SBOM. status: ${response.status}, error: ${error}` };
-      }
-  
-      const sbom = await response.json();
-      return { sbom };
-    } catch (error) {
-      return { error: `Could not generate SBOM. ${error.message}` };
-    }
-  };
-
-  const generateMorpheusPayload = async (image, sbom, ref) => {
-    
-    const prodIdEntry = { name: 'product_id', value: prodId || defaultProdId };
-    const updatedMetadata = [...metadata, prodIdEntry];
-    setMetadata(updatedMetadata);
-
-    const update = { image: image, sbom: sbom, metadata: updatedMetadata }
-    const updated = handleVulnRequestChange(update);
-
-    if ((!updated.sbom || updated.sbom === '') && (!updated.image || updated.image === '')) {
-      return { error: `Could not submit analysis request, missing SBOM for ${ref}` };
-    }
-    try {
-      const response = await newMorpheusRequest(updated, false);
-      
-      if (!response.ok) {
-        const json = await response.json();
-        return { error: `Could not submit analysis request. status: ${response.status}, error: ${json.error}` };
-      }
-
-      onNewAlert('success', `Analysis request sent to Morpheus for ${ref}`);
-      const reportData = await response.json();
-      return reportData.report;
-    } catch (error) {
-      return { error: `Could not submit analysis request, ${error.message}` };
-    }
-  };
 
   const handleProductSbomParsing = sbom => {
     if (!sbom) return;
@@ -333,50 +231,24 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
 
     onNewAlert('info', 'Please wait, request processing...')
 
-    const payloads = [];
-    const failures = [];
-    
-    const tasks = selectedComponents.map(async (comp) => {
+    const prodIdEntry = { name: 'product_id', value: prodId || defaultProdId };
+    const updatedMetadata = [...metadata, prodIdEntry];
+    setMetadata(updatedMetadata);
 
-      let sbom = undefined;
-      const image = await lookupCachedComponent(comp.ref);
+    const update = { metadata: updatedMetadata };
+    const updated = handleVulnRequestChange(update);
 
-      if (!image) {
-
-        const imageName = parseImageFromReference(comp.ref);
-        if (!imageName) {
-          failures.push({ ref: comp.ref, error: 'Could not generate image, invalid reference format' });
-          return;
-        }
-    
-        const genResult = await generateSbom(imageName);
-
-        if (genResult.error) {
-          failures.push({ ref: comp.ref, error: genResult.error });
-          return;
-        }
-
-        sbom = genResult.sbom;
-        setSboms(prev => [...prev, sbom]);
-      }
-  
-      const payload = await generateMorpheusPayload(image, sbom, comp.ref);
-
-      if (payload.error) {
-        failures.push({ ref: comp.ref, error: payload.error });
-      } else {
-        payloads.push(payload);
-      }
-    });
-  
-    await Promise.allSettled(tasks);
+    const failures = await generateMorpheusRequest(selectedComponents, updated);
   
     if (failures.length) {
       onNewAlert('danger', 'Failures occurred while submitting request')
+    } else {
+      onNewAlert('success', 'Analysis request sent to Morpheus');
     }
 
     setCanSubmit(true);
   }
+
 
   const onFormUpdated = update => {
     if (!update) {

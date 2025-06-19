@@ -1,0 +1,161 @@
+import { newMorpheusRequest } from "../services/FormUtilsClient";
+
+const preProcessMorpheusRequests = async payloads => {
+  return await fetch(`/pre-processing`, {
+    method: "POST",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payloads)
+  });
+};
+
+const generateRequestPayload = async (formData) => {
+  
+	try {
+		const response = await newMorpheusRequest(formData, false);
+		
+		if (!response.ok) {
+			const json = await response.json();
+			return { error: `Could generate payload for morpheus request. status: ${response.status}, error: ${json.error}` };
+		}
+
+		const reportData = await response.json();
+		return reportData.report;
+	} catch (error) {
+		return { error: `Could generate payload for morpheus request, ${error.message}` };
+	}
+};
+
+const parseReferenceParams = ref => {
+	const queryString = ref.split('?')[1];
+	if (!queryString) return;
+
+	const params = new URLSearchParams(queryString);
+	const repositoryUrl = params.get("repository_url");
+	const tag = params.get("tag");
+
+	return {repositoryUrl, tag};
+};  
+
+const parseImageFromReference = ref => {
+	const {repositoryUrl, tag} = parseReferenceParams(ref);
+	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
+};  
+
+const generateComponentSbom = async ref => {
+
+	const image = parseImageFromReference(ref);
+	if (!image) {
+		return { error: `Could not extract image, invalid reference format` };
+	}
+    
+	try {
+		const response = await fetch('/generate-sbom', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ image: image })
+		});
+
+		if (!response.ok) {
+			const error = await response.text();
+			return { error: `Could not generate SBOM. status: ${response.status}, error: ${error}` };
+		}
+
+		const sbom = await response.json();
+		return sbom;
+	} catch (error) {
+		return { error: `Could not generate SBOM. ${error.message}` };
+	}
+};
+
+const lookupCachedComponent = async ref => {
+	let url = '/reports';
+	const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
+
+	const filterUrl = `${url}?imageName=${imageName}&imageTag=${imageTag}`
+	const reportListResponse = await fetch(filterUrl, {
+		headers: {
+			'Accept': 'application/json'
+		}
+	});
+
+	if (!reportListResponse.ok) {
+		const error = await reportListResponse.text();
+		concole.error(`Could not retrieve report List for ${ref} from cached reports. status: ${reportListResponse.status}, error: ${error}`);
+		return
+	}
+
+	const reportList = await reportListResponse.json();
+	if (reportList.length === 0) return;
+
+	const id = reportList[0]["id"];
+	const reportResponse = await fetch(`${url}/${id}`, {
+		headers: {
+			'Accept': 'application/json'
+		}
+	});
+
+	if (!reportResponse.ok) {
+		const error = await reportResponse.text();
+		concole.error(`Could not retrieve report for ${ref} from cached reports. status: ${reportResponse.status}, error: ${error}`);
+		return
+	}
+
+	const report = await reportResponse.json();
+	return report?.input?.image;
+};
+
+export const generateMorpheusRequest = async (components, formData) => {
+	const tasks = components.map(async (comp) => {
+		const compFormData = { ...formData };
+
+		try {
+			const image = await lookupCachedComponent(comp.ref);
+			
+			if (image) {
+				compFormData.image = image;
+			} else {
+				const sbom = await generateComponentSbom(comp.ref);
+				
+				if (sbom.error) {
+					return { ref: comp.ref, error: sbom.error };
+				}
+				
+				compFormData.sbom = sbom;
+			}
+
+			const payload = await generateRequestPayload(compFormData);
+			
+			if (payload.error) {
+				return { ref: comp.ref, error: payload.error };
+			}
+			
+			return { ref: comp.ref, payload };
+		} catch (err) {
+			return { ref: comp.ref, error: err.message || String(err) };
+		}
+	});
+
+	const results = await Promise.allSettled(tasks);
+
+	const payloads = [];
+	const failures = [];
+
+	for (const result of results) {
+		const value = result.value;
+		if (value.payload) {
+			payloads.push(value.payload);
+		} else {
+			failures.push({ ref: value.ref, error: value.error });
+		}
+	}
+
+	if(payloads.length) {
+		const res = await preProcessMorpheusRequests(payloads);
+		console.log(await res.json());
+	}
+
+	return failures;
+}

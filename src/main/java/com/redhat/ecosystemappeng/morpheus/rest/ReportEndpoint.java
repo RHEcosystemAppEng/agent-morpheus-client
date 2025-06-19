@@ -11,6 +11,7 @@ import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
@@ -60,7 +61,7 @@ public class ReportEndpoint {
   @Path("/new")
   public Response newRequest(@QueryParam("submit") @DefaultValue("true") boolean sendToMorpheus, ReportRequest request) {
     try {
-      var res = reportService.process(request);
+      ReportData res = reportService.process(request);
 
       if (sendToMorpheus) {
         reportService.submit(res.reportRequestId().id(), res.report());
