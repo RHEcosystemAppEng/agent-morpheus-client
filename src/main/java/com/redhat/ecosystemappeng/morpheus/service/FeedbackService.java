@@ -26,7 +26,7 @@ public class FeedbackService {
         LOGGER.debugf("Checking if feedback exists for reportId: %s", reportId);
         try {
             Response response = feedbackApi.checkFeedbackExists(reportId);
-            if (response.getStatus() == 200) {
+            if (response.getStatus() == Response.Status.OK.getStatusCode()) {
                 JsonObject json = response.readEntity(JsonObject.class);
                 boolean exists = json.getBoolean("exists", false);
                 LOGGER.debugf("Feedback exists for reportId %s: %s", reportId, exists);
