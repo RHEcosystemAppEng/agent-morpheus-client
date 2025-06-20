@@ -17,7 +17,7 @@ public class FeedbackResource {
     @Inject
     FeedbackService feedbackService;
     @POST
-    public Response forwardToFlask(FeedbackDto dto) {
+    public Response forwardToUserFeedbackService(FeedbackDto dto) {
         LOGGER.infof(
                 "Received FeedbackDto → response=[%s], thumbs=[%s], rating=[%d], comment=[%s], assessment=[%s], reason=[%s], summary=[%s], qClarity=[%s], aAgreement=[%s]",
                 dto.getResponse(),

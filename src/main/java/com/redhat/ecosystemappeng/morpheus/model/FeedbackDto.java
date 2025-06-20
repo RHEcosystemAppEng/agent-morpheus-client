@@ -1,5 +1,8 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class FeedbackDto {
     private String response;
     private String thumbs;
