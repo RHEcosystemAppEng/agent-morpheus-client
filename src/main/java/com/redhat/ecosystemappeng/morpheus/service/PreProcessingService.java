@@ -61,10 +61,16 @@ public class PreProcessingService {
 
   public JsonNode submit(JsonNode request) throws IOException {
     try {
+      LOGGER.debug("Sending requests to Component Syncer for pre-processing: " + request.toPrettyString());
       Response response = componentSyncerService.submit(request);
-      LOGGER.debug("Requests sent to Component Syncer for pre-processing");
+      LOGGER.debug("Requests sent to Component Syncer successfully");
 
-      return new ObjectMapper().readTree(response.readEntity(String.class));
+      LOGGER.debug("Response status: " + response.getStatus());
+      LOGGER.debug("Response headers: " + response.getHeaders());
+      String responseBody = response.readEntity(String.class);
+      LOGGER.debug("Response body: " + responseBody);
+
+      return new ObjectMapper().readTree(responseBody);
     } catch (Exception e) {
       LOGGER.error("Unable to submit requests to Component Syncer for pre-processing", e);
       throw new IOException("Component Syncer failed", e);

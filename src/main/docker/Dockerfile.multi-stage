@@ -12,6 +12,8 @@ RUN ./mvnw -B -Pnative org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go
 COPY --chown=quarkus:quarkus src /code/src
 RUN ./mvnw verify -B -Pnative -Dmaven.test.skip=true -Dquarkus.native.native-image-xmx=8g
 
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /tmp
+
 ## Stage 2 : create the docker final image
 FROM registry.redhat.io/ubi9/ubi-minimal:9.5
 
@@ -23,6 +25,7 @@ LABEL summary="The Agent Morpheus UI allows interacting with the Agent Morpheus 
 
 WORKDIR /work/
 COPY --from=build /code/target/*-runner /work/application
+COPY --from=build /tmp/syft /usr/local/bin/syft
 
 # set up permissions for user `1001`
 RUN chmod 775 /work /work/application \
