@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.client.ComponentSyncerService;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -29,7 +30,7 @@ public class PreProcessingService {
   @RestClient
   ComponentSyncerService componentSyncerService;
 
-  public JsonNode parse(List<JsonNode> payloads) throws IOException {
+  public JsonNode parse(List<ReportData> payloads) throws IOException {
     LOGGER.info("Parsing payloads for pre-processing");
 
     InputStream is = getClass().getClassLoader().getResourceAsStream("preProcessingTemplate.json");
@@ -42,13 +43,13 @@ public class PreProcessingService {
 
     ArrayNode dataArray = objectMapper.createArrayNode();
 
-    for (JsonNode payload : payloads) {
-      JsonNode scanId = payload.at("/input/scan/id");
-      JsonNode sourceInfo = payload.at("/input/image/source_info");
+    for (ReportData payload : payloads) {
+      String scanId = payload.reportRequestId().id();
+      JsonNode sourceInfo = payload.report().at("/input/image/source_info");
 
-      if (!scanId.isMissingNode() && !sourceInfo.isMissingNode()) {
+      if (scanId != null && !scanId.isEmpty() && !sourceInfo.isMissingNode()) {
           ObjectNode dataEntry = objectMapper.createObjectNode();
-          dataEntry.set("scan_id", scanId);
+          dataEntry.put("scan_id", scanId);
           dataEntry.set("source_info", sourceInfo);
           dataArray.add(dataEntry);
       }

@@ -2,6 +2,7 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 
 import jakarta.inject.Inject;
@@ -30,9 +31,9 @@ public class PreProcessingEndpoint {
   ObjectMapper objectMapper;
 
   @POST
-  public Response preProcess(List<JsonNode> requests) {
+  public Response submit(List<ReportData> payloads) {
     try {
-      JsonNode parsedPayloads = preProcessingService.parse(requests);
+      JsonNode parsedPayloads = preProcessingService.parse(payloads);
       JsonNode res = preProcessingService.submit(parsedPayloads);
       return Response.ok(res).build();
     } catch (Exception e) {

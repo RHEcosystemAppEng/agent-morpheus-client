@@ -206,6 +206,7 @@ public class ReportService {
   }
 
   public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
+    LOGGER.info("Processing request for Agent Morpheus");
     var scanId = request.id();
     if (scanId == null) {
       scanId = getTraceIdFromContext(Context.current());
@@ -219,12 +220,15 @@ public class ReportService {
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
     var reportRequestId = new ReportRequestId(created.id(), scan.id());
+    LOGGER.info("Successfully processed request");
+    LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
     return new ReportData(reportRequestId, report);
   }
 
   public void submit(String id, JsonNode report) throws JsonProcessingException, IOException {
     repository.setAsSubmitted(id, userService.getUserName());
     queueService.queue(id, report);
+    LOGGER.info("Request sent to Agent Morpheus");
   }
 
   private Scan buildScan(ReportRequest request) {

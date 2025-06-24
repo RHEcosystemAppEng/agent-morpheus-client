@@ -10,6 +10,7 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
@@ -69,16 +70,25 @@ public class ReportEndpoint {
 
       return Response.accepted(res).build();
     } catch (IllegalArgumentException e) {
-      return Response.status(Status.BAD_REQUEST).entity(objectMapper.createObjectNode().put("error", e.getMessage()))
-          .build();
+      return Response.status(Status.BAD_REQUEST)
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
     } catch (ClientWebApplicationException e) {
-      return Response.status(e.getResponse().getStatus()).entity(e.getResponse().getEntity()).build();
+      return Response.status(e.getResponse().getStatus())
+        .entity(e.getResponse().getEntity())
+        .build();
     } catch (RequestQueueExceededException e) {
       return Response.status(Status.TOO_MANY_REQUESTS)
-          .entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
     } catch (Exception e) {
-      LOGGER.error("Unable to submit new analysis request", e);
-      return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+      LOGGER.error("Unable to process new analysis request", e);
+      return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
     }
   }
 
@@ -127,6 +137,46 @@ public class ReportEndpoint {
       throw new NotFoundException(id);
     }
     return report;
+  }
+
+  @POST
+  @Path("/{id}/submit")
+  public Response submit(@PathParam("id") String id) {
+    String report = reportService.get(id);
+    
+    if (report == null) {
+      return Response.status(Response.Status.NOT_FOUND)
+      .entity(objectMapper.createObjectNode()
+      .put("error", "Report with ID " + id + " not found."))
+      .build();
+    }
+    
+    try {
+      JsonNode reportJson = objectMapper.readTree(report);
+      reportService.submit(id, reportJson);
+
+      return Response.accepted(reportJson).build();
+    } catch (IllegalArgumentException e) {
+      return Response.status(Status.BAD_REQUEST)
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
+    } catch (ClientWebApplicationException e) {
+      return Response.status(e.getResponse().getStatus())
+        .entity(e.getResponse().getEntity())
+        .build();
+    } catch (RequestQueueExceededException e) {
+      return Response.status(Status.TOO_MANY_REQUESTS)
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to submit new analysis request", e);
+      return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
+    }
   }
 
   @DELETE

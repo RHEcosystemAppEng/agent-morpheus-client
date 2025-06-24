@@ -22,7 +22,7 @@ const generateRequestPayload = async (formData) => {
 		}
 
 		const reportData = await response.json();
-		return reportData.report;
+		return reportData;
 	} catch (error) {
 		return { error: `Could generate payload for morpheus request, ${error.message}` };
 	}
