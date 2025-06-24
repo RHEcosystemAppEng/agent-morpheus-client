@@ -30,13 +30,13 @@ public class PreProcessingEndpoint {
   ObjectMapper objectMapper;
 
   @POST
-  public Response preProcess(List<JsonNode> request) {
+  public Response preProcess(List<JsonNode> requests) {
     try {
-      JsonNode parsedPayloads = preProcessingService.parse(request);
+      JsonNode parsedPayloads = preProcessingService.parse(requests);
       JsonNode res = preProcessingService.submit(parsedPayloads);
       return Response.ok(res).build();
     } catch (Exception e) {
-      LOGGER.error("Unable to submit request for pre-processing", e);
+      LOGGER.error("Unable to submit payloads for pre-processing", e);
       return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
     }
   }

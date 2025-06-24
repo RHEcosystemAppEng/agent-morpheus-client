@@ -30,7 +30,7 @@ public class PreProcessingService {
   ComponentSyncerService componentSyncerService;
 
   public JsonNode parse(List<JsonNode> payloads) throws IOException {
-    LOGGER.debug("Parse Morpheus payloads for pre-processing");
+    LOGGER.info("Parsing payloads for pre-processing");
 
     InputStream is = getClass().getClassLoader().getResourceAsStream("preProcessingTemplate.json");
     if (is == null) {
@@ -56,23 +56,23 @@ public class PreProcessingService {
 
     templateJson.set("data", dataArray);
 
+    LOGGER.info("Successfully parsed payloads");
+    LOGGER.debug("Parsed payloads: " + templateJson.toPrettyString());
     return templateJson;
   }
 
   public JsonNode submit(JsonNode request) throws IOException {
     try {
-      LOGGER.debug("Sending requests to Component Syncer for pre-processing: " + request.toPrettyString());
+      LOGGER.info("Sending payloads to Component Syncer for pre-processing: " + request.toPrettyString());
       Response response = componentSyncerService.submit(request);
-      LOGGER.debug("Requests sent to Component Syncer successfully");
-
-      LOGGER.debug("Response status: " + response.getStatus());
-      LOGGER.debug("Response headers: " + response.getHeaders());
-      String responseBody = response.readEntity(String.class);
-      LOGGER.debug("Response body: " + responseBody);
-
-      return new ObjectMapper().readTree(responseBody);
+      
+      LOGGER.info("Successfully sent payloads to Component Syncer");
+      LOGGER.debug("Component Syncer response status: " + response.getStatus());
+      LOGGER.debug("Component Syncer response headers: " + response.getHeaders());
+      LOGGER.debug("Component Syncer response body: " + response.readEntity(String.class));
+      return objectMapper.createObjectNode().put("status", response.getStatus());
     } catch (Exception e) {
-      LOGGER.error("Unable to submit requests to Component Syncer for pre-processing", e);
+      LOGGER.error("Component Syncer failed", e);
       throw new IOException("Component Syncer failed", e);
     }
   }

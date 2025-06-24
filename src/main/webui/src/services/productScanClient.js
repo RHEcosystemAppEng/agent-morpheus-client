@@ -54,8 +54,8 @@ const generateComponentSbom = async ref => {
 	try {
 		const response = await fetch('/generate-sbom', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ image: image })
+			headers: { 'Content-Type': 'text/plain' },
+			body: image
 		});
 
 		if (!response.ok) {
