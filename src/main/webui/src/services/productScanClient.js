@@ -18,13 +18,13 @@ const generateRequestPayload = async (formData) => {
 		
 		if (!response.ok) {
 			const json = await response.json();
-			return { error: `Could generate payload for morpheus request. status: ${response.status}, error: ${json.error}` };
+			return { error: `Could not generate payload for morpheus request. status: ${response.status}, error: ${json.error}` };
 		}
 
 		const reportData = await response.json();
 		return reportData;
 	} catch (error) {
-		return { error: `Could generate payload for morpheus request, ${error.message}` };
+		return { error: `Could not generate payload for morpheus request, ${error.message}` };
 	}
 };
 
@@ -154,7 +154,13 @@ export const generateMorpheusRequest = async (components, formData) => {
 
 	if(payloads.length) {
 		const res = await preProcessMorpheusRequests(payloads);
-		console.log(await res.json());
+		
+		if (res.status >= 300) {
+			failures.push({
+				ref: 'pre-processing',
+				error: `Component Syncer failed with error status: ${res.status}`
+			});
+		}
 	}
 
 	return failures;

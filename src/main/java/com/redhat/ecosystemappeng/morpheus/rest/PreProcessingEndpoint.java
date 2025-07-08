@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
@@ -34,10 +35,21 @@ public class PreProcessingEndpoint {
   public Response submit(List<ReportData> payloads) {
     try {
       JsonNode parsedPayloads = preProcessingService.parse(payloads);
-      JsonNode res = preProcessingService.submit(parsedPayloads);
-      return Response.ok(res).build();
+      List<String> ids = preProcessingService.getIds(payloads);
+      Response res = preProcessingService.submit(parsedPayloads, ids);
+      
+      int status = res.getStatus();
+      if (status >= 300) {
+        String errorBody = res.readEntity(String.class);
+        String errorMessage = String.format("Component Syncer failed with status code: %s, error: %s", status, errorBody);
+        for (String id : ids) {
+          preProcessingService.handleError(id, "component-syncer-request-error", errorMessage);
+        }
+      }
+
+      return res;
     } catch (Exception e) {
-      LOGGER.error("Unable to submit payloads for pre-processing", e);
+      LOGGER.error("Failed to submit payloads for pre-processing", e);
       return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
     }
   }

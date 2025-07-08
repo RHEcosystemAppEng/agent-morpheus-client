@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
+import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 
@@ -54,6 +55,9 @@ public class ReportEndpoint {
 
   @Inject
   ReportService reportService;
+
+  @Inject
+  PreProcessingService preProcessingService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -142,9 +146,12 @@ public class ReportEndpoint {
   @POST
   @Path("/{id}/submit")
   public Response submit(@PathParam("id") String id) {
-    String report = reportService.get(id);
+    preProcessingService.confirmResponse(id);
     
+    String report = reportService.get(id); 
     if (report == null) {
+      preProcessingService.handleError(id, "report-not-found-error", "No report exists for ID " + id + " for submission.");
+
       return Response.status(Response.Status.NOT_FOUND)
       .entity(objectMapper.createObjectNode()
       .put("error", "Report with ID " + id + " not found."))
@@ -155,7 +162,7 @@ public class ReportEndpoint {
       JsonNode reportJson = objectMapper.readTree(report);
       reportService.submit(id, reportJson);
 
-      return Response.accepted(reportJson).build();
+      return Response.accepted(id).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
@@ -177,6 +184,16 @@ public class ReportEndpoint {
         .put("error", e.getMessage()))
         .build();
     }
+  }
+
+  @POST
+  @Path("/{id}/failed")
+  @Consumes(MediaType.TEXT_PLAIN)
+  public Response failed(@PathParam("id") String id, String errorMessage) {
+    preProcessingService.confirmResponse(id);
+    
+    preProcessingService.handleError(id, "component-syncer-processing-error", errorMessage);
+    return Response.accepted(id).build();
   }
 
   @DELETE
