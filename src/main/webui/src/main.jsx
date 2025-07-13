@@ -9,7 +9,8 @@ import Reports from './Reports'
 import Report from './Report'
 import Vulnerabilities from './Vulnerabilities'
 import Vulnerability from './Vulnerability'
-import Product from './ProductAnalysis'
+import ProductAnalysis from './ProductAnalysis'
+import ProductReports from './ProductReports'
 
 const router = createHashRouter([
   {
@@ -39,7 +40,11 @@ const router = createHashRouter([
       },
       {
         path: "product",
-        element: <Product />,
+        element: <ProductAnalysis />,
+      },
+      {
+        path: "product-reports",
+        element: <ProductReports />,
       },
     ]
   }

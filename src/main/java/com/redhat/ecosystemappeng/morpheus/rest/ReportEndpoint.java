@@ -143,6 +143,13 @@ public class ReportEndpoint {
     return report;
   }
 
+  @GET
+  @Path("/product-ids")
+  public Response listProductIds() {
+    var result = reportService.listProductIds();
+    return Response.ok(result).build();
+  }
+
   @POST
   @Path("/{id}/submit")
   public Response submit(@PathParam("id") String id) {
@@ -215,6 +222,23 @@ public class ReportEndpoint {
     } else {
       reportService.remove(reportIds);
     }
+    return Response.accepted().build();
+  }
+
+  @DELETE
+  @Path("/by-product")
+  public Response removeManyByProductId(@QueryParam("productIds") List<String> productIds) {
+    if (productIds == null || productIds.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST)
+        .entity(objectMapper.createObjectNode()
+        .put("error", "No productIds provided"))
+        .build();
+    }
+    List<String> reportIds = reportService.getReportIds(productIds);
+    if (reportIds == null || reportIds.isEmpty()) {
+      return Response.accepted().build();
+    }
+    reportService.remove(reportIds);
     return Response.accepted().build();
   }
 }

@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -121,6 +122,17 @@ public class ReportService {
   public PaginatedResult<Report> list(Map<String, String> filter, List<SortField> sortBy, Integer page,
       Integer pageSize) {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
+  }
+
+  public Collection<String> listProductIds() {
+    return repository.listProductIds();
+  }
+
+  public List<String> getReportIds(List<String> productIds) {
+    if (productIds == null || productIds.isEmpty()) {
+      return new ArrayList<>();
+    }
+    return repository.getReportIdsByProduct(productIds);
   }
 
   public String get(String id) {

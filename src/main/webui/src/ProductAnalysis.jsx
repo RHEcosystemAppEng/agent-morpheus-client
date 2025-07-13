@@ -2,7 +2,7 @@ import { Grid, GridItem, PageSection, Content,  } from "@patternfly/react-core";
 import { ProductScanForm } from "./components/ProductScanForm";
 import { useOutletContext } from "react-router-dom";
 
-export default function Product() {
+export default function ProductAnalysis() {
 
   const {handleVulnRequestChange, addAlert} = useOutletContext();
 

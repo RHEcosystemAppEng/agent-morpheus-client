@@ -258,6 +258,38 @@ public class ReportRepositoryService {
     return new PaginatedResult<Report>(totalElements, totalPages, reports.stream());
   }
 
+  public List<String> listProductIds() {
+    List<String> productIds = new ArrayList<>();
+    Bson filter = Filters.exists("metadata.product_id", true);
+    getCollection()
+      .distinct("metadata.product_id", filter, String.class)
+      .iterator()
+      .forEachRemaining(pid -> {
+        if (pid != null && !pid.isEmpty()) {
+          productIds.add(pid);
+        }
+      });
+    return productIds;
+  }
+
+  public List<String> getReportIdsByProduct(List<String> productIds) {
+    List<String> reportIds = new ArrayList<>();
+    if (productIds == null || productIds.isEmpty()) {
+      return reportIds;
+    }
+    Bson filter = Filters.in("metadata.product_id", productIds);
+    getCollection()
+      .find(filter)
+      .iterator()
+      .forEachRemaining(doc -> {
+        ObjectId id = doc.getObjectId(RepositoryConstants.ID_KEY);
+        if (id != null) {
+          reportIds.add(id.toHexString());
+        }
+      });
+    return reportIds;
+  }
+
   public boolean remove(String id) {
     return getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
   }

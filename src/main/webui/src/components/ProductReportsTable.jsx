@@ -1,0 +1,199 @@
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
+import { listProducts, deleteProducts} from "../services/ProductReportClient";
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
+import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
+import { useOutletContext, useSearchParams, Link } from "react-router-dom";
+import { getMetadataColor } from "../Constants";
+
+export default function ProductReportsTable() {
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const { addAlert } = useOutletContext();
+  const [products, setProducts] = React.useState([]);
+  const [activeSortDirection, setActiveSortDirection] = React.useState('desc');
+  const [activeSortIndex, setActiveSortIndex] = React.useState(3); // Submitted At
+  const [isModalOpen, setModalOpen] = React.useState(false);
+  const [deleteItems, setDeleteItems] = React.useState([]);
+  const [deleteAll, setDeleteAll] = React.useState(false);
+
+  const loadProducts = () => {
+    listProducts().then(p => {
+      setProducts(p);
+    })
+    .catch(e => {
+    addAlert('danger', 'Unable to load products table')
+    })
+  }
+
+  const onRemoveFilter = (param) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete(param);
+    setSearchParams(newParams);
+  };
+
+  React.useEffect(() => {
+    loadProducts();
+  },[]);
+
+  const onConfirmDelete = () => {
+    setModalOpen(false);
+    let filter = new URLSearchParams();
+    if(deleteAll) {
+      filter = new URLSearchParams(searchParams);
+    } else {
+      deleteItems.forEach(v => filter.append("productIds", v.productId));
+    }
+    deleteProducts(filter).then(() => loadProducts());
+    setDeleteItems([]);
+    setDeleteAll(false);
+  }
+
+  const onCloseModal = () => {
+    setModalOpen(false);
+  }
+
+  const getSortParams = columnIndex => ({
+    sortBy: {
+      index: activeSortIndex,
+      direction: activeSortDirection,
+      defaultDirection: 'asc'
+    },
+    onSort: (_event, index, direction) => {
+      setActiveSortIndex(index);
+      setActiveSortDirection(direction);
+      const field = columnNames[index].key;
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("sortBy", `${field}:${direction}`);
+      setSearchParams(newParams);
+    },
+    columnIndex
+  });
+
+  const showDeleteButton = () => deleteAll || deleteItems.length > 0;
+
+  const onSelectOnlyItem = (productId, rowIndex) => {
+    setDeleteAll(false);
+    setDeleteItems([{ id: rowIndex, productId: productId }]);
+  }
+
+  const onSelectItem = (productId, rowIndex, isSelecting) => {
+    if(deleteAll) {
+      setDeleteAll(false);
+      isSelecting = true;
+    }
+    var pos = rowIndex;
+    if(isSelecting) {
+      let idx = deleteItems.findIndex((element) => element.id === pos);
+      if(idx === -1) {
+        const newItems = [...deleteItems, {id: pos, productId: productId}];
+        setDeleteItems(newItems);
+      }
+    } else {
+      const newItems = deleteItems.filter((item) => item.id != pos);
+      setDeleteItems(newItems);
+    }
+  };
+
+  const isSelectedItem = rowIndex => {
+    const pos = rowIndex;
+    return deleteAll || deleteItems.findIndex((element) => element.id === pos) !== -1;
+  }
+
+  const onDeleteAll = isSelecting => {
+    setDeleteAll(isSelecting);
+    setDeleteItems([]);
+  }
+
+  const columnNames = [
+    { key: 'name', label: 'ID' }
+  ];
+
+  const emptyTable = () => {
+    return <Tr>
+      <Td colSpan={6}>
+        <Bullseye>
+          <EmptyState headingLevel="h2" icon={SearchIcon} titleText="No products found" variant={EmptyStateVariant.sm}>
+          </EmptyState>
+        </Bullseye>
+      </Td>
+    </Tr>;
+  };
+
+  const productsTable = () => {
+    return products.map((p, rowIndex) => {
+      const rowActions = [
+        {
+          title: 'Delete',
+          onClick: () => {
+            onSelectItem(p, rowIndex, true);
+            setModalOpen(true);
+          },
+          isOutsideDropdown: true
+        }
+      ];
+      return <Tr key={p}>
+        <Td select={{
+          rowIndex,
+          onSelect: (_event, isSelecting) => onSelectItem(p, rowIndex, isSelecting),
+          isSelected: isSelectedItem(rowIndex)
+        }}> </Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap">{p}</Td>
+        <Td dataLabel="Actions">
+          <Flex columnGap={{ default: 'columnGapSm' }}>
+            <Button onClick={() => {
+              onSelectOnlyItem(p, rowIndex); 
+              setModalOpen(true);
+            }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
+          </Flex>
+        </Td>
+      </Tr>
+    });
+  }
+
+  let filterLabels = [];
+  searchParams.forEach((value, key) => {
+    let color = getMetadataColor(key);
+    filterLabels.push(<Label color={color} onClose={() => onRemoveFilter(key)} >{key}={value}</Label>);
+  });
+
+  return <>
+    <Toolbar>
+      <ToolbarContent>
+        <ToolbarItem>
+          {showDeleteButton() ? <Button variant="danger" onClick={setModalOpen} aria-label="delete" icon={<TrashIcon />}>Delete</Button> : ""}
+        </ToolbarItem>
+      </ToolbarContent>
+    </Toolbar>
+    <Table>
+      <Thead>
+        <Tr>
+          <Th select={{
+            onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
+            isSelected: deleteAll
+          }} aria-label="All Selected"/>
+          <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
+          <Td>Actions</Td>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {products.length == 0 ? emptyTable() : productsTable()}
+      </Tbody>
+    </Table>
+    <Modal variant={ModalVariant.small} isOpen={isModalOpen}
+      onClose={onCloseModal}
+    >
+      <ModalHeader title="Are you sure?" />
+      <ModalBody>
+        {deleteAll
+          ? "All products and their associated reports will be permanently deleted"
+          : `${deleteItems.length} ${deleteItems.length === 1 ? "product" : "products"} and their associated reports will be permanently deleted.`}
+      </ModalBody>
+      <ModalFooter>
+        <Button key="confirm" variant="danger" onClick={onConfirmDelete}>Delete</Button>
+        <Button key="close" variant="link" onClick={onCloseModal}>Close</Button>
+      </ModalFooter>
+    </Modal>
+  </>
+};

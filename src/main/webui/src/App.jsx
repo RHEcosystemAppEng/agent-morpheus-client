@@ -89,6 +89,9 @@ export default function App() {
       <NavItem itemId={3} isActive={location.pathname === '/product'} to="#/product">
         Request Product Analysis
       </NavItem>
+      <NavItem itemId={4} isActive={location.pathname.startsWith('/product-reports')} to="#/product-reports">
+        Product Reports
+      </NavItem>
     </NavList>
   </Nav>;
 
