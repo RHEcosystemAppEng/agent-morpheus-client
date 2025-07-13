@@ -242,6 +242,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   
     if (failures.length) {
       onNewAlert('danger', 'Failures occurred while submitting request')
+      console.log("FAILURES", failures)
     } else {
       onNewAlert('success', 'Analysis request sent to Morpheus');
     }

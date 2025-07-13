@@ -96,8 +96,6 @@ public class PreProcessingService {
 
       if (status >= 200 && status < 300) {
           LOGGER.info("Successfully sent payloads to Component Syncer");
-          LOGGER.debug("Component Syncer response headers: " + response.getHeaders());
-          LOGGER.debug("Component Syncer response body: " + response.readEntity(String.class));
           
           LocalDateTime now = LocalDateTime.now();
           ids.forEach(id -> submitted.put(id, now));

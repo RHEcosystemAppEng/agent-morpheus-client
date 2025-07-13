@@ -46,6 +46,7 @@ const parseImageFromReference = ref => {
 
 const generateComponentSbom = async ref => {
 
+	console.log("Generating SBOM from component " + ref);
 	const image = parseImageFromReference(ref);
 	if (!image) {
 		return { error: `Could not extract image, invalid reference format` };
@@ -115,6 +116,7 @@ export const generateMorpheusRequest = async (components, formData) => {
 			const image = await lookupCachedComponent(comp.ref);
 			
 			if (image) {
+				console.log("Image " + image.name + "found in cache, skipping SBOM generation");
 				compFormData.image = image;
 			} else {
 				const sbom = await generateComponentSbom(comp.ref);
