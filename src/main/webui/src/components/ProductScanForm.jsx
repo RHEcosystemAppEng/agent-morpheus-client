@@ -185,7 +185,10 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
 
         if (reference.startsWith("pkg:rpm")) {
           rpmComps.push(component);
-        } else if (reference.startsWith("pkg:oci")) {
+        } else if (
+          reference.startsWith("pkg:oci") &&
+          reference.includes("repository_url=registry.redhat.io/openshift4")
+        ) {
           ociComps.push(component);
         }
       });
