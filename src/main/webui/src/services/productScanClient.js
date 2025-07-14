@@ -165,5 +165,16 @@ export const generateMorpheusRequest = async (components, formData) => {
 		}
 	}
 
+	const preProcessingFailure = failures.find(f => f.ref === 'pre-processing');
+	if (preProcessingFailure) {
+		console.log(
+			`${failures.length - 1} out of ${components.length} components failed, and none have been sent to Agent Morpheus for analysis due to Component Syncer failure`
+		);
+	} else {
+		console.log(
+			`${failures.length} out of ${components.length} components failed, and ${payloads.length} sent to Agent Morpheus for analysis`
+		);
+	}
+	
 	return failures;
 }
