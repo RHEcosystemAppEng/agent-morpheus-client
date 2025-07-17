@@ -16,6 +16,8 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [prodSbom, setProdSbom] = React.useState({});
   const [ociComponents, setOciComponents] = React.useState([]);
   const [rpmComponents, setRpmComponents] = React.useState([]);
+  const [noneComponents, setNoneComponents] = React.useState([]);
+  const [totComponents, setTotComponents] = React.useState(0);
   const [filename, setFilename] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
@@ -166,6 +168,9 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       // Step 3: Resolve componentIds into package objects and extract required fields
       const rpmComps = [];
       const ociComps = [];
+      const noneComps = [];
+
+      setTotComponents(componentIds.length);
 
       componentIds.forEach(spdxElementId => {
         const pkg = packages.find(p => p.SPDXID === spdxElementId);
@@ -187,15 +192,23 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
           rpmComps.push(component);
         } else if (
           reference.startsWith("pkg:oci") &&
-          reference.includes("repository_url=registry.redhat.io/openshift4")
+          reference.includes("repository_url=registry.redhat.io/openshift4/")
         ) {
           ociComps.push(component);
+        } else if (
+          reference.startsWith("pkg:oci") &&
+          reference.includes("repository_url=registry.redhat.io/openshift/")
+        ) {
+          noneComps.push(component);
+        // } else {
+        //   noneComps.push(component); // temp includes pkg:oci + repository_url=registry.redhat.io/openshift/ filter instead of no match
         }
       });
   
       // Step 4: Set components
       setOciComponents(ociComps);
       setRpmComponents(rpmComps);
+      setNoneComponents(noneComps);
     } catch (error) {
       console.error("Failed to parse SBOM:", error);
     }
@@ -225,6 +238,8 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     setFilename('');
     setOciComponents([]);
     setRpmComponents([]);
+    setNoneComponents([]);
+    setTotComponents(0);
     setSelectedComponents([]);
     setSelectAll(false);
   };
@@ -424,6 +439,12 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
           {ociComponents.length === 0 ? emptyTable() : componentsTable()}
         </Tbody>
       </Table>
+      <div style={{ color: 'red' }}>
+        <div>Total Component Count: {totComponents}</div>
+        <div>RPM Component Count: {rpmComponents.length}</div>
+        <div>OCI Component (OCP) Count: {noneComponents.length}</div>
+        <div>OCI Component (OCP4) Count: {ociComponents.length}</div>
+      </div>
     </FormGroup>
     <ActionGroup>
       <Button variant="primary" isDisabled={!canSubmit} onClick={onSubmitForm}>Submit</Button>
