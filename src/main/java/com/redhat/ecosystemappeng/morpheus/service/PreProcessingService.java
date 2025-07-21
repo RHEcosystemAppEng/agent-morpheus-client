@@ -35,7 +35,7 @@ public class PreProcessingService {
   private static final Logger LOGGER = Logger.getLogger(PreProcessingService.class);
   private final Map<String, LocalDateTime> submitted = new ConcurrentHashMap<>();
   
-  @ConfigProperty(name = "morpheus.syncer.timeout", defaultValue = "5m")
+  @ConfigProperty(name = "morpheus.syncer.timeout", defaultValue = "1h")
   Duration timeout;
   
   @Inject
