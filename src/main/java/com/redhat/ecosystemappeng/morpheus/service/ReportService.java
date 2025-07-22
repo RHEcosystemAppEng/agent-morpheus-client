@@ -282,17 +282,30 @@ public class ReportService {
 
   private static String getSourceLocationFromMetadataLabels(HashMap<String, String> properties) {
     String sourceLocationValue =  properties.get(SOURCE_LOCATION_PROPERTY_GENERAL);
+    
     if(Objects.isNull(sourceLocationValue))
     {
       sourceLocationValue = properties.get(SOURCE_LOCATION_PROPERTY);
     }
+
+    if(Objects.isNull(sourceLocationValue))
+    {
+      throw new IllegalArgumentException("SBOM is missing required field: source-location");
+    }
+
     return sourceLocationValue;
   }
 
   private static String getCommitIdFromMetadataLabels(HashMap<String, String> properties) {
     String commitIdIdValue = properties.get(COMMIT_ID_PROPERTY_GENERAL);
+    
     if(Objects.isNull(commitIdIdValue)) {
       commitIdIdValue = properties.get(COMMIT_ID_PROPERTY);
+    }
+
+    if(Objects.isNull(commitIdIdValue))
+    {
+      throw new IllegalArgumentException("SBOM is missing required field: commit-id");
     }
 
     return commitIdIdValue;
@@ -317,7 +330,7 @@ public class ReportService {
     ArrayNode packages = objectMapper.createArrayNode();
     var components = sbom.get("components");
     if (components == null) {
-      throw new NullPointerException("SBOM is missing required field: components");
+      throw new IllegalArgumentException("SBOM is missing required field: components");
     }
     components.forEach(c -> {
       var pkg = objectMapper.createObjectNode();

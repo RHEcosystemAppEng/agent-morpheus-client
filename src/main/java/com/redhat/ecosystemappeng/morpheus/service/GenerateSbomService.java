@@ -37,12 +37,21 @@ public class GenerateSbomService {
             StringBuilder output = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(line);
+                output.append(line).append(System.lineSeparator());
+            }
+
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            StringBuilder errorOutput = new StringBuilder();
+            String errorLine;
+            while ((errorLine = errorReader.readLine()) != null) {
+                errorOutput.append(errorLine).append(System.lineSeparator());
             }
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new IOException("Failed to generate SBOM for image '" + image + "' with exit code " + exitCode); 
+                String rawError = errorOutput.toString();
+                String cleanError = rawError.replaceAll("\u001B\\[[;\\d]*m", "");
+                throw new IOException(cleanError.trim());
             }
 
             LOGGER.info("Successfully generated SBOM for image: " + image);
@@ -50,7 +59,7 @@ public class GenerateSbomService {
             return objectMapper.readTree(output.toString());
 
         } catch (Exception e) {
-            throw new IOException("Failed to generate SBOM for image '" + image + "' with error:", e); 
+            throw new IOException("Failed to generate SBOM for image '" + image + "' with error: " + e.getMessage(), e);
         }
     }
     

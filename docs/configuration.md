@@ -73,6 +73,16 @@ morpheus.queue.timeout=5m #duration of an ongoing request
 Every 10 seconds the ongoing requests will be checked and expired if needed, then
 the waiting queue will be updated and send new requests to Morpheus
 
+## Pending Component Syncer timeout
+
+The Component Syncer is responsible for pre-processing component documents during product scanning. You can configure the timeout for the syncer to control how long the system waits for the component synchronization process to complete and send processed batch for analysis before timing out.
+
+```properties
+morpheus.syncer.timeout=1h # duration to wait for component syncer during pre-processing
+```
+
+Set this value according to the expected processing time for your product. If the syncer does not finish within the configured timeout, any components still pending will be marked as expired.
+
 ## Purge
 
 You can activate the purge for old reports. By default is disabled and unless the
