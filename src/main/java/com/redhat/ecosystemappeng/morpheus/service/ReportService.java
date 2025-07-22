@@ -315,7 +315,11 @@ public class ReportService {
 
   public JsonNode buildManualSbom(JsonNode sbom) {
     ArrayNode packages = objectMapper.createArrayNode();
-    sbom.get("components").forEach(c -> {
+    var components = sbom.get("components");
+    if (components == null) {
+      throw new NullPointerException("SBOM is missing required field: components");
+    }
+    components.forEach(c -> {
       var pkg = objectMapper.createObjectNode();
       pkg.put("name", getProperty(c, "name"));
       pkg.put("version", getProperty(c, "version"));
