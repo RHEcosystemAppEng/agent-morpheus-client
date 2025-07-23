@@ -144,7 +144,17 @@ public class ReportEndpoint {
   }
 
   @GET
-  @Path("/product-ids")
+  @Path("/product/{id}")
+  public List<String> getReportsByProductId(@PathParam("id") String id) throws InterruptedException {
+    List<String> reportIds = reportService.getReportIds(List.of(id));
+    if (reportIds == null || reportIds.isEmpty()) {
+      throw new NotFoundException(id);
+    }
+    return reportIds;
+  }
+
+  @GET
+  @Path("/product")
   public Response listProductIds() {
     var result = reportService.listProductIds();
     return Response.ok(result).build();
@@ -226,7 +236,7 @@ public class ReportEndpoint {
   }
 
   @DELETE
-  @Path("/by-product")
+  @Path("/product")
   public Response removeManyByProductId(@QueryParam("productIds") List<String> productIds) {
     if (productIds == null || productIds.isEmpty()) {
       return Response.status(Status.BAD_REQUEST)
@@ -235,6 +245,17 @@ public class ReportEndpoint {
         .build();
     }
     List<String> reportIds = reportService.getReportIds(productIds);
+    if (reportIds == null || reportIds.isEmpty()) {
+      return Response.accepted().build();
+    }
+    reportService.remove(reportIds);
+    return Response.accepted().build();
+  }
+
+  @DELETE
+  @Path("/product/{id}")
+  public Response removeByProductId(@PathParam("id") String id) {
+    List<String> reportIds = reportService.getReportIds(List.of(id));
     if (reportIds == null || reportIds.isEmpty()) {
       return Response.accepted().build();
     }

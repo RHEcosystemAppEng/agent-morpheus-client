@@ -10,9 +10,9 @@ import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
 
-export default function ReportsTable() {
+export default function ReportsTable({ initSearchParams }) {
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams(initSearchParams);
 
   const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);

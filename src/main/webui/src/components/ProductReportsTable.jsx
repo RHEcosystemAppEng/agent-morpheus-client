@@ -1,5 +1,5 @@
 import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
-import { listProducts, deleteProducts} from "../services/ProductReportClient";
+import { listProducts, deleteProductReports} from "../services/ProductReportClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
@@ -45,7 +45,7 @@ export default function ProductReportsTable() {
     } else {
       deleteItems.forEach(v => filter.append("productIds", v.productId));
     }
-    deleteProducts(filter).then(() => loadProducts());
+    deleteProductReports(filter).then(() => loadProducts());
     setDeleteItems([]);
     setDeleteAll(false);
   }
@@ -139,7 +139,7 @@ export default function ProductReportsTable() {
           onSelect: (_event, isSelecting) => onSelectItem(p, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
-        <Td dataLabel={columnNames[0].label} modifier="nowrap">{p}</Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap"><Link to={`/product-reports/${p}`} >{p}</Link></Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Button onClick={() => {
