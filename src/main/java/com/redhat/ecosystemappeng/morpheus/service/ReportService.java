@@ -40,6 +40,8 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportSummary;
+
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
 import io.quarkus.runtime.Startup;
@@ -124,8 +126,17 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
-  public Collection<String> listProductIds() {
-    return repository.listProductIds();
+  public List<ProductReportSummary> listProductSummaries() {
+    List<ProductReportSummary> summaries = new ArrayList<>();
+    List<String> productIds = repository.getProductIds();
+    for (String productId : productIds) {
+      summaries.add(repository.getProductSummary(productId));
+    }
+    return summaries;
+  }
+
+  public ProductReportSummary getProductSummary(String productId) {
+    return repository.getProductSummary(productId);
   }
 
   public List<String> getReportIds(List<String> productIds) {

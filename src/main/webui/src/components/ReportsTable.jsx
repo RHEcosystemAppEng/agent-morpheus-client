@@ -5,7 +5,7 @@ import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
 import { RedoIcon } from '@patternfly/react-icons/dist/esm/icons/redo-icon';
-import { useOutletContext, useSearchParams, Link } from "react-router-dom";
+import { useOutletContext, useParams, useSearchParams, Link } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
@@ -246,7 +246,7 @@ export default function ReportsTable({ initSearchParams }) {
               selected={statusSelected} isOpen={statusIsExpanded}>
                 {Object.keys(statusFilter).map((option, index) => <SelectOption key={index} value={option}>{statusFilter[option]}</SelectOption>)}
           </Select>
-          {filterLabels}
+          {useParams().id ? null : filterLabels}
         </ToolbarItem>
         <ToolbarItem>
           {showDeleteButton() ? <Button variant="danger" onClick={setModalOpen} aria-label="delete" icon={<TrashIcon />}>Delete</Button> : ""}

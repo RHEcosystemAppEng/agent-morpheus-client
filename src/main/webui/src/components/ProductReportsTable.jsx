@@ -1,10 +1,11 @@
-import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Toolbar, ToolbarContent, ToolbarItem, getUniqueId} from "@patternfly/react-core";
 import { listProducts, deleteProductReports} from "../services/ProductReportClient";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { useOutletContext, useSearchParams, Link } from "react-router-dom";
 import { getMetadataColor } from "../Constants";
+import JustificationBanner from "./JustificationBanner";
 
 export default function ProductReportsTable() {
 
@@ -107,7 +108,8 @@ export default function ProductReportsTable() {
   }
 
   const columnNames = [
-    { key: 'name', label: 'ID' }
+    { key: 'name', label: 'ID' },
+    { key: 'cves', label: 'CVEs' },
   ];
 
   const emptyTable = () => {
@@ -127,23 +129,47 @@ export default function ProductReportsTable() {
         {
           title: 'Delete',
           onClick: () => {
-            onSelectItem(p, rowIndex, true);
+            onSelectItem(p.productId, rowIndex, true);
             setModalOpen(true);
           },
           isOutsideDropdown: true
         }
       ];
-      return <Tr key={p}>
+      return <Tr key={p.productId}>
         <Td select={{
           rowIndex,
-          onSelect: (_event, isSelecting) => onSelectItem(p, rowIndex, isSelecting),
+          onSelect: (_event, isSelecting) => onSelectItem(p.productId, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
-        <Td dataLabel={columnNames[0].label} modifier="nowrap"><Link to={`/product-reports/${p}`} >{p}</Link></Td>
+        <Td dataLabel={columnNames[0].label} modifier="nowrap">
+          <Link 
+            to={`/product-reports/${p.productId}`}
+            state={{ productData: p }}
+          >
+            {p.productId}
+          </Link>
+        </Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">
+          {Object.entries(p.cves).map(([cve, justifications]) => {
+            const uid = getUniqueId("div");
+            return (
+              <div key={uid}>
+                <Link to={`/reports?vulnId=${cve}`}>
+                  {cve} 
+                </Link>
+                {justifications.length > 0 && 
+                  justifications.map((justification, index) => (
+                    <JustificationBanner key={`${uid}-${index}`} justification={justification} />
+                  ))
+                }
+              </div>
+            );
+          })}
+        </Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Button onClick={() => {
-              onSelectOnlyItem(p, rowIndex); 
+              onSelectOnlyItem(p.productId, rowIndex); 
               setModalOpen(true);
             }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
           </Flex>
@@ -174,6 +200,7 @@ export default function ProductReportsTable() {
             isSelected: deleteAll
           }} aria-label="All Selected"/>
           <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
+          <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
           <Td>Actions</Td>
         </Tr>
       </Thead>

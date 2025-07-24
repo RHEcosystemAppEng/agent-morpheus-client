@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 import com.mongodb.client.MongoCursor;
@@ -34,6 +35,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportSummary;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -258,7 +260,8 @@ public class ReportRepositoryService {
     return new PaginatedResult<Report>(totalElements, totalPages, reports.stream());
   }
 
-  public List<String> listProductIds() {
+
+  public List<String> getProductIds() {
     List<String> productIds = new ArrayList<>();
     Bson filter = Filters.exists("metadata.product_id", true);
     getCollection()
@@ -270,6 +273,55 @@ public class ReportRepositoryService {
         }
       });
     return productIds;
+  }
+
+  public ProductReportSummary getProductSummary(String productId) {
+    Bson productFilter = Filters.eq("metadata.product_id", productId);
+    Map<String, Set<String>> cveSet = new HashMap<>();
+
+    getCollection()
+      .find(productFilter)
+      .iterator()
+      .forEachRemaining(doc -> {
+        Object inputObj = doc.get("input");
+        if (inputObj instanceof org.bson.Document inputDoc) {
+          Object scanObj = inputDoc.get("scan");
+          if (scanObj instanceof org.bson.Document scanDoc) {
+            Object vulnsObj = scanDoc.get("vulns");
+            if (vulnsObj instanceof List<?> vulnsList) {
+              for (Object vulnObj : vulnsList) {
+                if (vulnObj instanceof org.bson.Document vulnDoc) {
+                  String cve = vulnDoc.getString("vuln_id");
+                  if (cve != null && !cve.isEmpty()) {
+                    cveSet.putIfAbsent(cve, new HashSet<>());
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        Object outputObj = doc.get("output");
+        if (outputObj instanceof List<?> outputList) {
+          for (Object output : outputList) {
+            if (output instanceof org.bson.Document outputDoc) {
+              String cve = outputDoc.getString("vuln_id");
+              if (cve != null && !cve.isEmpty()) {
+                Set<String> justifications = cveSet.computeIfAbsent(cve, k -> new HashSet<>());
+                Object justificationObj = outputDoc.get("justification");
+                if (justificationObj instanceof org.bson.Document justificationDoc) {
+                  Object labelObj = justificationDoc.get("label");
+                  if (labelObj instanceof String label && !label.isEmpty()) {
+                    justifications.add(label);
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+    return new ProductReportSummary(productId, cveSet);
   }
 
   public List<String> getReportIdsByProduct(List<String> productIds) {

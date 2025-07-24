@@ -1,63 +1,57 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { deleteProductReport, viewProductReport } from "./services/ProductReportClient";
-import { viewReport } from "./services/ReportClient";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
+import { deleteProductReport, getProduct } from "./services/ProductReportClient";
 import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Panel, Skeleton, Content, ContentVariants, getUniqueId, List, ListComponent, ListItem, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { ConfirmationButton } from "./components/ConfirmationButton";
 import ReportsTable from "./components/ReportsTable";
+import JustificationBanner from "./components/JustificationBanner";
 
 export default function ProductReport() {
 
   const params = useParams();
-  const [reportIds, setReportIds] = React.useState([]);
-  const [reports, setReports] = React.useState({});
-  const [errorReport, setErrorReport] = React.useState({});
+  const location = useLocation();
   const navigate = useNavigate();
+  
+  const passedProductData = location.state?.productData;
+  
+  const [productData, setProductData] = React.useState(passedProductData || null);
+  const [errorReport, setErrorReport] = React.useState({});
+  const [isLoading, setIsLoading] = React.useState(!passedProductData);
+
 
   React.useEffect(() => {
-    viewProductReport(params.id)
-      .then(ids => {
-
-        setReportIds(ids);
-      })
-      .catch(e => setErrorReport(e));
-  }, []);
-
-  React.useEffect(() => {
-    reportIds.forEach(reportId => {
-      viewReport(reportId)
-        .then(r => {
-          setReports(prevReports => ({
-            ...prevReports,
-            [reportId]: r
-          }));
+    if (!passedProductData) {
+      getProduct(params.id)
+        .then(summary => {
+          setProductData(summary);
+          setIsLoading(false);
         })
         .catch(e => {
-          setReports(prevReports => ({
-            ...prevReports,
-            [reportId]: e
-          }));
+          setErrorReport(e);
+          setIsLoading(false);
         });
-    });
-  }, [reportIds]);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const time_meta_fields = [
-    "submitted_at",
-    "sent_at"
-  ];
+  // const time_meta_fields = [
+  //   "submitted_at",
+  //   "sent_at"
+  // ];
 
-  const time_scan_fields = [
-    "started_at",
-    "completed_at"
-  ];
+  // const time_scan_fields = [
+  //   "started_at",
+  //   "completed_at"
+  // ];
 
-  const timestamp_labels = {
-    "submitted_at": "Submitted",
-    "sent_at": "Sent",
-    "started_at": "Started",
-    "completed_at": "Completed"
-  };
+  // const timestamp_labels = {
+  //   "submitted_at": "Submitted",
+  //   "sent_at": "Sent",
+  //   "started_at": "Started",
+  //   "completed_at": "Completed"
+  // };
 
   const onDelete = () => {
     deleteProductReport(params.id).then(() => navigate('/product-reports'));
@@ -66,7 +60,7 @@ export default function ProductReport() {
   const showReport = () => {
     if (errorReport.status !== undefined) {
       if (errorReport.status === 404) {
-        return <EmptyState headingLevel="h4" icon={CubesIcon} titleText="Report not found">
+        return <EmptyState headingLevel="h4" icon={CubesIcon} titleText="Product report not found">
           <EmptyStateBody>
             The selected product report with id: {params.id} has not been found. Go back to the product reports page and select a different product.
           </EmptyStateBody>
@@ -122,7 +116,47 @@ export default function ProductReport() {
 
     return <Grid hasGutter>
       <Content component="h1">{params.id}</Content>
-      
+      <DescriptionList isHorizontal isCompact>
+        {/* <DescriptionListGroup>
+          <DescriptionListTerm>Submitted</DescriptionListTerm>
+          <DescriptionListDescription>
+            {productData?.submittedAt || "TBD"}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+          <DescriptionListTerm>Completed</DescriptionListTerm>
+          <DescriptionListDescription>
+            {productData?.completedAt || "TBD"}
+          </DescriptionListDescription>
+        </DescriptionListGroup> */}
+        <DescriptionListGroup>
+          <DescriptionListTerm>CVEs</DescriptionListTerm>
+          <DescriptionListDescription>
+            {productData?.cves && Object.keys(productData.cves).length > 0 ? (
+              <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsXs' }}>
+                {Object.entries(productData.cves).map(([cve, justifications]) => {
+                  const uid = getUniqueId("div");
+                  return (
+                    <div key={uid}>
+                      <Flex direction={{ default: 'row' }} spaceItems={{ default: 'spaceItemsXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+                        <Link to={`/reports?vulnId=${cve}`}>
+                          {cve}
+                        </Link>
+                        {justifications.length > 0 && 
+                          justifications.map((justification, index) => (
+                            <JustificationBanner key={`${uid}-${index}`} justification={justification} />
+                          ))
+                        }
+                      </Flex>
+                    </div>
+                  );
+                })}
+              </Flex>
+            ) : null}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+      </DescriptionList>
+
       <div>
         <ReportsTable
           initSearchParams={
@@ -145,12 +179,13 @@ export default function ProductReport() {
       </GridItem>
     </Grid>
   }
+
   return <PageSection hasBodyWrapper={false} >
     <Breadcrumb>
       <BreadcrumbItem to="#/product-reports">Product Reports</BreadcrumbItem>
       <BreadcrumbItem>{params.id}</BreadcrumbItem>
     </Breadcrumb>
-    {showReport()}
+    {isLoading ? <Skeleton screenreaderText="Loading contents" /> : showReport()}
   </PageSection>;
 
 }

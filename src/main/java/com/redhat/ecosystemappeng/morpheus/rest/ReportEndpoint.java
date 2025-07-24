@@ -145,18 +145,15 @@ public class ReportEndpoint {
 
   @GET
   @Path("/product/{id}")
-  public List<String> getReportsByProductId(@PathParam("id") String id) throws InterruptedException {
-    List<String> reportIds = reportService.getReportIds(List.of(id));
-    if (reportIds == null || reportIds.isEmpty()) {
-      throw new NotFoundException(id);
-    }
-    return reportIds;
+  public Response listProduct(@PathParam("id") String id) throws InterruptedException {
+    var result = reportService.getProductSummary(id);
+    return Response.ok(result).build();
   }
 
   @GET
   @Path("/product")
-  public Response listProductIds() {
-    var result = reportService.listProductIds();
+  public Response listProducts() {
+    var result = reportService.listProductSummaries();
     return Response.ok(result).build();
   }
 

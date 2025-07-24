@@ -36,7 +36,7 @@ export const deleteProductReport = async (productId) => {
   return true;
 };
 
-export const viewProductReport = async (productId) => {
+export const getProduct = async (productId) => {
   const response = await fetch(`/reports/product/${productId}`, {
     headers: {
       'Accept': 'application/json'
