@@ -277,7 +277,7 @@ public class ReportRepositoryService {
 
   public ProductReportSummary getProductSummary(String productId) {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
-    Map<String, Set<String>> cveSet = new HashMap<>();
+    Map<String, Set<Justification>> cveSet = new HashMap<>();
     String[] productSubmittedAt = {null};
 
     getCollection()
@@ -319,12 +319,13 @@ public class ReportRepositoryService {
             if (output instanceof org.bson.Document outputDoc) {
               String cve = outputDoc.getString("vuln_id");
               if (cve != null && !cve.isEmpty()) {
-                Set<String> justifications = cveSet.computeIfAbsent(cve, k -> new HashSet<>());
+                Set<Justification> justifications = cveSet.computeIfAbsent(cve, k -> new HashSet<>());
                 Object justificationObj = outputDoc.get("justification");
                 if (justificationObj instanceof org.bson.Document justificationDoc) {
-                  Object labelObj = justificationDoc.get("label");
-                  if (labelObj instanceof String label && !label.isEmpty()) {
-                    justifications.add(label);
+                  String status = justificationDoc.getString("status");
+                  String label = justificationDoc.getString("label");
+                  if (status != null && !status.isEmpty() && label != null && !label.isEmpty()) {
+                    justifications.add(new Justification(status, label));
                   }
                 }
               }
