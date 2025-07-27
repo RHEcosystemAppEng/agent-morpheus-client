@@ -1,11 +1,12 @@
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { deleteProductReport, getProduct } from "./services/ProductReportClient";
-import { Breadcrumb, BreadcrumbItem, Button, Divider, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Panel, Skeleton, Content, ContentVariants, getUniqueId, List, ListComponent, ListItem, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title } from "@patternfly/react-core";
+import { Breadcrumb, BreadcrumbItem, Button, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Skeleton, Content, getUniqueId, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { ConfirmationButton } from "./components/ConfirmationButton";
 import ReportsTable from "./components/ReportsTable";
 import JustificationBanner from "./components/JustificationBanner";
+import { StatusLabel } from "./components/StatusLabel";
 
 export default function ProductReport() {
 
@@ -35,23 +36,6 @@ export default function ProductReport() {
       setIsLoading(false);
     }
   }, []);
-
-  // const time_meta_fields = [
-  //   "submitted_at",
-  //   "sent_at"
-  // ];
-
-  // const time_scan_fields = [
-  //   "started_at",
-  //   "completed_at"
-  // ];
-
-  // const timestamp_labels = {
-  //   "submitted_at": "Submitted",
-  //   "sent_at": "Sent",
-  //   "started_at": "Started",
-  //   "completed_at": "Completed"
-  // };
 
   const onDelete = () => {
     deleteProductReport(params.id).then(() => navigate('/product-reports'));
@@ -95,27 +79,14 @@ export default function ProductReport() {
     //   </>;
     // }
 
-    // const image = report.input.image
-    // const output = report.output;
-    // let metadata = [];
-    // let timestamps = [];
-    // if (report.metadata !== undefined) {
-    //   Object.keys(report.metadata).forEach(k => {
-    //     if (time_meta_fields.includes(k)) {
-    //       timestamps.push({ key: k, value: report.metadata[k]["$date"] });
-    //     } else {
-    //       metadata.push({ key: k, value: report.metadata[k] });
-    //     }
-    //   });
-    // }
-    // time_scan_fields.forEach(field => {
-    //   if(report.input.scan[field] !== undefined) {
-    //     timestamps.push({ key: field, value: report.input.scan[field] });
-    //   }
-    // });
 
     return <Grid hasGutter>
       <Content component="h1">{params.id}</Content>
+      {productData ? (
+        <Title headingLevel="h2" size="lg">
+          <StatusLabel type={productData.state} size="large" />
+        </Title>
+      ) : null}
       <DescriptionList isHorizontal isCompact>
         <DescriptionListGroup>
           <DescriptionListTerm>Submitted</DescriptionListTerm>

@@ -79,16 +79,9 @@ public class ReportRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  public Report toReport(Document doc) {
-    if (doc == null) {
-      return null;
-    }
-    var input = doc.get("input", Document.class);
-    var scan = input.get("scan", Document.class);
-    var image = input.get("image", Document.class);
-    var output = doc.getList("output", Document.class);
-    var metadataField = doc.get("metadata", Document.class);
+  private Map<String, String> extractMetadata(Document doc) {
     var metadata = new HashMap<String, String>();
+    var metadataField = doc.get("metadata", Document.class);
     if (metadataField != null) {
       metadataField.keySet().forEach(key -> {
         if (METADATA_DATES.contains(key)) {
@@ -99,6 +92,18 @@ public class ReportRepositoryService {
         }
       });
     }
+    return metadata;
+  }
+
+  public Report toReport(Document doc) {
+    if (doc == null) {
+      return null;
+    }
+    var input = doc.get("input", Document.class);
+    var scan = input.get("scan", Document.class);
+    var image = input.get("image", Document.class);
+    var output = doc.getList("output", Document.class);
+    var metadata = extractMetadata(doc);
     var vulnIds = new HashSet<VulnResult>();
     if (output != null) {
       output.forEach(o -> {
@@ -279,12 +284,13 @@ public class ReportRepositoryService {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<Justification>> cveSet = new HashMap<>();
     String[] productSubmittedAt = {null};
+    Set<String> productStates = new HashSet<>();
+    String productState = "unknown";
 
     getCollection()
       .find(productFilter)
       .iterator()
       .forEachRemaining(doc -> {
-        // Try to get product_submitted_at from metadata if not already set
         if (productSubmittedAt[0] == null) {
           Object metadataObj = doc.get("metadata");
           if (metadataObj instanceof org.bson.Document metadataDoc) {
@@ -293,7 +299,9 @@ public class ReportRepositoryService {
               productSubmittedAt[0] = submittedAtStr;
             }
           }
-        } 
+        }
+
+        productStates.add(getStatus(doc, extractMetadata(doc)));
 
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
@@ -334,7 +342,13 @@ public class ReportRepositoryService {
         }
       });
 
-    return new ProductReportSummary(productId, productSubmittedAt[0], cveSet);
+    if (productStates.contains("pending") || productStates.contains("queued")) {
+      productState = "analysing";
+    } else {
+      productState = "completed";
+    }
+
+    return new ProductReportSummary(productId, productSubmittedAt[0], productState, cveSet);
   }
 
   public List<String> getReportIdsByProduct(List<String> productIds) {

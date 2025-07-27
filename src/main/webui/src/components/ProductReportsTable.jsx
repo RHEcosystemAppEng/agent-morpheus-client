@@ -5,6 +5,7 @@ import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { useOutletContext, useSearchParams, Link } from "react-router-dom";
 import { getMetadataColor } from "../Constants";
+import { StatusLabel } from "./StatusLabel";
 import JustificationBanner from "./JustificationBanner";
 
 export default function ProductReportsTable() {
@@ -109,7 +110,10 @@ export default function ProductReportsTable() {
 
   const columnNames = [
     { key: 'name', label: 'ID' },
-    { key: 'cves', label: 'CVEs' },
+    { key: 'vulns', label: 'CVEs' },
+    { key: 'completedAt', label: 'Completed At' },
+    { key: 'submittedAt', label: 'Submitted At' },
+    { key: 'state', label: 'State' }
   ];
 
   const emptyTable = () => {
@@ -129,24 +133,24 @@ export default function ProductReportsTable() {
         {
           title: 'Delete',
           onClick: () => {
-            onSelectItem(p.productId, rowIndex, true);
+            onSelectItem(p.id, rowIndex, true);
             setModalOpen(true);
           },
           isOutsideDropdown: true
         }
       ];
-      return <Tr key={p.productId}>
+      return <Tr key={p.id}>
         <Td select={{
           rowIndex,
-          onSelect: (_event, isSelecting) => onSelectItem(p.productId, rowIndex, isSelecting),
+          onSelect: (_event, isSelecting) => onSelectItem(p.id, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
           <Link 
-            to={`/product-reports/${p.productId}`}
+            to={`/product-reports/${p.id}`}
             state={{ productData: p }}
           >
-            {p.productId}
+            {p.id}
           </Link>
         </Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">
@@ -166,10 +170,13 @@ export default function ProductReportsTable() {
             );
           })}
         </Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap">TBD</Td>
+        <Td dataLabel={columnNames[3].label} modifier="nowrap">{p.submittedAt || '-'}</Td>
+        <Td dataLabel={columnNames[4].label}><StatusLabel type={p.state} /></Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Button onClick={() => {
-              onSelectOnlyItem(p.productId, rowIndex); 
+              onSelectOnlyItem(p.id, rowIndex); 
               setModalOpen(true);
             }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
           </Flex>
@@ -201,6 +208,9 @@ export default function ProductReportsTable() {
           }} aria-label="All Selected"/>
           <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
           <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
+          <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
+          <Th width={10} sort={getSortParams(3)}>{columnNames[3].label}</Th>
+          <Th>{columnNames[4].label}</Th>
           <Td>Actions</Td>
         </Tr>
       </Thead>
