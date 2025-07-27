@@ -278,11 +278,23 @@ public class ReportRepositoryService {
   public ProductReportSummary getProductSummary(String productId) {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<String>> cveSet = new HashMap<>();
+    String[] productSubmittedAt = {null};
 
     getCollection()
       .find(productFilter)
       .iterator()
       .forEachRemaining(doc -> {
+        // Try to get product_submitted_at from metadata if not already set
+        if (productSubmittedAt[0] == null) {
+          Object metadataObj = doc.get("metadata");
+          if (metadataObj instanceof org.bson.Document metadataDoc) {
+            Object submittedAtObj = metadataDoc.get("product_submitted_at");
+            if (submittedAtObj instanceof String submittedAtStr && !submittedAtStr.isEmpty()) {
+              productSubmittedAt[0] = submittedAtStr;
+            }
+          }
+        } 
+
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
           Object scanObj = inputDoc.get("scan");
@@ -321,7 +333,7 @@ public class ReportRepositoryService {
         }
       });
 
-    return new ProductReportSummary(productId, cveSet);
+    return new ProductReportSummary(productId, productSubmittedAt[0], cveSet);
   }
 
   public List<String> getReportIdsByProduct(List<String> productIds) {

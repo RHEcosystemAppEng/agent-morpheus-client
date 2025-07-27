@@ -117,13 +117,13 @@ export default function ProductReport() {
     return <Grid hasGutter>
       <Content component="h1">{params.id}</Content>
       <DescriptionList isHorizontal isCompact>
-        {/* <DescriptionListGroup>
+        <DescriptionListGroup>
           <DescriptionListTerm>Submitted</DescriptionListTerm>
           <DescriptionListDescription>
-            {productData?.submittedAt || "TBD"}
+            {productData?.submittedAt || null}
           </DescriptionListDescription>
         </DescriptionListGroup>
-        <DescriptionListGroup>
+        {/* <DescriptionListGroup>
           <DescriptionListTerm>Completed</DescriptionListTerm>
           <DescriptionListDescription>
             {productData?.completedAt || "TBD"}

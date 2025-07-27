@@ -250,7 +250,8 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     onNewAlert('info', 'Please wait, request processing...')
 
     const prodIdEntry = { name: 'product_id', value: prodId || defaultProdId };
-    const updatedMetadata = [...metadata, prodIdEntry];
+    const timestampEntry = { name: 'product_submitted_at', value: new Date().toISOString() };
+    const updatedMetadata = [...metadata, prodIdEntry, timestampEntry];
     setMetadata(updatedMetadata);
 
     const update = { metadata: updatedMetadata };

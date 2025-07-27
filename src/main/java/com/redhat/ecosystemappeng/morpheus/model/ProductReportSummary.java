@@ -9,6 +9,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 public record ProductReportSummary(
     String productId,
+    String submittedAt,
     Map<String, Set<String>> cves) {
 
 }
