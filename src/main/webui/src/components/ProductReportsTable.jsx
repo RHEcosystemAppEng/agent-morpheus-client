@@ -170,7 +170,7 @@ export default function ProductReportsTable() {
             );
           })}
         </Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap">TBD</Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.completedAt || '-'}</Td>
         <Td dataLabel={columnNames[3].label} modifier="nowrap">{p.submittedAt || '-'}</Td>
         <Td dataLabel={columnNames[4].label}><StatusLabel type={p.state} /></Td>
         <Td dataLabel="Actions">

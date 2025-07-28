@@ -164,6 +164,9 @@ public class ReportRepositoryService {
 
   public void updateWithOutput(List<String> ids, JsonNode report)
       throws JsonMappingException, JsonProcessingException {
+    
+    Set<String> productIds = getProductId(ids);
+    
     List<Document> outputDocs = objectMapper.readValue(report.get("output").toPrettyString(),
         new TypeReference<List<Document>>() {
 
@@ -178,11 +181,19 @@ public class ReportRepositoryService {
         .map(id -> new UpdateOneModel<Document>(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id)), updates))
         .toList();
     getCollection().bulkWrite(bulk);
+    
+    productIds.forEach(this::checkAndStoreProductCompletion);
   }
 
   public void updateWithError(String id, String errorType, String errorMessage) {
+    String productId = getProductId(id);  
+    
     var error = new Document("type", errorType).append("message", errorMessage);
     getCollection().updateOne(new Document(RepositoryConstants.ID_KEY, new ObjectId(id)), Updates.set("error", error));
+    
+    if (productId != null) {
+      checkAndStoreProductCompletion(productId);
+    }
   }
 
   public Report save(String data) {
@@ -284,6 +295,7 @@ public class ReportRepositoryService {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<Justification>> cveSet = new HashMap<>();
     String[] productSubmittedAt = {null};
+    String[] productCompletedAt = {null};
     Set<String> productStates = new HashSet<>();
     String productState = "unknown";
 
@@ -291,17 +303,24 @@ public class ReportRepositoryService {
       .find(productFilter)
       .iterator()
       .forEachRemaining(doc -> {
+        Map<String, String> metadata = extractMetadata(doc);
+        
         if (productSubmittedAt[0] == null) {
-          Object metadataObj = doc.get("metadata");
-          if (metadataObj instanceof org.bson.Document metadataDoc) {
-            Object submittedAtObj = metadataDoc.get("product_submitted_at");
-            if (submittedAtObj instanceof String submittedAtStr && !submittedAtStr.isEmpty()) {
-              productSubmittedAt[0] = submittedAtStr;
-            }
+          String submittedAt = metadata.get("product_submitted_at");
+          if (submittedAt != null && !submittedAt.isEmpty()) {
+            productSubmittedAt[0] = submittedAt;
+          }
+        }
+        
+        if (productCompletedAt[0] == null) {
+          String completedAt = metadata.get("product_completed_at");
+          if (completedAt != null && !completedAt.isEmpty()) {
+            productCompletedAt[0] = completedAt;
           }
         }
 
-        productStates.add(getStatus(doc, extractMetadata(doc)));
+        String reportStatus = getStatus(doc, metadata);
+        productStates.add(reportStatus);
 
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
@@ -348,7 +367,92 @@ public class ReportRepositoryService {
       productState = "completed";
     }
 
-    return new ProductReportSummary(productId, productSubmittedAt[0], productState, cveSet);
+    return new ProductReportSummary(productId, productSubmittedAt[0], productCompletedAt[0], productState, cveSet);
+  }
+
+  private String getProductId(String reportId) {
+    Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(reportId))).first();
+    if (doc != null) {
+      var metadata = doc.get("metadata", Document.class);
+      if (metadata != null) {
+        return metadata.getString("product_id");
+      }
+    }
+    return null;
+  }
+
+  private Set<String> getProductId(Collection<String> reportIds) {
+    Set<String> productIds = new HashSet<>();
+    reportIds.forEach(id -> {
+      String productId = getProductId(id);
+      if (productId != null) {
+        productIds.add(productId);
+      }
+    });
+    return productIds;
+  }
+
+  private void storeProductCompletedAt(String productId, String completedAt) {
+    // Update all reports for this product to include product_completed_at in metadata
+    Bson productFilter = Filters.eq("metadata.product_id", productId);
+    var update = Updates.set("metadata.product_completed_at", completedAt);
+    getCollection().updateMany(productFilter, update);
+  }
+
+  private void checkAndStoreProductCompletion(String productId) {
+    // Check if this product just became completed
+    Bson productFilter = Filters.eq("metadata.product_id", productId);
+    boolean hasCompletionTimeStored = false;
+    boolean hasPendingReports = false;
+    String latestCompletionTime = null;
+
+    try (var cursor = getCollection().find(productFilter).cursor()) {
+      while (cursor.hasNext()) {
+        Document doc = cursor.next();
+        Map<String, String> metadata = extractMetadata(doc);
+        
+        if (metadata.get("product_completed_at") != null) {
+          hasCompletionTimeStored = true;
+          break;
+        }
+        
+        String reportStatus = getStatus(doc, metadata);
+        
+        if ("pending".equals(reportStatus) || "queued".equals(reportStatus)) {
+          hasPendingReports = true;
+          break;
+        }
+        
+        if ("completed".equals(reportStatus) || "failed".equals(reportStatus) || "expired".equals(reportStatus)) {
+          String completedAt = getReportCompletionTime(doc);
+          if (completedAt != null && (latestCompletionTime == null || completedAt.compareTo(latestCompletionTime) > 0)) {
+            latestCompletionTime = completedAt;
+          }
+        }
+      }
+    }
+
+    if (!hasCompletionTimeStored && !hasPendingReports && latestCompletionTime != null) {
+      storeProductCompletedAt(productId, latestCompletionTime);
+      LOGGER.infof("Product %s completed at %s", productId, latestCompletionTime);
+    }
+  }
+
+  private String getReportCompletionTime(Document doc) {
+    var input = doc.get("input", Document.class);
+    if (input != null) {
+      var scan = input.get("scan", Document.class);
+      if (scan != null) {
+        String completedAt = scan.getString("completed_at");
+        if (completedAt != null) {
+          return completedAt;
+        }
+      }
+    }
+    
+    var metadata = extractMetadata(doc);
+    String submittedAt = metadata.get("submitted_at");
+    return submittedAt;
   }
 
   public List<String> getReportIdsByProduct(List<String> productIds) {
@@ -370,14 +474,30 @@ public class ReportRepositoryService {
   }
 
   public boolean remove(String id) {
-    return getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
+    String productId = getProductId(id);
+    
+    boolean result = getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
+    
+    if (result && productId != null) {
+      checkAndStoreProductCompletion(productId);
+    }
+    
+    return result;
   }
 
   public boolean remove(Collection<String> ids) {
-    return getCollection()
+    Set<String> productIds = getProductId(ids);
+    
+    boolean result = getCollection()
         .deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids.stream()
             .map(id -> new ObjectId(id)).toList()))
         .wasAcknowledged();
+    
+    if (result) {
+      productIds.forEach(this::checkAndStoreProductCompletion);
+    }
+    
+    return result;
   }
 
   public Collection<String> remove(Map<String, String> queryFilter) {

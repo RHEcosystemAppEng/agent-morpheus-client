@@ -94,12 +94,12 @@ export default function ProductReport() {
             {productData?.submittedAt || null}
           </DescriptionListDescription>
         </DescriptionListGroup>
-        {/* <DescriptionListGroup>
+        <DescriptionListGroup>
           <DescriptionListTerm>Completed</DescriptionListTerm>
           <DescriptionListDescription>
-            {productData?.completedAt || "TBD"}
+            {productData?.completedAt || "-"}
           </DescriptionListDescription>
-        </DescriptionListGroup> */}
+        </DescriptionListGroup>
         <DescriptionListGroup>
           <DescriptionListTerm>CVEs</DescriptionListTerm>
           <DescriptionListDescription>
