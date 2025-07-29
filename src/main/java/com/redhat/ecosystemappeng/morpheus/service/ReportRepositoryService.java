@@ -361,7 +361,7 @@ public class ReportRepositoryService {
         }
       });
 
-    if (productStates.contains("pending") || productStates.contains("queued")) {
+    if (productStates.contains("pending") || productStates.contains("queued") || productStates.contains("sent")) {
       productState = "analysing";
     } else {
       productState = "completed";
@@ -418,7 +418,7 @@ public class ReportRepositoryService {
         
         String reportStatus = getStatus(doc, metadata);
         
-        if ("pending".equals(reportStatus) || "queued".equals(reportStatus)) {
+        if ("pending".equals(reportStatus) || "queued".equals(reportStatus) || "sent".equals(reportStatus)) {
           hasPendingReports = true;
           break;
         }
