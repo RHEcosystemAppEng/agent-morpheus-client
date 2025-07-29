@@ -276,7 +276,7 @@ export default function ReportsTable({ initSearchParams }) {
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={10}>{columnNames[0].label}</Th>
+          <Th width={20}>{columnNames[0].label}</Th>
           <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
           <Th width={20} sort={getSortParams(2)}>{columnNames[2].label}</Th>
           <Th width={10}>{columnNames[3].label}</Th>

@@ -296,6 +296,8 @@ public class ReportRepositoryService {
     Map<String, Set<Justification>> cveSet = new HashMap<>();
     String[] productSubmittedAt = {null};
     String[] productCompletedAt = {null};
+    String[] productName = {null};
+    String[] productVersion = {null};
     Set<String> productStates = new HashSet<>();
     String productState = "unknown";
 
@@ -316,6 +318,20 @@ public class ReportRepositoryService {
           String completedAt = metadata.get("product_completed_at");
           if (completedAt != null && !completedAt.isEmpty()) {
             productCompletedAt[0] = completedAt;
+          }
+        }
+
+        if (productName[0] == null) {
+          String name = metadata.get("product_name");
+          if (name != null && !name.isEmpty()) {
+            productName[0] = name;
+          }
+        }
+
+        if (productVersion[0] == null) {
+          String version = metadata.get("product_version");
+          if (version != null && !version.isEmpty()) {
+            productVersion[0] = version;
           }
         }
 
@@ -367,7 +383,7 @@ public class ReportRepositoryService {
       productState = "completed";
     }
 
-    return new ProductReportSummary(productId, productSubmittedAt[0], productCompletedAt[0], productState, cveSet);
+    return new ProductReportSummary(productId, productName[0], productVersion[0], productSubmittedAt[0], productCompletedAt[0], productState, cveSet);
   }
 
   private String getProductId(String reportId) {

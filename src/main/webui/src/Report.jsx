@@ -43,7 +43,9 @@ export default function Report() {
     "submitted_at",
     "sent_at",
     "product_submitted_at",
-    "product_completed_at"
+    "product_completed_at",
+    "product_name",
+    "product_version"
   ];
 
   const time_scan_fields = [

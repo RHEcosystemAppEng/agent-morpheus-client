@@ -10,6 +10,8 @@ import { listProducts } from "../services/ProductReportClient";
 
 export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestChange, onNewAlert }) => {
   const [prodId, setProdId] = React.useState(productVulnRequest['prodId'] || '');
+  const [prodName, setProdName] = React.useState('');
+  const [prodVersion, setProdVersion] = React.useState('');
   const [defaultProdId, setDefaultProdId] = React.useState('');
   const [cves, setCves] = React.useState(productVulnRequest['cves'] || [{}]);
   const [metadata, setMetadata] = React.useState(productVulnRequest['metadata'] || [{}]);
@@ -198,6 +200,8 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       const prodName = prodPkg?.name || sbom.name;
       const prodVersion = prodPkg?.versionInfo || sbom.spdxVersion;
       
+      setProdName(prodName);
+      setProdVersion(prodVersion);
       setDefaultProdId([prodName, prodVersion].join(':'));
   
       // Step 2: Find all components related to the product with "PACKAGE_OF"
@@ -300,6 +304,8 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       metadata: [
         ...metadata,
         { name: 'product_id', value: finalProductId },
+        { name: 'product_name', value: prodName },
+        { name: 'product_version', value: prodVersion },
         { name: 'product_submitted_at', value: submissionTimestamp }
       ]
     };

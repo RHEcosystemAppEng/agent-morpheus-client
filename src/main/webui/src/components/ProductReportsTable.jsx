@@ -3,6 +3,7 @@ import { listProducts, deleteProductReports} from "../services/ProductReportClie
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
+import { InfoCircleIcon } from '@patternfly/react-icons/dist/esm/icons/info-circle-icon';
 import { useOutletContext, useSearchParams, Link } from "react-router-dom";
 import { getMetadataColor } from "../Constants";
 import { StatusLabel } from "./StatusLabel";
@@ -110,6 +111,8 @@ export default function ProductReportsTable() {
 
   const columnNames = [
     { key: 'name', label: 'ID' },
+    { key: 'productName', label: 'Product' },
+    { key: 'productVersion', label: 'Version' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'completedAt', label: 'Completed At' },
     { key: 'submittedAt', label: 'Submitted At' },
@@ -146,14 +149,16 @@ export default function ProductReportsTable() {
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <Link 
-            to={`/product-reports/${p.id}`}
-            state={{ productData: p }}
-          >
-            {p.id}
-          </Link>
+          <Flex spaceItems={{ default: 'spaceItemsXs' }} alignItems={{ default: 'alignItemsCenter' }}>
+            <Link to={`/product-reports/${p.id}`} state={{ productData: p }} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
+              <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
+              <span style={{ marginLeft: '4px' }}>{p.id}</span>
+            </Link>
+          </Flex>
         </Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap">
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">{p.productName}</Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.productVersion}</Td>
+        <Td dataLabel={columnNames[3].label} modifier="nowrap">
           {Object.entries(p.cves).map(([cve, justifications]) => {
             const uid = getUniqueId("div");
             return (
@@ -170,9 +175,9 @@ export default function ProductReportsTable() {
             );
           })}
         </Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.completedAt || '-'}</Td>
-        <Td dataLabel={columnNames[3].label} modifier="nowrap">{p.submittedAt || '-'}</Td>
-        <Td dataLabel={columnNames[4].label}><StatusLabel type={p.state} /></Td>
+        <Td dataLabel={columnNames[4].label} modifier="nowrap">{p.completedAt || '-'}</Td>
+        <Td dataLabel={columnNames[5].label} modifier="nowrap">{p.submittedAt || '-'}</Td>
+        <Td dataLabel={columnNames[6].label}><StatusLabel type={p.state} /></Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Button onClick={() => {
@@ -206,11 +211,13 @@ export default function ProductReportsTable() {
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
+          <Th width={20}>{columnNames[0].label}</Th>
           <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
           <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
-          <Th width={10} sort={getSortParams(3)}>{columnNames[3].label}</Th>
-          <Th>{columnNames[4].label}</Th>
+          <Th width={10}>{columnNames[3].label}</Th>
+          <Th width={10} sort={getSortParams(4)}>{columnNames[4].label}</Th>
+          <Th width={10} sort={getSortParams(5)}>{columnNames[5].label}</Th>
+          <Th>{columnNames[6].label}</Th>
           <Td>Actions</Td>
         </Tr>
       </Thead>
