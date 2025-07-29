@@ -8,6 +8,7 @@ import { getUserName, logoutUser } from './services/UserClient';
 export default function App() {
 
   const [vulnRequest, setVulnRequest] = React.useState({ sbomType: 'manual' });
+  const [productVulnRequest, setProductVulnRequest] = React.useState({ sbomType: 'manual' });
   const [alerts, setAlerts] = React.useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [userName, setUserName] = React.useState('');
@@ -61,6 +62,13 @@ export default function App() {
     let updated = { ...vulnRequest }
     Object.assign(updated, changes)
     setVulnRequest(updated);
+    return updated;
+  };
+
+  const handleProductVulnRequestChange = (changes) => {
+    let updated = { ...productVulnRequest }
+    Object.assign(updated, changes)
+    setProductVulnRequest(updated);
     return updated;
   };
 
@@ -152,7 +160,7 @@ export default function App() {
   const PageSkipToContent = <SkipToContent href={`#${pageId}`}>Skip to content</SkipToContent>;
   return <React.Fragment>
     <Page masthead={Header} skipToContent={PageSkipToContent} mainContainerId={pageId} sidebar={sidebar}>
-      <Outlet context={{ vulnRequest, handleVulnRequestChange, addAlert }} />
+      <Outlet context={{ vulnRequest, handleVulnRequestChange, productVulnRequest, handleProductVulnRequestChange, addAlert }} />
       <ToastNotifications alerts={alerts} onDeleteAlert={onDeleteAlert} />
     </Page>
   </React.Fragment>;

@@ -8,13 +8,12 @@ import { sbomTypes } from "../services/FormUtilsClient";
 import { generateMorpheusRequest } from "../services/productScanClient";
 import { listProducts } from "../services/ProductReportClient";
 
-export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
-  const [prodId, setProdId] = React.useState('');
+export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestChange, onNewAlert }) => {
+  const [prodId, setProdId] = React.useState(productVulnRequest['prodId'] || '');
   const [defaultProdId, setDefaultProdId] = React.useState('');
-  const [cves, setCves] = React.useState([{}]);
-  const [metadata, setMetadata] = React.useState([{}]);
-  const [sbomType, setSbomType] = React.useState('manual');
-  const [prodSbom, setProdSbom] = React.useState({});
+  const [cves, setCves] = React.useState(productVulnRequest['cves'] || [{}]);
+  const [metadata, setMetadata] = React.useState(productVulnRequest['metadata'] || [{}]);
+  const [sbomType, setSbomType] = React.useState(productVulnRequest['sbomType'] || 'manual');
   const [ociComponents, setOciComponents] = React.useState([]);
   const [rpmComponents, setRpmComponents] = React.useState([]);
   const [noneComponents, setNoneComponents] = React.useState([]);
@@ -24,9 +23,19 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const [canSubmit, setCanSubmit] = React.useState(false);
   const [selectedComponents, setSelectedComponents] = React.useState([]);
   const [selectAll, setSelectAll] = React.useState(true);
-  const [formData, setFormData] = React.useState({});
   const [prodIdError, setProdIdError] = React.useState('');
   const [isValidatingProdId, setIsValidatingProdId] = React.useState(false);
+
+  React.useEffect(() => {
+    clearTimeout(window.prodIdValidationTimeout);
+    if (prodId && prodId.trim() !== '') {
+      window.prodIdValidationTimeout = setTimeout(() => {
+        validateProductId(prodId);
+      }, 1000);
+    } else {
+      setProdIdError('');
+    }
+  }, [prodId]);
 
   React.useEffect(() => {
     if (ociComponents.length > 0) {
@@ -42,8 +51,8 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     }
   }, [ociComponents]);
 
-    React.useEffect(() => {
-    const updated = formData;
+  React.useEffect(() => {
+    const updated = productVulnRequest;
 
     if (prodIdError) {
       setCanSubmit(false);
@@ -77,7 +86,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     }
 
     setCanSubmit(true);
-   }, [formData, selectedComponents, prodIdError]);
+  }, [productVulnRequest, selectedComponents, prodIdError]);
 
   const validateProductId = async (id) => {
     if (!id || id.trim() === '') {
@@ -105,24 +114,20 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
 
   const handleProdIdChange = (_, id) => {
     setProdId(id);
-    
-    clearTimeout(window.prodIdValidationTimeout);
-    window.prodIdValidationTimeout = setTimeout(() => {
-      validateProductId(id);
-    }, 1000);
+    handleProductVulnRequestChange({ prodId: id });
   };
 
   const handleMetadataChange = (idx, field, newValue) => {
     const updatedMetadata = [...metadata];
     updatedMetadata[idx][field] = newValue;
     setMetadata(updatedMetadata);
-    onFormUpdated({ metadata: updatedMetadata });
+    handleProductVulnRequestChange({ metadata: updatedMetadata });
   };
 
   const handleAddMetadata = () => {
     setMetadata((prevMetadata) => {
       const updatedElems = [...prevMetadata, { name: "", value: ""}];
-      onFormUpdated({ metadata: updatedElems });
+      handleProductVulnRequestChange({ metadata: updatedElems });
       return updatedElems;
     });
   }
@@ -130,7 +135,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const handleDeleteMetadata = idx => {
     const updatedMetadata = metadata.filter((_, i) => i !== idx);
     setMetadata(updatedMetadata);
-    onFormUpdated({ metadata: updatedMetadata });
+    handleProductVulnRequestChange({ metadata: updatedMetadata });
   }
 
   const handleCveChange = (idx, name) => {
@@ -139,7 +144,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       const updatedElems = prevElements.map((element, index) =>
         index === idx ? { ...element, name: name } : element
       );
-      onFormUpdated({ cves: updatedElems });
+      handleProductVulnRequestChange({ cves: updatedElems });
       return updatedElems;
     });
   };
@@ -150,7 +155,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
         ...prevCveList,
         { name: '' }
       ];
-      onFormUpdated({ cves: updatedElems });
+      handleProductVulnRequestChange({ cves: updatedElems });
       return updatedElems
     });
   }
@@ -158,14 +163,14 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   const handleDeleteCve = idx => {
     setCves((prevCveList) => {
       const updatedElems = prevCveList.filter((_, index) => index !== idx);
-      onFormUpdated({ cves: updatedElems });
+      handleProductVulnRequestChange({ cves: updatedElems });
       return updatedElems
     });
   }
 
   const handleSbomTypeChange = (_, type) => {
     setSbomType(type);
-    onFormUpdated({ sbomType: type });
+    handleProductVulnRequestChange({ sbomType: type });
   }
 
   const handleProductSbomParsing = sbom => {
@@ -256,7 +261,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
     fileReader.readAsText(file, "UTF-8");
     fileReader.onload = e => {
       const loadedSbom = JSON.parse(e.target.result)
-      setProdSbom(loadedSbom);
       setFilename(file.name);
       handleProductSbomParsing(loadedSbom);
     }
@@ -271,7 +275,6 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
   };
 
   const handleClear = () => {
-    setProdSbom({});
     setFilename('');
     setOciComponents([]);
     setRpmComponents([]);
@@ -292,13 +295,14 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       ? prodId 
       : `${defaultProdId}:${submissionTimestamp.replace(/[:.]/g, '-')}`;
     
-    const prodIdEntry = { name: 'product_id', value: finalProductId };
-    const timestampEntry = { name: 'product_submitted_at', value: submissionTimestamp };
-    const updatedMetadata = [...metadata, prodIdEntry, timestampEntry];
-    setMetadata(updatedMetadata);
-
-    const update = { metadata: updatedMetadata };
-    const updated = handleVulnRequestChange(update);
+    const updated = {
+      ...productVulnRequest,
+      metadata: [
+        ...metadata,
+        { name: 'product_id', value: finalProductId },
+        { name: 'product_submitted_at', value: submissionTimestamp }
+      ]
+    };
 
     const failures = await generateMorpheusRequest(selectedComponents, updated);
   
@@ -309,20 +313,9 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       onNewAlert('success', 'Analysis request sent to Morpheus');
     }
 
-    setProdId('');
     setCanSubmit(true);
+    validateProductId(prodId);
   }
-
-
-  const onFormUpdated = update => {
-    if (!update) {
-      setFormData({});
-      return;
-    }
-  
-    const updated = handleVulnRequestChange(update);
-    setFormData(updated);
-  };
 
   const columnNames = [
     { key: 'image', label: 'Component' },
@@ -475,7 +468,7 @@ export const ProductScanForm = ({ handleVulnRequestChange, onNewAlert }) => {
       </FormSelect>
     </FormGroup>
     <FormGroup label="SBOM" isRequired fieldId="sbom-file">
-      <FileUpload id="sbom-file" value={prodSbom}
+      <FileUpload id="sbom-file"
         filename={filename}
         onReadStarted={handleFileReadStarted}
         onReadFinished={handleFileReadFinished}
