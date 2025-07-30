@@ -298,6 +298,10 @@ public class ReportRepositoryService {
     String[] productCompletedAt = {null};
     String[] productName = {null};
     String[] productVersion = {null};
+    int[] productSubmittedCount = {0};
+    int productScannedCount = (int) getCollection().countDocuments(productFilter);
+    int[] productFailedCount = {0};
+    int[] productCompletedCount = {0};
     Set<String> productStates = new HashSet<>();
     String productState = "unknown";
 
@@ -335,6 +339,13 @@ public class ReportRepositoryService {
           }
         }
 
+        if (productSubmittedCount[0] == 0) {
+          String submittedCount = metadata.get("product_submitted_count");
+          if (submittedCount != null && !submittedCount.isEmpty()) {
+            productSubmittedCount[0] = Integer.parseInt(submittedCount);
+          }
+        }
+        
         String reportStatus = getStatus(doc, metadata);
         productStates.add(reportStatus);
 
@@ -383,7 +394,22 @@ public class ReportRepositoryService {
       productState = "completed";
     }
 
-    return new ProductReportSummary(productId, productName[0], productVersion[0], productSubmittedAt[0], productCompletedAt[0], productState, cveSet);
+    productCompletedCount[0] = (int) productStates.stream().filter(state -> "completed".equalsIgnoreCase(state)).count();
+    productFailedCount[0] = (int) productStates.stream().filter(state -> "failed".equalsIgnoreCase(state)).count();
+
+    return new ProductReportSummary(
+      productId, 
+      productName[0], 
+      productVersion[0], 
+      productSubmittedAt[0], 
+      productCompletedAt[0], 
+      productSubmittedCount[0], 
+      productScannedCount, 
+      productFailedCount[0], 
+      productCompletedCount[0], 
+      productState, 
+      cveSet
+    );
   }
 
   private String getProductId(String reportId) {

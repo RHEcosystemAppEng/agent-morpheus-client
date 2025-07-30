@@ -306,7 +306,8 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
         { name: 'product_id', value: finalProductId },
         { name: 'product_name', value: prodName },
         { name: 'product_version', value: prodVersion },
-        { name: 'product_submitted_at', value: submissionTimestamp }
+        { name: 'product_submitted_at', value: submissionTimestamp },
+        { name: 'product_submitted_count', value: selectedComponents.length }
       ]
     };
 

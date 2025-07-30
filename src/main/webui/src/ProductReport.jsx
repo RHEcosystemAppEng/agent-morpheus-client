@@ -89,13 +89,13 @@ export default function ProductReport() {
       ) : null}
       <DescriptionList isHorizontal isCompact>
         <DescriptionListGroup>
-          <DescriptionListTerm>Submitted</DescriptionListTerm>
+          <DescriptionListTerm>Submitted At</DescriptionListTerm>
           <DescriptionListDescription>
             {productData?.submittedAt || null}
           </DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
-          <DescriptionListTerm>Completed</DescriptionListTerm>
+          <DescriptionListTerm>Completed At</DescriptionListTerm>
           <DescriptionListDescription>
             {productData?.completedAt || "-"}
           </DescriptionListDescription>
@@ -124,6 +124,25 @@ export default function ProductReport() {
                 })}
               </Flex>
             ) : null}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+          <DescriptionListTerm>Stats</DescriptionListTerm>
+          <DescriptionListDescription>
+            <Flex>
+              <div style={{ color: 'dodgerblue' }}>
+                <strong>Submitted:</strong> {productData?.submittedCount || 0}
+              </div>
+              <div style={{ color: 'orange' }}>
+                <strong>Scanned:</strong> {productData?.scannedCount || 0}
+              </div>
+              <div style={{ color: 'tomato' }}>
+                <strong>Failed:</strong> {productData?.failedCount || 0}
+              </div>
+              <div style={{ color: 'forestgreen' }}>
+                <strong>Completed:</strong> {productData?.completedCount || 0}
+              </div>
+            </Flex>
           </DescriptionListDescription>
         </DescriptionListGroup>
       </DescriptionList>

@@ -13,6 +13,10 @@ public record ProductReportSummary(
     String productVersion,
     String submittedAt,
     String completedAt,
+    int submittedCount,
+    int scannedCount,
+    int failedCount,
+    int completedCount,
     String state,
     Map<String, Set<Justification>> cves) {
 
