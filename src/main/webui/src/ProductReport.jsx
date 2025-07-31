@@ -7,6 +7,7 @@ import { ConfirmationButton } from "./components/ConfirmationButton";
 import ReportsTable from "./components/ReportsTable";
 import JustificationBanner from "./components/JustificationBanner";
 import { StatusLabel } from "./components/StatusLabel";
+import ComponentStatesPieChart from "./components/ComponentPieChart";
 
 export default function ProductReport() {
 
@@ -81,11 +82,11 @@ export default function ProductReport() {
 
 
     return <Grid hasGutter>
-      <Content component="h1">{params.id}</Content>
+      <Title headingLevel="h1">{params.id}</Title>
       {productData ? (
-        <Title headingLevel="h2" size="lg">
+        <div>
           <StatusLabel type={productData.state} size="large" />
-        </Title>
+        </div>
       ) : null}
       <DescriptionList isHorizontal isCompact>
         <DescriptionListGroup>
@@ -126,26 +127,15 @@ export default function ProductReport() {
             ) : null}
           </DescriptionListDescription>
         </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Stats</DescriptionListTerm>
-          <DescriptionListDescription>
-            <Flex>
-              <div style={{ color: 'dodgerblue' }}>
-                <strong>Submitted:</strong> {productData?.submittedCount || 0}
-              </div>
-              <div style={{ color: 'orange' }}>
-                <strong>Scanned:</strong> {productData?.scannedCount || 0}
-              </div>
-              <div style={{ color: 'tomato' }}>
-                <strong>Failed:</strong> {productData?.failedCount || 0}
-              </div>
-              <div style={{ color: 'forestgreen' }}>
-                <strong>Completed:</strong> {productData?.completedCount || 0}
-              </div>
-            </Flex>
-          </DescriptionListDescription>
-        </DescriptionListGroup>
       </DescriptionList>
+
+      <div>
+        <Title headingLevel="h2">State Distribution</Title>
+        <ComponentStatesPieChart 
+          componentStates={productData?.componentStates} 
+          submittedCount={productData?.submittedCount}
+        />
+      </div>
 
       <div>
         <ReportsTable

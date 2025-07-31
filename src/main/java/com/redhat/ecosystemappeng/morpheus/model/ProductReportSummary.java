@@ -1,5 +1,6 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
+import java.util.List;
 import java.util.Set;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ public record ProductReportSummary(
     String productVersion,
     String submittedAt,
     String completedAt,
+    List<String> componentStates,
     int submittedCount,
     int scannedCount,
     int failedCount,

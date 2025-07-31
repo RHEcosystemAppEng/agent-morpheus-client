@@ -302,7 +302,7 @@ public class ReportRepositoryService {
     int productScannedCount = (int) getCollection().countDocuments(productFilter);
     int[] productFailedCount = {0};
     int[] productCompletedCount = {0};
-    Set<String> productStates = new HashSet<>();
+    List<String> ComponentStates = new ArrayList<>();
     String productState = "unknown";
 
     getCollection()
@@ -347,7 +347,7 @@ public class ReportRepositoryService {
         }
         
         String reportStatus = getStatus(doc, metadata);
-        productStates.add(reportStatus);
+        ComponentStates.add(reportStatus);
 
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
@@ -388,14 +388,14 @@ public class ReportRepositoryService {
         }
       });
 
-    if (productStates.contains("pending") || productStates.contains("queued") || productStates.contains("sent")) {
+    if (ComponentStates.contains("pending") || ComponentStates.contains("queued") || ComponentStates.contains("sent")) {
       productState = "analysing";
     } else {
       productState = "completed";
     }
 
-    productCompletedCount[0] = (int) productStates.stream().filter(state -> "completed".equalsIgnoreCase(state)).count();
-    productFailedCount[0] = (int) productStates.stream().filter(state -> "failed".equalsIgnoreCase(state)).count();
+    productCompletedCount[0] = (int) ComponentStates.stream().filter(state -> "completed".equalsIgnoreCase(state)).count();
+    productFailedCount[0] = (int) ComponentStates.stream().filter(state -> "failed".equalsIgnoreCase(state)).count();
 
     return new ProductReportSummary(
       productId, 
@@ -403,6 +403,7 @@ public class ReportRepositoryService {
       productVersion[0], 
       productSubmittedAt[0], 
       productCompletedAt[0], 
+      ComponentStates,
       productSubmittedCount[0], 
       productScannedCount, 
       productFailedCount[0], 
