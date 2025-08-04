@@ -1,6 +1,7 @@
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
-import { deleteProductReport, getProduct } from "./services/ProductReportClient";
-import { Breadcrumb, BreadcrumbItem, Button, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Skeleton, Content, getUniqueId, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title } from "@patternfly/react-core";
+import { deleteProductReport, getProduct, getFailedComponents } from "./services/ProductReportClient";
+import { Breadcrumb, BreadcrumbItem, Button, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Skeleton, Content, getUniqueId, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title, TextInput, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
+import { Table, Thead, Tbody, Tr, Th, Td } from "@patternfly/react-table";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { ConfirmationButton } from "./components/ConfirmationButton";
@@ -20,7 +21,9 @@ export default function ProductReport() {
   const [productData, setProductData] = React.useState(passedProductData || null);
   const [errorReport, setErrorReport] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(!passedProductData);
-
+  const [submissionFailures, setSubmissionFailures] = React.useState([]);
+  const [errorSubmissionFailures, setErrorSubmissionFailures] = React.useState({});
+  const [errorMessageFilter, setErrorMessageFilter] = React.useState('');
 
   React.useEffect(() => {
     if (!passedProductData) {
@@ -36,6 +39,16 @@ export default function ProductReport() {
     } else {
       setIsLoading(false);
     }
+  }, []);
+
+  React.useEffect(() => {
+    getFailedComponents(params.id)
+      .then(failures => {
+        setSubmissionFailures(failures);
+      })
+      .catch(e => {
+        setErrorSubmissionFailures(e);
+      });
   }, []);
 
   const onDelete = () => {
@@ -80,6 +93,59 @@ export default function ProductReport() {
     //   </>;
     // }
 
+    const submissionFailuresColumnNames = [
+      { key: 'image', label: 'Image' },
+      { key: 'error', label: 'Error' }
+    ];
+  
+    const emptySubmissionFailuresTable = () => {
+      return <EmptyState>
+        <EmptyStateBody>
+          No component submission failures found for this product.
+        </EmptyStateBody>
+      </EmptyState>;
+    };
+
+    const errorSubmissionFailuresTable = () => {
+      return <EmptyState>
+        <EmptyStateBody>
+          {errorSubmissionFailures.status}: {errorSubmissionFailures.message}
+        </EmptyStateBody>
+      </EmptyState>;
+    }
+
+    const submissionFailuresTable = () => {
+      const filteredFailures = submissionFailures.filter(failure => 
+        failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
+      );
+      
+      return filteredFailures.map((failure, index) => {
+        return <Tr key={failure.image} style={{ borderBottom: 'none' }}>
+          <Td dataLabel={submissionFailuresColumnNames[0].label} modifier="nowrap">{failure.image}</Td>
+          <Td dataLabel={submissionFailuresColumnNames[1].label} modifier="nowrap">
+            <span
+            title={failure.error}
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '400px',
+              display: 'inline-block',
+              verticalAlign: 'bottom',
+            }}
+            >
+              {failure.error}
+            </span>
+          </Td>
+        </Tr>
+      });
+    }
+
+    const getFilteredSubmissionFailuresCount = () => {
+      return submissionFailures.filter(failure => 
+        failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
+      ).length;
+    }
 
     return <Grid hasGutter>
       <Title headingLevel="h1">{params.id}</Title>
@@ -138,6 +204,7 @@ export default function ProductReport() {
       </div>
 
       <div>
+        <Title headingLevel="h2" style={{ marginBottom: '20px' }}>Product Components - Submitted and Scanned</Title>
         <ReportsTable
           initSearchParams={
             (() => {
@@ -147,6 +214,59 @@ export default function ProductReport() {
             })()
           }
         />
+      </div>
+
+      <div style={{ marginTop: '24px' }}>
+        <Title headingLevel="h2">Product Components - Failed to Submit</Title>
+        {submissionFailures.length > 0 ? (
+          <>
+            <Toolbar>
+              <ToolbarContent>
+                <ToolbarItem alignment={{ default: 'alignRight' }} variant="pagination" style={{ marginRight: '70px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                    {errorMessageFilter && (
+                      <Button 
+                        variant="link" 
+                        onClick={() => setErrorMessageFilter('')}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                    <TextInput
+                      type="text"
+                      id="error-message-filter"
+                      placeholder="Filter by error message..."
+                      value={errorMessageFilter}
+                      onChange={(_event, value) => setErrorMessageFilter(value)}
+                      style={{ minWidth: '400px' }}
+                    />
+                  </div>
+                </ToolbarItem>
+              </ToolbarContent>
+            </Toolbar>
+            {getFilteredSubmissionFailuresCount() > 0 ? (
+              <Table>
+                <Thead>
+                  <Tr>
+                    <Th>{submissionFailuresColumnNames[0].label}</Th>
+                    <Th>{submissionFailuresColumnNames[1].label}</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {submissionFailuresTable()}
+                </Tbody>
+              </Table>
+            ) : (
+              <EmptyState>
+                <EmptyStateBody>
+                  No submission failures match the current filter.
+                </EmptyStateBody>
+              </EmptyState>
+            )}
+          </>
+        ) : errorSubmissionFailures.status !== undefined ? (
+          errorSubmissionFailuresTable()
+        ) : emptySubmissionFailuresTable()}
       </div>
 
       <GridItem>

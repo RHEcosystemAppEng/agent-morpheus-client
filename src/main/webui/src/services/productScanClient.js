@@ -41,7 +41,36 @@ const parseReferenceParams = ref => {
 
 const parseImageFromReference = ref => {
 	const {repositoryUrl, tag} = parseReferenceParams(ref);
-	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
+	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : ref;
+};
+
+export const buildFailedComponentJson = (failures, productId) => {
+	return failures.map(failure => ({
+		productId: productId,
+		image: failure.image,
+		error: failure.error
+	}));
+}
+  
+
+const saveFailedComponents = async (failures, compFormData) => {
+	if (failures.length > 0 && compFormData.metadata) {
+		const productId = compFormData.metadata.find(m => m.name === 'product_id');
+		if (productId) {
+			try {
+				await fetch('/submission-failures', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(buildFailedComponentJson(failures, productId.value))
+				});
+				console.log(`Saved ${failures.length} component failures to database`);
+			} catch (error) {
+				console.error('Failed to save component failures to database:', error);
+			}
+		}
+	}
 };  
 
 const generateComponentSbom = async ref => {
@@ -109,8 +138,9 @@ const lookupCachedComponent = async ref => {
 };
 
 export const generateMorpheusRequest = async (components, formData) => {
+	const compFormData = { ...formData };
+		
 	const tasks = components.map(async (comp) => {
-		const compFormData = { ...formData };
 
 		try {
 			const image = await lookupCachedComponent(comp.ref);
@@ -150,31 +180,26 @@ export const generateMorpheusRequest = async (components, formData) => {
 		if (value.payload) {
 			payloads.push(value.payload);
 		} else {
-			failures.push({ ref: value.ref, error: value.error });
+			failures.push({ image: parseImageFromReference(value.ref), error: value.error });
 		}
 	}
+	
+	console.log(
+		`${failures.length} out of ${components.length} components failed, and ${payloads.length} sent to Agent Morpheus for analysis`
+	);
+
+	await saveFailedComponents(failures, compFormData);
 
 	if(payloads.length) {
 		const res = await preProcessMorpheusRequests(payloads);
 		
 		if (res.status >= 300) {
 			failures.push({
-				ref: 'pre-processing',
+				image: 'pre-processing',
 				error: `Component Syncer failed with error status: ${res.status}`
 			});
 		}
 	}
 
-	const preProcessingFailure = failures.find(f => f.ref === 'pre-processing');
-	if (preProcessingFailure) {
-		console.log(
-			`${failures.length - 1} out of ${components.length} components failed, and none have been sent to Agent Morpheus for analysis due to Component Syncer failure`
-		);
-	} else {
-		console.log(
-			`${failures.length} out of ${components.length} components failed, and ${payloads.length} sent to Agent Morpheus for analysis`
-		);
-	}
-	
 	return failures;
 }

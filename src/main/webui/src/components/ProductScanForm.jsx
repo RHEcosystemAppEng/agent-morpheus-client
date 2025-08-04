@@ -17,8 +17,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
   const [metadata, setMetadata] = React.useState(productVulnRequest['metadata'] || [{}]);
   const [sbomType, setSbomType] = React.useState(productVulnRequest['sbomType'] || 'manual');
   const [ociComponents, setOciComponents] = React.useState([]);
-  const [rpmComponents, setRpmComponents] = React.useState([]);
-  const [noneComponents, setNoneComponents] = React.useState([]);
   const [totComponents, setTotComponents] = React.useState(0);
   const [filename, setFilename] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -183,7 +181,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       const relationships = sbom.relationships || [];
       const packages = sbom.packages || [];
 
-      // Step 1: Find the "DESCRIBES" relationship for the main document
       const describesRel = relationships.find(rel =>
         rel.relationshipType === "DESCRIBES" && rel.spdxElementId === spdxId
       );
@@ -204,17 +201,13 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       setProdVersion(prodVersion);
       setDefaultProdId([prodName, prodVersion].join(':'));
   
-      // Step 2: Find all components related to the product with "PACKAGE_OF"
       const componentIds = relationships
         .filter(rel =>
           rel.relationshipType === "PACKAGE_OF" && rel.relatedSpdxElement === productSpdxId
         )
         .map(rel => rel.spdxElementId);
 
-      // Step 3: Resolve componentIds into package objects and extract required fields
-      const rpmComps = [];
       const ociComps = [];
-      const noneComps = [];
 
       setTotComponents(componentIds.length);
 
@@ -234,27 +227,12 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
         const reference = purlRef ? purlRef.referenceLocator : "";
         const component = { name, version, reference };
 
-        if (reference.startsWith("pkg:rpm")) {
-          rpmComps.push(component);
-        } else if (
-          reference.startsWith("pkg:oci") &&
-          reference.includes("repository_url=registry.redhat.io/openshift4/")
-        ) {
+        if (reference.startsWith("pkg:oci")) {
           ociComps.push(component);
-        } else if (
-          reference.startsWith("pkg:oci") &&
-          reference.includes("repository_url=registry.redhat.io/openshift/")
-        ) {
-          noneComps.push(component);
-        // } else {
-        //   noneComps.push(component); // temp includes pkg:oci + repository_url=registry.redhat.io/openshift/ filter instead of no match
         }
       });
   
-      // Step 4: Set components
       setOciComponents(ociComps);
-      setRpmComponents(rpmComps);
-      setNoneComponents(noneComps);
     } catch (error) {
       console.error("Failed to parse SBOM:", error);
     }
@@ -281,8 +259,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
   const handleClear = () => {
     setFilename('');
     setOciComponents([]);
-    setRpmComponents([]);
-    setNoneComponents([]);
     setTotComponents(0);
     setSelectedComponents([]);
     setSelectAll(false);
@@ -486,6 +462,12 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
         browseButtonText="Upload" />
     </FormGroup>
     <FormGroup label="Components" fieldId="components">
+      {totComponents > 0 && (
+        <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '4px', fontSize: '14px', color: '#856404' }}>
+          <strong>Important:</strong> Product Scanning currently supports OCI type packages only. 
+          Out of {totComponents} total components, {ociComponents.length} are eligible for scanning.
+        </div>
+      )}
       <Table style={{ border: '1px solid #ccc' }}>
         <Thead>
           {ociComponents.length === 0 ? null : componentHeaders()}
@@ -494,12 +476,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
           {ociComponents.length === 0 ? emptyTable() : componentsTable()}
         </Tbody>
       </Table>
-      <div style={{ color: 'red' }}>
-        <div>Total Component Count: {totComponents}</div>
-        <div>RPM Component Count: {rpmComponents.length}</div>
-        <div>OCI Component (OCP) Count: {noneComponents.length}</div>
-        <div>OCI Component (OCP4) Count: {ociComponents.length}</div>
-      </div>
     </FormGroup>
     <ActionGroup>
       <Button variant="primary" isDisabled={!canSubmit} onClick={onSubmitForm}>Submit</Button>

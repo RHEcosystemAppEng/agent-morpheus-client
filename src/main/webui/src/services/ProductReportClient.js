@@ -48,3 +48,15 @@ export const getProduct = async (productId) => {
   return await response.json();
 
 };
+
+export const getFailedComponents = async (productId) => {
+  const response = await fetch(`/submission-failures/${productId}`, {
+    headers: {
+      'Accept': 'application/json'
+    } 
+  });
+  if (!response.ok) {
+    throw new ClientRequestError(response.status, response.statusText);
+  }
+  return await response.json();
+};

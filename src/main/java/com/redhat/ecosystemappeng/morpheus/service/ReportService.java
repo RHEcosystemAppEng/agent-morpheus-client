@@ -158,7 +158,7 @@ public class ReportService {
   }
 
   public boolean remove(Collection<String> ids) {
-    LOGGER.debugf("Remove reports %s", ids);
+    LOGGER.debugf("Remove reports %s", ids.toString());
     queueService.deleted(ids);
     return repository.remove(ids);
   }

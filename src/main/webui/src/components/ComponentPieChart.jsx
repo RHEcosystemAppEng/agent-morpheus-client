@@ -97,7 +97,7 @@ const ComponentStatesPieChart = ({ componentStates = [], submittedCount = 0 }) =
         ariaTitle="Component States Distribution"
         constrainToVisibleArea={true}
         data={chartData}
-        height={230}
+        height={250}
         width={550}
         labels={({ datum }) => `${datum.x}: ${datum.y} (${Math.round((datum.y / total) * 100)}%)`}
         legendData={legendData}
