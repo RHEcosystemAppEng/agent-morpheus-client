@@ -5,7 +5,6 @@ import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-
 import { newMorpheusRequest, sbomTypes } from "../services/FormUtilsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
-  const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
   const [metadata, setMetadata] = React.useState(vulnRequest['metadata'] || []);
@@ -13,11 +12,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
   const [isLoading, setIsLoading] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
-
-  const handleIdChange = (_, id) => {
-    setId(id);
-    onFormUpdated({ id: id })
-  };
 
   const handleMetadataChange = (idx, field, newValue) => {
     const updatedMetadata = [...metadata];
@@ -151,9 +145,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   }
 
   return <Form isHorizontal>
-    <FormGroup label="Request ID" fieldId="req-id">
-      <TextInput type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated" autoComplete="off"></TextInput>
-    </FormGroup>
     <FormSection title="Metadata">
       {metadata.map((m, idx) => {
         return <div key={`metadata_${idx}_pair`}>

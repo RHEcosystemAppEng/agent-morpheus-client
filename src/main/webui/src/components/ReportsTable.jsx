@@ -162,7 +162,7 @@ export default function ReportsTable({ initSearchParams }) {
   };
 
   const columnNames = [
-    { key: 'name', label: 'ID' },
+    { key: 'id', label: 'Info' },
     { key: 'imageName', label: 'Image' },
     { key: 'imageTag', label: 'Tag' },
     { key: 'vulns', label: 'CVEs' },
@@ -173,7 +173,7 @@ export default function ReportsTable({ initSearchParams }) {
 
   const emptyTable = () => {
     return <Tr>
-      <Td colSpan={6}>
+      <Td colSpan={columnNames.length}>
         <Bullseye>
           <EmptyState headingLevel="h2" icon={SearchIcon} titleText="No reports found" variant={EmptyStateVariant.sm}>
           </EmptyState>
@@ -199,19 +199,16 @@ export default function ReportsTable({ initSearchParams }) {
           isOutsideDropdown: true
         }
       ];
-      return <Tr key={r.id}>
+      return <Tr key={r.id} >
         <Td select={{
           rowIndex,
           onSelect: (_event, isSelecting) => onSelectItem(r.id, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <Flex spaceItems={{ default: 'spaceItemsXs' }} alignItems={{ default: 'alignItemsCenter' }}>
-            <Link to={`/reports/${r.id}`} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
-              <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
-              <span style={{ marginLeft: '4px' }}>{r.name}</span>
-            </Link>
-          </Flex>
+          <Link to={`/reports/${r.id}`} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
+            <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
+          </Link>
         </Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap"><Link to={`/reports?imageName=${r.imageName}`}>{r.imageName}</Link></Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap"><Link to={`/reports?imageTag=${r.imageTag}`}>{r.imageTag}</Link></Td>
@@ -276,7 +273,7 @@ export default function ReportsTable({ initSearchParams }) {
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={20}>{columnNames[0].label}</Th>
+          <Th width={5}>{columnNames[0].label}</Th>
           <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
           <Th width={20} sort={getSortParams(2)}>{columnNames[2].label}</Th>
           <Th width={10}>{columnNames[3].label}</Th>

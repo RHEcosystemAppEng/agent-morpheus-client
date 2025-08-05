@@ -9,10 +9,9 @@ import { generateMorpheusRequest } from "../services/productScanClient";
 import { listProducts } from "../services/ProductReportClient";
 
 export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestChange, onNewAlert }) => {
-  const [prodId, setProdId] = React.useState(productVulnRequest['prodId'] || '');
   const [prodName, setProdName] = React.useState('');
   const [prodVersion, setProdVersion] = React.useState('');
-  const [defaultProdId, setDefaultProdId] = React.useState('');
+  const [prodId, setProdId] = React.useState('');
   const [cves, setCves] = React.useState(productVulnRequest['cves'] || [{}]);
   const [metadata, setMetadata] = React.useState(productVulnRequest['metadata'] || [{}]);
   const [sbomType, setSbomType] = React.useState(productVulnRequest['sbomType'] || 'manual');
@@ -23,19 +22,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
   const [canSubmit, setCanSubmit] = React.useState(false);
   const [selectedComponents, setSelectedComponents] = React.useState([]);
   const [selectAll, setSelectAll] = React.useState(true);
-  const [prodIdError, setProdIdError] = React.useState('');
-  const [isValidatingProdId, setIsValidatingProdId] = React.useState(false);
-
-  React.useEffect(() => {
-    clearTimeout(window.prodIdValidationTimeout);
-    if (prodId && prodId.trim() !== '') {
-      window.prodIdValidationTimeout = setTimeout(() => {
-        validateProductId(prodId);
-      }, 1000);
-    } else {
-      setProdIdError('');
-    }
-  }, [prodId]);
 
   React.useEffect(() => {
     if (ociComponents.length > 0) {
@@ -53,11 +39,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
 
   React.useEffect(() => {
     const updated = productVulnRequest;
-
-    if (prodIdError) {
-      setCanSubmit(false);
-      return;
-    }
 
     const updatedCves = updated['cves'];
     if (!updatedCves || updatedCves.length === 0) {
@@ -86,36 +67,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
     }
 
     setCanSubmit(true);
-  }, [productVulnRequest, selectedComponents, prodIdError]);
-
-  const validateProductId = async (id) => {
-    if (!id || id.trim() === '') {
-      setProdIdError('');
-      return;
-    }
-
-    setIsValidatingProdId(true);
-    try {
-      const products = await listProducts();
-      const exists = products.some(product => product.id === id.trim());
-      
-      if (exists) {
-        setProdIdError('This product ID already exists. Please choose a different ID.');
-      } else {
-        setProdIdError('');
-      }
-    } catch (error) {
-      console.error('Error validating product ID:', error);
-      setProdIdError('Unable to validate product ID. Please try again.');
-    } finally {
-      setIsValidatingProdId(false);
-    }
-  };
-
-  const handleProdIdChange = (_, id) => {
-    setProdId(id);
-    handleProductVulnRequestChange({ prodId: id });
-  };
+  }, [productVulnRequest, selectedComponents]); 
 
   const handleMetadataChange = (idx, field, newValue) => {
     const updatedMetadata = [...metadata];
@@ -199,7 +151,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       
       setProdName(prodName);
       setProdVersion(prodVersion);
-      setDefaultProdId([prodName, prodVersion].join(':'));
+      setProdId([prodName, prodVersion].join(':'));
   
       const componentIds = relationships
         .filter(rel =>
@@ -271,9 +223,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
 
     const submissionTimestamp = new Date().toISOString();
     
-    const finalProductId = prodId 
-      ? prodId 
-      : `${defaultProdId}:${submissionTimestamp.replace(/[:.]/g, '-')}`;
+    const finalProductId = `${prodId}:${submissionTimestamp.replace(/[:.]/g, '-')}`;
     
     const updated = {
       ...productVulnRequest,
@@ -297,7 +247,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
     }
 
     setCanSubmit(true);
-    validateProductId(prodId);
   }
 
   const columnNames = [
@@ -379,19 +328,6 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
   };
 
   return <Form isHorizontal>
-    <FormGroup label="Request ID" fieldId="req-id">
-      <TextInput 
-        type="text" 
-        id="req-id" 
-        value={prodId} 
-        onChange={handleProdIdChange} 
-        placeholder="Leave blank and will be generated" 
-        autoComplete="off"
-        validated={prodIdError ? ValidatedOptions.error : ValidatedOptions.default}
-      />
-      {isValidatingProdId && <div style={{color: '#6a6e73', fontSize: '14px', marginTop: '4px'}}>Validating...</div>}
-      {prodIdError && <div style={{color: '#c9190b', fontSize: '14px', marginTop: '4px'}}>{prodIdError}</div>}
-    </FormGroup>
     <FormSection title="Metadata">
       {metadata.map((m, idx) => {
         return <div key={`metadata_${idx}_pair`}>

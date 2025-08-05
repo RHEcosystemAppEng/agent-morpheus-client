@@ -110,7 +110,7 @@ export default function ProductReportsTable() {
   }
 
   const columnNames = [
-    { key: 'name', label: 'ID' },
+    { key: 'id', label: 'info' },
     { key: 'productName', label: 'Product' },
     { key: 'productVersion', label: 'Version' },
     { key: 'vulns', label: 'CVEs' },
@@ -149,12 +149,9 @@ export default function ProductReportsTable() {
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <Flex spaceItems={{ default: 'spaceItemsXs' }} alignItems={{ default: 'alignItemsCenter' }}>
-            <Link to={`/product-reports/${p.id}`} state={{ productData: p }} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
-              <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
-              <span style={{ marginLeft: '4px' }}>{p.id}</span>
-            </Link>
-          </Flex>
+          <Link to={`/product-reports/${p.id}`} state={{ productData: p }} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
+            <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
+          </Link>
         </Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">{p.productName}</Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.productVersion}</Td>
@@ -211,7 +208,7 @@ export default function ProductReportsTable() {
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={20}>{columnNames[0].label}</Th>
+          <Th width={5}>{columnNames[0].label}</Th>
           <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
           <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
           <Th width={10}>{columnNames[3].label}</Th>
