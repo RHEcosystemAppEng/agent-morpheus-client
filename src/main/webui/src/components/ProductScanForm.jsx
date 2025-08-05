@@ -55,7 +55,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
 
     const metadata = updated['metadata'] || [];
     for (let pair of metadata) {
-      if (!pair.name || pair.name.trim() === '' || !pair.value || pair.value.trim() === '') {
+            if (!pair.name || pair.name.trim() === '' || !pair.value || pair.value.trim() === '') {
         setCanSubmit(false);
         return;
       }
@@ -251,7 +251,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
 
   const columnNames = [
     { key: 'image', label: 'Component' },
-    { key: 'version', label: 'Version' },
+    { key: 'tag', label: 'Version' },
   ];
   
   const emptyTable = () => {
@@ -281,7 +281,7 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       return <Tr key={r.reference}>
         <Td select={{
           rowIndex,
-          onSelect: (_event, isSelecting) => onSelectItem(r.reference, rowIndex, isSelecting),
+          onSelect: (_event, isSelecting) => onSelectItem(r.reference, r.name, r.version, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">{r.name}</Td>
@@ -296,6 +296,8 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
     if (isSelecting) {
       const allSelected = ociComponents.map((r, i) => ({
         idx: i,
+        name: r.name,
+        version: r.version,
         ref: r.reference,
       }));
       setSelectedComponents(allSelected);
@@ -304,11 +306,11 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
     }
   };
 
-  const onSelectItem = (ref, rowIndex, isSelecting) => {
+  const onSelectItem = (ref, name, version, rowIndex, isSelecting) => {
     const idx = selectedComponents.findIndex((e) => e.idx === rowIndex);
   
     if (isSelecting && idx === -1) {
-      setSelectedComponents([...selectedComponents, { idx: rowIndex, ref: ref }]);
+      setSelectedComponents([...selectedComponents, { idx: rowIndex, ref: ref, name: name, version: version }]);
     } else if (!isSelecting && idx !== -1) {
       const newItems = selectedComponents.filter((item) => item.idx !== rowIndex);
       setSelectedComponents(newItems);

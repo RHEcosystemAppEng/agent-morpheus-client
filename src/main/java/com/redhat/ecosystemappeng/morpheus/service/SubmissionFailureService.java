@@ -22,7 +22,7 @@ public class SubmissionFailureService {
     LOGGER.debugf("Saving submission failures for product %s", productId);
 
     for (FailedComponent failure : request) {
-      repository.save(productId, failure.image(), failure.error());
+      repository.save(productId, failure.imageName(), failure.imageVersion(), failure.error());
     }
   }
 

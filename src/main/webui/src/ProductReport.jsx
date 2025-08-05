@@ -94,7 +94,8 @@ export default function ProductReport() {
     // }
 
     const submissionFailuresColumnNames = [
-      { key: 'image', label: 'Image' },
+      { key: 'image', label: 'Component' },
+      { key: 'tag', label: 'Version' },
       { key: 'error', label: 'Error' }
     ];
   
@@ -120,16 +121,17 @@ export default function ProductReport() {
       );
       
       return filteredFailures.map((failure, index) => {
-        return <Tr key={failure.image} style={{ borderBottom: 'none' }}>
-          <Td dataLabel={submissionFailuresColumnNames[0].label} modifier="nowrap">{failure.image}</Td>
-          <Td dataLabel={submissionFailuresColumnNames[1].label} modifier="nowrap">
+        return <Tr key={failure.imageName} style={{ borderBottom: 'none' }}>
+          <Td dataLabel={submissionFailuresColumnNames[0].label} modifier="nowrap">{failure.imageName}</Td>
+          <Td dataLabel={submissionFailuresColumnNames[1].label} modifier="nowrap">{failure.imageVersion}</Td>
+          <Td dataLabel={submissionFailuresColumnNames[2].label} modifier="nowrap">
             <span
             title={failure.error}
             style={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: '400px',
+              maxWidth: '1200px',
               display: 'inline-block',
               verticalAlign: 'bottom',
             }}
@@ -204,7 +206,7 @@ export default function ProductReport() {
       </div>
 
       <div>
-        <Title headingLevel="h2" style={{ marginBottom: '20px' }}>Product Components - Submitted and Scanned</Title>
+        <Title headingLevel="h2" style={{ marginBottom: '20px' }}>Product Components - Submitted and Sent for Scanning</Title>
         <ReportsTable
           initSearchParams={
             (() => {
@@ -220,7 +222,7 @@ export default function ProductReport() {
         <Title headingLevel="h2">Product Components - Failed to Submit</Title>
         {submissionFailures.length > 0 ? (
           <>
-            <Toolbar>
+            <Toolbar style={{ padding: 0 }}>
               <ToolbarContent>
                 <ToolbarItem alignment={{ default: 'alignRight' }} variant="pagination" style={{ marginRight: '70px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
@@ -238,7 +240,7 @@ export default function ProductReport() {
                       placeholder="Filter by error message..."
                       value={errorMessageFilter}
                       onChange={(_event, value) => setErrorMessageFilter(value)}
-                      style={{ minWidth: '400px' }}
+                      style={{ minWidth: '500px' }}
                     />
                   </div>
                 </ToolbarItem>
@@ -250,6 +252,7 @@ export default function ProductReport() {
                   <Tr>
                     <Th>{submissionFailuresColumnNames[0].label}</Th>
                     <Th>{submissionFailuresColumnNames[1].label}</Th>
+                    <Th>{submissionFailuresColumnNames[2].label}</Th>
                   </Tr>
                 </Thead>
                 <Tbody>

@@ -41,13 +41,14 @@ const parseReferenceParams = ref => {
 
 const parseImageFromReference = ref => {
 	const {repositoryUrl, tag} = parseReferenceParams(ref);
-	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : ref;
+	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
 };
 
 export const buildFailedComponentJson = (failures, productId) => {
 	return failures.map(failure => ({
 		productId: productId,
-		image: failure.image,
+		imageName: failure.imageName,
+		imageVersion: failure.imageVersion,
 		error: failure.error
 	}));
 }
@@ -102,9 +103,9 @@ const generateComponentSbom = async ref => {
 
 const lookupCachedComponent = async ref => {
 	let url = '/reports';
-	const {repositoryUrl: imageName, tag: imageTag} = parseReferenceParams(ref);
+	const {repositoryUrl, tag} = parseReferenceParams(ref);
 
-	const filterUrl = `${url}?imageName=${imageName}&imageTag=${imageTag}`
+	const filterUrl = `${url}?imageName=${repositoryUrl}&imageTag=${tag}`
 	const reportListResponse = await fetch(filterUrl, {
 		headers: {
 			'Accept': 'application/json'
@@ -152,7 +153,7 @@ export const generateMorpheusRequest = async (components, formData) => {
 				const sbom = await generateComponentSbom(comp.ref);
 				
 				if (sbom.error) {
-					return { ref: comp.ref, error: sbom.error };
+					return { component: comp, error: sbom.error };
 				}
 				
 				compFormData.sbom = sbom;
@@ -161,12 +162,12 @@ export const generateMorpheusRequest = async (components, formData) => {
 			const payload = await generateRequestPayload(compFormData);
 			
 			if (payload.error) {
-				return { ref: comp.ref, error: payload.error };
+				return { component: comp, error: payload.error };
 			}
 			
-			return { ref: comp.ref, payload };
+			return { payload };
 		} catch (err) {
-			return { ref: comp.ref, error: err.message || String(err) };
+			return { component: comp, error: err.message || String(err) };
 		}
 	});
 
@@ -180,7 +181,7 @@ export const generateMorpheusRequest = async (components, formData) => {
 		if (value.payload) {
 			payloads.push(value.payload);
 		} else {
-			failures.push({ image: parseImageFromReference(value.ref), error: value.error });
+			failures.push({imageName: value.component.name, imageVersion: value.component.version, error: value.error });
 		}
 	}
 	

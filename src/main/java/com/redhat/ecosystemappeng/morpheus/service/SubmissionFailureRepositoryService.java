@@ -26,7 +26,8 @@ public class SubmissionFailureRepositoryService {
 
   private static final String COLLECTION = "submission_failures";
   private static final String PRODUCT_ID = "product_id";
-  private static final String IMAGE = "image";
+  private static final String IMAGE_NAME = "image_name";
+  private static final String IMAGE_VERSION = "image_version";
   private static final String ERROR = "error";
 
   @Inject
@@ -42,10 +43,11 @@ public class SubmissionFailureRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  public void save(String productId, String image, String error) {
+  public void save(String productId, String imageName, String imageVersion, String error) {
     var doc = new Document()
         .append(PRODUCT_ID, productId)
-        .append(IMAGE, image)
+        .append(IMAGE_NAME, imageName)
+        .append(IMAGE_VERSION, imageVersion)
         .append(ERROR, error);
     getCollection().insertOne(doc);
   }
@@ -53,7 +55,7 @@ public class SubmissionFailureRepositoryService {
   public List<FailedComponent> get(String productId) {
     List<FailedComponent> failedComponents = new ArrayList<>();
     getCollection().find(Filters.eq(PRODUCT_ID, productId)).forEach(doc -> {
-      failedComponents.add(new FailedComponent(productId, doc.getString(IMAGE), doc.getString(ERROR)));
+      failedComponents.add(new FailedComponent(productId, doc.getString(IMAGE_NAME), doc.getString(IMAGE_VERSION), doc.getString(ERROR)));
     });
     return failedComponents;
   }
