@@ -301,7 +301,7 @@ public class ReportService {
 
     if(Objects.isNull(sourceLocationValue))
     {
-      throw new IllegalArgumentException("SBOM is missing required field: source-location");
+      throw new IllegalArgumentException("SBOM is missing required field: " + SOURCE_LOCATION_PROPERTY_GENERAL);
     }
 
     return sourceLocationValue;
@@ -316,7 +316,7 @@ public class ReportService {
 
     if(Objects.isNull(commitIdIdValue))
     {
-      throw new IllegalArgumentException("SBOM is missing required field: commit-id");
+      throw new IllegalArgumentException("SBOM is missing required field: " + COMMIT_ID_PROPERTY_GENERAL + " or " + COMMIT_ID_PROPERTY);
     }
 
     return commitIdIdValue;

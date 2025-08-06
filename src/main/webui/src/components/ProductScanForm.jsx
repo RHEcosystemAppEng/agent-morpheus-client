@@ -1,4 +1,5 @@
 import { Bullseye, EmptyState, EmptyStateVariant, ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormSection, FormSelect, FormSelectOption, TextInput, ValidatedOptions } from "@patternfly/react-core";
+import { Link } from "react-router-dom";
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
@@ -237,16 +238,16 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
       ]
     };
 
-    const failures = await generateMorpheusRequest(selectedComponents, updated);
-  
-    if (failures.length) {
-      onNewAlert('danger', 'Failures occurred while submitting request')
-      console.log("FAILURES", failures)
-    } else {
-      onNewAlert('success', 'Analysis request sent to Morpheus');
-    }
-
-    setCanSubmit(true);
+    generateMorpheusRequest(selectedComponents, updated)
+      .then(response => {
+        if (response.ok) {
+          onNewAlert('success', 'Product analysis request sent to Morpheus. For more information, please visit the ', <Link to={`/product-reports/${finalProductId}`}>Product Report</Link>);
+        } else {
+          response.json().then(json => onNewAlert('danger', `Unable to send request: Status code ${response.status} - ${json.error}. For more information, please visit the `, <Link to={`/product-reports/${finalProductId}`}>Product Report</Link>)); 
+        }
+      }).catch(error => {
+        onNewAlert('danger', `Unable to send request: ${error.message}`)
+      }).finally(() => setCanSubmit(true));
   }
 
   const columnNames = [

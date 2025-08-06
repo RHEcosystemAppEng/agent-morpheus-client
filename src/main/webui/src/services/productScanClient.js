@@ -189,18 +189,10 @@ export const generateMorpheusRequest = async (components, formData) => {
 		`${failures.length} out of ${components.length} components failed, and ${payloads.length} sent to Agent Morpheus for analysis`
 	);
 
-	await saveFailedComponents(failures, compFormData);
-
 	if(payloads.length) {
-		const res = await preProcessMorpheusRequests(payloads);
-		
-		if (res.status >= 300) {
-			failures.push({
-				image: 'pre-processing',
-				error: `Component Syncer failed with error status: ${res.status}`
-			});
-		}
+		await saveFailedComponents(failures, compFormData);
+		return await preProcessMorpheusRequests(payloads);	
+	} else {
+		throw new Error('No components eligible for analysis');
 	}
-
-	return failures;
 }
