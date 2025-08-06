@@ -250,8 +250,8 @@ public class ReportService {
     var allExcludes = languages.stream().map(excludes::get).filter(Objects::nonNull).flatMap(Collection::stream)
         .toList();
     var srcInfo = List.of(
-        new SourceInfo("git", "code", sourceLocation, commitId, allIncludes, allExcludes),
-        new SourceInfo("git", "doc", sourceLocation, commitId, includes.get("Docs"), Collections.emptyList()));
+        new SourceInfo("code", sourceLocation, commitId, allIncludes, allExcludes),
+        new SourceInfo("doc", sourceLocation, commitId, includes.get("Docs"), Collections.emptyList()));
     var sbomInfo = buildSbomInfo(request);
     return new Image(name, tag, srcInfo, sbomInfo);
   }

@@ -7,6 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public record SourceInfo(String type, @JsonProperty("source_type") String sourceType, @JsonProperty("git_repo") String gitRepo, String ref, Collection<String> include, Collection<String> exclude) {
+public record SourceInfo(String type, @JsonProperty("git_repo") String gitRepo, String ref, Collection<String> include, Collection<String> exclude) {
   
 }

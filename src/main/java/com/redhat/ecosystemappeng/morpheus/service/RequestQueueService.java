@@ -147,7 +147,7 @@ public class RequestQueueService {
 
   private void submit(String id, JsonNode report) {
     try {
-      morpheusService.submit(report.get("input").toPrettyString());
+      morpheusService.submitAsync(report.get("input").toPrettyString());
       repository.setAsSent(id);
       active.put(id, LocalDateTime.now());
       LOGGER.debugf("Report %s sent to Morpheus", id);

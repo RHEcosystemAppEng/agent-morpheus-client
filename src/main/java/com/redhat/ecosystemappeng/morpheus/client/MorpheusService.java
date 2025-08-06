@@ -8,10 +8,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.concurrent.CompletionStage;
+
 @RegisterRestClient(configKey = "morpheus")
 @Produces(MediaType.APPLICATION_JSON)
 public interface MorpheusService {
   
   @POST
-  Response submit(String request);
+  CompletionStage<Response> submitAsync(String request);
 }
