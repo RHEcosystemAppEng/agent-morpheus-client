@@ -5,14 +5,15 @@ import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
 import { RedoIcon } from '@patternfly/react-icons/dist/esm/icons/redo-icon';
-import { useOutletContext, useSearchParams, Link } from "react-router-dom";
+import { InfoCircleIcon } from '@patternfly/react-icons/dist/esm/icons/info-circle-icon';
+import { useOutletContext, useParams, useSearchParams, Link } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
 
-export default function ReportsTable() {
+export default function ReportsTable({ initSearchParams }) {
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams(initSearchParams);
 
   const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);
@@ -156,11 +157,14 @@ export default function ReportsTable() {
     expired: "Expired",
     failed: "Failed",
     queued: "Queued",
-    sent: "Sent"
+    sent: "Sent",
+    pending: "Pending"
   };
 
   const columnNames = [
-    { key: 'name', label: 'ID' },
+    { key: 'id', label: 'Info' },
+    { key: 'imageName', label: 'Image' },
+    { key: 'imageTag', label: 'Tag' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'completedAt', label: 'Completed At' },
     { key: 'submittedAt', label: 'Submitted At' },
@@ -169,7 +173,7 @@ export default function ReportsTable() {
 
   const emptyTable = () => {
     return <Tr>
-      <Td colSpan={6}>
+      <Td colSpan={columnNames.length}>
         <Bullseye>
           <EmptyState headingLevel="h2" icon={SearchIcon} titleText="No reports found" variant={EmptyStateVariant.sm}>
           </EmptyState>
@@ -195,22 +199,28 @@ export default function ReportsTable() {
           isOutsideDropdown: true
         }
       ];
-      return <Tr key={r.id}>
+      return <Tr key={r.id} >
         <Td select={{
           rowIndex,
           onSelect: (_event, isSelecting) => onSelectItem(r.id, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
-        <Td dataLabel={columnNames[0].label} modifier="nowrap"><Link to={`/reports/${r.id}`} >{r.name}</Link></Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap">{r.vulns.map(vuln => {
+        <Td dataLabel={columnNames[0].label} modifier="nowrap">
+          <Link to={`/reports/${r.id}`} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
+            <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
+          </Link>
+        </Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap"><Link to={`/reports?imageName=${r.imageName}`}>{r.imageName}</Link></Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap"><Link to={`/reports?imageTag=${r.imageTag}`}>{r.imageTag}</Link></Td>
+        <Td dataLabel={columnNames[3].label} modifier="nowrap">{r.vulns.map(vuln => {
           const uid = getUniqueId("div");
           return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`}>
           {vuln.vulnId} 
         </Link><JustificationBanner justification={vuln.justification} /></div>
         })}</Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
-        <Td dataLabel={columnNames[3].label} modifier="nowrap">{r.metadata?.submitted_at || '-'}</Td>
-        <Td dataLabel={columnNames[4].label}><StatusLabel type={r.state} /></Td>
+        <Td dataLabel={columnNames[4].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
+        <Td dataLabel={columnNames[5].label} modifier="nowrap">{r.metadata?.submitted_at || '-'}</Td>
+        <Td dataLabel={columnNames[6].label}><StatusLabel type={r.state} /></Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Tooltip content="Submit again the report to Morpheus">
@@ -245,7 +255,7 @@ export default function ReportsTable() {
               selected={statusSelected} isOpen={statusIsExpanded}>
                 {Object.keys(statusFilter).map((option, index) => <SelectOption key={index} value={option}>{statusFilter[option]}</SelectOption>)}
           </Select>
-          {filterLabels}
+          {useParams().id ? null : filterLabels}
         </ToolbarItem>
         <ToolbarItem>
           {showDeleteButton() ? <Button variant="danger" onClick={setModalOpen} aria-label="delete" icon={<TrashIcon />}>Delete</Button> : ""}
@@ -263,11 +273,13 @@ export default function ReportsTable() {
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={20} sort={getSortParams(0)}>{columnNames[0].label}</Th>
-          <Th width={10}>{columnNames[1].label}</Th>
-          <Th width={10} sort={getSortParams(2)}>{columnNames[2].label}</Th>
-          <Th width={10} sort={getSortParams(3)}>{columnNames[3].label}</Th>
-          <Th>{columnNames[4].label}</Th>
+          <Th width={5}>{columnNames[0].label}</Th>
+          <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
+          <Th width={20} sort={getSortParams(2)}>{columnNames[2].label}</Th>
+          <Th width={10}>{columnNames[3].label}</Th>
+          <Th width={10} sort={getSortParams(4)}>{columnNames[4].label}</Th>
+          <Th width={10} sort={getSortParams(5)}>{columnNames[5].label}</Th>
+          <Th>{columnNames[6].label}</Th>
           <Td>Actions</Td>
         </Tr>
       </Thead>

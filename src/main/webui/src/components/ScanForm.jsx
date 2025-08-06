@@ -2,22 +2,16 @@ import { ActionGroup, Button, FileUpload, Flex, FlexItem, Form, FormGroup, FormS
 import Remove2Icon from '@patternfly/react-icons/dist/esm/icons/remove2-icon';
 import AddCircleOIcon from '@patternfly/react-icons/dist/esm/icons/add-circle-o-icon';
 
-import { sendToMorpheus, sbomTypes } from "../services/FormUtilsClient";
+import { newMorpheusRequest, sbomTypes } from "../services/FormUtilsClient";
 
 export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) => {
-  const [id, setId] = React.useState(vulnRequest['id'] || '');
   const [cves, setCves] = React.useState(vulnRequest['cves'] || [{}]);
   const [sbom, setSbom] = React.useState(vulnRequest['sbom'] || {});
-  const [metadata, setMetadata] = React.useState(vulnRequest['metadata'] || []);
+  const [metadata, setMetadata] = React.useState(vulnRequest['metadata'] || [{}]);
   const [sbomType, setSbomType] = React.useState(vulnRequest['sbomType'] || 'manual');
   const [filename, setFilename] = React.useState(vulnRequest['filename'] || '');
   const [isLoading, setIsLoading] = React.useState(false);
   const [canSubmit, setCanSubmit] = React.useState(false);
-
-  const handleIdChange = (_, id) => {
-    setId(id);
-    onFormUpdated({ id: id })
-  };
 
   const handleMetadataChange = (idx, field, newValue) => {
     const updatedMetadata = [...metadata];
@@ -101,7 +95,7 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
 
   const onSubmitForm = () => {
     setCanSubmit(false);
-    sendToMorpheus(vulnRequest)
+    newMorpheusRequest(vulnRequest)
       .then(response => {
         if (response.ok) {
           onNewAlert('success', 'Analysis request sent to Morpheus');
@@ -133,10 +127,9 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
       }
     }
 
-    const metadata = updated['metadata'];
-    for (let idx in metadata) {
-      const pair = metadata[idx];
-      if (pair.name === undefined || pair.name.trim() === '' || pair.value === undefined || pair.value.trim() === '') {
+    const metadata = updated['metadata'] || [];
+    for (let pair of metadata) {
+      if (!pair.name || pair.name.trim() === '' || !pair.value || pair.value.trim() === '') {
         setCanSubmit(false);
         handleVulnRequestChange(update);
         return;
@@ -151,9 +144,6 @@ export const ScanForm = ({ vulnRequest, handleVulnRequestChange, onNewAlert }) =
   }
 
   return <Form isHorizontal>
-    <FormGroup label="Request ID" fieldId="req-id">
-      <TextInput type="text" id="req-id" value={id} onChange={handleIdChange} placeholder="Leave blank and will be generated" autoComplete="off"></TextInput>
-    </FormGroup>
     <FormSection title="Metadata">
       {metadata.map((m, idx) => {
         return <div key={`metadata_${idx}_pair`}>

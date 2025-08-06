@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
@@ -38,6 +40,8 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportSummary;
+
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
 import io.quarkus.runtime.Startup;
@@ -122,6 +126,26 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
+  public List<ProductReportSummary> listProductSummaries() {
+    List<ProductReportSummary> summaries = new ArrayList<>();
+    List<String> productIds = repository.getProductIds();
+    for (String productId : productIds) {
+      summaries.add(repository.getProductSummary(productId));
+    }
+    return summaries;
+  }
+
+  public ProductReportSummary getProductSummary(String productId) {
+    return repository.getProductSummary(productId);
+  }
+
+  public List<String> getReportIds(List<String> productIds) {
+    if (productIds == null || productIds.isEmpty()) {
+      return new ArrayList<>();
+    }
+    return repository.getReportIdsByProduct(productIds);
+  }
+
   public String get(String id) {
     LOGGER.debugf("Get report %s", id);
     return repository.findById(id);
@@ -134,7 +158,7 @@ public class ReportService {
   }
 
   public boolean remove(Collection<String> ids) {
-    LOGGER.debugf("Remove reports %s", ids);
+    LOGGER.debugf("Remove reports %s", ids.toString());
     queueService.deleted(ids);
     return repository.remove(ids);
   }
@@ -204,7 +228,8 @@ public class ReportService {
     return new ReportRequestId(id, scanId);
   }
 
-  public ReportRequestId submit(ReportRequest request) throws JsonProcessingException, IOException {
+  public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
+    LOGGER.info("Processing request for Agent Morpheus");
     var scanId = request.id();
     if (scanId == null) {
       scanId = getTraceIdFromContext(Context.current());
@@ -217,9 +242,16 @@ public class ReportService {
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
-    repository.setAsSubmitted(created.id(), userService.getUserName());
-    queueService.queue(created.id(), report);
-    return new ReportRequestId(created.id(), scan.id());
+    var reportRequestId = new ReportRequestId(created.id(), scan.id());
+    LOGGER.infof("Successfully processed request ID: %s", created.id());
+    LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
+    return new ReportData(reportRequestId, report);
+  }
+
+  public void submit(String id, JsonNode report) throws JsonProcessingException, IOException {
+    repository.setAsSubmitted(id, userService.getUserName());
+    queueService.queue(id, report);
+    LOGGER.infof("Request ID: %s, sent to Agent Morpheus for analysis", id);
   }
 
   private Scan buildScan(ReportRequest request) {
@@ -230,7 +262,10 @@ public class ReportService {
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
   }
 
-  private Image buildImage(ReportRequest request) {
+  private Image buildImage(ReportRequest request) throws JsonProcessingException, IOException {
+    if (request.image() != null){
+      return objectMapper.treeToValue(request.image(), Image.class);
+    }
     var sbom = request.sbom();
     var metadata = sbom.get("metadata");
     var component = metadata.get("component");
@@ -258,17 +293,30 @@ public class ReportService {
 
   private static String getSourceLocationFromMetadataLabels(HashMap<String, String> properties) {
     String sourceLocationValue =  properties.get(SOURCE_LOCATION_PROPERTY_GENERAL);
+    
     if(Objects.isNull(sourceLocationValue))
     {
       sourceLocationValue = properties.get(SOURCE_LOCATION_PROPERTY);
     }
+
+    if(Objects.isNull(sourceLocationValue))
+    {
+      throw new IllegalArgumentException("SBOM is missing required field: " + SOURCE_LOCATION_PROPERTY_GENERAL);
+    }
+
     return sourceLocationValue;
   }
 
   private static String getCommitIdFromMetadataLabels(HashMap<String, String> properties) {
     String commitIdIdValue = properties.get(COMMIT_ID_PROPERTY_GENERAL);
+    
     if(Objects.isNull(commitIdIdValue)) {
       commitIdIdValue = properties.get(COMMIT_ID_PROPERTY);
+    }
+
+    if(Objects.isNull(commitIdIdValue))
+    {
+      throw new IllegalArgumentException("SBOM is missing required field: " + COMMIT_ID_PROPERTY_GENERAL + " or " + COMMIT_ID_PROPERTY);
     }
 
     return commitIdIdValue;
@@ -291,7 +339,11 @@ public class ReportService {
 
   public JsonNode buildManualSbom(JsonNode sbom) {
     ArrayNode packages = objectMapper.createArrayNode();
-    sbom.get("components").forEach(c -> {
+    var components = sbom.get("components");
+    if (components == null) {
+      throw new IllegalArgumentException("SBOM is missing required field: components");
+    }
+    components.forEach(c -> {
       var pkg = objectMapper.createObjectNode();
       pkg.put("name", getProperty(c, "name"));
       pkg.put("version", getProperty(c, "version"));

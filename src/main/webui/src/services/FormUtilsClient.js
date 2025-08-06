@@ -27,12 +27,13 @@ export const buildRequestJson = (data) => {
     vulnerabilities: data.cves.map(e => e.name),
     metadata: buildMetadata(data.metadata),
     sbom_info_type: data.sbomType,
+    image: data.image,
     sbom: data.sbom
   };
 }
 
-export const sendToMorpheus = async (data) => {
-  return await fetch('/reports/new', {
+export const newMorpheusRequest = async (data, sendToMorpheus = true) => {
+  return await fetch(`/reports/new?submit=${sendToMorpheus}`, {
     method: "POST",
     headers: {
       'Accept': 'application/json',

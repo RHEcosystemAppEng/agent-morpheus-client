@@ -1,0 +1,9 @@
+{
+    "specversion": "1.0",
+    "id": "",
+    "source": "agent.morpheus.client",
+    "type": "component.analysis",
+    "datacontenttype": "application/json",
+    "data": []
+  }
+  
