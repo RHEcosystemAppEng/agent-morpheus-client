@@ -136,27 +136,27 @@ export default function ProductReportsTable() {
         {
           title: 'Delete',
           onClick: () => {
-            onSelectItem(p.id, rowIndex, true);
+            onSelectItem(p.data.id, rowIndex, true);
             setModalOpen(true);
           },
           isOutsideDropdown: true
         }
       ];
-      return <Tr key={p.id}>
+      return <Tr key={p.data.id}>
         <Td select={{
           rowIndex,
-          onSelect: (_event, isSelecting) => onSelectItem(p.id, rowIndex, isSelecting),
+          onSelect: (_event, isSelecting) => onSelectItem(p.data.id, rowIndex, isSelecting),
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <Link to={`/product-reports/${p.id}`} state={{ productData: p }} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
+          <Link to={`/product-reports/${p.data.id}`} state={{ productData: p }} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
             <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
           </Link>
         </Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap">{p.productName}</Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.productVersion}</Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">{p.data.name}</Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap">{p.data.version}</Td>
         <Td dataLabel={columnNames[3].label} modifier="nowrap">
-          {Object.entries(p.cves).map(([cve, justifications]) => {
+          {Object.entries(p.summary.cves).map(([cve, justifications]) => {
             const uid = getUniqueId("div");
             return (
               <div key={uid}>
@@ -172,13 +172,13 @@ export default function ProductReportsTable() {
             );
           })}
         </Td>
-        <Td dataLabel={columnNames[4].label} modifier="nowrap">{p.completedAt || '-'}</Td>
-        <Td dataLabel={columnNames[5].label} modifier="nowrap">{p.submittedAt || '-'}</Td>
-        <Td dataLabel={columnNames[6].label}><StatusLabel type={p.state} /></Td>
+        <Td dataLabel={columnNames[4].label} modifier="nowrap">{p.data.completedAt || '-'}</Td>
+        <Td dataLabel={columnNames[5].label} modifier="nowrap">{p.data.submittedAt || '-'}</Td>
+        <Td dataLabel={columnNames[6].label}><StatusLabel type={p.summary.productState} /></Td>
         <Td dataLabel="Actions">
           <Flex columnGap={{ default: 'columnGapSm' }}>
             <Button onClick={() => {
-              onSelectOnlyItem(p.id, rowIndex); 
+              onSelectOnlyItem(p.data.id, rowIndex); 
               setModalOpen(true);
             }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
           </Flex>

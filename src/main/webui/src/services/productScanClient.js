@@ -44,33 +44,34 @@ const parseImageFromReference = ref => {
 	return repositoryUrl && tag ? `${repositoryUrl}:${tag}` : null;
 };
 
-export const buildFailedComponentJson = (failures, productId) => {
-	return failures.map(failure => ({
-		productId: productId,
-		imageName: failure.imageName,
-		imageVersion: failure.imageVersion,
-		error: failure.error
-	}));
+export const buildProductJson = (compFormData, failures) => {
+	return {
+		id: compFormData.metadata.find(m => m.name === 'product_id').value,
+    	name: compFormData.metadata.find(m => m.name === 'product_name').value,
+    	version: compFormData.metadata.find(m => m.name === 'product_version').value,
+    	submittedAt: compFormData.metadata.find(m => m.name === 'product_submitted_at').value,
+    	completedAt: '',
+    	submittedCount: parseInt(compFormData.metadata.find(m => m.name === 'product_submitted_count').value),
+    	submissionFailures: failures.map(failure => ({
+			imageName: failure.imageName,
+			imageVersion: failure.imageVersion,
+			error: failure.error
+		}))
+	};
 }
   
-
-const saveFailedComponents = async (failures, compFormData) => {
-	if (failures.length > 0 && compFormData.metadata) {
-		const productId = compFormData.metadata.find(m => m.name === 'product_id');
-		if (productId) {
-			try {
-				await fetch('/submission-failures', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(buildFailedComponentJson(failures, productId.value))
-				});
-				console.log(`Saved ${failures.length} component failures to database`);
-			} catch (error) {
-				console.error('Failed to save component failures to database:', error);
-			}
-		}
+const saveProduct = async (compFormData, failures) => {
+	try {
+		await fetch('/product', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(buildProductJson(compFormData, failures))
+		});
+		console.log(`Saved ${failures.length} component failures to database`);
+	} catch (error) {
+		console.error('Failed to save component failures to database:', error);
 	}
 };  
 
@@ -190,7 +191,7 @@ export const generateMorpheusRequest = async (components, formData) => {
 	);
 
 	if(payloads.length) {
-		await saveFailedComponents(failures, compFormData);
+		await saveProduct(compFormData, failures);
 		return await preProcessMorpheusRequests(payloads);	
 	} else {
 		throw new Error('No components eligible for analysis');

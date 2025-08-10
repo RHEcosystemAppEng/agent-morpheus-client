@@ -35,7 +35,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
-import com.redhat.ecosystemappeng.morpheus.model.ProductReportSummary;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -291,18 +291,10 @@ public class ReportRepositoryService {
     return productIds;
   }
 
-  public ProductReportSummary getProductSummary(String productId) {
+  public ProductReportsSummary getProductSummaryData(String productId) {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<Justification>> cveSet = new HashMap<>();
-    String[] productSubmittedAt = {null};
-    String[] productCompletedAt = {null};
-    String[] productName = {null};
-    String[] productVersion = {null};
-    int[] productSubmittedCount = {0};
-    int productScannedCount = (int) getCollection().countDocuments(productFilter);
-    int[] productFailedCount = {0};
-    int[] productCompletedCount = {0};
-    List<String> ComponentStates = new ArrayList<>();
+    List<String> componentStates = new ArrayList<>();
     String productState = "unknown";
 
     getCollection()
@@ -310,44 +302,8 @@ public class ReportRepositoryService {
       .iterator()
       .forEachRemaining(doc -> {
         Map<String, String> metadata = extractMetadata(doc);
-        
-        if (productSubmittedAt[0] == null) {
-          String submittedAt = metadata.get("product_submitted_at");
-          if (submittedAt != null && !submittedAt.isEmpty()) {
-            productSubmittedAt[0] = submittedAt;
-          }
-        }
-        
-        if (productCompletedAt[0] == null) {
-          String completedAt = metadata.get("product_completed_at");
-          if (completedAt != null && !completedAt.isEmpty()) {
-            productCompletedAt[0] = completedAt;
-          }
-        }
-
-        if (productName[0] == null) {
-          String name = metadata.get("product_name");
-          if (name != null && !name.isEmpty()) {
-            productName[0] = name;
-          }
-        }
-
-        if (productVersion[0] == null) {
-          String version = metadata.get("product_version");
-          if (version != null && !version.isEmpty()) {
-            productVersion[0] = version;
-          }
-        }
-
-        if (productSubmittedCount[0] == 0) {
-          String submittedCount = metadata.get("product_submitted_count");
-          if (submittedCount != null && !submittedCount.isEmpty()) {
-            productSubmittedCount[0] = Integer.parseInt(submittedCount);
-          }
-        }
-        
         String reportStatus = getStatus(doc, metadata);
-        ComponentStates.add(reportStatus);
+        componentStates.add(reportStatus);
 
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
@@ -388,27 +344,15 @@ public class ReportRepositoryService {
         }
       });
 
-    if (ComponentStates.contains("pending") || ComponentStates.contains("queued") || ComponentStates.contains("sent")) {
+    if (componentStates.contains("pending") || componentStates.contains("queued") || componentStates.contains("sent")) {
       productState = "analysing";
     } else {
       productState = "completed";
     }
 
-    productCompletedCount[0] = (int) ComponentStates.stream().filter(state -> "completed".equalsIgnoreCase(state)).count();
-    productFailedCount[0] = (int) ComponentStates.stream().filter(state -> "failed".equalsIgnoreCase(state)).count();
-
-    return new ProductReportSummary(
-      productId, 
-      productName[0], 
-      productVersion[0], 
-      productSubmittedAt[0], 
-      productCompletedAt[0], 
-      ComponentStates,
-      productSubmittedCount[0], 
-      productScannedCount, 
-      productFailedCount[0], 
-      productCompletedCount[0], 
-      productState, 
+    return new ProductReportsSummary(
+      productState,
+      componentStates,
       cveSet
     );
   }

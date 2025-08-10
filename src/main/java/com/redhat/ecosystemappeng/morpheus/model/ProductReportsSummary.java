@@ -8,18 +8,9 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 
-public record ProductReportSummary(
-    String id,
-    String productName,
-    String productVersion,
-    String submittedAt,
-    String completedAt,
+public record ProductReportsSummary(
+    String productState,
     List<String> componentStates,
-    int submittedCount,
-    int scannedCount,
-    int failedCount,
-    int completedCount,
-    String state,
     Map<String, Set<Justification>> cves) {
 
 }

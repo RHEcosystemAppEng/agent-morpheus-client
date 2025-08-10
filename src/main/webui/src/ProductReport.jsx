@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
-import { deleteProductReport, getProduct, getFailedComponents } from "./services/ProductReportClient";
+import { deleteProductReport, getProduct } from "./services/ProductReportClient";
 import { Breadcrumb, BreadcrumbItem, Button, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Skeleton, Content, getUniqueId, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title, TextInput, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@patternfly/react-table";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
@@ -21,8 +21,6 @@ export default function ProductReport() {
   const [productData, setProductData] = React.useState(passedProductData || null);
   const [errorReport, setErrorReport] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(!passedProductData);
-  const [submissionFailures, setSubmissionFailures] = React.useState([]);
-  const [errorSubmissionFailures, setErrorSubmissionFailures] = React.useState({});
   const [errorMessageFilter, setErrorMessageFilter] = React.useState('');
 
   React.useEffect(() => {
@@ -39,16 +37,6 @@ export default function ProductReport() {
     } else {
       setIsLoading(false);
     }
-  }, []);
-
-  React.useEffect(() => {
-    getFailedComponents(params.id)
-      .then(failures => {
-        setSubmissionFailures(failures);
-      })
-      .catch(e => {
-        setErrorSubmissionFailures(e);
-      });
   }, []);
 
   const onDelete = () => {
@@ -107,16 +95,8 @@ export default function ProductReport() {
       </EmptyState>;
     };
 
-    const errorSubmissionFailuresTable = () => {
-      return <EmptyState>
-        <EmptyStateBody>
-          {errorSubmissionFailures.status}: {errorSubmissionFailures.message}
-        </EmptyStateBody>
-      </EmptyState>;
-    }
-
     const submissionFailuresTable = () => {
-      const filteredFailures = submissionFailures.filter(failure => 
+      const filteredFailures = productData.data.submissionFailures.filter(failure => 
         failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
       );
       
@@ -144,7 +124,7 @@ export default function ProductReport() {
     }
 
     const getFilteredSubmissionFailuresCount = () => {
-      return submissionFailures.filter(failure => 
+      return productData.data.submissionFailures.filter(failure => 
         failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
       ).length;
     }
@@ -153,28 +133,28 @@ export default function ProductReport() {
       <Title headingLevel="h1">{params.id}</Title>
       {productData ? (
         <div>
-          <StatusLabel type={productData.state} size="large" />
+          <StatusLabel type={productData.summary.productState} size="large" />
         </div>
       ) : null}
       <DescriptionList isHorizontal isCompact>
         <DescriptionListGroup>
           <DescriptionListTerm>Submitted At</DescriptionListTerm>
           <DescriptionListDescription>
-            {productData?.submittedAt || null}
+            {productData?.data.submittedAt || null}
           </DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
           <DescriptionListTerm>Completed At</DescriptionListTerm>
           <DescriptionListDescription>
-            {productData?.completedAt || "-"}
+            {productData?.data.completedAt || "-"}
           </DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>
           <DescriptionListTerm>CVEs</DescriptionListTerm>
           <DescriptionListDescription>
-            {productData?.cves && Object.keys(productData.cves).length > 0 ? (
+            {productData?.summary.cves && Object.keys(productData.summary.cves).length > 0 ? (
               <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsXs' }}>
-                {Object.entries(productData.cves).map(([cve, justifications]) => {
+                {Object.entries(productData.summary.cves).map(([cve, justifications]) => {
                   const uid = getUniqueId("div");
                   return (
                     <div key={uid}>
@@ -200,8 +180,8 @@ export default function ProductReport() {
       <div>
         <Title headingLevel="h2">State Distribution</Title>
         <ComponentStatesPieChart 
-          componentStates={productData?.componentStates} 
-          submittedCount={productData?.submittedCount}
+          componentStates={productData?.summary.componentStates} 
+          submittedCount={productData?.data.submittedCount}
         />
       </div>
 
@@ -220,7 +200,7 @@ export default function ProductReport() {
 
       <div style={{ marginTop: '24px' }}>
         <Title headingLevel="h2">Product Components - Failed to Submit</Title>
-        {submissionFailures.length > 0 ? (
+        {productData.data.submissionFailures.length > 0 ? (
           <>
             <Toolbar style={{ padding: 0 }}>
               <ToolbarContent>
@@ -267,8 +247,6 @@ export default function ProductReport() {
               </EmptyState>
             )}
           </>
-        ) : errorSubmissionFailures.status !== undefined ? (
-          errorSubmissionFailuresTable()
         ) : emptySubmissionFailuresTable()}
       </div>
 

@@ -18,7 +18,7 @@ import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
-import com.redhat.ecosystemappeng.morpheus.service.SubmissionFailureService;
+import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -61,7 +61,7 @@ public class ReportEndpoint {
   PreProcessingService preProcessingService;
 
   @Inject
-  SubmissionFailureService submissionFailureService;
+  ProductService productService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -250,7 +250,7 @@ public class ReportEndpoint {
       return Response.accepted().build();
     }
     reportService.remove(reportIds);
-    submissionFailureService.remove(productIds);
+    productService.remove(productIds);
     return Response.accepted().build();
   }
 
@@ -262,7 +262,7 @@ public class ReportEndpoint {
       return Response.accepted().build();
     }
     reportService.remove(reportIds);
-    submissionFailureService.remove(id);
+    productService.remove(id);
     return Response.accepted().build();
   }
 }

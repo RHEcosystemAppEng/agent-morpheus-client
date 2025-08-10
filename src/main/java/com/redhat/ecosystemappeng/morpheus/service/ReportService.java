@@ -40,7 +40,10 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
-import com.redhat.ecosystemappeng.morpheus.model.ProductReportSummary;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
+import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
+
 
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
@@ -70,6 +73,9 @@ public class ReportService {
 
   @Inject
   ReportRepositoryService repository;
+
+  @Inject
+  ProductService productService;
 
   @Inject
   RequestQueueService queueService;
@@ -126,17 +132,24 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
-  public List<ProductReportSummary> listProductSummaries() {
-    List<ProductReportSummary> summaries = new ArrayList<>();
+  public List<ProductSummary> listProductSummaries() {
+    List<ProductSummary> summaries = new ArrayList<>();
     List<String> productIds = repository.getProductIds();
     for (String productId : productIds) {
-      summaries.add(repository.getProductSummary(productId));
+      summaries.add(getProductSummary(productId));
     }
     return summaries;
   }
 
-  public ProductReportSummary getProductSummary(String productId) {
-    return repository.getProductSummary(productId);
+  public ProductSummary getProductSummary(String productId) {
+    Product product = productService.get(productId);
+
+    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId);
+    
+    return new ProductSummary(
+      product, 
+      productReportsSummary
+    );
   }
 
   public List<String> getReportIds(List<String> productIds) {
