@@ -17,9 +17,12 @@ public class ProductService {
   @Inject
   ProductRepositoryService repository;
 
+  @Inject
+  UserService userService;
+
   public void save(Product product) {
     LOGGER.debugf("Saving product %s", product.id());
-    repository.save(product);
+    repository.save(product, userService.getUserName());
   }
   
   public Product get(String id) {
@@ -36,5 +39,9 @@ public class ProductService {
   public void remove(List<String> ids) {
     LOGGER.debugf("Removing products %s", ids.toString());
     repository.remove(ids);
+  }
+
+  public String getUserName(String id) {
+    return repository.getUserName(id);
   }
 }

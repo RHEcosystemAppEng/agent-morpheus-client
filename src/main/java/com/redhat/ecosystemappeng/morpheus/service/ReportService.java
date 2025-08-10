@@ -262,9 +262,23 @@ public class ReportService {
   }
 
   public void submit(String id, JsonNode report) throws JsonProcessingException, IOException {
-    repository.setAsSubmitted(id, userService.getUserName());
+    String byUser = determineUser(report);
+    repository.setAsSubmitted(id, byUser);
     queueService.queue(id, report);
     LOGGER.infof("Request ID: %s, sent to Agent Morpheus for analysis", id);
+  }
+
+  private String determineUser(JsonNode report) {
+    JsonNode metadata = report.get("metadata");
+    if (metadata != null && metadata.has("product_id")) {
+      String productId = metadata.get("product_id").asText();
+      String productUser = productService.getUserName(productId);
+      if (productUser != null && !productUser.isEmpty()) {
+        return productUser;
+      }
+    }
+    
+    return userService.getUserName();
   }
 
   private Scan buildScan(ReportRequest request) {

@@ -2,7 +2,9 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bson.Document;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,7 +35,8 @@ public class ProductRepositoryService {
   private static final String COMPLETED_AT = "completed_at";
   private static final String SUBMITTED_COUNT = "submitted_count";
   private static final String SUBMISSION_FAILURES = "submission_failures";
-
+  private static final String METADATA = "metadata";
+  
   @Inject
   MongoClient mongoClient;
 
@@ -47,16 +50,20 @@ public class ProductRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  public void save(Product product) {
+  public void save(Product product, String byUser) {
+    Map<String, String> metadataWithUser = product.metadata() != null ? 
+        new HashMap<>(product.metadata()) : new HashMap<>();
+    metadataWithUser.put("user", byUser);
+    
     var doc = new Document()
         .append(ID, product.id())
         .append(NAME, product.name())
         .append(VERSION, product.version())
         .append(SUBMITTED_AT, product.submittedAt())
-        .append(COMPLETED_AT, product.completedAt())
         .append(SUBMITTED_COUNT, product.submittedCount())
+        .append(METADATA, metadataWithUser)
         .append(SUBMISSION_FAILURES, product.submissionFailures());
-    
+
     getCollection().insertOne(doc);
   }
 
@@ -76,17 +83,18 @@ public class ProductRepositoryService {
       }
     }
 
-    Product product = new Product(
+    Map<String, String> metadata = doc.get(METADATA, Map.class);
+
+    return new Product(
         doc.getString(ID),
         doc.getString(NAME),
         doc.getString(VERSION),
         doc.getString(SUBMITTED_AT),
-        doc.getString(COMPLETED_AT),
         doc.getInteger(SUBMITTED_COUNT),
-        submissionFailures
+        metadata,
+        submissionFailures,
+        doc.getString(COMPLETED_AT)
     );
-
-    return product;
   }
 
   public void remove(String id) {
@@ -95,5 +103,16 @@ public class ProductRepositoryService {
 
   public void remove(Collection<String> ids) {
     getCollection().deleteMany(Filters.in(ID, ids)).wasAcknowledged();
+  }
+
+  public String getUserName(String id) {
+    Document doc = getCollection().find(Filters.eq(ID, id)).first();
+    if (doc == null) return null;
+    
+    Map<String, String> metadata = doc.get(METADATA, Map.class);
+    if (metadata != null) {
+      return metadata.get("user");
+    }
+    return null;
   }
 }

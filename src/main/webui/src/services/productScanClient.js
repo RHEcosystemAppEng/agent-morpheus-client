@@ -50,8 +50,11 @@ export const buildProductJson = (compFormData, failures) => {
     	name: compFormData.metadata.find(m => m.name === 'product_name').value,
     	version: compFormData.metadata.find(m => m.name === 'product_version').value,
     	submittedAt: compFormData.metadata.find(m => m.name === 'product_submitted_at').value,
-    	completedAt: '',
     	submittedCount: parseInt(compFormData.metadata.find(m => m.name === 'product_submitted_count').value),
+    	metadata: compFormData.metadata.reduce((acc, m) => {
+			acc[m.name] = m.value;
+			return acc;
+		}, {}),
     	submissionFailures: failures.map(failure => ({
 			imageName: failure.imageName,
 			imageVersion: failure.imageVersion,
@@ -61,6 +64,8 @@ export const buildProductJson = (compFormData, failures) => {
 }
   
 const saveProduct = async (compFormData, failures) => {
+	console.log("Saving product to database");
+	console.log(buildProductJson(compFormData, failures));
 	try {
 		await fetch('/product', {
 			method: 'POST',

@@ -9,6 +9,7 @@ import ReportsTable from "./components/ReportsTable";
 import JustificationBanner from "./components/JustificationBanner";
 import { StatusLabel } from "./components/StatusLabel";
 import ComponentStatesPieChart from "./components/ComponentPieChart";
+import { getMetadataColor } from "./Constants";
 
 export default function ProductReport() {
 
@@ -86,6 +87,15 @@ export default function ProductReport() {
       { key: 'tag', label: 'Version' },
       { key: 'error', label: 'Error' }
     ];
+
+    const product_meta_fields = [
+      "product_id",
+      "product_submitted_at",
+      "product_completed_at",
+      "product_name",
+      "product_version",
+      "product_submitted_count"
+    ];
   
     const emptySubmissionFailuresTable = () => {
       return <EmptyState>
@@ -147,6 +157,23 @@ export default function ProductReport() {
           <DescriptionListTerm>Completed At</DescriptionListTerm>
           <DescriptionListDescription>
             {productData?.data.completedAt || "-"}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+        <DescriptionListGroup>
+          <DescriptionListTerm>Metadata</DescriptionListTerm>
+          <DescriptionListDescription>
+            {productData?.data.metadata && Object.entries(productData.data.metadata).map(([key, value]) => (  
+              !product_meta_fields.includes(key) ?
+              <Label
+                key={key}
+                onClick={() => navigate(`/reports?${key}=${value}`)}
+                color={getMetadataColor(key)}
+              >
+                {key}:{value}
+              </Label>
+              :
+              null
+              ))}
           </DescriptionListDescription>
         </DescriptionListGroup>
         <DescriptionListGroup>

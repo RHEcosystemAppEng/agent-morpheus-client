@@ -49,6 +49,14 @@ export default function Report() {
     "product_submitted_count"
   ];
 
+  const product_meta_fields = [
+    "product_submitted_at",
+    "product_completed_at",
+    "product_name",
+    "product_version",
+    "product_submitted_count"
+  ];
+
   const time_scan_fields = [
     "started_at",
     "completed_at"
@@ -120,7 +128,10 @@ export default function Report() {
     let timestamps = [];
     if (report.metadata !== undefined) {
       Object.keys(report.metadata).forEach(k => {
-        if (time_meta_fields.includes(k)) {
+        if (product_meta_fields.includes(k)) {
+          // ignore keys in product_meta_fields
+        }
+        else if (time_meta_fields.includes(k)) {
           timestamps.push({ key: k, value: report.metadata[k]["$date"] });
         } else {
           metadata.push({ key: k, value: report.metadata[k] });
