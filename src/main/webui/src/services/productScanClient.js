@@ -64,8 +64,6 @@ export const buildProductJson = (compFormData, failures) => {
 }
   
 const saveProduct = async (compFormData, failures) => {
-	console.log("Saving product to database");
-	console.log(buildProductJson(compFormData, failures));
 	try {
 		await fetch('/product', {
 			method: 'POST',

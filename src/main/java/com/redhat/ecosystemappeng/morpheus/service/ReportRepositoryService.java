@@ -75,6 +75,9 @@ public class ReportRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
+  @Inject
+  ProductRepositoryService productRepositoryService;
+
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
@@ -379,13 +382,6 @@ public class ReportRepositoryService {
     return productIds;
   }
 
-  private void storeProductCompletedAt(String productId, String completedAt) {
-    // Update all reports for this product to include product_completed_at in metadata
-    Bson productFilter = Filters.eq("metadata.product_id", productId);
-    var update = Updates.set("metadata.product_completed_at", completedAt);
-    getCollection().updateMany(productFilter, update);
-  }
-
   private void checkAndStoreProductCompletion(String productId) {
     // Check if this product just became completed
     Bson productFilter = Filters.eq("metadata.product_id", productId);
@@ -420,7 +416,7 @@ public class ReportRepositoryService {
     }
 
     if (!hasCompletionTimeStored && !hasPendingReports && latestCompletionTime != null) {
-      storeProductCompletedAt(productId, latestCompletionTime);
+      productRepositoryService.updateCompletedAt(productId, latestCompletionTime);
       LOGGER.infof("Product %s completed at %s", productId, latestCompletionTime);
     }
   }

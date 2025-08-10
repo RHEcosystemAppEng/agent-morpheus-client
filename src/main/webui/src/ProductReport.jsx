@@ -91,7 +91,6 @@ export default function ProductReport() {
     const product_meta_fields = [
       "product_id",
       "product_submitted_at",
-      "product_completed_at",
       "product_name",
       "product_version",
       "product_submitted_count"

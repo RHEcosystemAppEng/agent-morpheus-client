@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 
@@ -114,5 +115,9 @@ public class ProductRepositoryService {
       return metadata.get("user");
     }
     return null;
+  }
+
+  public void updateCompletedAt(String id, String completedAt) {
+    getCollection().updateOne(Filters.eq(ID, id), Updates.set(COMPLETED_AT, completedAt));
   }
 }
