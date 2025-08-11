@@ -28,6 +28,8 @@ export const ProductScanForm = ({ productVulnRequest, handleProductVulnRequestCh
     if (ociComponents.length > 0) {
       const allSelected = ociComponents.map((r, i) => ({
         idx: i,
+        name: r.name,
+        version: r.version,
         ref: r.reference,
       }));
       setSelectedComponents(allSelected);
