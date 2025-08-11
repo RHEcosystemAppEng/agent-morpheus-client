@@ -29,7 +29,6 @@ public class ProductRepositoryService {
   private static final Logger LOGGER = Logger.getLogger(ProductRepositoryService.class);
 
   private static final String COLLECTION = "products";
-  private static final String ID = "_id";
   private static final String NAME = "name";
   private static final String VERSION = "version";
   private static final String SUBMITTED_AT = "submitted_at";
@@ -57,7 +56,7 @@ public class ProductRepositoryService {
     metadataWithUser.put("user", byUser);
     
     var doc = new Document()
-        .append(ID, product.id())
+        .append(RepositoryConstants.ID_KEY, product.id())
         .append(NAME, product.name())
         .append(VERSION, product.version())
         .append(SUBMITTED_AT, product.submittedAt())
@@ -69,7 +68,7 @@ public class ProductRepositoryService {
   }
 
   public Product get(String id) {
-    Document doc = getCollection().find(Filters.eq(ID, id)).first();
+    Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     if (doc == null) return null;
     
     List<FailedComponent> submissionFailures = new ArrayList<>();
@@ -87,7 +86,7 @@ public class ProductRepositoryService {
     Map<String, String> metadata = doc.get(METADATA, Map.class);
 
     return new Product(
-        doc.getString(ID),
+        doc.getString(RepositoryConstants.ID_KEY),
         doc.getString(NAME),
         doc.getString(VERSION),
         doc.getString(SUBMITTED_AT),
@@ -99,15 +98,15 @@ public class ProductRepositoryService {
   }
 
   public void remove(String id) {
-    getCollection().deleteOne(Filters.eq(ID, id)).wasAcknowledged();
+    getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, id)).wasAcknowledged();
   }
 
   public void remove(Collection<String> ids) {
-    getCollection().deleteMany(Filters.in(ID, ids)).wasAcknowledged();
+    getCollection().deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids)).wasAcknowledged();
   }
 
   public String getUserName(String id) {
-    Document doc = getCollection().find(Filters.eq(ID, id)).first();
+    Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     if (doc == null) return null;
     
     Map<String, String> metadata = doc.get(METADATA, Map.class);
@@ -118,6 +117,6 @@ public class ProductRepositoryService {
   }
 
   public void updateCompletedAt(String id, String completedAt) {
-    getCollection().updateOne(Filters.eq(ID, id), Updates.set(COMPLETED_AT, completedAt));
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, id), Updates.set(COMPLETED_AT, completedAt));
   }
 }
