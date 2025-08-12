@@ -65,6 +65,7 @@ public class ProductRepositoryService {
         .append(SUBMISSION_FAILURES, product.submissionFailures());
 
     getCollection().insertOne(doc);
+    LOGGER.debugf("Saved product %s to %s collection", product.id(), COLLECTION);
   }
 
   public Product get(String id) {
@@ -99,10 +100,12 @@ public class ProductRepositoryService {
 
   public void remove(String id) {
     getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, id)).wasAcknowledged();
+    LOGGER.debugf("Removed product %s from %s collection", id, COLLECTION);
   }
 
   public void remove(Collection<String> ids) {
     getCollection().deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids)).wasAcknowledged();
+    LOGGER.debugf("Removed products %s from %s collection", ids.toString(), COLLECTION);
   }
 
   public String getUserName(String id) {
@@ -118,5 +121,6 @@ public class ProductRepositoryService {
 
   public void updateCompletedAt(String id, String completedAt) {
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, id), Updates.set(COMPLETED_AT, completedAt));
+    LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
   }
 }

@@ -42,6 +42,7 @@ public class ProductService {
   }
 
   public String getUserName(String id) {
+    LOGGER.debugf("Getting user name for product %s", id);
     return repository.getUserName(id);
   }
 }
