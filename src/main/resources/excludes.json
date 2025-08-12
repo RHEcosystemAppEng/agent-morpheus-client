@@ -1,7 +1,7 @@
 {
   "Go": [
     "test/**/*",
-    "**/vendor/**/*",
+    "**/*test*.go",
     "go.mod",
     "go.sum"
   ],
