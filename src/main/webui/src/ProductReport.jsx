@@ -90,7 +90,7 @@ export default function ProductReport() {
       );
       
       return filteredFailures.map((failure, index) => {
-        return <Tr key={failure.imageName} style={{ borderBottom: 'none' }}>
+        return <Tr key={`failure-${productData.data.submissionFailures.indexOf(failure)}`} style={{ borderBottom: 'none' }}>
           <Td dataLabel={submissionFailuresColumnNames[0].label} modifier="nowrap">{failure.imageName}</Td>
           <Td dataLabel={submissionFailuresColumnNames[1].label} modifier="nowrap">{failure.imageVersion}</Td>
           <Td dataLabel={submissionFailuresColumnNames[2].label} modifier="nowrap">
