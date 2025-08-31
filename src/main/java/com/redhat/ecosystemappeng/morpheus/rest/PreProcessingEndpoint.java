@@ -38,7 +38,7 @@ public class PreProcessingEndpoint {
       Response res = preProcessingService.submit(parsedPayloads, ids);
       
       int status = res.getStatus();
-      if (status >= 300) {
+      if (status >= Response.Status.MULTIPLE_CHOICES.getStatusCode()) {
         String errorBody = res.readEntity(String.class);
         String errorMessage = String.format("Component Syncer failed with status code: %s, error: %s", status, errorBody);
         for (String id : ids) {

@@ -3,6 +3,7 @@ package com.redhat.ecosystemappeng.morpheus.service;
 import io.quarkus.oidc.UserInfo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.Objects;
 
 @ApplicationScoped
 public class UserService {
@@ -13,15 +14,15 @@ public class UserService {
   private static final String DEFAULT_USERNAME = "anonymous";
 
   public String getUserName() {
-    if(userInfo != null) {
+    if(Objects.nonNull(userInfo)) {
       var name = userInfo.getString("upn");
-      if(name != null) {
+      if(Objects.nonNull(name)) {
         return name;
       }
       var metadata = userInfo.getObject("metadata");
-      if(metadata != null) {
+      if(Objects.nonNull(metadata)) {
         name = metadata.getString("name");
-        if(name != null) {
+        if(Objects.nonNull(name)) {
           return name;
         }
       }

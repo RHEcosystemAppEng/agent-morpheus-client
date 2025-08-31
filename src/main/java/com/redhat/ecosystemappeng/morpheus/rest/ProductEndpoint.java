@@ -3,6 +3,7 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
+import java.util.Objects;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -44,7 +45,7 @@ public class ProductEndpoint {
   @Path("/{id}")
   public Response get(String id) {
     Product product = productService.get(id);
-    if (product == null) {
+    if (Objects.isNull(product)) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
     return Response.ok(product).build();

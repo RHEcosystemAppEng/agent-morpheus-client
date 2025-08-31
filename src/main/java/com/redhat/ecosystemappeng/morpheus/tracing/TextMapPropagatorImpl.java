@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Objects;
 
 import static com.redhat.ecosystemappeng.morpheus.tracing.TracingFieldsCustomizer.TRACE_ID;
 
@@ -27,7 +28,7 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
     @Override
     public <C> void inject(Context context, C carrier, TextMapSetter<C> setter) {
         String traceId = context.get(TRACE_ID_CONTEXT_KEY);
-        if (traceId == null) {
+        if (Objects.isNull(traceId)) {
             traceId = getTraceIdFromContext(context);
         }
         setter.set(carrier, TRACE_ID, traceId);
@@ -44,7 +45,7 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
             String[] split = matcher.group(0).split("=");
             String key = split[0];
             String traceIdValue = split[1];
-            if (traceIdValue != null && !traceIdValue.matches("0+") ) {
+            if (Objects.nonNull(traceIdValue) && !traceIdValue.matches("0+") ) {
                 traceId = traceIdValue;
                 break;
             }
@@ -56,7 +57,7 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
     public <C> Context extract(Context context, C carrier, TextMapGetter<C> getter) {
         String traceId = getter.get(carrier, TRACE_ID);
         // Logs should be with same traceId As request
-        if (traceId != null) {
+        if (Objects.nonNull(traceId)) {
             MDC.put(TRACE_ID,traceId);
             return context.with(TRACE_ID_CONTEXT_KEY, traceId);
         }

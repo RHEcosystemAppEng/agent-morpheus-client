@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -34,7 +35,8 @@ public class PreProcessingService {
 
   private static final Logger LOGGER = Logger.getLogger(PreProcessingService.class);
   private final Map<String, LocalDateTime> submitted = new ConcurrentHashMap<>();
-  
+  private static final int BACKOFF_MULTIPLIER = 2;
+
   @ConfigProperty(name = "morpheus.syncer.timeout", defaultValue = "1h")
   Duration timeout;
   
@@ -50,33 +52,34 @@ public class PreProcessingService {
   public JsonNode parse(List<ReportData> payloads) throws IOException {
     LOGGER.info("Parsing payloads for pre-processing");
 
-    InputStream is = getClass().getClassLoader().getResourceAsStream("preProcessingTemplate.json");
-    if (is == null) {
-        throw new IllegalArgumentException("Template file not found in resources.");
-    }
-    ObjectNode templateJson = (ObjectNode) objectMapper.readTree(is);
-
-    templateJson.put("id", UUID.randomUUID().toString());
-
-    ArrayNode dataArray = objectMapper.createArrayNode();
-
-    for (ReportData payload : payloads) {
-      String scanId = payload.reportRequestId().id();
-      JsonNode sourceInfo = payload.report().at("/input/image/source_info");
-
-      if (scanId != null && !scanId.isEmpty() && !sourceInfo.isMissingNode()) {
-          ObjectNode dataEntry = objectMapper.createObjectNode();
-          dataEntry.put("scan_id", scanId);
-          dataEntry.set("source_info", sourceInfo);
-          dataArray.add(dataEntry);
+    try (InputStream is = getClass().getClassLoader().getResourceAsStream("preProcessingTemplate.json")) {
+      if (Objects.isNull(is)) {
+          throw new IllegalArgumentException("Template file not found in resources.");
       }
+      ObjectNode templateJson = (ObjectNode) objectMapper.readTree(is);
+
+      templateJson.put("id", UUID.randomUUID().toString());
+
+      ArrayNode dataArray = objectMapper.createArrayNode();
+
+      for (ReportData payload : payloads) {
+        String scanId = payload.reportRequestId().id();
+        JsonNode sourceInfo = payload.report().at("/input/image/source_info");
+
+        if (Objects.nonNull(scanId) && !scanId.isEmpty() && !sourceInfo.isMissingNode()) {
+            ObjectNode dataEntry = objectMapper.createObjectNode();
+            dataEntry.put("scan_id", scanId);
+            dataEntry.set("source_info", sourceInfo);
+            dataArray.add(dataEntry);
+        }
+      }
+
+      templateJson.set("data", dataArray);
+
+      LOGGER.info("Successfully parsed payloads");
+      LOGGER.debug("Parsed payloads: " + templateJson.toPrettyString());
+      return templateJson;
     }
-
-    templateJson.set("data", dataArray);
-
-    LOGGER.info("Successfully parsed payloads");
-    LOGGER.debug("Parsed payloads: " + templateJson.toPrettyString());
-    return templateJson;
   }
 
   public Response submit(JsonNode request, List<String> ids) throws IOException, InterruptedException {
@@ -94,17 +97,17 @@ public class PreProcessingService {
       int status = response.getStatus();
       LOGGER.debug("Component Syncer response status: " + status);
 
-      if (status >= 200 && status < 300) {
+      if (status >= Response.Status.OK.getStatusCode() && status < Response.Status.MULTIPLE_CHOICES.getStatusCode()) {
           LOGGER.info("Successfully sent payloads to Component Syncer");
           
           LocalDateTime now = LocalDateTime.now();
           ids.forEach(id -> submitted.put(id, now));
 
           return response;
-      } else if (status >= 500 && attempt < maxRetries) {
+      } else if (status >= Response.Status.INTERNAL_SERVER_ERROR.getStatusCode() && attempt < maxRetries) {
           LOGGER.warnf("Component Syncer failed with status code: %s, will retry in %dms", status, delay);
           Thread.sleep(delay);
-          delay = delay * 2;
+          delay = delay * BACKOFF_MULTIPLIER;
       } else {
           LOGGER.errorf("Component Syncer failed with status code: %s, all retries exhausted", status);
           return response;

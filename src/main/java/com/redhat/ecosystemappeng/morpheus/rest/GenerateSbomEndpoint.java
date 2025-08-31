@@ -1,6 +1,7 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.jboss.logging.Logger;
 
@@ -33,7 +34,7 @@ public class GenerateSbomEndpoint {
 
     @POST
     public Response generateSbom(String image) {
-        if (image == null || image.isEmpty()) {
+        if (Objects.isNull(image) || image.isEmpty()) {
             return Response.status(Status.BAD_REQUEST)
                 .entity(objectMapper.createObjectNode()
                 .put("error", "Image has not been provided"))
@@ -43,7 +44,7 @@ public class GenerateSbomEndpoint {
         try {
             JsonNode sbom = generateSbomService.generate(image);
             return Response.ok(sbom).build();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("GenerateSbomService Failed", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR)
                 .entity(objectMapper.createObjectNode()

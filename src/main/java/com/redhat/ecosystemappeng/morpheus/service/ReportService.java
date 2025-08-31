@@ -119,12 +119,15 @@ public class ReportService {
   }
 
   private Map<String, Collection<String>> getMappingConfig(String path) throws IOException {
-    var inputStream = this.getClass().getClassLoader().getResourceAsStream(path);
-    if (inputStream == null) {
-      inputStream = new FileInputStream(path);
+    try (var inputStream = this.getClass().getClassLoader().getResourceAsStream(path)) {
+      if (inputStream != null) {
+        return objectMapper.readValue(inputStream, new TypeReference<Map<String, Collection<String>>>() {});
+      }
     }
-    return objectMapper.readValue(inputStream, new TypeReference<Map<String, Collection<String>>>() {
-    });
+
+    try (var fileInputStream = new FileInputStream(path)) {
+      return objectMapper.readValue(fileInputStream, new TypeReference<Map<String, Collection<String>>>() {});
+    }
   }
 
   public PaginatedResult<Report> list(Map<String, String> filter, List<SortField> sortBy, Integer page,
@@ -185,7 +188,7 @@ public class ReportService {
 
   public boolean retry(String id) throws JsonProcessingException {
     var report = get(id);
-    if(report == null) {
+    if(Objects.isNull(report)) {
       return false;
     }
     repository.setAsRetried(id, userService.getUserName());
@@ -204,7 +207,7 @@ public class ReportService {
       scanId = getProperty(scan, "id");
 
       List<String> existing = null;
-      if (scanId != null) {
+      if (Objects.nonNull(scanId)) {
         existing = repository.findByName(scanId).stream().map(Report::id).toList();
         if(existing.size() == 1) {
           id = existing.get(0);
@@ -213,7 +216,7 @@ public class ReportService {
         scanId = getTraceIdFromContext(Context.current());
       }
 
-      if (existing == null || existing.isEmpty()) {
+      if (Objects.isNull(existing) || existing.isEmpty()) {
         LOGGER.infof("Complete new report %s", scanId);
 
         var created = repository.save(report);
@@ -244,7 +247,7 @@ public class ReportService {
   public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
     LOGGER.info("Processing request for Agent Morpheus");
     var scanId = request.id();
-    if (scanId == null) {
+    if (Objects.isNull(scanId)) {
       scanId = getTraceIdFromContext(Context.current());
     }
     var scan = buildScan(request);
@@ -283,14 +286,14 @@ public class ReportService {
 
   private Scan buildScan(ReportRequest request) {
     var id = request.id();
-    if (id == null) {
+    if (Objects.isNull(id)) {
       id = getTraceIdFromContext(Context.current());
     }
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
   }
 
   private Image buildImage(ReportRequest request) throws JsonProcessingException, IOException {
-    if (request.image() != null){
+    if (Objects.nonNull(request.image())){
       return objectMapper.treeToValue(request.image(), Image.class);
     }
     var sbom = request.sbom();
@@ -367,7 +370,7 @@ public class ReportService {
   public JsonNode buildManualSbom(JsonNode sbom) {
     ArrayNode packages = objectMapper.createArrayNode();
     var components = sbom.get("components");
-    if (components == null) {
+    if (Objects.isNull(components)) {
       throw new IllegalArgumentException("SBOM is missing required field: components");
     }
     components.forEach(c -> {
@@ -377,13 +380,13 @@ public class ReportService {
       var purl = getProperty(c, "purl");
       pkg.put("purl", purl);
       var system = getComponentProperty(c.withArray("properties"));
-      if (system == null && purl != null) {
+      if (Objects.isNull(system) && Objects.nonNull(purl)) {
         var matcher = PURL_PKG_TYPE.matcher(purl);
         if(matcher.matches()) {
           system = matcher.group(1);
         }
       }
-      if (system != null) {
+      if (Objects.nonNull(system)) {
         pkg.put("system", system);
         packages.add(pkg);
       }
@@ -399,7 +402,7 @@ public class ReportService {
   }
 
   private String getComponentProperty(ArrayNode properties) {
-    if (properties == null) {
+    if (Objects.isNull(properties)) {
       return null;
     }
     var it = properties.iterator();

@@ -62,26 +62,6 @@ export default function ProductReport() {
       }
     }
 
-    // if (report.input === undefined) {
-    //   return <>
-    //     <Skeleton screenreaderText="Loading contents" />
-    //     <br />
-    //     <Skeleton width="40%" screenreaderText="Loading contents" />
-    //     <Skeleton width="35%" screenreaderText="Loading contents" />
-    //     <br />
-    //     <Skeleton screenreaderText="Loading contents" />
-    //     <br />
-    //     <Skeleton screenreaderText="Loading contents" />
-    //     <br />
-    //     <Divider />
-    //     <br />
-    //     <Skeleton width="10%" screenreaderText="Loading contents" />
-    //     <br />
-    //     <Skeleton screenreaderText="Loading contents" />
-    //     <Skeleton screenreaderText="Loading contents" />
-    //   </>;
-    // }
-
     const submissionFailuresColumnNames = [
       { key: 'image', label: 'Component' },
       { key: 'tag', label: 'Version' },

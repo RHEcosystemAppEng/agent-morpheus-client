@@ -8,6 +8,7 @@ import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
+import java.util.Objects;
 
 @ServerEndpoint("/notifications")
 @ApplicationScoped
@@ -29,9 +30,9 @@ public class NotificationSocket {
 
   @OnMessage
   public void onMessage(String message) {
-    if(this.session != null) {
+    if(Objects.nonNull(this.session)) {
       session.getAsyncRemote().sendText(message, result -> {
-        if (result.getException() != null) {
+        if (Objects.nonNull(result.getException())) {
           LOGGER.error("Unable to send message: " + result.getException());
         }
       });

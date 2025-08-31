@@ -16,51 +16,49 @@ import jakarta.inject.Inject;
 public class GenerateSbomService {
     
     private static final Logger LOGGER = Logger.getLogger(PreProcessingService.class);
+    private static final int EXIT_CODE_SUCCESS = 0;
 
     @Inject
     ObjectMapper objectMapper;
 
-    public JsonNode generate(String image) throws IOException {
+    public JsonNode generate(String image) throws IOException, InterruptedException {
         
         LOGGER.info("Generating SBOM for image: " + image);
-        try {
-            String[] command = new String[] {
-                "syft",
-                image,
-                "-o",
-                "cyclonedx-json",
-            };
-            ProcessBuilder pb = new ProcessBuilder(command);
-            Process process = pb.start();
+        String[] command = new String[] {
+            "syft",
+            image,
+            "-o",
+            "cyclonedx-json",
+        };
+        ProcessBuilder pb = new ProcessBuilder(command);
+        Process process = pb.start();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line).append(System.lineSeparator());
             }
+        }
 
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            StringBuilder errorOutput = new StringBuilder();
+        StringBuilder errorOutput = new StringBuilder();
+        try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
             String errorLine;
             while ((errorLine = errorReader.readLine()) != null) {
                 errorOutput.append(errorLine).append(System.lineSeparator());
             }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                String rawError = errorOutput.toString();
-                String cleanError = rawError.replaceAll("\u001B\\[[;\\d]*m", "");
-                throw new IOException(cleanError.trim());
-            }
-
-            LOGGER.info("Successfully generated SBOM for image: " + image);
-            LOGGER.debug("SBOM: " + output.toString());
-            return objectMapper.readTree(output.toString());
-
-        } catch (Exception e) {
-            throw new IOException("Failed to generate SBOM for image '" + image + "' with error: " + e.getMessage(), e);
         }
+
+        int exitCode = process.waitFor();
+        if (exitCode != EXIT_CODE_SUCCESS) {
+            String rawError = errorOutput.toString();
+            String cleanError = rawError.replaceAll("\u001B\\[[;\\d]*m", "");
+            throw new IOException(cleanError.trim());
+        }
+
+        LOGGER.info("Successfully generated SBOM for image: " + image);
+        LOGGER.debug("SBOM: " + output.toString());
+        return objectMapper.readTree(output.toString());
     }
     
 }

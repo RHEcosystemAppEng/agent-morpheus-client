@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import com.redhat.ecosystemappeng.morpheus.tracing.TraceToMdc;
 import org.jboss.logging.Logger;
@@ -28,7 +29,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.ServerErrorException;
@@ -102,7 +102,7 @@ public class ReportEndpoint {
 
   @POST
   @Path("/{id}/retry")
-  public Response retry(@PathParam("id") String id) {
+  public Response retry(String id) {
     try {
       if (reportService.retry(id)) {
         return Response.accepted(id).build();
@@ -139,9 +139,9 @@ public class ReportEndpoint {
 
   @GET
   @Path("/{id}")
-  public String get(@PathParam("id") String id) throws InterruptedException {
+  public String get(String id) throws InterruptedException {
     var report = reportService.get(id);
-    if (report == null) {
+    if (Objects.isNull(report)) {
       throw new NotFoundException(id);
     }
     return report;
@@ -149,7 +149,7 @@ public class ReportEndpoint {
 
   @GET
   @Path("/product/{id}")
-  public Response listProduct(@PathParam("id") String id) throws InterruptedException {
+  public Response listProduct(String id) throws InterruptedException {
     var result = reportService.getProductSummary(id);
     return Response.ok(result).build();
   }
@@ -163,11 +163,11 @@ public class ReportEndpoint {
 
   @POST
   @Path("/{id}/submit")
-  public Response submit(@PathParam("id") String id) {
+  public Response submit(String id) {
     preProcessingService.confirmResponse(id);
     
     String report = reportService.get(id); 
-    if (report == null) {
+    if (Objects.isNull(report)) {
       preProcessingService.handleError(id, "report-not-found-error", "No report exists for ID " + id + " for submission.");
 
       return Response.status(Response.Status.NOT_FOUND)
@@ -207,7 +207,7 @@ public class ReportEndpoint {
   @POST
   @Path("/{id}/failed")
   @Consumes(MediaType.TEXT_PLAIN)
-  public Response failed(@PathParam("id") String id, String errorMessage) {
+  public Response failed(String id, String errorMessage) {
     preProcessingService.confirmResponse(id);
     
     preProcessingService.handleError(id, "component-syncer-processing-error", errorMessage);
@@ -216,7 +216,7 @@ public class ReportEndpoint {
 
   @DELETE
   @Path("/{id}")
-  public Response remove(@PathParam("id") String id) {
+  public Response remove(String id) {
     if (reportService.remove(id)) {
       return Response.accepted().build();
     }
@@ -239,14 +239,14 @@ public class ReportEndpoint {
   @DELETE
   @Path("/product")
   public Response removeManyByProductId(@QueryParam("productIds") List<String> productIds) {
-    if (productIds == null || productIds.isEmpty()) {
+    if (Objects.isNull(productIds) || productIds.isEmpty()) {
       return Response.status(Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
         .put("error", "No productIds provided"))
         .build();
     }
     List<String> reportIds = reportService.getReportIds(productIds);
-    if (reportIds == null || reportIds.isEmpty()) {
+    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
       return Response.accepted().build();
     }
     reportService.remove(reportIds);
@@ -256,9 +256,9 @@ public class ReportEndpoint {
 
   @DELETE
   @Path("/product/{id}")
-  public Response removeByProductId(@PathParam("id") String id) {
+  public Response removeByProductId(String id) {
     List<String> reportIds = reportService.getReportIds(List.of(id));
-    if (reportIds == null || reportIds.isEmpty()) {
+    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
       return Response.accepted().build();
     }
     reportService.remove(reportIds);

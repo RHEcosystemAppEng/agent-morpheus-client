@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
+import java.util.Objects;
 
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
@@ -99,7 +100,7 @@ public class ReportRepositoryService {
   }
 
   public Report toReport(Document doc) {
-    if (doc == null) {
+    if (Objects.isNull(doc)) {
       return null;
     }
     var input = doc.get("input", Document.class);
@@ -108,7 +109,7 @@ public class ReportRepositoryService {
     var output = doc.getList("output", Document.class);
     var metadata = extractMetadata(doc);
     var vulnIds = new HashSet<VulnResult>();
-    if (output != null) {
+    if (Objects.nonNull(output)) {
       output.forEach(o -> {
         var vulnId = o.getString("vuln_id");
         var justification = o.get("justification", Document.class);
@@ -144,20 +145,20 @@ public class ReportRepositoryService {
       return "failed";
     }
     var input = doc.get("input", Document.class);
-    if (input != null) {
+    if (Objects.nonNull(input)) {
       var scan = input.get("scan", Document.class);
-      if (scan.getString("completed_at") != null) {
+      if (Objects.nonNull(scan.getString("completed_at"))) {
         return "completed";
       }
     }
-    if (metadata != null) {
-      if (metadata.get(SENT_AT) != null) {
+    if (Objects.nonNull(metadata)) {
+      if (Objects.nonNull(metadata.get(SENT_AT))) {
         return "sent";
       }
-      if (metadata.get(SUBMITTED_AT) != null) {
+      if (Objects.nonNull(metadata.get(SUBMITTED_AT))) {
         return "queued";
       }
-      if (metadata.get(PRODUCT_ID) != null) {
+      if (Objects.nonNull(metadata.get(PRODUCT_ID))) {
         return "pending";
       }
     }
@@ -362,9 +363,9 @@ public class ReportRepositoryService {
 
   private String getProductId(String reportId) {
     Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(reportId))).first();
-    if (doc != null) {
+    if (Objects.nonNull(doc)) {
       var metadata = doc.get("metadata", Document.class);
-      if (metadata != null) {
+      if (Objects.nonNull(metadata)) {
         return metadata.getString("product_id");
       }
     }
@@ -375,7 +376,7 @@ public class ReportRepositoryService {
     Set<String> productIds = new HashSet<>();
     reportIds.forEach(id -> {
       String productId = getProductId(id);
-      if (productId != null) {
+      if (Objects.nonNull(productId)) {
         productIds.add(productId);
       }
     });
@@ -394,7 +395,7 @@ public class ReportRepositoryService {
         Document doc = cursor.next();
         Map<String, String> metadata = extractMetadata(doc);
         
-        if (metadata.get("product_completed_at") != null) {
+        if (Objects.nonNull(metadata.get("product_completed_at"))) {
           hasCompletionTimeStored = true;
           break;
         }
@@ -408,14 +409,14 @@ public class ReportRepositoryService {
         
         if ("completed".equals(reportStatus) || "failed".equals(reportStatus) || "expired".equals(reportStatus)) {
           String completedAt = getReportCompletionTime(doc);
-          if (completedAt != null && (latestCompletionTime == null || completedAt.compareTo(latestCompletionTime) > 0)) {
+          if (Objects.nonNull(completedAt) && (Objects.isNull(latestCompletionTime) || completedAt.compareTo(latestCompletionTime) > 0)) {
             latestCompletionTime = completedAt;
           }
         }
       }
     }
 
-    if (!hasCompletionTimeStored && !hasPendingReports && latestCompletionTime != null) {
+    if (!hasCompletionTimeStored && !hasPendingReports && Objects.nonNull(latestCompletionTime)) {
       productRepositoryService.updateCompletedAt(productId, latestCompletionTime);
       LOGGER.infof("Product %s completed at %s", productId, latestCompletionTime);
     }
@@ -423,11 +424,11 @@ public class ReportRepositoryService {
 
   private String getReportCompletionTime(Document doc) {
     var input = doc.get("input", Document.class);
-    if (input != null) {
+    if (Objects.nonNull(input)) {
       var scan = input.get("scan", Document.class);
-      if (scan != null) {
+      if (Objects.nonNull(scan)) {
         String completedAt = scan.getString("completed_at");
-        if (completedAt != null) {
+        if (Objects.nonNull(completedAt)) {
           return completedAt;
         }
       }
@@ -440,7 +441,7 @@ public class ReportRepositoryService {
 
   public List<String> getReportIdsByProduct(List<String> productIds) {
     List<String> reportIds = new ArrayList<>();
-    if (productIds == null || productIds.isEmpty()) {
+    if (Objects.isNull(productIds) || productIds.isEmpty()) {
       return reportIds;
     }
     Bson filter = Filters.in("metadata.product_id", productIds);
@@ -449,7 +450,7 @@ public class ReportRepositoryService {
       .iterator()
       .forEachRemaining(doc -> {
         ObjectId id = doc.getObjectId(RepositoryConstants.ID_KEY);
-        if (id != null) {
+        if (Objects.nonNull(id)) {
           reportIds.add(id.toHexString());
         }
       });
@@ -461,7 +462,7 @@ public class ReportRepositoryService {
     
     boolean result = getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
     
-    if (result && productId != null) {
+    if (result && Objects.nonNull(productId)) {
       checkAndStoreProductCompletion(productId);
     }
     

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bson.Document;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -51,7 +52,7 @@ public class ProductRepositoryService {
   }
 
   public void save(Product product, String byUser) {
-    Map<String, String> metadataWithUser = product.metadata() != null ? 
+    Map<String, String> metadataWithUser = Objects.nonNull(product.metadata()) ? 
         new HashMap<>(product.metadata()) : new HashMap<>();
     metadataWithUser.put("user", byUser);
     
@@ -70,11 +71,11 @@ public class ProductRepositoryService {
 
   public Product get(String id) {
     Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
-    if (doc == null) return null;
+    if (Objects.isNull(doc)) return null;
     
     List<FailedComponent> submissionFailures = new ArrayList<>();
     List<Document> failuresDocs = doc.getList(SUBMISSION_FAILURES, Document.class);
-    if (failuresDocs != null) {
+    if (Objects.nonNull(failuresDocs)) {
       for (Document failureDoc : failuresDocs) {
         submissionFailures.add(new FailedComponent(
           failureDoc.getString("imageName"),
@@ -110,10 +111,10 @@ public class ProductRepositoryService {
 
   public String getUserName(String id) {
     Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
-    if (doc == null) return null;
+    if (Objects.isNull(doc)) return null;
     
     Map<String, String> metadata = doc.get(METADATA, Map.class);
-    if (metadata != null) {
+    if (Objects.nonNull(metadata)) {
       return metadata.get("user");
     }
     return null;

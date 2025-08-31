@@ -18,13 +18,13 @@ const generateRequestPayload = async (formData) => {
 		
 		if (!response.ok) {
 			const json = await response.json();
-			return { error: `Could not generate payload for morpheus request. status: ${response.status}, error: ${json.error}` };
+			return { error: "Failed to generate payload for component request." };
 		}
 
 		const reportData = await response.json();
 		return reportData;
 	} catch (error) {
-		return { error: `Could not generate payload for morpheus request, ${error.message}` };
+		return { error: "Failed to generate payload for component request." };
 	}
 };
 
@@ -80,10 +80,9 @@ const saveProduct = async (compFormData, failures) => {
 
 const generateComponentSbom = async ref => {
 
-	console.log("Generating SBOM from component " + ref);
 	const image = parseImageFromReference(ref);
 	if (!image) {
-		return { error: `Could not extract image, invalid reference format` };
+		return { error: "Failed to extract image, invalid reference format" };
 	}
     
 	try {
@@ -95,13 +94,13 @@ const generateComponentSbom = async ref => {
 
 		if (!response.ok) {
 			const error = await response.text();
-			return { error: `Could not generate SBOM. status: ${response.status}, error: ${error}` };
+			return { error: "Failed to generate SBOM." };
 		}
 
 		const sbom = await response.json();
 		return sbom;
 	} catch (error) {
-		return { error: `Could not generate SBOM. ${error.message}` };
+		return { error: "Failed to generate SBOM." };
 	}
 };
 
