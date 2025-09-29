@@ -1,29 +1,32 @@
-import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
-import { deleteProductReport, getProduct } from "./services/ProductReportClient";
-import { Breadcrumb, BreadcrumbItem, Button, EmptyState, EmptyStateBody, Flex, Grid, GridItem, PageSection, Skeleton, Content, getUniqueId, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, DescriptionList, Label, Title, TextInput, Toolbar, ToolbarContent, ToolbarItem } from "@patternfly/react-core";
-import { Table, Thead, Tbody, Tr, Th, Td } from "@patternfly/react-table";
+import { useParams, useLocation } from "react-router-dom";
+import { getProduct } from "./services/ProductReportClient";
+import { Breadcrumb, BreadcrumbItem, EmptyState, EmptyStateBody, Grid, GridItem, PageSection, Skeleton, Title, Card, CardHeader, CardTitle, CardBody } from "@patternfly/react-core";
 import CubesIcon from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
-import { ConfirmationButton } from "./components/ConfirmationButton";
 import ReportsTable from "./components/ReportsTable";
-import JustificationBanner from "./components/JustificationBanner";
-import { StatusLabel } from "./components/StatusLabel";
-import ComponentStatesPieChart from "./components/ComponentPieChart";
-import { getMetadataColor } from "./Constants";
+import ProductReportDetails from "./components/ProductReportDetails";
+import ProductAdditionalDetails from "./components/ProductAdditionalDetails.jsx";
+import ProductCveStatusPieChart from "./components/ProductCveStatusPieChart";
+import RepositoryScanDistributionCard from "./components/RepositoryScanDistributionCard";
+
+/**
+ * @typedef {import('./types.js').Product} Product
+ */
 
 export default function ProductReport() {
 
   const params = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   
   const passedProductData = location.state?.productData;
   
-  const [productData, setProductData] = React.useState(passedProductData || null);
+  const [productData, setProductData] = React.useState(/** @type {Product | null} */(passedProductData || null));
   const [errorReport, setErrorReport] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(!passedProductData);
-  const [errorMessageFilter, setErrorMessageFilter] = React.useState('');
-
+  const firstCve = Object.keys(productData?.summary?.cves ?? {})[0];
+  
+  const title = `${productData?.data?.name} / ${firstCve}`;
+ 
   React.useEffect(() => {
     if (!passedProductData) {
       getProduct(params.id)
@@ -39,10 +42,6 @@ export default function ProductReport() {
       setIsLoading(false);
     }
   }, []);
-
-  const onDelete = () => {
-    deleteProductReport(params.id).then(() => navigate('/product-reports'));
-  }
 
   const showReport = () => {
     if (errorReport.status !== undefined) {
@@ -61,150 +60,37 @@ export default function ProductReport() {
         </EmptyState>;
       }
     }
-
-    const submissionFailuresColumnNames = [
-      { key: 'image', label: 'Component' },
-      { key: 'tag', label: 'Version' },
-      { key: 'error', label: 'Error' }
-    ];
-
-    const product_meta_fields = [
-      "product_id",
-      "product_submitted_at",
-      "product_name",
-      "product_version",
-      "product_submitted_count"
-    ];
-  
-    const emptySubmissionFailuresTable = () => {
-      return <EmptyState>
-        <EmptyStateBody>
-          No component submission failures found for this product.
-        </EmptyStateBody>
-      </EmptyState>;
-    };
-
-    const submissionFailuresTable = () => {
-      const filteredFailures = productData.data.submissionFailures.filter(failure => 
-        failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
-      );
-      
-      return filteredFailures.map((failure, index) => {
-        return <Tr key={`failure-${productData.data.submissionFailures.indexOf(failure)}`} style={{ borderBottom: 'none' }}>
-          <Td dataLabel={submissionFailuresColumnNames[0].label} modifier="nowrap">{failure.imageName}</Td>
-          <Td dataLabel={submissionFailuresColumnNames[1].label} modifier="nowrap">{failure.imageVersion}</Td>
-          <Td dataLabel={submissionFailuresColumnNames[2].label} modifier="nowrap">
-            <span
-            title={failure.error}
-            style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '1200px',
-              display: 'inline-block',
-              verticalAlign: 'bottom',
-            }}
-            >
-              {failure.error}
-            </span>
-          </Td>
-        </Tr>
-      });
-    }
-
-    const getFilteredSubmissionFailuresCount = () => {
-      return productData.data.submissionFailures.filter(failure => 
-        failure.error.toLowerCase().includes(errorMessageFilter.toLowerCase())
-      ).length;
-    }
-
+ 
     return <Grid hasGutter>
-      <Title headingLevel="h1">{params.id}</Title>
-      {productData ? (
-        <div>
-          <StatusLabel type={productData.summary.productState} size="large" />
-        </div>
-      ) : null}
-      <DescriptionList isHorizontal isCompact>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Product</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.data.name || null}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Version</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.data.version || null}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Submitted At</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.data.submittedAt || null}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Completed At</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.data.completedAt || "-"}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>Metadata</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.data.metadata && Object.entries(productData.data.metadata).map(([key, value]) => (  
-              !product_meta_fields.includes(key) ?
-              <Label
-                key={key}
-                onClick={() => navigate(`/reports?${key}=${value}`)}
-                color={getMetadataColor(key)}
-              >
-                {key}:{value}
-              </Label>
-              :
-              null
-              ))}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        <DescriptionListGroup>
-          <DescriptionListTerm>CVEs</DescriptionListTerm>
-          <DescriptionListDescription>
-            {productData?.summary.cves && Object.keys(productData.summary.cves).length > 0 ? (
-              <Flex direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsXs' }}>
-                {Object.entries(productData.summary.cves).map(([cve, justifications]) => {
-                  const uid = getUniqueId("div");
-                  return (
-                    <div key={uid}>
-                      <Flex direction={{ default: 'row' }} spaceItems={{ default: 'spaceItemsXs' }} alignItems={{ default: 'alignItemsCenter' }}>
-                        <Link to={`/reports?vulnId=${cve}`}>
-                          {cve}
-                        </Link>
-                        {justifications.length > 0 && 
-                          justifications.map((justification, index) => (
-                            <JustificationBanner key={`${uid}-${index}`} justification={justification} />
-                          ))
-                        }
-                      </Flex>
-                    </div>
-                  );
-                })}
-              </Flex>
-            ) : null}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-      </DescriptionList>
+      <Title headingLevel="h1">Product Report: <span style={{ fontSize: 'var(--pf-t--global--font--size--heading--h6)' }}>{title}</span></Title>
+      {productData && (
+        <>
+          <GridItem span={6}>
+            <ProductReportDetails product={productData} />
+          </GridItem>
+          <GridItem span={6}>
+            <ProductAdditionalDetails product={productData} />
+          </GridItem>
+        </>
+      )}
 
-      <div>
-        <Title headingLevel="h2">State Distribution</Title>
-        <ComponentStatesPieChart 
-          componentStates={productData?.summary.componentStates} 
+      <GridItem span={6}>
+        <RepositoryScanDistributionCard
+          componentStates={productData?.summary.componentStates}
           submittedCount={productData?.data.submittedCount}
         />
-      </div>
+      </GridItem>
 
-      <div>
-        <Title headingLevel="h2" style={{ marginBottom: '20px' }}>Product Components - Submitted and Sent for Scanning</Title>
+      <GridItem span={6}>
+        <Card style={{ height: '100%' }}>
+          <CardTitle><Title headingLevel="h4" size="xl">ExploitIQ statuses</Title></CardTitle>
+          <CardBody>
+            <ProductCveStatusPieChart productId={params.id} />
+          </CardBody>
+        </Card>
+      </GridItem>
+
+      <GridItem span={12}>
         <ReportsTable
           initSearchParams={
             (() => {
@@ -214,75 +100,17 @@ export default function ProductReport() {
             })()
           }
         />
-      </div>
-
-      <div style={{ marginTop: '24px' }}>
-        <Title headingLevel="h2">Product Components - Failed to Submit</Title>
-        {productData.data.submissionFailures.length > 0 ? (
-          <>
-            <Toolbar style={{ padding: 0 }}>
-              <ToolbarContent>
-                <ToolbarItem alignment={{ default: 'alignRight' }} variant="pagination" style={{ marginRight: '70px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
-                    {errorMessageFilter && (
-                      <Button 
-                        variant="link" 
-                        onClick={() => setErrorMessageFilter('')}
-                      >
-                        Clear
-                      </Button>
-                    )}
-                    <TextInput
-                      type="text"
-                      id="error-message-filter"
-                      placeholder="Filter by error message..."
-                      value={errorMessageFilter}
-                      onChange={(_event, value) => setErrorMessageFilter(value)}
-                      style={{ minWidth: '500px' }}
-                    />
-                  </div>
-                </ToolbarItem>
-              </ToolbarContent>
-            </Toolbar>
-            {getFilteredSubmissionFailuresCount() > 0 ? (
-              <Table>
-                <Thead>
-                  <Tr>
-                    <Th>{submissionFailuresColumnNames[0].label}</Th>
-                    <Th>{submissionFailuresColumnNames[1].label}</Th>
-                    <Th>{submissionFailuresColumnNames[2].label}</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {submissionFailuresTable()}
-                </Tbody>
-              </Table>
-            ) : (
-              <EmptyState>
-                <EmptyStateBody>
-                  No submission failures match the current filter.
-                </EmptyStateBody>
-              </EmptyState>
-            )}
-          </>
-        ) : emptySubmissionFailuresTable()}
-      </div>
-
-      <GridItem>
-        <Flex columnGap={{ default: 'columnGapSm' }}>
-          <ConfirmationButton btnVariant="danger"
-            onConfirm={() => onDelete()}
-            message={`The Product report with id: ${params.id} will be permanently deleted.`}>Delete</ConfirmationButton>
-          <Button variant="primary" onClick={() => navigate(-1)}>Back</Button>
-        </Flex>
+      
       </GridItem>
+     
+    
     </Grid>
   }
 
   return <PageSection hasBodyWrapper={false} >
     <Breadcrumb>
       <BreadcrumbItem to="#/product-reports">Product Reports</BreadcrumbItem>
-      <BreadcrumbItem>{params.id}</BreadcrumbItem>
+      <BreadcrumbItem>{title}</BreadcrumbItem>
     </Breadcrumb>
     {isLoading ? <Skeleton screenreaderText="Loading contents" /> : showReport()}
   </PageSection>;

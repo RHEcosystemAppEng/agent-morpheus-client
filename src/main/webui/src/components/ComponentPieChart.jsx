@@ -1,5 +1,5 @@
 
-import { ChartPie } from '@patternfly/react-charts/dist/esm/victory';
+import { ChartDonut } from '@patternfly/react-charts/dist/esm/victory';
 
 const COLORS = {
   completed: 'forestgreen',
@@ -39,7 +39,7 @@ const createChartData = (stateCounts, notScannedCount) => {
   }));
 
   // Add not scanned segment if applicable
-  if (typeof notScannedCount === 'number' && notScannedCount >= 0) {
+  if (typeof notScannedCount === 'number' && notScannedCount > 0) {
     data.push({
       x: 'Not Scanned',
       y: notScannedCount
@@ -50,11 +50,11 @@ const createChartData = (stateCounts, notScannedCount) => {
 };
 
 const createLegendData = (data) => {
-  return Object.entries(STATE_LABELS).map(([stateKey, stateLabel]) => {
-    const dataItem = data.find(item => item.x.toLowerCase() === stateKey.toLowerCase());
-    const count = dataItem ? dataItem.y : 0;
+  return data.map(item => {
+    const stateKey = item.x.toLowerCase();
+    const label = STATE_LABELS[stateKey] || item.x;
     return {
-      name: `${stateLabel}: ${count}`,
+      name: `${label}: ${item.y}`,
       symbol: { fill: COLORS[stateKey] || 'grey' }
     };
   });
@@ -81,18 +81,7 @@ const ComponentStatesPieChart = ({ componentStates = [], submittedCount = 0 }) =
   }
 
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      <div style={{
-        position: 'absolute',
-        left: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        fontSize: '14px',
-      }}>
-        Total Submitted: {submittedCount}
-      </div>
-
-      <ChartPie
+      <ChartDonut
         ariaDesc="Component states distribution pie chart"
         ariaTitle="Component States Distribution"
         constrainToVisibleArea={true}
@@ -103,15 +92,11 @@ const ComponentStatesPieChart = ({ componentStates = [], submittedCount = 0 }) =
         legendData={legendData}
         legendOrientation="vertical"
         legendPosition="right"
-        padding={{
-          bottom: 20,
-          left: 50,
-          right: 100,
-          top: 20
-        }}
+        padding={{ top: 20, bottom: 20, left: 20, right: 220 }}
         colorScale={colorScale}
+        title={`${total}`}
+        subTitle="Repositories"
       />
-    </div>
   );
 };
 

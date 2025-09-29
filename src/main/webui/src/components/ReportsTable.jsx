@@ -1,24 +1,27 @@
-import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, Tooltip, getUniqueId } from "@patternfly/react-core";
+import { Bullseye, Button, EmptyState, EmptyStateVariant, Flex, Label, MenuToggle, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant, Pagination, Select, SelectOption, Toolbar, ToolbarContent, ToolbarItem, getUniqueId } from "@patternfly/react-core";
 import { deleteReports, listReports, retryReport } from "../services/ReportClient";
-import { ActionsColumn, Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { SearchIcon } from '@patternfly/react-icons/dist/esm/icons/search-icon';
 import { TrashIcon } from '@patternfly/react-icons/dist/esm/icons/trash-icon';
 import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-icon';
-import { RedoIcon } from '@patternfly/react-icons/dist/esm/icons/redo-icon';
-import { InfoCircleIcon } from '@patternfly/react-icons/dist/esm/icons/info-circle-icon';
-import { useOutletContext, useParams, useSearchParams, Link } from "react-router-dom";
+import { useOutletContext, useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
 import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
+import { formatLocalDateTime } from "../services/DateUtils";
+import CveStatus from "./CveStatus";
+/** @typedef {import('../types').Report} Report */
+/** @typedef {import('../types').Vuln} Vuln */
 
 export default function ReportsTable({ initSearchParams }) {
 
   const [searchParams, setSearchParams] = useSearchParams(initSearchParams);
+  const navigate = useNavigate();
 
   const { addAlert } = useOutletContext();
   const [reports, setReports] = React.useState([]);
   const [activeSortDirection, setActiveSortDirection] = React.useState('desc');
-  const [activeSortIndex, setActiveSortIndex] = React.useState(3); // Submitted At
+  const [activeSortIndex, setActiveSortIndex] = React.useState(4); // Submitted At
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(20);
   const [totalElements, setTotalElements] = React.useState(0);
@@ -27,7 +30,15 @@ export default function ReportsTable({ initSearchParams }) {
   const [statusSelected, setStatusSelected] = React.useState('');
   const [deleteItems, setDeleteItems] = React.useState([]);
   const [deleteAll, setDeleteAll] = React.useState(false);
+  // Conditionally hide CVEs column if product_id is present in search params
+  const hasProductId = !!searchParams.get('product_id');
+  // Equal column widths setup (selection + data columns + actions)
+  const dataColumnCount = hasProductId ? 6 : 7; // includes new CVE Status column
+  const selectColWidthPx = 56;
+  const equalColWidth = `calc((100% - ${selectColWidthPx}px) / ${dataColumnCount + 1})`;
 
+  
+  
   const onSetPage = (_event, newPage) => {
     setPage(newPage);
   }
@@ -162,18 +173,18 @@ export default function ReportsTable({ initSearchParams }) {
   };
 
   const columnNames = [
-    { key: 'id', label: 'Info' },
     { key: 'imageName', label: 'Image' },
     { key: 'imageTag', label: 'Tag' },
+    { key: 'cveStatus', label: 'ExploitIQ Status' },
     { key: 'vulns', label: 'CVEs' },
-    { key: 'completedAt', label: 'Completed At' },
-    { key: 'submittedAt', label: 'Submitted At' },
-    { key: 'state', label: 'State' }
+    { key: 'submittedAt', label: 'Submitted' },
+    { key: 'completedAt', label: 'Completed' },
+    { key: 'Scan state', label: 'State' }
   ];
 
   const emptyTable = () => {
     return <Tr>
-      <Td colSpan={columnNames.length}>
+      <Td colSpan={columnNames.length + 2 - (hasProductId ? 1 : 0)}>
         <Bullseye>
           <EmptyState headingLevel="h2" icon={SearchIcon} titleText="No reports found" variant={EmptyStateVariant.sm}>
           </EmptyState>
@@ -184,21 +195,7 @@ export default function ReportsTable({ initSearchParams }) {
 
   const reportsTable = () => {
     return reports.map((r, rowIndex) => {
-      const rowActions = [
-        {
-          title: 'Retry',
-          onClick: () => onRetry(r.id),
-          isOutsideDropdown: true
-        },
-        {
-          title: 'Delete',
-          onClick: () => {
-            onSelectItem(r.id, rowIndex, true);
-            setModalOpen(true);
-          },
-          isOutsideDropdown: true
-        }
-      ];
+      const firstVuln = r?.vulns && r.vulns.length > 0 ? r.vulns[0] : undefined;
       return <Tr key={r.id} >
         <Td select={{
           rowIndex,
@@ -206,30 +203,30 @@ export default function ReportsTable({ initSearchParams }) {
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <Link to={`/reports/${r.id}`} style={{ color: 'var(--pf-t--global--icon--color--status--info--default' }}>
-            <InfoCircleIcon size="md" style={{ fontSize: '20px', width: '20px', height: '20px' }} />
-          </Link>
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.imageName}>
+            <Link to={`/reports?imageName=${r.imageName}`} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.imageName}</Link>
+          </div>
         </Td>
-        <Td dataLabel={columnNames[1].label} modifier="nowrap"><Link to={`/reports?imageName=${r.imageName}`}>{r.imageName}</Link></Td>
-        <Td dataLabel={columnNames[2].label} modifier="nowrap"><Link to={`/reports?imageTag=${r.imageTag}`}>{r.imageTag}</Link></Td>
-        <Td dataLabel={columnNames[3].label} modifier="nowrap">{r.vulns.map(vuln => {
-          const uid = getUniqueId("div");
-          return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`}>
-          {vuln.vulnId} 
-        </Link><JustificationBanner justification={vuln.justification} /></div>
-        })}</Td>
-        <Td dataLabel={columnNames[4].label} modifier="nowrap">{r.completedAt ? r.completedAt : '-'}</Td>
-        <Td dataLabel={columnNames[5].label} modifier="nowrap">{r.metadata?.submitted_at || '-'}</Td>
+        <Td dataLabel={columnNames[1].label} modifier="nowrap">
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.imageTag}>
+            <Link to={`/reports?imageTag=${r.imageTag}`} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.imageTag}</Link>
+          </div>
+        </Td>
+        <Td dataLabel={columnNames[2].label} modifier="nowrap"><CveStatus vuln={firstVuln} /></Td>
+        {!hasProductId && (
+          <Td dataLabel={columnNames[3].label} modifier="nowrap">{r.vulns.map(vuln => {
+            const uid = getUniqueId("div");
+            return <div key={uid}><Link to={`/reports?vulnId=${vuln.vulnId}`}>
+            {vuln.vulnId} 
+          </Link></div>
+          })}</Td>
+        )}
+        <Td dataLabel={columnNames[4].label} modifier="nowrap">{formatLocalDateTime(r.metadata?.submitted_at)}</Td>
+        <Td dataLabel={columnNames[5].label} modifier="nowrap">{formatLocalDateTime(r.completedAt)}</Td>
         <Td dataLabel={columnNames[6].label}><StatusLabel type={r.state} /></Td>
-        <Td dataLabel="Actions">
+        <Td dataLabel="CVE Repository Report">
           <Flex columnGap={{ default: 'columnGapSm' }}>
-            <Tooltip content="Submit again the report to Morpheus">
-              <Button onClick={() => onRetry(r.id)} variant="stateful" aria-label="retry" state="read" icon={<RedoIcon/>}/>
-            </Tooltip>
-            <Button onClick={() => {
-              onSelectOnlyItem(r.id, rowIndex); 
-              setModalOpen(true);
-            }} variant="stateful" aria-label="delete" state="attention" icon={<TrashIcon/>}/>
+            <Button onClick={() => navigate(`/reports/${r.id}`)} variant="primary" aria-label="view" >View</Button>
           </Flex>
         </Td>
       </Tr>
@@ -266,21 +263,21 @@ export default function ReportsTable({ initSearchParams }) {
         </ToolbarItem>
       </ToolbarContent>
     </Toolbar>
-    <Table>
+    <Table style={{ tableLayout: 'fixed', width: '100%' }}>
       <Thead>
         <Tr>
-          <Th select={{
+          <Th style={{ width: selectColWidthPx }} select={{
             onSelect: (_event, isSelecting) => onDeleteAll(isSelecting),
             isSelected: deleteAll
           }} aria-label="All Selected"/>
-          <Th width={5}>{columnNames[0].label}</Th>
-          <Th width={20} sort={getSortParams(1)}>{columnNames[1].label}</Th>
-          <Th width={20} sort={getSortParams(2)}>{columnNames[2].label}</Th>
-          <Th width={10}>{columnNames[3].label}</Th>
-          <Th width={10} sort={getSortParams(4)}>{columnNames[4].label}</Th>
-          <Th width={10} sort={getSortParams(5)}>{columnNames[5].label}</Th>
-          <Th>{columnNames[6].label}</Th>
-          <Td>Actions</Td>
+          <Th style={{ width: equalColWidth }} sort={getSortParams(0)}>{columnNames[0].label}</Th>
+          <Th style={{ width: equalColWidth }} sort={getSortParams(1)}>{columnNames[1].label}</Th>
+          <Th style={{ width: equalColWidth }}>{columnNames[2].label}</Th>
+          {!hasProductId && (<Th style={{ width: equalColWidth }}>{columnNames[3].label}</Th>)}
+          <Th style={{ width: equalColWidth }} sort={getSortParams(4)}>{columnNames[4].label}</Th>
+          <Th style={{ width: equalColWidth }} sort={getSortParams(5)}>{columnNames[5].label}</Th>
+          <Th style={{ width: equalColWidth }}>{columnNames[6].label}</Th>
+          <Td style={{ width: equalColWidth }}>CVE Repository Report</Td>
         </Tr>
       </Thead>
       <Tbody>

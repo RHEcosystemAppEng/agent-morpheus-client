@@ -153,13 +153,22 @@ export default function App() {
     </ToolbarContent>
   </Toolbar>;
   const Header = <Masthead>
-    <MastheadMain><MastheadToggle>
-      <PageToggleButton variant="plain" aria-label='Global navigation' isSidebarOpen={isSidebarOpen} onSidebarToggle={onSidebarToggle} id='vertical-nav-toggle'>
-        <BarsIcon />
-      </PageToggleButton>
+    <MastheadMain>
+      <MastheadToggle>
+
+        <PageToggleButton variant="plain" aria-label='Global navigation' isSidebarOpen={isSidebarOpen} onSidebarToggle={onSidebarToggle} id='vertical-nav-toggle'>
+          <BarsIcon />
+        </PageToggleButton>
     </MastheadToggle>
       <MastheadBrand>
-        <Title headingLevel='h2'>ExploitIQ - GUI</Title>
+        <div style={{ display: 'flex', alignItems: 'top', gap: '8px' }}>
+          <img src="/app/redhat.svg" alt="Red Hat" style={{ height: 24 }} />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Title headingLevel='h2' size="md" ><strong>Red Hat</strong></Title>
+            <Title headingLevel='h6' size='md'>Trusted Profile</Title>
+            <Title headingLevel='h6' size='md'>Analyzer ExploitIQ</Title>
+          </div>
+        </div>
       </MastheadBrand>
     </MastheadMain>
     <MastheadContent>{headerToolbar}</MastheadContent>
