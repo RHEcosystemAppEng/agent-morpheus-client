@@ -10,8 +10,6 @@ export default function DonutChartWrapper({
   ariaDesc,  
   total = 0
 }) {
-  console.log(legendData);
-  console.log(colorScale)
   return (
     <div style={{ width: '400px', height: '150px' }}>
         <ChartDonut
