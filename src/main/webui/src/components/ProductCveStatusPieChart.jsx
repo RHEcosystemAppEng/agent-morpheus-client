@@ -1,5 +1,5 @@
 import { PageSection, Content, Bullseye, Spinner } from "@patternfly/react-core";
-import { ChartDonut } from "@patternfly/react-charts/dist/esm/victory";
+import DonutChartWrapper from "./DonutChartWrapper";
 import { listReports } from "../services/ReportClient";
 import { useOutletContext, useSearchParams } from "react-router-dom";
 
@@ -102,35 +102,30 @@ export default function ProductCveStatusPieChart({ productId }) {
   const colors = computeColors(data);
   const total = React.useMemo(() => data.reduce((sum, d) => sum + d.y, 0), [data]);
   const legendData = React.useMemo(() => data.map(d => ({ name: `${toTitleCase(d.x)}: ${d.y}` })), [data]);
-  const vulnerableCount = React.useMemo(() => (data.find(d => d.x === "vulnerable")?.y || 0), [data]);
-
-  return <PageSection hasBodyWrapper={false}>
+  
+  return <>
     
     {loading ? (
-      <Bullseye>
-        <Spinner size="xl" />
-      </Bullseye>
+      <div style={{ width: '150px', height: '150px' }}>
+        <Bullseye>
+          <Spinner size="xl" />
+        </Bullseye>
+      </div>
     ) : (
       data.length === 0 ? (
         <Content>No CVE incidents found for current filters.</Content>
       ) : (
-        <ChartDonut
+        <DonutChartWrapper
           ariaDesc="CVE incidents by status"
           ariaTitle="CVE incidents by status"
-          constrainToVisibleArea
           data={data}
-          height={250}
-          labels={({ datum }) => `${toTitleCase(datum.x)}: ${datum.y}`}
-          padding={{ top: 20, bottom: 20, left: 20, right: 220 }}
-          width={550}
           colorScale={colors}
           legendData={legendData}
-          legendOrientation="vertical"
-          legendPosition="right"
           title={`${total}`}
           subTitle="Statuses"
+          total={total}
         />
       )
     )}
-  </PageSection>;
+  </>;
 } 

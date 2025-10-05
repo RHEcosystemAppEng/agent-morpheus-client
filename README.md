@@ -45,7 +45,7 @@ Example:
 ![img.png](img.png)
 
 
-### View Reports
+### CVE Repository Report
 
 This table shows all the reports and allows sorting by _ID_ and _Completed at_ columns. There is a _Status_ dropdown that can be
 used to filter by Status. You can use any metadata as a query parameter for advanced filtering. e.g. `?batch_id=001`

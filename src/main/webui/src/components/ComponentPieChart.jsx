@@ -1,5 +1,5 @@
 
-import { ChartDonut } from '@patternfly/react-charts/dist/esm/victory';
+import DonutChartWrapper from './DonutChartWrapper';
 
 const COLORS = {
   completed: 'forestgreen',
@@ -55,7 +55,6 @@ const createLegendData = (data) => {
     const label = STATE_LABELS[stateKey] || item.x;
     return {
       name: `${label}: ${item.y}`,
-      symbol: { fill: COLORS[stateKey] || 'grey' }
     };
   });
 };
@@ -81,21 +80,15 @@ const ComponentStatesPieChart = ({ componentStates = [], submittedCount = 0 }) =
   }
 
   return (
-      <ChartDonut
+      <DonutChartWrapper
         ariaDesc="Component states distribution pie chart"
         ariaTitle="Component States Distribution"
-        constrainToVisibleArea={true}
         data={chartData}
-        height={250}
-        width={550}
-        labels={({ datum }) => `${datum.x}: ${datum.y} (${Math.round((datum.y / total) * 100)}%)`}
         legendData={legendData}
-        legendOrientation="vertical"
-        legendPosition="right"
-        padding={{ top: 20, bottom: 20, left: 20, right: 220 }}
         colorScale={colorScale}
         title={`${total}`}
         subTitle="Repositories"
+        total={total}
       />
   );
 };

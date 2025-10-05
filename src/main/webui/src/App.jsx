@@ -97,7 +97,7 @@ export default function App() {
         Request Component Analysis
       </NavItem>
       <NavItem itemId={1} isActive={location.pathname.startsWith('/reports')} to="#/reports">
-        View Reports
+        CVE Repository Report
       </NavItem>
       <NavItem itemId={2} isActive={location.pathname.startsWith('/vulnerabilities')} to="#/vulnerabilities">
         Vulnerabilities
@@ -144,7 +144,7 @@ export default function App() {
       }}>
         <Dropdown isOpen={isDropdownOpen} onSelect={onDropdownSelect} onOpenChange={setIsDropdownOpen} popperProps={{
           position: 'right'
-        }} toggle={toggleRef => <MenuToggle ref={toggleRef} isExpanded={isDropdownOpen} onClick={onDropdownToggle} icon={<Avatar src={imgAvatar} alt="" />} isFullHeight>
+        }} toggle={toggleRef => <MenuToggle ref={toggleRef} isExpanded={isDropdownOpen} onClick={onDropdownToggle} icon={<Avatar src={imgAvatar} alt="" size="sm"/>} isFullHeight>
           {userName}
         </MenuToggle>}>
           <DropdownList>{userDropdownItems}</DropdownList>

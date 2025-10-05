@@ -7,7 +7,8 @@ import ReportsTable from "./components/ReportsTable";
 import ProductReportDetails from "./components/ProductReportDetails";
 import ProductAdditionalDetails from "./components/ProductAdditionalDetails.jsx";
 import ProductCveStatusPieChart from "./components/ProductCveStatusPieChart";
-import RepositoryScanDistributionCard from "./components/RepositoryScanDistributionCard";
+import ComponentStatesPieChart from "./components/ComponentPieChart";
+
 
 /**
  * @typedef {import('./types.js').Product} Product
@@ -75,14 +76,19 @@ export default function ProductReport() {
       )}
 
       <GridItem span={6}>
-        <RepositoryScanDistributionCard
-          componentStates={productData?.summary.componentStates}
-          submittedCount={productData?.data.submittedCount}
-        />
-      </GridItem>
+        <Card style={{ padding: 'unset' }}>
+          <CardTitle><Title headingLevel="h4" size="xl">Repository scan distribution</Title></CardTitle>
+          <CardBody>
+            <ComponentStatesPieChart
+              componentStates={productData?.summary.componentStates}
+              submittedCount={productData?.data.submittedCount}
+            />              
+          </CardBody>
+        </Card>
+    </GridItem>
 
       <GridItem span={6}>
-        <Card style={{ height: '100%' }}>
+        <Card style={{ padding: 'unset' }}>
           <CardTitle><Title headingLevel="h4" size="xl">ExploitIQ statuses</Title></CardTitle>
           <CardBody>
             <ProductCveStatusPieChart productId={params.id} />

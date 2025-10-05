@@ -81,7 +81,7 @@ export default function Report() {
           <DetailsCard report={report} />
         </GridItem>
         <GridItem>
-          <ChecklistCard vulns={output} />
+          <ChecklistCard vuln={output?.[0]} />
         </GridItem>
         <GridItem>
           <AdditionalDetailsCard report={report} />
