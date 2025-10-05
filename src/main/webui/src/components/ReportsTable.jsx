@@ -10,7 +10,7 @@ import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
 import { formatLocalDateTime } from "../services/DateUtils";
 import CveStatus from "./CveStatus";
-/** @typedef {import('../types').Report} Report */
+/** @typedef {import('../types').ReportListItem} Report */
 /** @typedef {import('../types').Vuln} Vuln */
 
 export default function ReportsTable({ initSearchParams }) {
@@ -172,9 +172,20 @@ export default function ReportsTable({ initSearchParams }) {
     pending: "Pending"
   };
 
+  const getRepoDisplayName = (url) => {
+    if (!url) return '';
+    try {
+      const u = new URL(url);
+      const path = u.pathname.replace(/^\/+|\/+$/g, '');
+      return path || url;
+    } catch (e) {
+      return url;
+    }
+  };
+
   const columnNames = [
-    { key: 'imageName', label: 'Image' },
-    { key: 'imageTag', label: 'Tag' },
+    { key: 'codeRepository', label: 'Repository' },
+    { key: 'codeTag', label: 'Commit ID' },
     { key: 'cveStatus', label: 'ExploitIQ Status' },
     { key: 'vulns', label: 'CVEs' },
     { key: 'submittedAt', label: 'Submitted' },
@@ -203,13 +214,26 @@ export default function ReportsTable({ initSearchParams }) {
           isSelected: isSelectedItem(rowIndex)
         }}> </Td>
         <Td dataLabel={columnNames[0].label} modifier="nowrap">
-          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.imageName}>
-            <Link to={`/reports?imageName=${r.imageName}`} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.imageName}</Link>
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.codeRepository}>
+            <a href={r.codeRepository} target="_blank" rel="noreferrer" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getRepoDisplayName(r.codeRepository)}</a>
           </div>
         </Td>
         <Td dataLabel={columnNames[1].label} modifier="nowrap">
-          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.imageTag}>
-            <Link to={`/reports?imageTag=${r.imageTag}`} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.imageTag}</Link>
+          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.codeTag}>
+            {r.codeRepository && r.codeTag ? (
+              <a
+                href={`${(r.codeRepository.endsWith('/') ? r.codeRepository.slice(0, -1) : r.codeRepository)}/commit/${r.codeTag}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              >
+                {r.codeTag}
+              </a>
+            ) : (
+              <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {r.codeTag}
+              </span>
+            )}
           </div>
         </Td>
         <Td dataLabel={columnNames[2].label} modifier="nowrap"><CveStatus vuln={firstVuln} /></Td>

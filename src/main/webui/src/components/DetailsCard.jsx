@@ -12,6 +12,10 @@ import IntelReliabilityScore from "./IntelReliabilityScore";
  */
 export default function DetailsCard({ report }) {
   const image = report.input.image;
+  const sourceInfo = image?.source_info || [];
+  const codeSource = Array.isArray(sourceInfo) ? sourceInfo.find(s => s?.type === 'code') : undefined;
+  const codeRepository = codeSource?.git_repo;
+  const codeTag = codeSource?.ref;
   const output = report.output;
   const vuln = output?.[0] || {};
   const intelScore = vuln?.intel_score;
@@ -35,15 +39,23 @@ export default function DetailsCard({ report }) {
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-              <DescriptionListTerm>Image</DescriptionListTerm>
+              <DescriptionListTerm>Repository</DescriptionListTerm>
               <DescriptionListDescription>
-                <Link to={`/reports?imageName=${image.name}`}>{image.name}</Link>
+                {codeRepository ? (
+                  <a href={codeRepository} target="_blank" rel="noreferrer">{codeRepository}</a>
+                ) : (
+                  image?.name
+                )}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-              <DescriptionListTerm>Tag</DescriptionListTerm>
+              <DescriptionListTerm>Commit ID</DescriptionListTerm>
               <DescriptionListDescription>
-                <Link to={`/reports?imageTag=${image.tag}`}>{image.tag}</Link>
+                {codeRepository && codeTag ? (
+                  <a href={`${(codeRepository.endsWith('/') ? codeRepository.slice(0, -1) : codeRepository)}/commit/${codeTag}`} target="_blank" rel="noreferrer">{codeTag}</a>
+                ) : (
+                  image?.tag
+                )}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>

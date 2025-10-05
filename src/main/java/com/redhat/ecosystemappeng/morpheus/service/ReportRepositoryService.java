@@ -106,6 +106,24 @@ public class ReportRepositoryService {
     var input = doc.get("input", Document.class);
     var scan = input.get("scan", Document.class);
     var image = input.get("image", Document.class);
+    String codeRepo = null;
+    String codeRef = null;
+    if (Objects.nonNull(image)) {
+      try {
+        var sourceInfo = image.getList("source_info", Document.class);
+        if (Objects.nonNull(sourceInfo)) {
+          for (var src : sourceInfo) {
+            if ("code".equals(src.getString("type"))) {
+              codeRepo = src.getString("git_repo");
+              codeRef = src.getString("ref");
+              break;
+            }
+          }
+        }
+      } catch (Exception ignored) {
+        // Intentionally ignore malformed or missing source_info
+      }
+    }
     var output = doc.getList("output", Document.class);
     var metadata = extractMetadata(doc);
     var vulnIds = new HashSet<VulnResult>();
@@ -131,6 +149,8 @@ public class ReportRepositoryService {
         scan.getString("completed_at"),
         image.getString("name"),
         image.getString("tag"),
+        codeRepo,
+        codeRef,
         getStatus(doc, metadata),
         vulnIds,
         metadata);
@@ -525,6 +545,14 @@ public class ReportRepositoryService {
           break;
         case "imageTag":
           filters.add(Filters.eq("input.image.tag", e.getValue()));
+          break;
+        case "repository":
+          filters.add(Filters.elemMatch("input.image.source_info",
+              Filters.and(Filters.eq("type", "code"), Filters.eq("git_repo", e.getValue()))));
+          break;
+        case "tag":
+          filters.add(Filters.elemMatch("input.image.source_info",
+              Filters.and(Filters.eq("type", "code"), Filters.eq("ref", e.getValue()))));
           break;
         default:
           filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));

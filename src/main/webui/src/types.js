@@ -20,6 +20,12 @@
  */
 
 /**
+ * @typedef {Object} VulnResult
+ * @property {string} vulnId
+ * @property {{ status: string, label: string }=} justification
+ */
+
+/**
  * @typedef {Object} ImageInfo
  * @property {string} name
  * @property {string} tag
@@ -44,6 +50,22 @@
  * @property {ReportInput} input
  * @property {Vuln[]} output
  * @property {Record<string, any>=} metadata
+ */
+
+/**
+ * Lightweight list item returned by GET /reports
+ * @typedef {Object} ReportListItem
+ * @property {string} id
+ * @property {string} name
+ * @property {string=} startedAt
+ * @property {string=} completedAt
+ * @property {string} imageName
+ * @property {string} imageTag
+ * @property {string=} codeRepository
+ * @property {string=} codeTag
+ * @property {string} state
+ * @property {VulnResult[]} vulns
+ * @property {Record<string, string>=} metadata
  */
 
 /**
