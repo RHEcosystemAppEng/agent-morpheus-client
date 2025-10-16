@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.rest;
+package com.redhat.ecosystemappeng.morpheus.client;
 
 import com.redhat.ecosystemappeng.morpheus.model.FeedbackDto;
 import jakarta.ws.rs.*;
