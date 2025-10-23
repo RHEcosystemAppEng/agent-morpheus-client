@@ -8,6 +8,7 @@ import ProductReportDetails from "./components/ProductReportDetails";
 import ProductAdditionalDetails from "./components/ProductAdditionalDetails.jsx";
 import ProductCveStatusPieChart from "./components/ProductCveStatusPieChart";
 import ComponentStatesPieChart from "./components/ComponentPieChart";
+import { StatusLabel } from "./components/StatusLabel";
 
 
 /**
@@ -62,19 +63,20 @@ export default function ProductReport() {
       }
     }
  
+    if (!productData) {
+      return null;
+    }
     return <Grid hasGutter>
       <Title headingLevel="h1">Product Report: <span style={{ fontSize: 'var(--pf-t--global--font--size--heading--h6)' }}>{title}</span></Title>
-      {productData && (
-        <>
-          <GridItem span={6}>
-            <ProductReportDetails product={productData} />
-          </GridItem>
-          <GridItem span={6}>
-            <ProductAdditionalDetails product={productData} />
-          </GridItem>
-        </>
-      )}
-
+      <GridItem span={12}>
+        <StatusLabel type={productData?.summary?.productState} size="large" />
+      </GridItem>
+      <GridItem span={6}>            
+        <ProductReportDetails product={productData} />
+      </GridItem>
+      <GridItem span={6}>
+        <ProductAdditionalDetails product={productData} />
+      </GridItem>
       <GridItem span={6}>
         <Card style={{ padding: 'unset' }}>
           <CardTitle><Title headingLevel="h4" size="xl">Repository scan distribution</Title></CardTitle>
@@ -108,8 +110,6 @@ export default function ProductReport() {
         />
       
       </GridItem>
-     
-    
     </Grid>
   }
 

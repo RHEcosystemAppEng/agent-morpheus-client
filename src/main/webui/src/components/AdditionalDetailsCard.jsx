@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardBody, CardExpandableContent, DescriptionList, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, Label, LabelGroup, Title } from "@patternfly/react-core";
+import { Card, CardHeader, CardTitle, CardBody, CardExpandableContent, DescriptionList, DescriptionListGroup, DescriptionListTerm, DescriptionListDescription, Label, LabelGroup, Title, Spinner } from "@patternfly/react-core";
 import { formatLocalDateTime } from "../services/DateUtils";
+import { useVulnComments } from "../hooks/useVulnComments";
 
 /** @typedef {import('../types').Report} Report */
 
@@ -15,6 +16,10 @@ const METADATA_TIMESTAMP_FIELDS = [
  */
 export default function AdditionalDetailsCard({ report }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const firstVuln = report?.output?.[0] || {};
+  const firstVulnId = firstVuln?.vuln_id;
+  const { comments: userComments, loading: commentsLoading, error: commentsError } = useVulnComments(firstVulnId);
+  const cvssVector = firstVuln?.cvss?.vector_string ?? "";
 
   const metadataFieldValues = METADATA_TIMESTAMP_FIELDS.map(def => {
     const raw = report?.metadata?.[def.key];
@@ -52,6 +57,24 @@ export default function AdditionalDetailsCard({ report }) {
       <CardExpandableContent>
         <CardBody>
           <DescriptionList isHorizontal isCompact>
+            <DescriptionListGroup>
+              <DescriptionListTerm>User comments</DescriptionListTerm>
+              <DescriptionListDescription>
+                {commentsLoading && <Spinner size="sm" aria-label="Loading user comments" />}
+                {!commentsLoading && commentsError && (
+                  <span>Failed to load comments</span>
+                )}
+                {!commentsLoading && !commentsError && (
+                  userComments && String(userComments).trim().length > 0 ? userComments : "-"
+                )}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+            {cvssVector && (
+              <DescriptionListGroup>
+                <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
+                <DescriptionListDescription>{cvssVector}</DescriptionListDescription>
+              </DescriptionListGroup>
+            )}
             {metadataFieldValues.map(({ label, value }) => (
               <DescriptionListGroup key={label}>
                 <DescriptionListTerm>{label}</DescriptionListTerm>
