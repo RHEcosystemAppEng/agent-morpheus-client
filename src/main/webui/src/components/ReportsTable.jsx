@@ -11,7 +11,7 @@ import JustificationBanner from "./JustificationBanner";
 import { StatusLabel } from "./StatusLabel";
 import { getMetadataColor } from "../Constants";
 
-export default function ReportsTable({ initSearchParams }) {
+export default function ReportsTable({ initSearchParams, initJustificationFilter}) {
 
   const [searchParams, setSearchParams] = useSearchParams(initSearchParams);
 
@@ -25,6 +25,8 @@ export default function ReportsTable({ initSearchParams }) {
   const [isModalOpen, setModalOpen] = React.useState(false);
   const [statusIsExpanded, setStatusIsExpanded] = React.useState(false);
   const [statusSelected, setStatusSelected] = React.useState('');
+  const [justificationIsExpanded, setJustificationIsExpanded] = React.useState(false);
+  const [justificationSelected, setJustificationSelected] = React.useState('');
   const [deleteItems, setDeleteItems] = React.useState([]);
   const [deleteAll, setDeleteAll] = React.useState(false);
 
@@ -69,8 +71,26 @@ export default function ReportsTable({ initSearchParams }) {
     }
   } 
 
+  const onJustificationToggle = () => {
+    setJustificationIsExpanded(!justificationIsExpanded);
+  }
+
+  const onJustificationSelect = (_event, selection) => {
+    setJustificationSelected(selection);
+    setJustificationIsExpanded(false);
+    const newParams = new URLSearchParams(searchParams);
+    if(selection === 'any') {
+      newParams.delete("justification");
+      setSearchParams(newParams);
+    } else {
+      newParams.set("justification", selection);
+      setSearchParams(newParams);
+    }
+  }
+
   React.useEffect(() => {
     setStatusSelected(searchParams.get('status') || 'any');
+    setJustificationSelected(searchParams.get('justification') || 'any');
     loadReports();
   }, [searchParams, page, perPage]);
 
@@ -161,6 +181,22 @@ export default function ReportsTable({ initSearchParams }) {
     pending: "Pending"
   };
 
+  const justificationFilter = initJustificationFilter || {
+    any: "Any",
+    false_positive: "false_positive",
+    code_not_present: "code_not_present",
+    code_not_reachable: "code_not_reachable",
+    requires_configuration: "requires_configuration",
+    requires_dependency: "requires_dependency",
+    requires_environment: "requires_environment",
+    protected_by_compiler: "protected_by_compiler",
+    protected_at_runtime: "protected_at_runtime",
+    protected_at_perimeter: "protected_at_perimeter",
+    protected_by_mitigating_control: "protected_by_mitigating_control",
+    uncertain: "uncertain",
+    vulnerable: "vulnerable"
+  };
+
   const columnNames = [
     { key: 'id', label: 'Info' },
     { key: 'imageName', label: 'Image' },
@@ -238,7 +274,7 @@ export default function ReportsTable({ initSearchParams }) {
 
   let filterLabels = [];
   searchParams.forEach((value, key) => {
-    if(key !== 'status') {
+    if(key !== 'status' && key !== 'justification') {
       let color = getMetadataColor(key);
       filterLabels.push(<Label color={color} onClose={() => onRemoveFilter(key)} >{key}={value}</Label>);
     }
@@ -254,6 +290,13 @@ export default function ReportsTable({ initSearchParams }) {
               onSelect={onStatusSelect} onOpenChange={isOpen => setStatusIsExpanded(isOpen)}
               selected={statusSelected} isOpen={statusIsExpanded}>
                 {Object.keys(statusFilter).map((option, index) => <SelectOption key={index} value={option}>{statusFilter[option]}</SelectOption>)}
+          </Select>
+          justification: <Select toggle={toggleRef => <MenuToggle ref={toggleRef} 
+              onClick={() => onJustificationToggle()} 
+              isExpanded={justificationIsExpanded} >{justificationFilter[justificationSelected]}</MenuToggle>}
+              onSelect={onJustificationSelect} onOpenChange={isOpen => setJustificationIsExpanded(isOpen)}
+              selected={justificationSelected} isOpen={justificationIsExpanded}>
+                {Object.keys(justificationFilter).map((option, index) => <SelectOption key={index} value={option}>{justificationFilter[option]}</SelectOption>)}
           </Select>
           {useParams().id ? null : filterLabels}
         </ToolbarItem>

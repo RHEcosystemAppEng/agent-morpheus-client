@@ -526,6 +526,9 @@ public class ReportRepositoryService {
         case "imageTag":
           filters.add(Filters.eq("input.image.tag", e.getValue()));
           break;
+        case "justification":
+          filters.add(Filters.elemMatch("output", Filters.eq("justification.label", e.getValue())));
+          break;
         default:
           filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
           break;

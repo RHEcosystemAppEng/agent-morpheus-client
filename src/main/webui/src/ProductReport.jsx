@@ -23,6 +23,7 @@ export default function ProductReport() {
   const [errorReport, setErrorReport] = React.useState({});
   const [isLoading, setIsLoading] = React.useState(!passedProductData);
   const [errorMessageFilter, setErrorMessageFilter] = React.useState('');
+  const [justificationFilter, setJustificationFilter] = React.useState({});
 
   React.useEffect(() => {
     if (!passedProductData) {
@@ -39,6 +40,23 @@ export default function ProductReport() {
       setIsLoading(false);
     }
   }, []);
+
+  React.useEffect(() => {
+    const labels = getJustificationLabels();
+    setJustificationFilter(labels);
+  }, [productData]);
+
+  const getJustificationLabels = () => {
+    const labels = {any: "Any"};
+    for (const justifications of Object.values(productData.summary.cves)) {
+      for (const justification of justifications) {
+        if (!labels[justification.label]) {
+          labels[justification.label] = justification.label;
+        }
+      }
+    }
+    return labels;
+  }
 
   const onDelete = () => {
     deleteProductReport(params.id).then(() => navigate('/product-reports'));
@@ -213,6 +231,7 @@ export default function ProductReport() {
               return newParams;
             })()
           }
+          initJustificationFilter={justificationFilter}
         />
       </div>
 
