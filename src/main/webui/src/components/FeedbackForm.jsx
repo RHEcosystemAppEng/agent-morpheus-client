@@ -24,11 +24,11 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
 
   // dropdown states & toggles
   const dropdowns = [
-    { key: 'assessment', label: 'Do you agree with the final assessment of the vulnerability?' },
-    { key: 'reason',     label: 'Is the reason for classifying the CVE clear and well-supported?' },
-    { key: 'summary',    label: 'Does the summary accurately capture the key findings and conclusions?' },
-    { key: 'qClarity',   label: 'Were the checklist questions clear and understandable?' },
-    { key: 'aAgreement', label: 'Do you agree with the answers provided for the checklist questions?' },
+    { key: 'assessment', label: <>Do you agree with the final assessment of the vulnerability? <span style={{ color: 'red' }}>*</span></> },
+    { key: 'reason',     label: <>Is the reason for classifying the CVE clear and well-supported? <span style={{ color: 'red' }}>*</span></> },
+    { key: 'summary',    label: <>Does the summary accurately capture the key findings and conclusions? <span style={{ color: 'red' }}>*</span></> },
+    { key: 'qClarity',   label: <>Were the checklist questions clear and understandable? <span style={{ color: 'red' }}>*</span></> },
+    { key: 'aAgreement', label: <>Do you agree with the answers provided for the checklist questions? <span style={{ color: 'red' }}>*</span></> },
   ];
 
   const [values, setValues] = React.useState({
@@ -86,6 +86,15 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       setError("Failed to submit feedback.");
     }
   };
+  const isFormValid = () => {
+    const allDropdownsAnswered = Object.values(values).every(
+      val => val !== 'Select an option'
+    );
+    const thumbsAnswered = thumbs !== '';
+    const ratingAnswered = rating !== null;
+    
+    return allDropdownsAnswered && thumbsAnswered && ratingAnswered;
+  };
 
   if (submitted) {
     return <p>
@@ -132,7 +141,8 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
         </FormGroup>
       ))}
 
-      <FormGroup label="Do you like this response?" fieldId="thumbs">
+      <FormGroup label={<>Do you like this response? <span style={{ color: 'red' }}>*</span></>}  fieldId="thumbs">
+      
         <Button
           variant={thumbs === '👍' ? 'primary' : 'secondary'}
           onClick={() => setThumbs('👍')}
@@ -143,7 +153,7 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
         >👎</Button>
       </FormGroup>
 
-      <FormGroup label="Rate the response (1-5):" fieldId="rating">
+      <FormGroup label={<>Rate the response (1-5): <span style={{ color: 'red' }}>*</span></>} fieldId="rating">
         <Flex spaceItems={{ default: 'spaceItemsMd' }}>
           {[1,2,3,4,5].map(n => (
             <label key={n}>
@@ -171,10 +181,11 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-        <Button
+      <Button
           variant="primary"
           onClick={handleSubmit}
           isInline
+          isDisabled={!isFormValid()}
         >Submit Feedback</Button>
       </Flex>
     </Form>
