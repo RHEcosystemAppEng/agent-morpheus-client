@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 import {
   Button,
   Dropdown,
@@ -13,10 +13,8 @@ import {
 } from "@patternfly/react-core";
 
 const FeedbackForm = ({ aiResponse, reportId }) => {
-  // simple fields
-  const [thumbs, setThumbs] = React.useState('');
   const [rating, setRating] = React.useState(null);
-  const [comment, setComment] = React.useState('');
+  const [comment, setComment] = React.useState("");
   const [submitted, setSubmitted] = React.useState(false);
   const [previousSubmission, setPreviousSubmission] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
@@ -24,34 +22,53 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
 
   // dropdown states & toggles
   const dropdowns = [
-    { key: 'assessment', label: <>Do you agree with the final assessment of the vulnerability? <span style={{ color: 'red' }}>*</span></> },
-    { key: 'reason',     label: <>Is the reason for classifying the CVE clear and well-supported? <span style={{ color: 'red' }}>*</span></> },
-    { key: 'summary',    label: <>Does the summary accurately capture the key findings and conclusions? <span style={{ color: 'red' }}>*</span></> },
-    { key: 'qClarity',   label: <>Were the checklist questions clear and understandable? <span style={{ color: 'red' }}>*</span></> },
-    { key: 'aAgreement', label: <>Do you agree with the answers provided for the checklist questions? <span style={{ color: 'red' }}>*</span></> },
+    {
+      key: "question1",
+      label: (
+        <>
+          How accurate do you find ExploitIQ's assessment?{" "}
+          <span style={{ color: "red" }}>*</span>
+        </>
+      ),
+      options: [
+        "Very Accurate",
+        "Mostly Accurate",
+        "Somewhat Inaccurate",
+        "Incorrect",
+      ],
+    },
+    {
+      key: "question2",
+      label: (
+        <>
+          Is the reasoning and summary of findings clear, complete, and
+          well-supported? <span style={{ color: "red" }}>*</span>
+        </>
+      ),
+      options: ["Yes", "Mostly", "Somewhat", "No"],
+    },
+    {
+      key: "question3",
+      label: (
+        <>
+          Were the checklist questions and explanations easy to understand?{" "}
+          <span style={{ color: "red" }}>*</span>
+        </>
+      ),
+      options: ["Yes", "Mostly", "Somewhat", "No"],
+    },
   ];
 
   const [values, setValues] = React.useState({
-    assessment: 'Select an option',
-    reason:     'Select an option',
-    summary:    'Select an option',
-    qClarity:   'Select an option',
-    aAgreement: 'Select an option',
+    question1: "Select an option",
+    question2: "Select an option",
+    question3: "Select an option",
   });
   const [opens, setOpens] = React.useState({
-    assessment: false,
-    reason:     false,
-    summary:    false,
-    qClarity:   false,
-    aAgreement: false,
+    question1: false,
+    question2: false,
+    question3: false,
   });
-
-  const options = [
-    'Yes, it is clear and well-supported.',
-    'Mostly, but some critical aspects are missing.',
-    'Partially, the evidence is weak or contradictory.',
-    'No, it is incorrect or unsupported.',
-  ];
 
   // load previous submission state
   React.useEffect(() => {
@@ -75,7 +92,6 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       await axios.post("/feedback", {
         reportId,
         response: aiResponse,
-        thumbs,
         rating,
         comment,
         ...values,
@@ -88,48 +104,49 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
   };
   const isFormValid = () => {
     const allDropdownsAnswered = Object.values(values).every(
-      val => val !== 'Select an option'
+      (val) => val !== "Select an option"
     );
-    const thumbsAnswered = thumbs !== '';
     const ratingAnswered = rating !== null;
-    
-    return allDropdownsAnswered && thumbsAnswered && ratingAnswered;
+
+    return allDropdownsAnswered && ratingAnswered;
   };
 
   if (submitted) {
-    return <p>
-      {previousSubmission
-        ? "Thank you! You already submitted feedback on this report."
-        : "Thank you for your feedback!"}
-    </p>;
+    return (
+      <p>
+        {previousSubmission
+          ? "Thank you! You already submitted feedback on this report."
+          : "Thank you for your feedback!"}
+      </p>
+    );
   }
 
   return (
     <Form>
-      {dropdowns.map(({ key, label }) => (
+      {dropdowns.map(({ key, label, options }) => (
         <FormGroup key={key} label={label} fieldId={key}>
           <Dropdown
             isOpen={opens[key]}
-            toggle={toggleRef => (
+            toggle={(toggleRef) => (
               <MenuToggle
                 ref={toggleRef}
-                onClick={() => setOpens(o => ({ ...o, [key]: !o[key] }))}
+                onClick={() => setOpens((o) => ({ ...o, [key]: !o[key] }))}
                 isExpanded={opens[key]}
               >
                 {values[key]}
               </MenuToggle>
             )}
-            onOpenChange={open => setOpens(o => ({ ...o, [key]: open }))}
+            onOpenChange={(open) => setOpens((o) => ({ ...o, [key]: open }))}
             shouldFocusToggleOnSelect
           >
             <DropdownGroup>
               <DropdownList>
-                {options.map(opt => (
+                {options.map((opt) => (
                   <DropdownItem
                     key={opt}
                     onClick={() => {
-                      setValues(v => ({ ...v, [key]: opt }));
-                      setOpens(o => ({ ...o, [key]: false }));
+                      setValues((v) => ({ ...v, [key]: opt }));
+                      setOpens((o) => ({ ...o, [key]: false }));
                     }}
                   >
                     {opt}
@@ -141,21 +158,16 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
         </FormGroup>
       ))}
 
-      <FormGroup label={<>Do you like this response? <span style={{ color: 'red' }}>*</span></>}  fieldId="thumbs">
-      
-        <Button
-          variant={thumbs === '👍' ? 'primary' : 'secondary'}
-          onClick={() => setThumbs('👍')}
-        >👍</Button>{' '}
-        <Button
-          variant={thumbs === '👎' ? 'primary' : 'secondary'}
-          onClick={() => setThumbs('👎')}
-        >👎</Button>
-      </FormGroup>
-
-      <FormGroup label={<>Rate the response (1-5): <span style={{ color: 'red' }}>*</span></>} fieldId="rating">
-        <Flex spaceItems={{ default: 'spaceItemsMd' }}>
-          {[1,2,3,4,5].map(n => (
+      <FormGroup
+        label={
+          <>
+            Rate the response (1-5): <span style={{ color: "red" }}>*</span>
+          </>
+        }
+        fieldId="rating"
+      >
+        <Flex spaceItems={{ default: "spaceItemsMd" }}>
+          {[1, 2, 3, 4, 5].map((n) => (
             <label key={n}>
               <input
                 type="radio"
@@ -163,14 +175,18 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
                 value={n}
                 checked={rating === n}
                 onChange={() => setRating(n)}
-                style={{ marginRight: '0.25rem' }}
-              />{n}
+                style={{ marginRight: "0.25rem" }}
+              />
+              {n}
             </label>
           ))}
         </Flex>
       </FormGroup>
 
-      <FormGroup label="Additional Comments" fieldId="comment">
+      <FormGroup
+        label="Do you have any additional feedback or suggestions to improve the analysis?"
+        fieldId="comment"
+      >
         <TextArea
           value={comment}
           onChange={(_e, val) => setComment(val)}
@@ -178,15 +194,17 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
         />
       </FormGroup>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>
-      <Button
+      <Flex justifyContent={{ default: "justifyContentFlexEnd" }}>
+        <Button
           variant="primary"
           onClick={handleSubmit}
           isInline
           isDisabled={!isFormValid()}
-        >Submit Feedback</Button>
+        >
+          Submit Feedback
+        </Button>
       </Flex>
     </Form>
   );

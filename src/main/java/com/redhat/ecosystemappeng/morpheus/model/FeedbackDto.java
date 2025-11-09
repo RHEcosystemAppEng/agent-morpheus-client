@@ -5,20 +5,15 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class FeedbackDto {
     private String response;
-    private String thumbs;
     private Integer rating;
     private String comment;
     private String reportId;
-    private String assessment;
-    private String reason;
-    private String summary;
-    private String qClarity;
-    private String aAgreement;
+    private String question1;
+    private String question2;
+    private String question3;
 
     public java.lang.Object getResponse() { return response; }
     public void setResponse(String response) { this.response = response; }
-    public String getThumbs() { return thumbs; }
-    public void setThumbs(String thumbs) { this.thumbs = thumbs; }
     public Integer getRating() { return rating; }
     public void setRating(Integer rating) { this.rating = rating; }
     public String getComment() { return comment; }
@@ -29,35 +24,23 @@ public class FeedbackDto {
     public void setReportId(String reportId) {
         this.reportId = reportId;
     }
-    public String getAssessment() {
-        return assessment;
+    public String getQuestion1() {
+        return question1;
     }
-    public void setAssessment(String assessment) {
-        this.assessment = assessment;
+    public void setQuestion1(String question1) {
+        this.question1 = question1;
     }
-    public String getReason() {
-        return reason;
+    public String getQuestion2() {
+        return question2;
     }
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setQuestion2(String question2) {
+        this.question2 = question2;
     }
-    public String getSummary() {
-        return summary;
+    public String getQuestion3() {
+        return question3;
     }
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-    public String getqClarity() {
-        return qClarity;
-    }
-    public void setqClarity(String qClarity) {
-        this.qClarity = qClarity;
-    }
-    public String getaAgreement() {
-        return aAgreement;
-    }
-    public void setaAgreement(String aAgreement) {
-        this.aAgreement = aAgreement;
+    public void setQuestion3(String question3) {
+        this.question3 = question3;
     }
 }
 
