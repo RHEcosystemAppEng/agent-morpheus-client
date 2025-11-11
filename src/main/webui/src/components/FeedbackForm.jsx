@@ -161,7 +161,8 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       <FormGroup
         label={
           <>
-            Rate the response (1-5): <span style={{ color: "red" }}>*</span>
+            Rate the response (1 = Poor, 5 = Excellent):{" "}
+            <span style={{ color: "red" }}>*</span>
           </>
         }
         fieldId="rating"
