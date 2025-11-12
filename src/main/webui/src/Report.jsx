@@ -121,7 +121,11 @@ export default function Report() {
     if (report.output) {
       report.output.forEach(vuln => {
         lines.push(`Vulnerability: ${vuln.vuln_id}`);
-        lines.push('');
+        lines.push("");
+        if (vuln.justification?.label) {
+          lines.push(`Label: ${vuln.justification.label}`);
+          lines.push("");
+        }
         if (vuln.justification?.reason) {
           lines.push(`Reason: ${vuln.justification.reason}`);
         }
