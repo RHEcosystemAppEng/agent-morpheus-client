@@ -23,7 +23,7 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
   // dropdown states & toggles
   const dropdowns = [
     {
-      key: "question1",
+      key: "accuracy",
       label: (
         <>
           How accurate do you find ExploitIQ's assessment?{" "}
@@ -38,7 +38,7 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       ],
     },
     {
-      key: "question2",
+      key: "reasoning",
       label: (
         <>
           Is the reasoning and summary of findings clear, complete, and
@@ -48,7 +48,7 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
       options: ["Yes", "Mostly", "Somewhat", "No"],
     },
     {
-      key: "question3",
+      key: "checklist",
       label: (
         <>
           Were the checklist questions and explanations easy to understand?{" "}
@@ -60,14 +60,14 @@ const FeedbackForm = ({ aiResponse, reportId }) => {
   ];
 
   const [values, setValues] = React.useState({
-    question1: "Select an option",
-    question2: "Select an option",
-    question3: "Select an option",
+    accuracy: "Select an option",
+    reasoning: "Select an option",
+    checklist: "Select an option",
   });
   const [opens, setOpens] = React.useState({
-    question1: false,
-    question2: false,
-    question3: false,
+    accuracy: false,
+    reasoning: false,
+    checklist: false,
   });
 
   // load previous submission state

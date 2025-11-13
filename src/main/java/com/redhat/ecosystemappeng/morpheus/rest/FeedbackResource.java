@@ -19,13 +19,13 @@ public class FeedbackResource {
     @POST
     public Response forwardToUserFeedbackService(FeedbackDto dto) {
         LOGGER.infof(
-                "Received FeedbackDto → response=[%s], rating=[%d], comment=[%s], question1=[%s], question2=[%s], question3=[%s]",
+                "Received FeedbackDto → response=[%s], rating=[%d], comment=[%s], accuracy=[%s], reasoning=[%s], checklist=[%s]",
                 dto.getResponse(),
                 dto.getRating(),
                 dto.getComment(),
-                dto.getQuestion1(),
-                dto.getQuestion2(),
-                dto.getQuestion3()
+                dto.getAccuracy(),
+                dto.getReasoning(),
+                dto.getChecklist()
         );
         try {
             feedbackService.sendFeedback(dto);
