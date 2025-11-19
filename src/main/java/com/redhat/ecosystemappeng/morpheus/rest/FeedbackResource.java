@@ -66,6 +66,9 @@ public class FeedbackResource {
         }
     }
     
+    /**
+     * Checks if feedback already exists for a specific report ID by calling the Flask API.
+     */
     @GET
     @Path("/{reportId}/exists")
     @Operation(
