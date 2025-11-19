@@ -1,15 +1,24 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
+@Schema(description = "Data Transfer Object for submitting user feedback about a specific report.")
 public class FeedbackDto {
-    private String response;
+    @Schema(required = true, description = "The response feedback")
+    private String response; 
+    @Schema(required = true, description = "Rating value from 1 to 5", minimum = "1", maximum = "5")
     private Integer rating;
+    @Schema(description = "Additional comment or feedback text")
     private String comment;
+    @Schema(required = true, description = "Unique identifier of the report")
     private String reportId;
-    private String accuracy;
+    @Schema(required = true, description = "Accuracy assessment of the report")
+    private String accuracy; 
+    @Schema(required = true, description = "Reasoning or explanation of the report")
     private String reasoning;
+    @Schema(required = true, description = "Checklist assessment of the report")
     private String checklist;
 
     public java.lang.Object getResponse() { return response; }
