@@ -10,6 +10,7 @@ import org.jboss.logging.Logger;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -32,7 +33,17 @@ public class FeedbackResource {
     @APIResponses({
       @APIResponse(
         responseCode = "200", 
-        description = "Feedback successfully processed"
+        description = "Feedback successfully processed",
+        content = @Content(
+          examples = @ExampleObject(
+            name = "Success Response",
+            value = """
+            {
+              "status": "success"
+            }
+            """
+          )
+        )
       ),
       @APIResponse(
         responseCode = "500", 
@@ -77,7 +88,27 @@ public class FeedbackResource {
     @APIResponses({
       @APIResponse(
         responseCode = "200", 
-        description = "Feedback existence status retrieved successfully"
+        description = "Feedback existence status retrieved successfully",
+        content = @Content(
+          examples = {
+            @ExampleObject(
+              name = "Feedback exists",
+              value = """
+              {
+                "exists": true
+              }
+              """
+            ),
+            @ExampleObject(
+              name = "Feedback does not exist",
+              value = """
+              {
+                "exists": false
+              }
+              """
+            )
+          }
+        )
       ),
       @APIResponse(
         responseCode = "500", 

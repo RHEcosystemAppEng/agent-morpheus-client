@@ -4,7 +4,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 @RegisterForReflection
-@Schema(description = "Data Transfer Object for submitting user feedback about a specific report.")
+@Schema(name = "Feedback", description = "Data Transfer Object for submitting user feedback about a specific report.")
 public class FeedbackDto {
     @Schema(required = true, description = "The response feedback")
     private String response; 
