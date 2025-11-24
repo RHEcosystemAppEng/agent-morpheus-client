@@ -30,6 +30,15 @@
     "package-lock.json",
     "yarn.lock"
   ],
+  "C": [
+    "**/tests/**/*",
+    "**/test/**/*",
+    "**/demos/**/*",
+    "**/examples/**/*",
+    "**/samples/**/*",
+    "**/doc/**/*",              
+    "**/docs/**/*"
+  ],
   "TypeScript": [
     "node_modules/**/*",
     "dist/**/*",
