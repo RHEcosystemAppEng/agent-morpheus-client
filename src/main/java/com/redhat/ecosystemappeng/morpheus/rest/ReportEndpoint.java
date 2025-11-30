@@ -34,6 +34,7 @@ import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
+import com.redhat.ecosystemappeng.morpheus.model.ReportsSummary;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -243,6 +244,37 @@ public class ReportEndpoint {
     var reqId = reportService.receive(report);
     LOGGER.debugf("Received report { id: %s | report_id: %s }", reqId.id(), reqId.reportId());
     return Response.accepted(reqId).build();
+  }
+
+  @GET
+  @Path("/summary")
+  @Operation(
+    summary = "Get reports summary",
+    description = "Retrieves summary statistics of reports including vulnerable/non-vulnerable counts, pending requests, and new reports today")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "200",
+      description = "Reports summary retrieved successfully",
+      content = @Content(
+        schema = @Schema(implementation = ReportsSummary.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "500",
+      description = "Internal server error"
+    )
+  })
+  public Response getSummary() {
+    try {
+      ReportsSummary summary = reportService.getReportsSummary();
+      return Response.ok(summary).build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to get reports summary", e);
+      return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
+    }
   }
 
   @GET
