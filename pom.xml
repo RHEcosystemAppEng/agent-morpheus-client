@@ -12,10 +12,10 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.18.2</quarkus.platform.version>
+    <quarkus.platform.version>3.29.4</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
-    <quarkus-quinoa.version>2.5.1</quarkus-quinoa.version>
+    <quarkus-quinoa.version>2.7.0</quarkus-quinoa.version>
   </properties>
 
   <dependencyManagement>
@@ -71,7 +71,7 @@
     <dependency>
       <groupId>io.quarkiverse.wiremock</groupId>
       <artifactId>quarkus-wiremock</artifactId>
-      <version>1.4.1</version>
+      <version>1.5.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -162,6 +162,33 @@
             <maven.home>${maven.home}</maven.home>
           </systemPropertyVariables>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <id>copy-openapi-spec</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/src/main/webui</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.directory}/generated/openapi</directory>
+                  <includes>
+                    <include>openapi.json</include>
+                  </includes>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+              <failOnMissing>false</failOnMissing>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
