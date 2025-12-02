@@ -13,8 +13,7 @@ import {
   Flex,
   FlexItem,
 } from '@patternfly/react-core';
-import { useApi } from '../hooks/useApi';
-import { ReportEndpointService as Reports, ReportsSummary } from '../generated-client';
+import { useSummary } from '../hooks/useSummary';
 import { getErrorMessage } from '../utils/errorHandling';
 
 interface SummaryStatItemProps {
@@ -83,7 +82,8 @@ const EmptyState: React.FC = () => {
 };
 
 const ReportsSummaryCard: React.FC = () => {
-  const { data, loading, error } = useApi<ReportsSummary>(() => Reports.getApiReportsSummary()); 
+  // Fetch reports and calculate summary
+  const { summary, loading, error, reports } = useSummary();
 
   if (loading) {
     return <LoadingState />;
@@ -93,8 +93,8 @@ const ReportsSummaryCard: React.FC = () => {
     return <ErrorState error={error} />;
   }
 
-  if (!data) {
-    return null;
+  if (!reports || reports.length === 0) {
+    return <EmptyState />;
   }
 
   const {
@@ -102,7 +102,7 @@ const ReportsSummaryCard: React.FC = () => {
     nonVulnerableReportsCount,
     pendingRequestsCount,
     newReportsTodayCount,
-  } = data;
+  } = summary;
 
   const totalReportsCount = vulnerableReportsCount + nonVulnerableReportsCount;
 

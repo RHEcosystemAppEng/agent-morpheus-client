@@ -1278,31 +1278,6 @@
         "tags" : [ "Report Endpoint" ]
       }
     },
-    "/api/reports/summary" : {
-      "get" : {
-        "summary" : "Get reports summary",
-        "description" : "Retrieves summary statistics of reports including vulnerable/non-vulnerable counts, pending requests, and new reports today",
-        "responses" : {
-          "200" : {
-            "description" : "Reports summary retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ReportsSummary"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Internal server error"
-          }
-        },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
-      }
-    },
     "/api/reports/{id}" : {
       "delete" : {
         "summary" : "Delete analysis report",

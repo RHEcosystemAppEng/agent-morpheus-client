@@ -12,7 +12,7 @@ Check this other documents for:
 
 ## Using the application
 
-Open http://localhost:8080/app/index.html
+Open http://localhost:8080
 
 ### Request Analysis
 
