@@ -1,6 +1,6 @@
-import React from 'react';
-import { Nav, NavList, NavItem, PageSidebarBody } from '@patternfly/react-core';
-import { useNavigate, useLocation } from 'react-router';
+import React from "react";
+import { Nav, NavList, NavItem, PageSidebarBody } from "@patternfly/react-core";
+import { useNavigate, useLocation } from "react-router";
 
 /**
  * Navigation component with links to main application sections
@@ -15,19 +15,19 @@ const Navigation: React.FC = () => {
         <NavList>
           <NavItem
             itemId="home"
-            isActive={location.pathname === '/'}
-            onClick={() => navigate('/')}
-            style={{ cursor: 'pointer' }}
+            isActive={location.pathname === "/"}
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
           >
             Home
           </NavItem>
           <NavItem
-            itemId="view-reports"
-            isActive={location.pathname === '/view-reports'}
-            onClick={() => navigate('/view-reports')}
-            style={{ cursor: 'pointer' }}
+            itemId="reports"
+            isActive={location.pathname === "/Reports"}
+            onClick={() => navigate("/Reports")}
+            style={{ cursor: "pointer" }}
           >
-            View Reports
+            Reports
           </NavItem>
         </NavList>
       </Nav>
@@ -36,4 +36,3 @@ const Navigation: React.FC = () => {
 };
 
 export default Navigation;
-
