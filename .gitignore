@@ -57,7 +57,7 @@ build/
 src/main/webui/dist/
 src/main/webui/build/
 src/main/webui/.vite/
-
+openspec/changes/archive/
 # Logs
 *.log
 *.log.*
