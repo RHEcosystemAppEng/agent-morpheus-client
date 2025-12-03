@@ -45,7 +45,7 @@ public class ComponentSyncerHealthCheck implements HealthCheck {
             return HealthCheckResponse.named("component-syncer")
                     .down()
                     .withData("error", "unreachable")
-                    .withData("reason", e.getClass().getSimpleName())
+                    .withData("reason", (HealthUtils.resolveReason(e)))
                     .build();
         }
 

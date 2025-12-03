@@ -42,7 +42,7 @@ public class EngineHealthCheck implements HealthCheck {
             return HealthCheckResponse.named("engine")
                     .down()
                     .withData("error", "unreachable")
-                    .withData("reason", e.getClass().getSimpleName())
+                    .withData("reason", (HealthUtils.resolveReason(e)))
                     .build();
         }
 
