@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Card,
   CardBody,
@@ -12,27 +12,49 @@ import {
   Stack,
   Flex,
   FlexItem,
-} from '@patternfly/react-core';
-import { useSummary } from '../hooks/useSummary';
-import { getErrorMessage } from '../utils/errorHandling';
+  Icon,
+} from "@patternfly/react-core";
+import { useSummary } from "../hooks/useSummary";
+import { getErrorMessage } from "../utils/errorHandling";
+import {
+  BellIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  InProgressIcon,
+} from "@patternfly/react-icons";
 
 interface SummaryStatItemProps {
   label: string;
   value: number;
-  description: string;
+  icon: React.ReactNode;
+  iconStatus: "custom" | "danger" | "success" | "warning";
 }
 
-const SummaryStatItem: React.FC<SummaryStatItemProps> = ({ label, value}) => {
+const SummaryStatItem: React.FC<SummaryStatItemProps> = ({
+  label,
+  value,
+  icon,
+  iconStatus,
+}) => {
   return (
     <GridItem span={3}>
-      <Stack>
-        <Title headingLevel="h3" size="md">
-          {label}
-        </Title>
-        <Title headingLevel="h4" size="2xl">
-          {value}
-        </Title>
-      </Stack>
+      <Card ouiaId="BasicCard">
+        <CardBody>
+          <Stack style={{ textAlign: "center" }}>
+            <FlexItem>
+              <Icon status={iconStatus} size="xl">
+                {icon}
+              </Icon>
+            </FlexItem>
+            <FlexItem>
+              <Title headingLevel="h2" size="3xl">
+                {value}
+              </Title>
+            </FlexItem>
+            <FlexItem>{label}</FlexItem>
+          </Stack>
+        </CardBody>
+      </Card>
     </GridItem>
   );
 };
@@ -45,9 +67,7 @@ const LoadingState: React.FC = () => {
           <FlexItem>
             <Spinner size="lg" />
           </FlexItem>
-          <FlexItem>
-            Loading reports summary...
-          </FlexItem>
+          <FlexItem>Loading reports summary...</FlexItem>
         </Flex>
       </CardBody>
     </Card>
@@ -58,7 +78,10 @@ const ErrorState: React.FC<{ error: unknown }> = ({ error }) => {
   return (
     <Card>
       <CardBody>
-        <Alert variant={AlertVariant.danger} title="Error loading reports summary">
+        <Alert
+          variant={AlertVariant.danger}
+          title="Error loading reports summary"
+        >
           {getErrorMessage(error)}
         </Alert>
       </CardBody>
@@ -104,8 +127,6 @@ const ReportsSummaryCard: React.FC = () => {
     newReportsTodayCount,
   } = summary;
 
-  const totalReportsCount = vulnerableReportsCount + nonVulnerableReportsCount;
-
   const allZero =
     vulnerableReportsCount === 0 &&
     nonVulnerableReportsCount === 0 &&
@@ -120,35 +141,34 @@ const ReportsSummaryCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          Reports Summary
+          Current Status
         </Title>
       </CardTitle>
       <CardBody>
         <Grid hasGutter>
           <SummaryStatItem
-            label="Total Reports"
-            value={totalReportsCount}
-            description="Total completed reports"
+            label="New Reports Today"
+            value={newReportsTodayCount}
+            icon={<BellIcon />}
+            iconStatus="custom"
           />
           <SummaryStatItem
             label="Vulnerable Reports"
             value={vulnerableReportsCount}
-            description="Reports with vulnerable CVEs"
+            icon={<ExclamationTriangleIcon />}
+            iconStatus="danger"
           />
           <SummaryStatItem
-            label="Non-Vulnerable Reports"
+            label="Not Vulnerable Reports"
             value={nonVulnerableReportsCount}
-            description="Reports with only non-vulnerable CVEs"
+            icon={<CheckCircleIcon />}
+            iconStatus="success"
           />
           <SummaryStatItem
             label="Pending Requests"
             value={pendingRequestsCount}
-            description="Analysis requests pending"
-          />
-          <SummaryStatItem
-            label="New Reports Today"
-            value={newReportsTodayCount}
-            description="Reports submitted today"
+            icon={<InProgressIcon />}
+            iconStatus="warning"
           />
         </Grid>
       </CardBody>
@@ -157,4 +177,3 @@ const ReportsSummaryCard: React.FC = () => {
 };
 
 export default ReportsSummaryCard;
-
