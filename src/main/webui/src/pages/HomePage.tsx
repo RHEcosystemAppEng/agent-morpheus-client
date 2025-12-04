@@ -18,9 +18,9 @@ const HomePage: React.FC = () => {
         </p>
       </PageSection>
       <PageSection>
-        <ReportsSummaryCard />
-        <br />
         <GetStartedCard />
+        <br />
+        <ReportsSummaryCard />
       </PageSection>
     </>
   );
