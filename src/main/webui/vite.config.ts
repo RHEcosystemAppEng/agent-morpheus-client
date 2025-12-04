@@ -1,17 +1,27 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Load environment variables from .env files
+// mode is always 'development' 
+const env = loadEnv('development', process.cwd(), '');
+
 // Check if running in standalone mode (not through Quarkus)
-const isStandalone = process.env.VITE_STANDALONE === 'true';
+const isStandalone = env.VITE_STANDALONE === 'true' || process.env.VITE_STANDALONE === 'true';
 const baseConfig = {
   plugins: [react()],
 };
 
 const getConfig = () => {
   if (isStandalone) {
-    const apiBaseUrl = process.env.VITE_API_BASE_URL;
+    // Use loaded env vars, fallback to process.env for backwards compatibility
+    const apiBaseUrl = env.VITE_API_BASE_URL || process.env.VITE_API_BASE_URL;
     if (!apiBaseUrl) {
       console.error('Please provide the API base URL in the VITE_API_BASE_URL environment variable');
+      process.exit(1);
+    }
+    const apiToken = env.API_TOKEN || process.env.API_TOKEN;
+    if (!apiToken) {
+      console.error('Please provide the API token in the API_TOKEN environment variable');
       process.exit(1);
     }
     const config = {
@@ -23,6 +33,9 @@ const getConfig = () => {
             target: apiBaseUrl,
             changeOrigin: true,
             secure: false, // Set to false if backend uses self-signed certificates
+            headers: {
+              'Authorization': `Bearer ${apiToken}`,
+            },
             rewrite: (path) => {
               const rewritten = path.replace(/^\/api/, '');
               const fullUrl = `${apiBaseUrl}${rewritten}`;
