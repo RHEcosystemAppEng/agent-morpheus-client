@@ -20,37 +20,37 @@ This runs both the backend and frontend together, with the UI served through Qua
 
 ### Standalone Frontend Development
 
-For faster frontend development cycles, you can run the UI standalone (without Quarkus):
+For faster frontend development cycles, you can run the UI standalone (without Quarkus). This is useful when you want to iterate quickly on frontend changes without restarting the Quarkus backend.
 
+**Required Environment Variables:**
+
+- `VITE_STANDALONE`: Set to `true` to enable standalone mode (automatically set by `dev:standalone` script)
+- `VITE_API_BASE_URL`: Backend API base URL. **Required.** Must be a valid URL (e.g., `http://localhost:8080` or `https://api.example.com`)
+- `API_TOKEN`: Authentication token for API requests. **Required.** The token will be automatically added to all API requests via the `Authorization: Bearer <token>` header.
+
+**How to run:**
 ```shell script
 cd src/main/webui
-npm run dev:standalone
+VITE_API_BASE_URL=http://localhost:8080 API_TOKEN=your-token-here npm run dev:standalone
 ```
 
 This will:
 - Start Vite dev server on `http://localhost:3000`
 - Serve the UI at the root path 
-- Connect to the Quarkus backend using the `VITE_API_BASE_URL` environment variable (defaults to `http://localhost:8080`)
+- Proxy all `/api/*` requests to the backend URL specified in `VITE_API_BASE_URL` with automatic authentication
 
-**Environment Variables:**
-- `VITE_STANDALONE`: Set to `true` to enable standalone mode (automatically set by `dev:standalone` script)
-- `VITE_API_BASE_URL`: Backend API base URL. Must be defined.
-
-**Custom Backend URL Example:**
-```shell script
-cd src/main/webui
-VITE_API_BASE_URL=https://exploit-iq-client.devcluster.openshit.com npm run dev:standalone
+**Using environment file (.env):**
+You can also create a `.env` file in `src/main/webui/`:
+```bash
+VITE_API_BASE_URL=http://localhost:8080
+API_TOKEN=your-token-here
 ```
 
-**API Configuration:**
-- In standalone mode: API calls use relative paths that go through Vite's proxy server, which forwards requests to `VITE_API_BASE_URL`. This avoids CORS issues since the proxy makes server-to-server requests.
-- In integrated mode: API calls use relative paths (same origin as the page)
-
-**CORS Handling:**
-When running in standalone mode, the Vite dev server automatically proxies all `/api/*` requests to your backend URL. This eliminates CORS issues because:
-1. The browser makes requests to `http://localhost:3000/api/*` (same origin)
-2. Vite proxy forwards these to your backend URL (server-to-server, no CORS)
-3. The proxy handles all CORS headers automatically
+Then run:
+```shell script
+cd src/main/webui
+npm run dev:standalone
+```
 
 ## Supplying application data
 
