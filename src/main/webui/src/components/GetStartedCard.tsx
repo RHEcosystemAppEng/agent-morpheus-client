@@ -11,6 +11,7 @@ import {
   Button,
 } from "@patternfly/react-core";
 import { PlusIcon, ChartLineIcon, BookOpenIcon } from "@patternfly/react-icons";
+import { useNavigate } from "react-router";
 import RequestAnalysisModal from "./RequestAnalysisModal";
 
 /**
@@ -19,6 +20,7 @@ import RequestAnalysisModal from "./RequestAnalysisModal";
 const GetStartedCard: React.FC = () => {
   const [isRequestAnalysisModalOpen, setIsRequestAnalysisModalOpen] =
     useState(false);
+  const navigate = useNavigate();
 
   return (
     <Card>
@@ -133,7 +135,12 @@ const GetStartedCard: React.FC = () => {
                 <br />
               </StackItem>
               <StackItem>
-                <Button variant="secondary">View Reports →</Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate("/Reports")}
+                >
+                  View Reports →
+                </Button>
               </StackItem>
             </Stack>
           </GridItem>
