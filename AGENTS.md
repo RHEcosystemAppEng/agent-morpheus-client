@@ -34,6 +34,10 @@ Frontend MUST use React 18+ with functional components and hooks. UI components 
 ### V. API-First Design
 All frontend-backend communication MUST go through REST APIs. APIs MUST be documented (OpenAPI/Swagger). Backend endpoints MUST follow RESTful conventions. API versioning MUST be considered for breaking changes. Frontend MUST handle API errors gracefully with user-friendly messages. All API calls MUST use the generated OpenAPI client (`src/services/generated-client/client`) with the generic `useApi` hook (`src/hooks/useApi`). Components MUST NOT make direct API calls; they MUST use `useApi` with the generated client services for data fetching and state management. The generated client is automatically maintained from the OpenAPI specification and provides full type safety.
 
+### VI. Complex Data Processing
+When there is complex logic required to extract or transform frontend data from backend API responses, this logic MUST be encapsulated in a custom hook. The hook MUST call the backend API (using `useApi` with the generated client) and MUST include a separate, pure function that performs the data transformation logic. The hook MUST return the processed data. This separation ensures testability, reusability, and maintainability of data transformation logic while keeping components focused on presentation.
+
+
 ## Technology Stack
 
 **Backend**: Quarkus, Java, MongoDB (via Panache), REST
