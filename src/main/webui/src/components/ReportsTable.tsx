@@ -23,6 +23,12 @@ import {
 } from "../generated-client";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
 
+type ProductStatus = {
+  status: "vulnerable" | "not_vulnerable" | "unknown";
+  vulnerableCount: number;
+  totalCount: number;
+};
+
 interface ReportRow {
   productId: string;
   sbomName: string;
@@ -31,6 +37,7 @@ interface ReportRow {
   exploitIqLabel: string;
   completedAt: string;
   analysisState: string;
+  productStatus: ProductStatus;
 }
 
 const PER_PAGE = 8;
@@ -57,34 +64,72 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     error,
   } = useApi<Array<ProductSummary>>(() => Reports.getApiReportsProduct());
 
-  const getStatusColor = (
-    status: string,
-    label: string
-  ): "red" | "orange" | "green" | "grey" => {
-    if (status === "true" || label === "vulnerable") {
+  const calculateProductStatus = (
+    productSummary: ProductSummary
+  ): ProductStatus => {
+    const cves = productSummary.summary.cves || {};
+    const cveIds = Object.keys(cves);
+    const cveCount = cveIds.length;
+    const submittedCount = productSummary.data.submittedCount || 0;
+
+    let vulnerableCount = 0;
+
+    // Count vulnerable CVEs
+    cveIds.forEach((cveId) => {
+      const justifications = cves[cveId] || [];
+      const hasVulnerable = justifications.some(
+        (j) => j.status === "true" || j.label === "vulnerable"
+      );
+      if (hasVulnerable) {
+        vulnerableCount++;
+      }
+    });
+
+    // Determine overall status
+    if (vulnerableCount > 0) {
+      return {
+        status: "vulnerable",
+        vulnerableCount,
+        totalCount: submittedCount,
+      };
+    }
+
+    // Check if all components were analyzed
+    if (cveCount === submittedCount) {
+      // All analyzed and none are vulnerable
+      return {
+        status: "not_vulnerable",
+        vulnerableCount: 0,
+        totalCount: submittedCount,
+      };
+    }
+
+    // CVE count doesn't match submission count or incomplete
+    return {
+      status: "unknown",
+      vulnerableCount,
+      totalCount: submittedCount,
+    };
+  };
+
+  const getStatusColor = (productStatus: ProductStatus): "red" | "green" | "grey" => {
+    if (productStatus.status === "vulnerable") {
       return "red";
     }
-    if (status === "unknown" || label === "uncertain") {
-      return "orange";
-    }
-    if (
-      status === "false" ||
-      label.includes("not") ||
-      label.includes("protected")
-    ) {
+    if (productStatus.status === "not_vulnerable") {
       return "green";
     }
     return "grey";
   };
 
-  const formatStatusLabel = (label: string): string => {
-    if (label === "vulnerable") return "Vulnerable";
-    if (label === "uncertain") return "Uncertain";
-    if (label === "false_positive") return "Not Vulnerable";
-    if (label.includes("not_present") || label.includes("not_reachable"))
-      return "Not Vulnerable";
-    if (label.includes("protected")) return "Not Vulnerable";
-    return label.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  const formatStatusLabel = (productStatus: ProductStatus): string => {
+    if (productStatus.status === "vulnerable") {
+      return `${productStatus.vulnerableCount}/${productStatus.totalCount} Vulnerable`;
+    }
+    if (productStatus.status === "not_vulnerable") {
+      return "not vulnerable";
+    }
+    return "status unknown";
   };
 
   const reportRows = useMemo(() => {
@@ -98,6 +143,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       const completedAt = productSummary.data.completedAt || "";
       const analysisState = productSummary.summary.productState || "-";
       const cves = productSummary.summary.cves || {};
+
+      // Calculate product-level status
+      const productStatus = calculateProductStatus(productSummary);
 
       // Create a row for each CVE
       const cveIds = Object.keys(cves);
@@ -117,6 +165,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             exploitIqLabel: justification.label || "uncertain",
             completedAt,
             analysisState,
+            productStatus,
           });
         });
       } else {
@@ -129,6 +178,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           exploitIqLabel: "uncertain",
           completedAt,
           analysisState,
+          productStatus,
         });
       }
     });
@@ -158,7 +208,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     // Apply ExploitIQ status filter
     if (filters.exploitIqStatus.length > 0) {
       filtered = filtered.filter((row) => {
-        const formattedLabel = formatStatusLabel(row.exploitIqLabel);
+        const formattedLabel = formatStatusLabel(row.productStatus);
         return filters.exploitIqStatus.includes(formattedLabel);
       });
     }
@@ -294,13 +344,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
                   <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
                   <Td dataLabel={columnNames.exploitIqStatus}>
-                    <Label
-                      color={getStatusColor(
-                        row.exploitIqStatus,
-                        row.exploitIqLabel
-                      )}
-                    >
-                      {formatStatusLabel(row.exploitIqLabel)}
+                    <Label color={getStatusColor(row.productStatus)}>
+                      {formatStatusLabel(row.productStatus)}
                     </Label>
                   </Td>
                   <Td dataLabel={columnNames.completedAt}>
