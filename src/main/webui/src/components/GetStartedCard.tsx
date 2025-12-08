@@ -60,8 +60,11 @@ const GetStartedCard: React.FC = () => {
                 <div
                   style={{
                     transform: "scale(2)",
-                    display: "inline-block",
+                    transformOrigin: "0 0",
+                    display: "block",
                     color: "#0066cc",
+                    width: "fit-content",
+                    marginBottom: "var(--pf-v5-global--spacer--md)",
                   }}
                 >
                   <PlusIcon style={{ color: "#0066cc" }} />
@@ -108,8 +111,11 @@ const GetStartedCard: React.FC = () => {
                 <div
                   style={{
                     transform: "scale(2)",
-                    display: "inline-block",
+                    transformOrigin: "0 0",
+                    display: "block",
                     color: "#0066cc",
+                    width: "fit-content",
+                    marginBottom: "var(--pf-v5-global--spacer--md)",
                   }}
                 >
                   <ChartLineIcon style={{ color: "#0066cc" }} />
@@ -150,8 +156,11 @@ const GetStartedCard: React.FC = () => {
                 <div
                   style={{
                     transform: "scale(2)",
-                    display: "inline-block",
+                    transformOrigin: "0 0",
+                    display: "block",
                     color: "#0066cc",
+                    width: "fit-content",
+                    marginBottom: "var(--pf-v5-global--spacer--md)",
                   }}
                 >
                   <BookOpenIcon style={{ color: "#0066cc" }} />
