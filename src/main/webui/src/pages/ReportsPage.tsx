@@ -1,11 +1,39 @@
-import React from "react";
+import { useState, useMemo } from "react";
 import { PageSection, Title } from "@patternfly/react-core";
+import { useApi } from "../hooks/useApi";
+import {
+  ReportEndpointService as Reports,
+  ProductSummary,
+} from "../generated-client";
 import ReportsTable from "../components/ReportsTable";
+import ReportsToolbar, {
+  ReportsToolbarFilters,
+} from "../components/ReportsToolbar";
 
-/**
- * ReportsPage component - displays reports table with filter and search
- */
 const ReportsPage: React.FC = () => {
+  const [searchValue, setSearchValue] = useState("");
+  const [cveSearchValue, setCveSearchValue] = useState("");
+  const [filters, setFilters] = useState<ReportsToolbarFilters>({
+    exploitIqStatus: [],
+    analysisState: [],
+  });
+
+  const { data: productSummaries } = useApi<Array<ProductSummary>>(() =>
+    Reports.getApiReportsProduct()
+  );
+
+  const analysisStateOptions = useMemo(() => {
+    if (!productSummaries) return [];
+    const states = new Set<string>();
+    productSummaries.forEach((productSummary) => {
+      const productState = productSummary.summary.productState;
+      if (productState && productState !== "-") {
+        states.add(productState);
+      }
+    });
+    return Array.from(states).sort();
+  }, [productSummaries]);
+
   return (
     <>
       <PageSection>
@@ -19,7 +47,20 @@ const ReportsPage: React.FC = () => {
         </p>
       </PageSection>
       <PageSection>
-        <ReportsTable />
+        <ReportsToolbar
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          cveSearchValue={cveSearchValue}
+          onCveSearchChange={setCveSearchValue}
+          filters={filters}
+          onFiltersChange={setFilters}
+          analysisStateOptions={analysisStateOptions}
+        />
+        <ReportsTable
+          searchValue={searchValue}
+          cveSearchValue={cveSearchValue}
+          filters={filters}
+        />
       </PageSection>
     </>
   );
