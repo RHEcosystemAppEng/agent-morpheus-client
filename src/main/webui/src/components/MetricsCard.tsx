@@ -17,14 +17,14 @@ import {
   TrendDownIcon,
 } from "@patternfly/react-icons";
 
-interface MatrixStatItemProps {
+interface MetricsStatItemProps {
   label: string;
   value: number;
   icon: React.ReactNode;
   iconStatus: "custom" | "danger" | "success" | "warning";
 }
 
-const MatrixStatItem: React.FC<MatrixStatItemProps> = ({
+const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
   label,
   value,
   icon,
@@ -53,7 +53,7 @@ const MatrixStatItem: React.FC<MatrixStatItemProps> = ({
   );
 };
 
-const MatrixCard: React.FC = () => {
+const MetricsCard: React.FC = () => {
   return (
     <Card>
       <CardTitle>
@@ -63,19 +63,19 @@ const MatrixCard: React.FC = () => {
       </CardTitle>
       <CardBody>
         <Grid hasGutter>
-          <MatrixStatItem
+          <MetricsStatItem
             label="Placeholder Label 1"
             value={0}
             icon={<CheckCircleIcon />}
             iconStatus="success"
           />
-          <MatrixStatItem
+          <MetricsStatItem
             label="Placeholder Label 2"
             value={0}
             icon={<TrendDownIcon />}
             iconStatus="success"
           />
-          <MatrixStatItem
+          <MetricsStatItem
             label="Placeholder Label 3"
             value={0}
             icon={<OptimizeIcon />}
@@ -87,4 +87,4 @@ const MatrixCard: React.FC = () => {
   );
 };
 
-export default MatrixCard;
+export default MetricsCard;

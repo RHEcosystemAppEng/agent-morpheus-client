@@ -3,12 +3,12 @@ import {
   Card,
   CardBody,
   CardTitle,
+  CardFooter,
   Grid,
   GridItem,
   Title,
-  Stack,
-  StackItem,
   Button,
+  Icon,
 } from "@patternfly/react-core";
 import { PlusIcon, ChartLineIcon, BookOpenIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router";
@@ -44,151 +44,116 @@ const GetStartedCard: React.FC = () => {
       <br />
       <br />
       <CardBody>
-        <Grid
-          hasGutter
-          style={{ marginTop: "calc(var(--pf-v5-global--spacer--lg) * 2)" }}
-        >
-          <GridItem
-            span={4}
-            style={{
-              borderRight: "1px solid #d2d2d2",
-              paddingRight: "var(--pf-v5-global--spacer--lg)",
-            }}
-          >
-            <Stack hasGutter>
-              <StackItem>
+        <Grid hasGutter>
+          <GridItem span={4}>
+            <Card isFullHeight isPlain>
+              <CardBody>
                 <div
                   style={{
-                    transform: "scale(2)",
-                    transformOrigin: "0 0",
-                    display: "block",
                     color: "#0066cc",
-                    width: "fit-content",
-                    marginBottom: "var(--pf-v5-global--spacer--md)",
+                    fontSize: "18px", 
+                    fontWeight: "bold",
+                    marginBottom: "var(--pf-v5-global--spacer--xl)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--pf-v5-global--spacer--md)", 
                   }}
                 >
-                  <PlusIcon style={{ color: "#0066cc" }} />
+                  <Icon
+                    size="xl"
+                  >
+                    <PlusIcon style={{ color: "#0066cc" }} />
+                  </Icon>
+                  {"\u00A0\u00A0"}Request analysis
                 </div>
-              </StackItem>
-              <StackItem>
-                <Title headingLevel="h3" size="lg">
-                  Request analysis
-                </Title>
                 <br />
-                <Title
-                  headingLevel="h3"
-                  size="md"
-                  style={{
-                    fontWeight: 400,
-                    color: "#6a6e73",
-                    opacity: 1,
-                  }}
-                >
+                <div style={{ fontSize: "var(--pf-v5-global--FontSize--lg)" }}>
                   Submit a new exploitability analysis request with an SBOM file
                   to analyze exploitability and generate a VEX status report.
-                </Title>
-                <br />
-              </StackItem>
-              <StackItem>
+                </div>
+              </CardBody>
+              <CardFooter>
                 <Button
-                  variant="secondary"
+                  variant="link"
+                  isInline
                   onClick={() => setIsRequestAnalysisModalOpen(true)}
                 >
                   Request Analysis →
                 </Button>
-              </StackItem>
-            </Stack>
+              </CardFooter>
+            </Card>
           </GridItem>
-          <GridItem
-            span={4}
-            style={{
-              borderRight: "1px solid #d2d2d2",
-              paddingRight: "var(--pf-v5-global--spacer--lg)",
-            }}
-          >
-            <Stack hasGutter>
-              <StackItem>
+          <GridItem span={4}>
+            <Card isFullHeight isPlain>
+              <CardBody>
                 <div
                   style={{
-                    transform: "scale(2)",
-                    transformOrigin: "0 0",
-                    display: "block",
                     color: "#0066cc",
-                    width: "fit-content",
-                    marginBottom: "var(--pf-v5-global--spacer--md)",
+                    fontSize: "18px", 
+                    fontWeight: "bold",
+                    marginBottom: "var(--pf-v5-global--spacer--xl)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--pf-v5-global--spacer--md)", 
                   }}
                 >
-                  <ChartLineIcon style={{ color: "#0066cc" }} />
+                  <Icon
+                    size="xl"
+                  >
+                    <ChartLineIcon style={{ color: "#0066cc" }} />
+                  </Icon>
+                  {"\u00A0\u00A0"}View Reports
                 </div>
-              </StackItem>
-              <StackItem>
-                <Title headingLevel="h3" size="lg">
-                  View Reports
-                </Title>
                 <br />
-                <Title
-                  headingLevel="h3"
-                  size="md"
-                  style={{
-                    fontWeight: 400,
-                    color: "#6a6e73",
-                    opacity: 1,
-                  }}
-                >
+                <div style={{ fontSize: "var(--pf-v5-global--FontSize--lg)" }}>
                   Explore comprehensive product report with detailed CVE
                   analysis results, exploitability assessments, and VEX status.
-                </Title>
-                <br />
-              </StackItem>
-              <StackItem>
+                </div>
+              </CardBody>
+              <CardFooter>
                 <Button
-                  variant="secondary"
+                  variant="link"
+                  isInline
                   onClick={() => navigate("/Reports")}
                 >
                   View Reports →
                 </Button>
-              </StackItem>
-            </Stack>
+              </CardFooter>
+            </Card>
           </GridItem>
           <GridItem span={4}>
-            <Stack hasGutter>
-              <StackItem>
+            <Card isFullHeight isPlain>
+              <CardBody>
                 <div
                   style={{
-                    transform: "scale(2)",
-                    transformOrigin: "0 0",
-                    display: "block",
                     color: "#0066cc",
-                    width: "fit-content",
-                    marginBottom: "var(--pf-v5-global--spacer--md)",
+                    fontSize: "18px", 
+                    fontWeight: "bold",
+                    marginBottom: "var(--pf-v5-global--spacer--xl)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--pf-v5-global--spacer--md)", 
                   }}
                 >
-                  <BookOpenIcon style={{ color: "#0066cc" }} />
+                  <Icon
+                    size="xl"
+                  >
+                    <BookOpenIcon style={{ color: "#0066cc" }} />
+                  </Icon>
+                  {"\u00A0\u00A0"}Learn more
                 </div>
-              </StackItem>
-              <StackItem>
-                <Title headingLevel="h3" size="lg">
-                  Learn more
-                </Title>
                 <br />
-                <Title
-                  headingLevel="h3"
-                  size="md"
-                  style={{
-                    fontWeight: 400,
-                    color: "#6a6e73",
-                    opacity: 1,
-                  }}
-                >
+                <div style={{ fontSize: "var(--pf-v5-global--FontSize--lg)" }}>
                   Discover how ExploitIQ helps identify false positives and
                   provides accurate vulnerability exploitability assessments.
-                </Title>
-                <br />
-              </StackItem>
-              <StackItem>
-                <Button variant="secondary">View Documentation →</Button>
-              </StackItem>
-            </Stack>
+                </div>
+              </CardBody>
+              <CardFooter>
+                <Button variant="link" isInline>
+                  View Documentation →
+                </Button>
+              </CardFooter>
+            </Card>
           </GridItem>
         </Grid>
       </CardBody>
