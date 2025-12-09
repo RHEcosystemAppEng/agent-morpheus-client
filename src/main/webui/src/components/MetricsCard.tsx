@@ -58,7 +58,7 @@ const MetricsCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          False Positive Detection Matrix
+          False Positive Detection Metrics
         </Title>
       </CardTitle>
       <CardBody>
