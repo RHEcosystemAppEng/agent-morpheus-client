@@ -21,7 +21,13 @@ import {
   Tbody,
   Td,
 } from "@patternfly/react-table";
-import { useReportsTableData, ReportRow, SortDirection, formatStatusLabel } from "../hooks/useReportsTableData";
+import {
+  useReportsTableData,
+  ReportRow,
+  SortDirection,
+  SortColumn,
+  formatStatusLabel,
+} from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
 
@@ -39,13 +45,19 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   filters,
 }) => {
   const [page, setPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   // Use the custom hook for data fetching and processing (Rule VI)
-  const { rows: filteredRows, loading, error } = useReportsTableData({
+  const {
+    rows: filteredRows,
+    loading,
+    error,
+  } = useReportsTableData({
     searchValue,
     cveSearchValue,
     filters,
+    sortColumn,
     sortDirection,
   });
 
@@ -91,8 +103,13 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     }
   };
 
-  const handleSortToggle = () => {
-    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+  const handleSortToggle = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection(column === "sbomName" ? "asc" : "desc");
+    }
     setPage(1);
   };
 
@@ -125,10 +142,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     return (
       <Card>
         <CardBody>
-          <Alert
-            variant={AlertVariant.danger}
-            title="Error loading reports"
-          >
+          <Alert variant={AlertVariant.danger} title="Error loading reports">
             {getErrorMessage(error)}
           </Alert>
         </CardBody>
@@ -155,18 +169,32 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         <Table aria-label="Reports table">
           <Thead>
             <Tr>
-              <Th>{columnNames.sbomName}</Th>
+              <Th
+                sort={{
+                  sortBy: {
+                    index: 0,
+                    direction:
+                      sortColumn === "sbomName" ? sortDirection : undefined,
+                    defaultDirection: "asc",
+                  },
+                  onSort: () => handleSortToggle("sbomName"),
+                  columnIndex: 0,
+                }}
+              >
+                {columnNames.sbomName}
+              </Th>
               <Th>{columnNames.cveId}</Th>
               <Th>{columnNames.exploitIqStatus}</Th>
               <Th
                 sort={{
                   sortBy: {
-                    index: 0,
-                    direction: sortDirection,
+                    index: 3,
+                    direction:
+                      sortColumn === "completedAt" ? sortDirection : undefined,
                     defaultDirection: "desc",
                   },
-                  onSort: handleSortToggle,
-                  columnIndex: 0,
+                  onSort: () => handleSortToggle("completedAt"),
+                  columnIndex: 3,
                 }}
               >
                 {columnNames.completedAt}
