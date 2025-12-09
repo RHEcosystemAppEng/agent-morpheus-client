@@ -2,7 +2,7 @@ import React from "react";
 import ReportsSummaryCard from "../components/ReportsSummaryCard";
 import { PageSection, Title } from "@patternfly/react-core";
 import GetStartedCard from "../components/GetStartedCard";
-import MatrixCard from "../components/MatrixCard";
+import MetricsCard from "../components/MetricsCard";
 
 /**
  * HomePage component - displays reports summary
@@ -19,7 +19,7 @@ const HomePage: React.FC = () => {
       <PageSection>
         <GetStartedCard />
         <br />
-        <MatrixCard />
+        <MetricsCard />
         <br />
         <ReportsSummaryCard />
       </PageSection>
