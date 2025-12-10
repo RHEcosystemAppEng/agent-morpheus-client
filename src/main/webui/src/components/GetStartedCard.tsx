@@ -35,7 +35,7 @@ const GetStartedCard: FunctionComponent = () => {
   const cards = [
     <Card isFullHeight isPlain key="card-1">
       <CardHeader>
-        <Content component={ContentVariants.h2} style={{ fontSize: "18px" }} >
+        <Content component={ContentVariants.h2} style={{ fontSize: "1.2rem" }} >
           Get started with ExploitIQ
         </Content>
       </CardHeader>
@@ -46,7 +46,7 @@ const GetStartedCard: FunctionComponent = () => {
             "pf-v6-u-font-weight-bold",
             "pf-v6-u-mb-md"
           )}
-          style={{ fontSize: "17px" }}
+          style={{ fontSize: "1.1rem" }}
         >
           <Icon size="xl" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <PlusIcon className={classes.actionIcon} />
@@ -77,7 +77,7 @@ const GetStartedCard: FunctionComponent = () => {
             "pf-v6-u-font-weight-bold",
             "pf-v6-u-mb-md"
           )}
-          style={{ fontSize: "17px" }}
+          style={{ fontSize: "1.1rem" }}
         >
           <Icon size="xl" style={{ marginRight: "9px" }}className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <ChartLineIcon className={classes.actionIcon} />
@@ -104,7 +104,7 @@ const GetStartedCard: FunctionComponent = () => {
             "pf-v6-u-font-weight-bold",
             "pf-v6-u-mb-md"
           )}
-          style={{ fontSize: "17px" }}
+          style={{ fontSize: "1.1rem" }}
         >
           <Icon size="xl" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <BookOpenIcon className={classes.actionIcon} />
