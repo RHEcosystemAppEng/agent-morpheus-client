@@ -38,3 +38,7 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **WHEN** a product's number of CVEs in `product.summary.cves` does not equal `product.data.submittedCount`, or scan status cannot be determined AND the analysis state is "completed"
 - **THEN** the ExploitIQ status column displays "status unknown" in a gray label
 
+#### Scenario: View Report button navigation
+- **WHEN** a user clicks the "View Report" button in the actions column
+- **THEN** the application navigates to `/Reports/:productId/:cveId` where `:productId` is the product ID and `:cveId` is the CVE ID from the row data
+

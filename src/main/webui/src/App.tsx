@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import ReportsPage from "./pages/ReportsPage";
+import ReportPage from "./pages/ReportPage";
+import ProductRedirect from "./components/ProductRedirect";
 
 /**
  * App component - provides router context and defines all application routes
@@ -14,6 +16,8 @@ const App: React.FC = () => {
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/Reports" element={<ReportsPage />} />
+          <Route path="/Reports/:productId/:cveId" element={<ReportPage />} />
+          <Route path="/Reports/:productId" element={<ProductRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
