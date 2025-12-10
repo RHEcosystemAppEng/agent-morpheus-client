@@ -163,33 +163,6 @@
           </systemPropertyVariables>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
-        <executions>
-          <execution>
-            <id>copy-openapi-spec</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/src/main/webui</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.directory}/generated/openapi</directory>
-                  <includes>
-                    <include>openapi.json</include>
-                  </includes>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-              <failOnMissing>false</failOnMissing>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
