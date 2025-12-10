@@ -14,7 +14,7 @@ import {
 import {
   CheckCircleIcon,
   OptimizeIcon,
-  TrendDownIcon,
+  SecurityIcon,
 } from "@patternfly/react-icons";
 
 interface MetricsStatItemProps {
@@ -64,21 +64,21 @@ const MetricsCard: React.FC = () => {
       <CardBody>
         <Grid hasGutter>
           <MetricsStatItem
-            label="Placeholder Label 1"
+            label="Successfuly Analyzed Repositories"
             value={0}
             icon={<CheckCircleIcon />}
             iconStatus="success"
           />
           <MetricsStatItem
-            label="Placeholder Label 2"
+            label="Average Intel Reliability Score"
             value={0}
-            icon={<TrendDownIcon />}
+            icon={<OptimizeIcon />}
             iconStatus="success"
           />
           <MetricsStatItem
-            label="Placeholder Label 3"
+            label="False Positive Rate"
             value={0}
-            icon={<OptimizeIcon />}
+            icon={<SecurityIcon />}
             iconStatus="success"
           />
         </Grid>
