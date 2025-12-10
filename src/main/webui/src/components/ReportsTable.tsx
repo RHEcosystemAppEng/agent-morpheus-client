@@ -27,6 +27,7 @@ import {
   SortDirection,
   SortColumn,
   formatStatusLabel,
+  isAnalysisCompleted,
 } from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
@@ -214,9 +215,13 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
                   <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
                   <Td dataLabel={columnNames.exploitIqStatus}>
-                    <Label color={getStatusColor(row.productStatus)}>
-                      {formatStatusLabel(row.productStatus)}
-                    </Label>
+                    {isAnalysisCompleted(row.analysisState) ? (
+                      <Label color={getStatusColor(row.productStatus)}>
+                        {formatStatusLabel(row.productStatus)}
+                      </Label>
+                    ) : (
+                      "-"
+                    )}
                   </Td>
                   <Td dataLabel={columnNames.completedAt}>
                     {formatDate(row.completedAt)}
@@ -232,6 +237,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     <TableText>
                       <Button
                         variant="primary"
+                        isDisabled={!isAnalysisCompleted(row.analysisState)}
                         onClick={() =>
                           console.log(`View report ${row.productId}`)
                         }
