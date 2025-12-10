@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
-import { useApi } from './useApi';
+import { useMemo } from "react";
+import { useApi } from "./useApi";
 import {
   ReportEndpointService as Reports,
   ProductSummary,
-} from '../generated-client';
-import { ReportsToolbarFilters } from '../components/ReportsToolbar';
+} from "../generated-client";
+import { ReportsToolbarFilters } from "../components/ReportsToolbar";
 
 export type ProductStatus = {
   status: "vulnerable" | "not_vulnerable" | "unknown";
@@ -89,6 +89,13 @@ export function calculateProductStatus(
     vulnerableCount,
     totalCount: submittedCount,
   };
+}
+
+/**
+ * Pure function to check if analysis is completed
+ */
+export function isAnalysisCompleted(analysisState: string): boolean {
+  return analysisState === "completed";
 }
 
 /**
@@ -240,9 +247,11 @@ export function useReportsTableData(
     options;
 
   // Fetch product summaries using the generated API client
-  const { data: productSummaries, loading, error } = useApi<Array<ProductSummary>>(
-    () => Reports.getApiReportsProduct()
-  );
+  const {
+    data: productSummaries,
+    loading,
+    error,
+  } = useApi<Array<ProductSummary>>(() => Reports.getApiReportsProduct());
 
   // Transform and process the data
   const rows = useMemo(() => {
@@ -270,4 +279,3 @@ export function useReportsTableData(
     error,
   };
 }
-
