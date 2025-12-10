@@ -1,1265 +1,1479 @@
 {
-  "openapi" : "3.1.0",
-  "components" : {
-    "schemas" : {
-      "FailedComponent" : {
-        "description" : "Metadata of submitted components failed to be processed for scanning",
-        "type" : "object",
-        "required" : [ "imageName", "imageVersion", "error" ],
-        "properties" : {
-          "imageName" : {
-            "type" : "string",
-            "description" : "Component name"
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "FailedComponent": {
+        "description": "Metadata of submitted components failed to be processed for scanning",
+        "type": "object",
+        "required": [
+          "imageName",
+          "imageVersion",
+          "error"
+        ],
+        "properties": {
+          "imageName": {
+            "type": "string",
+            "description": "Component name"
           },
-          "imageVersion" : {
-            "type" : "string",
-            "description" : "Component version"
+          "imageVersion": {
+            "type": "string",
+            "description": "Component version"
           },
-          "error" : {
-            "type" : "string",
-            "description" : "Reason of failure"
+          "error": {
+            "type": "string",
+            "description": "Reason of failure"
           }
         }
       },
-      "FeedbackDto" : {
-        "type" : "object",
-        "properties" : {
-          "response" : {
-            "type" : "string"
+      "FeedbackDto": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "string"
           },
-          "rating" : {
-            "type" : "integer",
-            "format" : "int32"
+          "rating": {
+            "type": "integer",
+            "format": "int32"
           },
-          "comment" : {
-            "type" : "string"
+          "comment": {
+            "type": "string"
           },
-          "reportId" : {
-            "type" : "string"
+          "reportId": {
+            "type": "string"
           },
-          "accuracy" : {
-            "type" : "string"
+          "accuracy": {
+            "type": "string"
           },
-          "reasoning" : {
-            "type" : "string"
+          "reasoning": {
+            "type": "string"
           },
-          "checklist" : {
-            "type" : "string"
+          "checklist": {
+            "type": "string"
           }
         }
       },
-      "Image" : {
-        "description" : "Image data (required if SBOM is not provided)",
-        "type" : "object",
-        "required" : [ "analysis_type", "name", "tag", "source_info" ],
-        "properties" : {
-          "analysis_type" : {
-            "type" : "string",
-            "description" : "Analysis form type (image|source)"
+      "Image": {
+        "description": "Image data (required if SBOM is not provided)",
+        "type": "object",
+        "required": [
+          "analysis_type",
+          "name",
+          "tag",
+          "source_info"
+        ],
+        "properties": {
+          "analysis_type": {
+            "type": "string",
+            "description": "Analysis form type (image|source)"
           },
-          "ecosystem" : {
-            "type" : "string",
-            "description" : "Programming language ecosystem"
+          "ecosystem": {
+            "type": "string",
+            "description": "Programming language ecosystem"
           },
-          "manifest_path" : {
-            "type" : "string",
-            "description" : "Manifest file path"
+          "manifest_path": {
+            "type": "string",
+            "description": "Manifest file path"
           },
-          "name" : {
-            "type" : "string",
-            "description" : "Image name"
+          "name": {
+            "type": "string",
+            "description": "Image name"
           },
-          "tag" : {
-            "type" : "string",
-            "description" : "Image tag"
+          "tag": {
+            "type": "string",
+            "description": "Image tag"
           },
-          "source_info" : {
-            "description" : "Source code information",
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SourceInfo"
+          "source_info": {
+            "description": "Source code information",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceInfo"
             }
           },
-          "sbom_info" : {
-            "description" : "SBOM information",
-            "type" : "object"
+          "sbom_info": {
+            "description": "SBOM information",
+            "type": "object"
           }
         }
       },
-      "Justification" : {
-        "description" : "Analysis justification for a vulnerability",
-        "type" : "object",
-        "required" : [ "status", "label" ],
-        "properties" : {
-          "status" : {
-            "type" : "string",
-            "description" : "Justification status (true|false|unknown)"
+      "Justification": {
+        "description": "Analysis justification for a vulnerability",
+        "type": "object",
+        "required": [
+          "status",
+          "label"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Justification status (true|false|unknown)"
           },
-          "label" : {
-            "type" : "string",
-            "description" : "Justification label"
+          "label": {
+            "type": "string",
+            "description": "Justification label"
           }
         }
       },
-      "Product" : {
-        "description" : "Product metadata",
-        "type" : "object",
-        "required" : [ "id", "name", "version", "submittedAt", "submittedCount", "metadata", "submissionFailures" ],
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "Product ID"
+      "Product": {
+        "description": "Product metadata",
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "version",
+          "submittedAt",
+          "submittedCount",
+          "metadata",
+          "submissionFailures"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Product ID"
           },
-          "name" : {
-            "type" : "string",
-            "description" : "Product name"
+          "name": {
+            "type": "string",
+            "description": "Product name"
           },
-          "version" : {
-            "type" : "string",
-            "description" : "Product version"
+          "version": {
+            "type": "string",
+            "description": "Product version"
           },
-          "submittedAt" : {
-            "type" : "string",
-            "description" : "Timestamp of product scan request submission"
+          "submittedAt": {
+            "type": "string",
+            "description": "Timestamp of product scan request submission"
           },
-          "submittedCount" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "Number of components submitted for scanning"
+          "submittedCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of components submitted for scanning"
           },
-          "metadata" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string"
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             },
-            "description" : "Product user provided metadata"
+            "description": "Product user provided metadata"
           },
-          "submissionFailures" : {
-            "description" : "List of submitted components failed to be processed for scanning",
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/FailedComponent"
+          "submissionFailures": {
+            "description": "List of submitted components failed to be processed for scanning",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FailedComponent"
             }
           },
-          "completedAt" : {
-            "type" : "string",
-            "description" : "Timestamp of product scan request completion"
+          "completedAt": {
+            "type": "string",
+            "description": "Timestamp of product scan request completion"
           }
         }
       },
-      "ProductReportsSummary" : {
-        "description" : "Product reports data",
-        "type" : "object",
-        "required" : [ "productState", "componentStates", "cves" ],
-        "properties" : {
-          "productState" : {
-            "type" : "string",
-            "description" : "Product state of analysis"
+      "ProductReportsSummary": {
+        "description": "Product reports data",
+        "type": "object",
+        "required": [
+          "productState",
+          "componentStates",
+          "cves",
+          "cveStatusCounts"
+        ],
+        "properties": {
+          "productState": {
+            "type": "string",
+            "description": "Product state of analysis"
           },
-          "componentStates" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "componentStates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
             },
-            "description" : "List of Component analysis states"
+            "description": "Map of component analysis states to their counts"
           },
-          "cves" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "array",
-              "uniqueItems" : true,
-              "items" : {
-                "$ref" : "#/components/schemas/Justification"
+          "cves": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/components/schemas/Justification"
               }
             },
-            "description" : "Map of CVE vulnerabilities and their justifications"
+            "description": "Map of CVE vulnerabilities and their justifications"
+          },
+          "cveStatusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "Map of CVE justification status to count of components with that status"
           }
         }
       },
-      "ProductSummary" : {
-        "description" : "Product metadata and reports data",
-        "type" : "object",
-        "required" : [ "data", "summary" ],
-        "properties" : {
-          "data" : {
-            "description" : "Product data",
-            "type" : "object",
-            "required" : [ "id", "name", "version", "submittedAt", "submittedCount", "metadata", "submissionFailures" ],
-            "properties" : {
-              "id" : {
-                "type" : "string",
-                "description" : "Product ID"
+      "ProductSummary": {
+        "description": "Product metadata and reports data",
+        "type": "object",
+        "required": [
+          "data",
+          "summary"
+        ],
+        "properties": {
+          "data": {
+            "description": "Product data",
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "version",
+              "submittedAt",
+              "submittedCount",
+              "metadata",
+              "submissionFailures"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Product ID"
               },
-              "name" : {
-                "type" : "string",
-                "description" : "Product name"
+              "name": {
+                "type": "string",
+                "description": "Product name"
               },
-              "version" : {
-                "type" : "string",
-                "description" : "Product version"
+              "version": {
+                "type": "string",
+                "description": "Product version"
               },
-              "submittedAt" : {
-                "type" : "string",
-                "description" : "Timestamp of product scan request submission"
+              "submittedAt": {
+                "type": "string",
+                "description": "Timestamp of product scan request submission"
               },
-              "submittedCount" : {
-                "type" : "integer",
-                "format" : "int32",
-                "description" : "Number of components submitted for scanning"
+              "submittedCount": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Number of components submitted for scanning"
               },
-              "metadata" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "string"
+              "metadata": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
                 },
-                "description" : "Product user provided metadata"
+                "description": "Product user provided metadata"
               },
-              "submissionFailures" : {
-                "description" : "List of submitted components failed to be processed for scanning",
-                "type" : "array",
-                "items" : {
-                  "$ref" : "#/components/schemas/FailedComponent"
+              "submissionFailures": {
+                "description": "List of submitted components failed to be processed for scanning",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FailedComponent"
                 }
               },
-              "completedAt" : {
-                "type" : "string",
-                "description" : "Timestamp of product scan request completion"
+              "completedAt": {
+                "type": "string",
+                "description": "Timestamp of product scan request completion"
               }
             }
           },
-          "summary" : {
-            "description" : "Product reports summary data",
-            "type" : "object",
-            "required" : [ "productState", "componentStates", "cves" ],
-            "properties" : {
-              "productState" : {
-                "type" : "string",
-                "description" : "Product state of analysis"
+          "summary": {
+            "description": "Product reports summary data",
+            "type": "object",
+            "required": [
+              "productState",
+              "componentStates",
+              "cves",
+              "cveStatusCounts"
+            ],
+            "properties": {
+              "productState": {
+                "type": "string",
+                "description": "Product state of analysis"
               },
-              "componentStates" : {
-                "type" : "array",
-                "items" : {
-                  "type" : "string"
+              "componentStates": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "format": "int32"
                 },
-                "description" : "List of Component analysis states"
+                "description": "Map of component analysis states to their counts"
               },
-              "cves" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "array",
-                  "uniqueItems" : true,
-                  "items" : {
-                    "$ref" : "#/components/schemas/Justification"
+              "cves": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/components/schemas/Justification"
                   }
                 },
-                "description" : "Map of CVE vulnerabilities and their justifications"
+                "description": "Map of CVE vulnerabilities and their justifications"
+              },
+              "cveStatusCounts": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "description": "Map of CVE justification status to count of components with that status"
               }
             }
           }
         }
       },
-      "Report" : {
-        "description" : "Report metadata",
-        "type" : "object",
-        "required" : [ "id", "name", "startedAt", "completedAt", "imageName", "imageTag", "state", "vulns", "metadata" ],
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "Report ID"
+      "Report": {
+        "description": "Report metadata",
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "startedAt",
+          "completedAt",
+          "imageName",
+          "imageTag",
+          "state",
+          "vulns",
+          "metadata"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Report ID"
           },
-          "name" : {
-            "type" : "string",
-            "description" : "Report name"
+          "name": {
+            "type": "string",
+            "description": "Report name"
           },
-          "startedAt" : {
-            "type" : "string",
-            "description" : "Started at timestamp for report analysis"
+          "startedAt": {
+            "type": "string",
+            "description": "Started at timestamp for report analysis"
           },
-          "completedAt" : {
-            "type" : "string",
-            "description" : "Completed at timestamp for report analysis"
+          "completedAt": {
+            "type": "string",
+            "description": "Completed at timestamp for report analysis"
           },
-          "imageName" : {
-            "type" : "string",
-            "description" : "Image name"
+          "imageName": {
+            "type": "string",
+            "description": "Image name"
           },
-          "imageTag" : {
-            "type" : "string",
-            "description" : "Image tag"
+          "imageTag": {
+            "type": "string",
+            "description": "Image tag"
           },
-          "state" : {
-            "type" : "string",
-            "description" : "State of the report analysis"
+          "state": {
+            "type": "string",
+            "description": "State of the report analysis"
           },
-          "vulns" : {
-            "description" : "Vulnerabilities in the report and their analysis results",
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/VulnResult"
+          "vulns": {
+            "description": "Vulnerabilities in the report and their analysis results",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VulnResult"
             }
           },
-          "metadata" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string"
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             },
-            "description" : "User provided metadata for the report"
+            "description": "User provided metadata for the report"
           }
         }
       },
-      "ReportData" : {
-        "description" : "A single report request",
-        "type" : "object",
-        "required" : [ "reportRequestId", "report" ],
-        "properties" : {
-          "reportRequestId" : {
-            "description" : "Report identification",
-            "type" : "object",
-            "required" : [ "id", "reportId" ],
-            "properties" : {
-              "id" : {
-                "type" : "string",
-                "description" : "ID assigned for database identification"
+      "ReportData": {
+        "description": "A single report request",
+        "type": "object",
+        "required": [
+          "reportRequestId",
+          "report"
+        ],
+        "properties": {
+          "reportRequestId": {
+            "description": "Report identification",
+            "type": "object",
+            "required": [
+              "id",
+              "reportId"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "ID assigned for database identification"
               },
-              "reportId" : {
-                "type" : "string",
-                "description" : "ID assigned on scan request submission"
+              "reportId": {
+                "type": "string",
+                "description": "ID assigned on scan request submission"
               }
             }
           },
-          "report" : {
-            "description" : "Report payload",
-            "type" : "object"
+          "report": {
+            "description": "Report payload",
+            "type": "object"
           }
         }
       },
-      "ReportRequest" : {
-        "description" : "A single report request",
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "ID assigned on scan request submission (auto-generated if not provided)"
+      "ReportRequest": {
+        "description": "A single report request",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID assigned on scan request submission (auto-generated if not provided)"
           },
-          "analysisType" : {
-            "type" : "string",
-            "description" : "Analysis form type (image|source)"
+          "analysisType": {
+            "type": "string",
+            "description": "Analysis form type (image|source)"
           },
-          "vulnerabilities" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "vulnerabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "description" : "List of vulnerability IDs to analyze"
+            "description": "List of vulnerability IDs to analyze"
           },
-          "image" : {
-            "description" : "Image data (required if SBOM is not provided)",
-            "type" : "object",
-            "required" : [ "analysis_type", "name", "tag", "source_info" ],
-            "properties" : {
-              "analysis_type" : {
-                "type" : "string",
-                "description" : "Analysis form type (image|source)"
+          "image": {
+            "description": "Image data (required if SBOM is not provided)",
+            "type": "object",
+            "required": [
+              "analysis_type",
+              "name",
+              "tag",
+              "source_info"
+            ],
+            "properties": {
+              "analysis_type": {
+                "type": "string",
+                "description": "Analysis form type (image|source)"
               },
-              "ecosystem" : {
-                "type" : "string",
-                "description" : "Programming language ecosystem"
+              "ecosystem": {
+                "type": "string",
+                "description": "Programming language ecosystem"
               },
-              "manifest_path" : {
-                "type" : "string",
-                "description" : "Manifest file path"
+              "manifest_path": {
+                "type": "string",
+                "description": "Manifest file path"
               },
-              "name" : {
-                "type" : "string",
-                "description" : "Image name"
+              "name": {
+                "type": "string",
+                "description": "Image name"
               },
-              "tag" : {
-                "type" : "string",
-                "description" : "Image tag"
+              "tag": {
+                "type": "string",
+                "description": "Image tag"
               },
-              "source_info" : {
-                "description" : "Source code information",
-                "type" : "array",
-                "items" : {
-                  "$ref" : "#/components/schemas/SourceInfo"
+              "source_info": {
+                "description": "Source code information",
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SourceInfo"
                 }
               },
-              "sbom_info" : {
-                "description" : "SBOM information",
-                "type" : "object"
+              "sbom_info": {
+                "description": "SBOM information",
+                "type": "object"
               }
             }
           },
-          "sbom" : {
-            "description" : "SBOM data (required if image is not provided)",
-            "type" : "object",
-            "examples" : [ {
-              "$schema" : "http://cyclonedx.org/schema/bom-1.6.schema.json",
-              "bomFormat" : "CycloneDX",
-              "specVersion" : "1.6",
-              "serialNumber" : "generated UUID",
-              "version" : 1,
-              "metadata" : {
-                "timestamp" : "current timestamp",
-                "tools" : [ ],
-                "component" : { },
-                "properties" : [ ]
-              },
-              "components" : [ ],
-              "dependencies" : [ ]
-            } ]
+          "sbom": {
+            "description": "SBOM data (required if image is not provided)",
+            "type": "object",
+            "examples": [
+              {
+                "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+                "bomFormat": "CycloneDX",
+                "specVersion": "1.6",
+                "serialNumber": "generated UUID",
+                "version": 1,
+                "metadata": {
+                  "timestamp": "current timestamp",
+                  "tools": [],
+                  "component": {},
+                  "properties": []
+                },
+                "components": [],
+                "dependencies": []
+              }
+            ]
           },
-          "sbom_info_type" : {
-            "type" : "string",
-            "description" : "SBOM information type",
-            "enum" : [ "manual", "cyclonedx+json" ]
+          "sbom_info_type": {
+            "type": "string",
+            "description": "SBOM information type",
+            "enum": [
+              "manual",
+              "cyclonedx+json"
+            ]
           },
-          "metadata" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string"
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             },
-            "description" : "Request metadata"
+            "description": "Request metadata"
           },
-          "sourceRepo" : {
-            "type" : "string",
-            "description" : "Source code repository (required if SBOM is not provided)"
+          "sourceRepo": {
+            "type": "string",
+            "description": "Source code repository (required if SBOM is not provided)"
           },
-          "commitId" : {
-            "type" : "string",
-            "description" : "Commit ID (required if SBOM is not provided)"
+          "commitId": {
+            "type": "string",
+            "description": "Commit ID (required if SBOM is not provided)"
           },
-          "ecosystem" : {
-            "type" : "string",
-            "description" : "Programming language ecosystem"
+          "ecosystem": {
+            "type": "string",
+            "description": "Programming language ecosystem"
           },
-          "manifestPath" : {
-            "type" : "string",
-            "description" : "Manifest file path"
+          "manifestPath": {
+            "type": "string",
+            "description": "Manifest file path"
           }
         },
-        "required" : [ "analysisType", "vulnerabilities", "metadata" ]
+        "required": [
+          "analysisType",
+          "vulnerabilities",
+          "metadata"
+        ]
       },
-      "ReportRequestId" : {
-        "description" : "Report identification",
-        "type" : "object",
-        "required" : [ "id", "reportId" ],
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "ID assigned for database identification"
+      "ReportRequestId": {
+        "description": "Report identification",
+        "type": "object",
+        "required": [
+          "id",
+          "reportId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID assigned for database identification"
           },
-          "reportId" : {
-            "type" : "string",
-            "description" : "ID assigned on scan request submission"
+          "reportId": {
+            "type": "string",
+            "description": "ID assigned on scan request submission"
           }
         }
       },
-      "ReportsSummary" : {
-        "description" : "Summary of reports statistics",
-        "type" : "object",
-        "required" : [ "vulnerableReportsCount", "nonVulnerableReportsCount", "pendingRequestsCount", "newReportsTodayCount" ],
-        "properties" : {
-          "vulnerableReportsCount" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Count of reports containing vulnerable CVEs"
+      "ReportsSummary": {
+        "description": "Summary of reports statistics",
+        "type": "object",
+        "required": [
+          "vulnerableReportsCount",
+          "nonVulnerableReportsCount",
+          "pendingRequestsCount",
+          "newReportsTodayCount"
+        ],
+        "properties": {
+          "vulnerableReportsCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Count of reports containing vulnerable CVEs"
           },
-          "nonVulnerableReportsCount" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Count of reports containing only non-vulnerable CVEs"
+          "nonVulnerableReportsCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Count of reports containing only non-vulnerable CVEs"
           },
-          "pendingRequestsCount" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Count of pending analysis requests"
+          "pendingRequestsCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Count of pending analysis requests"
           },
-          "newReportsTodayCount" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Count of new reports submitted today"
+          "newReportsTodayCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Count of new reports submitted today"
           }
         }
       },
-      "SbomInfoType" : {
-        "description" : "SBOM information type",
-        "type" : "string",
-        "enum" : [ "MANUAL", "CYCLONEDX_JSON" ]
+      "SbomInfoType": {
+        "description": "SBOM information type",
+        "type": "string",
+        "enum": [
+          "MANUAL",
+          "CYCLONEDX_JSON"
+        ]
       },
-      "SourceInfo" : {
-        "description" : "Source code information",
-        "type" : "object",
-        "required" : [ "type", "git_repo", "ref", "include", "exclude" ],
-        "properties" : {
-          "type" : {
-            "type" : "string",
-            "description" : "Type of source code (code|doc)"
+      "SourceInfo": {
+        "description": "Source code information",
+        "type": "object",
+        "required": [
+          "type",
+          "git_repo",
+          "ref",
+          "include",
+          "exclude"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of source code (code|doc)"
           },
-          "git_repo" : {
-            "type" : "string",
-            "description" : "Git repository URL"
+          "git_repo": {
+            "type": "string",
+            "description": "Git repository URL"
           },
-          "ref" : {
-            "type" : "string",
-            "description" : "Git reference (commit hash, tag, or branch)"
+          "ref": {
+            "type": "string",
+            "description": "Git reference (commit hash, tag, or branch)"
           },
-          "include" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "include": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "description" : "Patterns to include in the analysis"
+            "description": "Patterns to include in the analysis"
           },
-          "exclude" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "exclude": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "description" : "Patterns to exclude from the analysis"
+            "description": "Patterns to exclude from the analysis"
           }
         }
       },
-      "UserComments" : {
-        "description" : "User provided comments on a vulnerability",
-        "type" : "object",
-        "required" : [ "cve_id" ],
-        "properties" : {
-          "cve_id" : {
-            "type" : "string",
-            "description" : "CVE ID"
+      "UserComments": {
+        "description": "User provided comments on a vulnerability",
+        "type": "object",
+        "required": [
+          "cve_id"
+        ],
+        "properties": {
+          "cve_id": {
+            "type": "string",
+            "description": "CVE ID"
           },
-          "nvd_cve_description" : {
-            "type" : "string",
-            "description" : "CVE Description"
+          "nvd_cve_description": {
+            "type": "string",
+            "description": "CVE Description"
           },
-          "nvd_cvss_vector" : {
-            "type" : "string",
-            "description" : "CVSS Vector string"
+          "nvd_cvss_vector": {
+            "type": "string",
+            "description": "CVSS Vector string"
           },
-          "nvd_cwe_name" : {
-            "type" : "string",
-            "description" : "CWE Name"
+          "nvd_cwe_name": {
+            "type": "string",
+            "description": "CWE Name"
           },
-          "ghsa_vulnerabilities" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "additionalProperties" : { }
+          "ghsa_vulnerabilities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
             },
-            "description" : "GHSA Details"
+            "description": "GHSA Details"
           },
-          "nvd_configurations" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "additionalProperties" : { }
+          "nvd_configurations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {}
             },
-            "description" : "Known Affected Software"
+            "description": "Known Affected Software"
           },
-          "nvd_cwe_description" : {
-            "type" : "string",
-            "description" : "CWE Description"
+          "nvd_cwe_description": {
+            "type": "string",
+            "description": "CWE Description"
           },
-          "nvd_cwe_extended_description" : {
-            "type" : "string",
-            "description" : "CWE Extended Description"
+          "nvd_cwe_extended_description": {
+            "type": "string",
+            "description": "CWE Extended Description"
           },
-          "nvd_vendor_names" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "nvd_vendor_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "description" : "Notable Vulnerable Software Vendors"
+            "description": "Notable Vulnerable Software Vendors"
           },
-          "rhsa_bugzilla_description" : {
-            "type" : "string",
-            "description" : "RHSA Description"
+          "rhsa_bugzilla_description": {
+            "type": "string",
+            "description": "RHSA Description"
           },
-          "rhsa_details" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+          "rhsa_details": {
+            "type": "array",
+            "items": {
+              "type": "string"
             },
-            "description" : "RHSA Details"
+            "description": "RHSA Details"
           },
-          "rhsa_package_state" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "string"
+          "rhsa_package_state": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
               }
             },
-            "description" : "RHSA Affected Packages"
+            "description": "RHSA Affected Packages"
           },
-          "rhsa_statement" : {
-            "type" : "string",
-            "description" : "RHSA Statement"
+          "rhsa_statement": {
+            "type": "string",
+            "description": "RHSA Statement"
           },
-          "ubuntu_ubuntu_description" : {
-            "type" : "string",
-            "description" : "Ubuntu Description"
+          "ubuntu_ubuntu_description": {
+            "type": "string",
+            "description": "Ubuntu Description"
           },
-          "vulnerable_dependencies" : {
-            "type" : "string",
-            "description" : "Identified Vulnerable Dependencies"
+          "vulnerable_dependencies": {
+            "type": "string",
+            "description": "Identified Vulnerable Dependencies"
           }
         }
       },
-      "VulnResult" : {
-        "description" : "Vulnerability analysis information",
-        "type" : "object",
-        "required" : [ "vulnId", "justification" ],
-        "properties" : {
-          "vulnId" : {
-            "type" : "string",
-            "description" : "Vulnerability ID (CVE ID)"
+      "VulnResult": {
+        "description": "Vulnerability analysis information",
+        "type": "object",
+        "required": [
+          "vulnId",
+          "justification"
+        ],
+        "properties": {
+          "vulnId": {
+            "type": "string",
+            "description": "Vulnerability ID (CVE ID)"
           },
-          "justification" : {
-            "description" : "Analysis justification for the vulnerability",
-            "type" : "object",
-            "required" : [ "status", "label" ],
-            "properties" : {
-              "status" : {
-                "type" : "string",
-                "description" : "Justification status (true|false|unknown)"
+          "justification": {
+            "description": "Analysis justification for the vulnerability",
+            "type": "object",
+            "required": [
+              "status",
+              "label"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "description": "Justification status (true|false|unknown)"
               },
-              "label" : {
-                "type" : "string",
-                "description" : "Justification label"
+              "label": {
+                "type": "string",
+                "description": "Justification label"
               }
             }
           }
         }
       },
-      "Vulnerability" : {
-        "description" : "User provided vulnerability information",
-        "type" : "object",
-        "required" : [ "id", "comments" ],
-        "properties" : {
-          "id" : {
-            "type" : "string",
-            "description" : "Vulnerability ID (CVE ID)"
+      "Vulnerability": {
+        "description": "User provided vulnerability information",
+        "type": "object",
+        "required": [
+          "id",
+          "comments"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Vulnerability ID (CVE ID)"
           },
-          "comments" : {
-            "type" : "string",
-            "description" : "User provided comments on the vulnerability"
+          "comments": {
+            "type": "string",
+            "description": "User provided comments on the vulnerability"
           }
         }
       }
     },
-    "securitySchemes" : {
-      "jwt" : {
-        "type" : "http",
-        "description" : "Please enter your JWT Token without Bearer",
-        "scheme" : "bearer",
-        "bearerFormat" : "jwt"
+    "securitySchemes": {
+      "jwt": {
+        "type": "http",
+        "description": "Please enter your JWT Token without Bearer",
+        "scheme": "bearer",
+        "bearerFormat": "jwt"
       },
-      "SecurityScheme" : {
-        "type" : "openIdConnect",
-        "description" : "Authentication"
+      "SecurityScheme": {
+        "type": "openIdConnect",
+        "description": "Authentication"
       }
     }
   },
-  "paths" : {
-    "/api/feedback" : {
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/FeedbackDto"
+  "paths": {
+    "/api/feedback": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackDto"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : { }
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
-          "400" : {
-            "description" : "Bad Request"
+          "400": {
+            "description": "Bad Request"
           }
         },
-        "summary" : "Forward To User Feedback Service",
-        "tags" : [ "Feedback Resource" ]
+        "summary": "Forward To User Feedback Service",
+        "tags": [
+          "Feedback Resource"
+        ]
       }
     },
-    "/api/feedback/{reportId}/exists" : {
-      "get" : {
-        "parameters" : [ {
-          "name" : "reportId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
+    "/api/feedback/{reportId}/exists": {
+      "get": {
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : { }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
         },
-        "summary" : "Check Feedback Exists",
-        "tags" : [ "Feedback Resource" ]
+        "summary": "Check Feedback Exists",
+        "tags": [
+          "Feedback Resource"
+        ]
       }
     },
-    "/api/generate-sbom" : {
-      "post" : {
-        "summary" : "Generate SBOM",
-        "description" : "Generates a Software Bill of Materials (SBOM) for a container image",
-        "requestBody" : {
-          "description" : "Container image name and tag",
-          "content" : {
-            "text/plain" : {
-              "examples" : {
-                "nginx:latest" : {
-                  "value" : "nginx:latest"
+    "/api/generate-sbom": {
+      "post": {
+        "summary": "Generate SBOM",
+        "description": "Generates a Software Bill of Materials (SBOM) for a container image",
+        "requestBody": {
+          "description": "Container image name and tag",
+          "content": {
+            "text/plain": {
+              "examples": {
+                "nginx:latest": {
+                  "value": "nginx:latest"
                 }
               },
-              "schema" : {
-                "type" : "string"
+              "schema": {
+                "type": "string"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "200" : {
-            "description" : "SBOM generated successfully",
-            "content" : {
-              "application/json" : {
-                "examples" : {
-                  "CycloneDX SBOM" : {
-                    "value" : {
-                      "$schema" : "http://cyclonedx.org/schema/bom-1.6.schema.json",
-                      "bomFormat" : "CycloneDX",
-                      "specVersion" : "1.6",
-                      "serialNumber" : "generated UUID",
-                      "version" : 1,
-                      "metadata" : {
-                        "timestamp" : "current timestamp",
-                        "tools" : [ ],
-                        "component" : { },
-                        "properties" : [ ]
+        "responses": {
+          "200": {
+            "description": "SBOM generated successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "CycloneDX SBOM": {
+                    "value": {
+                      "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+                      "bomFormat": "CycloneDX",
+                      "specVersion": "1.6",
+                      "serialNumber": "generated UUID",
+                      "version": 1,
+                      "metadata": {
+                        "timestamp": "current timestamp",
+                        "tools": [],
+                        "component": {},
+                        "properties": []
                       },
-                      "components" : [ ],
-                      "dependencies" : [ ]
+                      "components": [],
+                      "dependencies": []
                     }
                   }
                 },
-                "schema" : {
-                  "type" : "object"
+                "schema": {
+                  "type": "object"
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Image has not been provided"
+          "400": {
+            "description": "Image has not been provided"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Generate Sbom Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Generate Sbom Endpoint"
+        ]
       }
     },
-    "/api/pre-processing" : {
-      "post" : {
-        "summary" : "Submit report requests for pre-processing",
-        "description" : "Submits a list of report requests for pre-processing to the Component Syncer",
-        "requestBody" : {
-          "description" : "List of report requests for pre-processing",
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "type" : "array",
-                "items" : {
-                  "$ref" : "#/components/schemas/ReportData"
+    "/api/pre-processing": {
+      "post": {
+        "summary": "Submit report requests for pre-processing",
+        "description": "Submits a list of report requests for pre-processing to the Component Syncer",
+        "requestBody": {
+          "description": "List of report requests for pre-processing",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReportData"
                 }
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "200" : {
-            "description" : "Pre-processing request accepted by the Component Syncer",
-            "content" : {
-              "application/json" : {
-                "schema" : { }
+        "responses": {
+          "200": {
+            "description": "Pre-processing request accepted by the Component Syncer",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "400": {
+            "description": "Bad Request"
           },
-          "400" : {
-            "description" : "Bad Request"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Pre Processing Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Pre Processing Endpoint"
+        ]
       }
     },
-    "/api/product" : {
-      "post" : {
-        "summary" : "Save product",
-        "description" : "Saves product metadata to database",
-        "requestBody" : {
-          "description" : "Product metadata to save",
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/Product"
+    "/api/product": {
+      "post": {
+        "summary": "Save product",
+        "description": "Saves product metadata to database",
+        "requestBody": {
+          "description": "Product metadata to save",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "202" : {
-            "description" : "Save product metadata request accepted"
+        "responses": {
+          "202": {
+            "description": "Save product metadata request accepted"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "400": {
+            "description": "Bad Request"
           },
-          "400" : {
-            "description" : "Bad Request"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Product Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
       }
     },
-    "/api/product/{id}" : {
-      "delete" : {
-        "parameters" : [ {
-          "description" : "Product ID",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/product/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "Product ID",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Product deletion request accepted"
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "summary" : "Remove",
-        "tags" : [ "Product Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "summary": "Remove",
+        "tags": [
+          "Product Endpoint"
+        ]
       },
-      "get" : {
-        "summary" : "Get product",
-        "description" : "Gets product by ID from database",
-        "parameters" : [ {
-          "description" : "Product ID",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+      "get": {
+        "summary": "Get product",
+        "description": "Gets product by ID from database",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Product found in database",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Product"
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found in database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Product not found in database"
+          "404": {
+            "description": "Product not found in database"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Product Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
       }
     },
-    "/api/reports" : {
-      "delete" : {
-        "summary" : "Delete multiple analysis reports",
-        "description" : "Deletes multiple analysis reports by IDs or using filter parameters",
-        "parameters" : [ {
-          "description" : "List of report IDs to delete (24-character hexadecimal MongoDB ObjectId format)",
-          "name" : "reportIds",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+    "/api/reports": {
+      "delete": {
+        "summary": "Delete multiple analysis reports",
+        "description": "Deletes multiple analysis reports by IDs or using filter parameters",
+        "parameters": [
+          {
+            "description": "List of report IDs to delete (24-character hexadecimal MongoDB ObjectId format)",
+            "name": "reportIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Reports deletion request accepted"
+        ],
+        "responses": {
+          "202": {
+            "description": "Reports deletion request accepted"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       },
-      "post" : {
-        "summary" : "Receive analysis report",
-        "description" : "Receives a completed analysis report from Morpheus",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "type" : "string"
+      "post": {
+        "summary": "Receive analysis report",
+        "description": "Receives a completed analysis report from Morpheus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "202" : {
-            "description" : "Report received",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ReportRequestId"
+        "responses": {
+          "202": {
+            "description": "Report received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportRequestId"
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       },
-      "get" : {
-        "summary" : "List analysis reports",
-        "description" : "Retrieves a paginated list of analysis reports with optional filtering and sorting",
-        "parameters" : [ {
-          "description" : "Page number (0-based)",
-          "name" : "page",
-          "in" : "query",
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : "0"
+      "get": {
+        "summary": "List analysis reports",
+        "description": "Retrieves a paginated list of analysis reports with optional filtering and sorting",
+        "parameters": [
+          {
+            "description": "Page number (0-based)",
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "0"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "100"
+            }
+          },
+          {
+            "description": "Sort criteria in format 'field:direction'",
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": "submittedAt:DESC"
+            }
           }
-        }, {
-          "description" : "Number of items per page",
-          "name" : "pageSize",
-          "in" : "query",
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : "100"
-          }
-        }, {
-          "description" : "Sort criteria in format 'field:direction'",
-          "name" : "sortBy",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            },
-            "default" : "submittedAt:DESC"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Reports retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/Report"
+        ],
+        "responses": {
+          "200": {
+            "description": "Reports retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Report"
                   }
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/new" : {
-      "post" : {
-        "summary" : "Create new analysis request",
-        "description" : "Creates a new analysis report request, processes it and optionally submits it to ExploitIQ for analysis",
-        "parameters" : [ {
-          "description" : "Whether to submit to ExploitIQ for analysis",
-          "name" : "submit",
-          "in" : "query",
-          "schema" : {
-            "type" : "boolean",
-            "default" : true
+    "/api/reports/new": {
+      "post": {
+        "summary": "Create new analysis request",
+        "description": "Creates a new analysis report request, processes it and optionally submits it to ExploitIQ for analysis",
+        "parameters": [
+          {
+            "description": "Whether to submit to ExploitIQ for analysis",
+            "name": "submit",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
           }
-        } ],
-        "requestBody" : {
-          "description" : "Analysis report request data",
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ReportRequest"
+        ],
+        "requestBody": {
+          "description": "Analysis report request data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "202" : {
-            "description" : "Analysis request accepted",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ReportData"
+        "responses": {
+          "202": {
+            "description": "Analysis request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportData"
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request data"
+          "400": {
+            "description": "Invalid request data"
           },
-          "429" : {
-            "description" : "Request queue exceeded"
+          "429": {
+            "description": "Request queue exceeded"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/product" : {
-      "delete" : {
-        "summary" : "Delete product by IDs",
-        "description" : "Deletes all component analysis reports and product metadata associated with specified product IDs",
-        "parameters" : [ {
-          "description" : "List of product IDs to delete",
-          "required" : true,
-          "name" : "productIds",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+    "/api/reports/product": {
+      "delete": {
+        "summary": "Delete product by IDs",
+        "description": "Deletes all component analysis reports and product metadata associated with specified product IDs",
+        "parameters": [
+          {
+            "description": "List of product IDs to delete",
+            "required": true,
+            "name": "productIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Product deletion request accepted"
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
           },
-          "400" : {
-            "description" : "Invalid request - no product IDs provided"
+          "400": {
+            "description": "Invalid request - no product IDs provided"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       },
-      "get" : {
-        "summary" : "List all product data",
-        "description" : "Retrieves product data for all products",
-        "responses" : {
-          "200" : {
-            "description" : "Product data retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/ProductSummary"
+      "get": {
+        "summary": "List all product data",
+        "description": "Retrieves product data for all products",
+        "responses": {
+          "200": {
+            "description": "Product data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductSummary"
                   }
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/product/{id}" : {
-      "delete" : {
-        "summary" : "Delete product by ID",
-        "description" : "Deletes all component analysis reports and product metadata associated with a specific product ID",
-        "parameters" : [ {
-          "description" : "Product ID to delete",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/reports/product/{id}": {
+      "delete": {
+        "summary": "Delete product by ID",
+        "description": "Deletes all component analysis reports and product metadata associated with a specific product ID",
+        "parameters": [
+          {
+            "description": "Product ID to delete",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Product deletion request accepted"
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
-      },
-      "get" : {
-        "summary" : "Get product data by ID",
-        "description" : "Retrieves product data for a specific product ID",
-        "parameters" : [ {
-          "description" : "Product ID",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+        "security": [
+          {
+            "jwt": []
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Product data retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "description" : "Product metadata and reports data",
-                  "type" : "object",
-                  "required" : [ "data", "summary" ],
-                  "properties" : {
-                    "data" : {
-                      "description" : "Product data",
-                      "type" : "object",
-                      "required" : [ "id", "name", "version", "submittedAt", "submittedCount", "metadata", "submissionFailures" ],
-                      "properties" : {
-                        "id" : {
-                          "type" : "string",
-                          "description" : "Product ID"
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      },
+      "get": {
+        "summary": "Get product data by ID",
+        "description": "Retrieves product data for a specific product ID",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Product metadata and reports data",
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "summary"
+                  ],
+                  "properties": {
+                    "data": {
+                      "description": "Product data",
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "name",
+                        "version",
+                        "submittedAt",
+                        "submittedCount",
+                        "metadata",
+                        "submissionFailures"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Product ID"
                         },
-                        "name" : {
-                          "type" : "string",
-                          "description" : "Product name"
+                        "name": {
+                          "type": "string",
+                          "description": "Product name"
                         },
-                        "version" : {
-                          "type" : "string",
-                          "description" : "Product version"
+                        "version": {
+                          "type": "string",
+                          "description": "Product version"
                         },
-                        "submittedAt" : {
-                          "type" : "string",
-                          "description" : "Timestamp of product scan request submission"
+                        "submittedAt": {
+                          "type": "string",
+                          "description": "Timestamp of product scan request submission"
                         },
-                        "submittedCount" : {
-                          "type" : "integer",
-                          "format" : "int32",
-                          "description" : "Number of components submitted for scanning"
+                        "submittedCount": {
+                          "type": "integer",
+                          "format": "int32",
+                          "description": "Number of components submitted for scanning"
                         },
-                        "metadata" : {
-                          "type" : "object",
-                          "additionalProperties" : {
-                            "type" : "string"
+                        "metadata": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
                           },
-                          "description" : "Product user provided metadata"
+                          "description": "Product user provided metadata"
                         },
-                        "submissionFailures" : {
-                          "description" : "List of submitted components failed to be processed for scanning",
-                          "type" : "array",
-                          "items" : {
-                            "$ref" : "#/components/schemas/FailedComponent"
+                        "submissionFailures": {
+                          "description": "List of submitted components failed to be processed for scanning",
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/FailedComponent"
                           }
                         },
-                        "completedAt" : {
-                          "type" : "string",
-                          "description" : "Timestamp of product scan request completion"
+                        "completedAt": {
+                          "type": "string",
+                          "description": "Timestamp of product scan request completion"
                         }
                       }
                     },
-                    "summary" : {
-                      "description" : "Product reports summary data",
-                      "type" : "object",
-                      "required" : [ "productState", "componentStates", "cves" ],
-                      "properties" : {
-                        "productState" : {
-                          "type" : "string",
-                          "description" : "Product state of analysis"
+                    "summary": {
+                      "description": "Product reports summary data",
+                      "type": "object",
+                      "required": [
+                        "productState",
+                        "componentStates",
+                        "cves",
+                        "cveStatusCounts"
+                      ],
+                      "properties": {
+                        "productState": {
+                          "type": "string",
+                          "description": "Product state of analysis"
                         },
-                        "componentStates" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
+                        "componentStates": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
                           },
-                          "description" : "List of Component analysis states"
+                          "description": "Map of component analysis states to their counts"
                         },
-                        "cves" : {
-                          "type" : "object",
-                          "additionalProperties" : {
-                            "type" : "array",
-                            "uniqueItems" : true,
-                            "items" : {
-                              "$ref" : "#/components/schemas/Justification"
+                        "cves": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                              "$ref": "#/components/schemas/Justification"
                             }
                           },
-                          "description" : "Map of CVE vulnerabilities and their justifications"
+                          "description": "Map of CVE vulnerabilities and their justifications"
+                        },
+                        "cveStatusCounts": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "integer",
+                            "format": "int32"
+                          },
+                          "description": "Map of CVE justification status to count of components with that status"
                         }
                       }
                     }
@@ -1268,454 +1482,529 @@
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/{id}" : {
-      "delete" : {
-        "summary" : "Delete analysis report",
-        "description" : "Deletes a specific analysis report by ID",
-        "parameters" : [ {
-          "description" : "Report ID to delete (24-character hexadecimal MongoDB ObjectId format)",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/reports/{id}": {
+      "delete": {
+        "summary": "Delete analysis report",
+        "description": "Deletes a specific analysis report by ID",
+        "parameters": [
+          {
+            "description": "Report ID to delete (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Report deletion request accepted"
+        ],
+        "responses": {
+          "202": {
+            "description": "Report deletion request accepted"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       },
-      "get" : {
-        "summary" : "Get analysis report",
-        "description" : "Retrieves a specific analysis report by ID",
-        "parameters" : [ {
-          "description" : "Report ID to get (24-character hexadecimal MongoDB ObjectId format)",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+      "get": {
+        "summary": "Get analysis report",
+        "description": "Retrieves a specific analysis report by ID",
+        "parameters": [
+          {
+            "description": "Report ID to get (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Report retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "examples" : [ "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": [...\n  ],\n  \"info\": {...\n  },\n  \"metadata\": {...\n  }\n}\n" ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Report retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": [...\n  ],\n  \"info\": {...\n  },\n  \"metadata\": {...\n  }\n}\n"
+                  ]
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Report not found"
+          "404": {
+            "description": "Report not found"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/{id}/failed" : {
-      "post" : {
-        "summary" : "Mark analysis request as failed",
-        "description" : "Marks an analysis request as failed with error details",
-        "parameters" : [ {
-          "description" : "Report ID to mark as failed (24-character hexadecimal MongoDB ObjectId format)",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/reports/{id}/failed": {
+      "post": {
+        "summary": "Mark analysis request as failed",
+        "description": "Marks an analysis request as failed with error details",
+        "parameters": [
+          {
+            "description": "Report ID to mark as failed (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Error message describing the failure",
+            "required": true,
+            "name": "errorMessage",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
-        }, {
-          "description" : "Error message describing the failure",
-          "required" : true,
-          "name" : "errorMessage",
-          "in" : "query",
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Failure status record accepted",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "examples" : [ "66155fd9639dbb7e7e4e44b8" ]
+        ],
+        "responses": {
+          "202": {
+            "description": "Failure status record accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "66155fd9639dbb7e7e4e44b8"
+                  ]
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/{id}/retry" : {
-      "post" : {
-        "summary" : "Retry analysis request",
-        "description" : "Retries an existing analysis request by ID",
-        "parameters" : [ {
-          "description" : "Report ID to retry (24-character hexadecimal MongoDB ObjectId format)",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/reports/{id}/retry": {
+      "post": {
+        "summary": "Retry analysis request",
+        "description": "Retries an existing analysis request by ID",
+        "parameters": [
+          {
+            "description": "Report ID to retry (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Retry request accepted",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "examples" : [ "66155fd9639dbb7e7e4e44b8" ]
+        ],
+        "responses": {
+          "202": {
+            "description": "Retry request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "66155fd9639dbb7e7e4e44b8"
+                  ]
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Request not found",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "examples" : [ "66155fd9639dbb7e7e4e44b8" ]
+          "404": {
+            "description": "Request not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "66155fd9639dbb7e7e4e44b8"
+                  ]
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/reports/{id}/submit" : {
-      "post" : {
-        "summary" : "Submit to ExploitIQ for analysis",
-        "description" : "Submits analysis request to ExploitIQ for analysis",
-        "parameters" : [ {
-          "description" : "Request payload (report) ID to submit (24-character hexadecimal MongoDB ObjectId format)",
-          "required" : true,
-          "name" : "id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/reports/{id}/submit": {
+      "post": {
+        "summary": "Submit to ExploitIQ for analysis",
+        "description": "Submits analysis request to ExploitIQ for analysis",
+        "parameters": [
+          {
+            "description": "Request payload (report) ID to submit (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "202" : {
-            "description" : "Request submitted successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "examples" : [ "66155fd9639dbb7e7e4e44b8" ]
+        ],
+        "responses": {
+          "202": {
+            "description": "Request submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "66155fd9639dbb7e7e4e44b8"
+                  ]
                 }
               }
             }
           },
-          "400" : {
-            "description" : "Invalid request data"
+          "400": {
+            "description": "Invalid request data"
           },
-          "404" : {
-            "description" : "Request payload not found"
+          "404": {
+            "description": "Request payload not found"
           },
-          "429" : {
-            "description" : "Request queue exceeded"
+          "429": {
+            "description": "Request queue exceeded"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Report Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
       }
     },
-    "/api/vulnerabilities" : {
-      "get" : {
-        "summary" : "List vulnerabilities",
-        "description" : "Retrieves a paginated list of vulnerabilities with optional sorting",
-        "parameters" : [ {
-          "description" : "Page number (0-based)",
-          "name" : "page",
-          "in" : "query",
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : "0"
+    "/api/vulnerabilities": {
+      "get": {
+        "summary": "List vulnerabilities",
+        "description": "Retrieves a paginated list of vulnerabilities with optional sorting",
+        "parameters": [
+          {
+            "description": "Page number (0-based)",
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "0"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "1000"
+            }
+          },
+          {
+            "description": "Sort criteria in format 'field:direction' (e.g., '_id:ASC')",
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": "_id:ASC"
+            }
           }
-        }, {
-          "description" : "Number of items per page",
-          "name" : "pageSize",
-          "in" : "query",
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : "1000"
-          }
-        }, {
-          "description" : "Sort criteria in format 'field:direction' (e.g., '_id:ASC')",
-          "name" : "sortBy",
-          "in" : "query",
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            },
-            "default" : "_id:ASC"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Vulnerabilities retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/Vulnerability"
+        ],
+        "responses": {
+          "200": {
+            "description": "Vulnerabilities retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vulnerability"
                   }
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
       }
     },
-    "/api/vulnerabilities/generate-comments-template" : {
-      "get" : {
-        "summary" : "Generate user comments template",
-        "description" : "Generates a template structure for user comments on vulnerabilities",
-        "responses" : {
-          "200" : {
-            "description" : "Comments template generated successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/UserComments"
+    "/api/vulnerabilities/generate-comments-template": {
+      "get": {
+        "summary": "Generate user comments template",
+        "description": "Generates a template structure for user comments on vulnerabilities",
+        "responses": {
+          "200": {
+            "description": "Comments template generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserComments"
                 }
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
       }
     },
-    "/api/vulnerabilities/{vuln_id}" : {
-      "put" : {
-        "summary" : "Update vulnerability",
-        "description" : "Updates vulnerability information by ID",
-        "parameters" : [ {
-          "description" : "Vulnerability ID to update",
-          "required" : true,
-          "name" : "vuln_id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/vulnerabilities/{vuln_id}": {
+      "put": {
+        "summary": "Update vulnerability",
+        "description": "Updates vulnerability information by ID",
+        "parameters": [
+          {
+            "description": "Vulnerability ID to update",
+            "required": true,
+            "name": "vuln_id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "requestBody" : {
-          "description" : "Vulnerability data to update",
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/Vulnerability"
+        ],
+        "requestBody": {
+          "description": "Vulnerability data to update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vulnerability"
               }
             }
           },
-          "required" : true
+          "required": true
         },
-        "responses" : {
-          "200" : {
-            "description" : "Vulnerability updated successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : { }
+        "responses": {
+          "200": {
+            "description": "Vulnerability updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
-          "400" : {
-            "description" : "Invalid vulnerability data"
+          "400": {
+            "description": "Invalid vulnerability data"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
       },
-      "get" : {
-        "summary" : "Get vulnerability",
-        "description" : "Retrieves detailed information for a specific vulnerability by ID",
-        "parameters" : [ {
-          "description" : "Vulnerability ID to get",
-          "required" : true,
-          "name" : "vuln_id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+      "get": {
+        "summary": "Get vulnerability",
+        "description": "Retrieves detailed information for a specific vulnerability by ID",
+        "parameters": [
+          {
+            "description": "Vulnerability ID to get",
+            "required": true,
+            "name": "vuln_id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Vulnerability retrieved successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/Vulnerability"
+        ],
+        "responses": {
+          "200": {
+            "description": "Vulnerability retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vulnerability"
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Vulnerability not found"
+          "404": {
+            "description": "Vulnerability not found"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
-      },
-      "delete" : {
-        "summary" : "Delete vulnerability",
-        "description" : "Deletes a specific vulnerability by ID",
-        "parameters" : [ {
-          "description" : "Vulnerability ID to delete",
-          "required" : true,
-          "name" : "vuln_id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+        "security": [
+          {
+            "jwt": []
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Vulnerability deleted successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : { }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
+      },
+      "delete": {
+        "summary": "Delete vulnerability",
+        "description": "Deletes a specific vulnerability by ID",
+        "parameters": [
+          {
+            "description": "Vulnerability ID to delete",
+            "required": true,
+            "name": "vuln_id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vulnerability deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
       }
     },
-    "/api/vulnerabilities/{vuln_id}/comments" : {
-      "get" : {
-        "summary" : "Get vulnerability comments",
-        "description" : "Retrieves user comments for a specific vulnerability by ID",
-        "parameters" : [ {
-          "description" : "Vulnerability ID to get comments",
-          "required" : true,
-          "name" : "vuln_id",
-          "in" : "path",
-          "schema" : {
-            "type" : "string"
+    "/api/vulnerabilities/{vuln_id}/comments": {
+      "get": {
+        "summary": "Get vulnerability comments",
+        "description": "Retrieves user comments for a specific vulnerability by ID",
+        "parameters": [
+          {
+            "description": "Vulnerability ID to get comments",
+            "required": true,
+            "name": "vuln_id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
           }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "Comments retrieved successfully",
-            "content" : {
-              "text/plain" : {
-                "example" : "CVE-2023-12345",
-                "schema" : {
-                  "type" : "string"
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved successfully",
+            "content": {
+              "text/plain": {
+                "example": "CVE-2023-12345",
+                "schema": {
+                  "type": "string"
                 }
               }
             }
           },
-          "404" : {
-            "description" : "Vulnerability not found"
+          "404": {
+            "description": "Vulnerability not found"
           },
-          "500" : {
-            "description" : "Internal server error"
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "security" : [ {
-          "jwt" : [ ]
-        } ],
-        "tags" : [ "Vulnerability Endpoint" ]
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Vulnerability Endpoint"
+        ]
       }
     }
   },
-  "servers" : [ {
-    "url" : "http://localhost:8080",
-    "description" : "Auto-added by management interface"
-  }, {
-    "url" : "http://0.0.0.0:8080",
-    "description" : "Auto-added by management interface"
-  } ],
-  "info" : {
-    "title" : "exploit-iq-client API",
-    "version" : "1.0.0-SNAPSHOT"
-  }
+  "info": {
+    "title": "exploit-iq-client API",
+    "version": "1.0.0-SNAPSHOT"
+  },
+  "servers": []
 }

@@ -298,7 +298,8 @@ public class ReportRepositoryService {
   public ProductReportsSummary getProductSummaryData(String productId) {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<Justification>> cveSet = new HashMap<>();
-    List<String> componentStates = new ArrayList<>();
+    Map<String, Integer> componentStates = new HashMap<>();
+    Map<String, Integer> cveStatusCounts = new HashMap<>();
     String productState = "unknown";
 
     getCollection()
@@ -307,7 +308,7 @@ public class ReportRepositoryService {
       .forEachRemaining(doc -> {
         Map<String, String> metadata = extractMetadata(doc);
         String reportStatus = getStatus(doc, metadata);
-        componentStates.add(reportStatus);
+        componentStates.merge(reportStatus, 1, Integer::sum);
 
         Object inputObj = doc.get("input");
         if (inputObj instanceof org.bson.Document inputDoc) {
@@ -341,6 +342,7 @@ public class ReportRepositoryService {
                   String label = justificationDoc.getString("label");
                   if (status != null && !status.isEmpty() && label != null && !label.isEmpty()) {
                     justifications.add(new Justification(status, label));
+                    cveStatusCounts.merge(status, 1, Integer::sum);
                   }
                 }
               }
@@ -349,7 +351,7 @@ public class ReportRepositoryService {
         }
       });
 
-    if (componentStates.contains("pending") || componentStates.contains("queued") || componentStates.contains("sent")) {
+    if (componentStates.containsKey("pending") || componentStates.containsKey("queued") || componentStates.containsKey("sent")) {
       productState = "analysing";
     } else {
       productState = "completed";
@@ -358,7 +360,8 @@ public class ReportRepositoryService {
     return new ProductReportsSummary(
       productState,
       componentStates,
-      cveSet
+      cveSet,
+      cveStatusCounts
     );
   }
 

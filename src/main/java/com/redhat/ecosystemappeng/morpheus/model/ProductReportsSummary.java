@@ -1,6 +1,5 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
-import java.util.List;
 import java.util.Set;
 import java.util.Map;
 
@@ -12,9 +11,11 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public record ProductReportsSummary(
     @Schema(required = true, description = "Product state of analysis")
     String productState,
-    @Schema(required = true, description = "List of Component analysis states")
-    List<String> componentStates,
+    @Schema(required = true, description = "Map of component analysis states to their counts")
+    Map<String, Integer> componentStates,
     @Schema(required = true, description = "Map of CVE vulnerabilities and their justifications")
-    Map<String, Set<Justification>> cves) {
+    Map<String, Set<Justification>> cves,
+    @Schema(required = true, description = "Map of CVE justification status to count of components with that status")
+    Map<String, Integer> cveStatusCounts) {
 
 }
