@@ -24,11 +24,13 @@ export interface ReportRow {
 }
 
 export type SortDirection = "asc" | "desc";
+export type SortColumn = "sbomName" | "completedAt";
 
 export interface UseReportsTableOptions {
   searchValue: string;
   cveSearchValue: string;
   filters: ReportsToolbarFilters;
+  sortColumn: SortColumn;
   sortDirection: SortDirection;
 }
 
@@ -167,6 +169,7 @@ export function filterAndSortReportRows(
   searchValue: string,
   cveSearchValue: string,
   filters: ReportsToolbarFilters,
+  sortColumn: SortColumn,
   sortDirection: SortDirection
 ): ReportRow[] {
   let filtered = rows;
@@ -202,15 +205,23 @@ export function filterAndSortReportRows(
     );
   }
 
-  // Apply sorting by completedAt
+  // Apply sorting
   filtered = [...filtered].sort((a, b) => {
-    const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-    const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-
-    if (sortDirection === "desc") {
-      return dateB - dateA; // Newest first
+    if (sortColumn === "sbomName") {
+      // Sort alphabetically by SBOM name
+      const nameA = (a.sbomName || "").toLowerCase();
+      const nameB = (b.sbomName || "").toLowerCase();
+      const comparison = nameA.localeCompare(nameB);
+      return sortDirection === "asc" ? comparison : -comparison;
     } else {
-      return dateA - dateB; // Oldest first
+      // Sort by completedAt date
+      const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+      const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+      if (sortDirection === "desc") {
+        return dateB - dateA; // Newest first
+      } else {
+        return dateA - dateB; // Oldest first
+      }
     }
   });
 
@@ -225,7 +236,8 @@ export function filterAndSortReportRows(
 export function useReportsTableData(
   options: UseReportsTableOptions
 ): UseReportsTableResult {
-  const { searchValue, cveSearchValue, filters, sortDirection } = options;
+  const { searchValue, cveSearchValue, filters, sortColumn, sortDirection } =
+    options;
 
   // Fetch product summaries using the generated API client
   const { data: productSummaries, loading, error } = useApi<Array<ProductSummary>>(
@@ -247,6 +259,7 @@ export function useReportsTableData(
       searchValue,
       cveSearchValue,
       filters,
+      sortColumn,
       sortDirection
     );
   }, [productSummaries, searchValue, cveSearchValue, filters, sortDirection]);

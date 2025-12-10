@@ -1,7 +1,8 @@
-import React from 'react';
-import ReportsSummaryCard from '../components/ReportsSummaryCard';
-import { PageSection, Title } from '@patternfly/react-core';
-import GetStartedCard from '../components/GetStartedCard';
+import React from "react";
+import ReportsSummaryCard from "../components/ReportsSummaryCard";
+import { PageSection, Title } from "@patternfly/react-core";
+import GetStartedCard from "../components/GetStartedCard";
+import MetricsCard from "../components/MetricsCard";
 
 /**
  * HomePage component - displays reports summary
@@ -9,16 +10,16 @@ import GetStartedCard from '../components/GetStartedCard';
 const HomePage: React.FC = () => {
   return (
     <>
-      <PageSection >
+      <PageSection>
         <Title headingLevel="h1" size="3xl">
           Home
         </Title>
-        <p >
-          Request new analysis and view important system data.
-        </p>
+        <p>Request new analysis and view important system data.</p>
       </PageSection>
       <PageSection>
         <GetStartedCard />
+        <br />
+        <MetricsCard />
         <br />
         <ReportsSummaryCard />
       </PageSection>
@@ -27,4 +28,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-

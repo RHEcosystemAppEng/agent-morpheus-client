@@ -141,7 +141,7 @@ const ReportsSummaryCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          Current Status
+          System Status
         </Title>
       </CardTitle>
       <CardBody>
