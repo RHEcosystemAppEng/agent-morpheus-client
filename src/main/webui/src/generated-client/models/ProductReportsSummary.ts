@@ -12,12 +12,16 @@ export type ProductReportsSummary = {
      */
     productState: string;
     /**
-     * List of Component analysis states
+     * Map of component analysis states to their counts
      */
-    componentStates: Array<string>;
+    componentStates: Record<string, number>;
     /**
      * Map of CVE vulnerabilities and their justifications
      */
     cves: Record<string, Array<Justification>>;
+    /**
+     * Map of each CVE to its status counts (status -> count)
+     */
+    cveStatusCounts: Record<string, Record<string, number>>;
 };
 

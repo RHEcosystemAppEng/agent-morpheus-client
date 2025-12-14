@@ -18,13 +18,9 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **WHEN** a user views the reports table AND the analysis state is not "completed" (e.g., "pending", "queued", "sent", "analysing", "failed")
 - **THEN** the ExploitIQ status column displays "--" to indicate the analysis is not yet complete
 
-#### Scenario: View Report button is disabled for incomplete analysis
-- **WHEN** a user views the reports table AND the analysis state is not "completed"
-- **THEN** the "View Report" button is disabled and cannot be clicked
-
-#### Scenario: View Report button is enabled for completed analysis
-- **WHEN** a user views the reports table AND the analysis state is "completed"
-- **THEN** the "View Report" button is enabled and can be clicked to view the report
+#### Scenario: View Report button is always enabled
+- **WHEN** a user views the reports table
+- **THEN** the "View Report" button is enabled and can be clicked to view the report, regardless of analysis state
 
 #### Scenario: Vulnerable status display
 - **WHEN** a product has one or more vulnerable components AND the analysis state is "completed"
@@ -37,4 +33,8 @@ The application SHALL display a table of vulnerability analysis reports with col
 #### Scenario: Unknown status display
 - **WHEN** a product's number of CVEs in `product.summary.cves` does not equal `product.data.submittedCount`, or scan status cannot be determined AND the analysis state is "completed"
 - **THEN** the ExploitIQ status column displays "status unknown" in a gray label
+
+#### Scenario: View Report button navigation
+- **WHEN** a user clicks the "View Report" button in the actions column
+- **THEN** the application navigates to `/Reports/:productId/:cveId` where `:productId` is the product ID and `:cveId` is the CVE ID from the row data
 

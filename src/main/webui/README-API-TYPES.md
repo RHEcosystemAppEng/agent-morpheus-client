@@ -1,12 +1,24 @@
 # Generating TypeScript Types from OpenAPI
 
-This project uses [openapi-typescript](https://openapi-ts.pages.dev/) to generate TypeScript types from the OpenAPI specification.
+This project uses [openapi-typescript-codegen](https://github.com/ferdikoomen/openapi-typescript-codegen) to generate TypeScript client code from the OpenAPI specification.
 
 ## Quick Start
 
-### Option 1: Generate from Maven Build (Recommended - No Server Required)
+### Generate Everything at Once (Recommended)
 
-This method uses static analysis of Java code during the Maven build process:
+To generate both the OpenAPI spec file and TypeScript client:
+
+```bash
+cd src/main/webui
+npm run generate:all
+```
+
+This will:
+1. Run Maven `package` phase to generate the OpenAPI spec from Java annotations
+2. Copy the spec to `src/main/webui/openapi.json`
+3. Generate the TypeScript client in `src/generated-client/`
+
+### Step-by-Step
 
 1. **Install dependencies** (if not already done):
    ```bash
@@ -16,148 +28,121 @@ This method uses static analysis of Java code during the Maven build process:
 
 2. **Generate OpenAPI spec from Java code**:
    ```bash
-   # From project root
-   ./mvnw clean compile -DskipTests
-   ```
-   Or from the webui directory:
-   ```bash
-   npm run generate:openapi:maven
+   cd src/main/webui
+   npm run generate:openapi
    ```
    
-   This compiles your Java code. The OpenAPI spec will be generated in `target/generated/openapi/openapi.json` during the build and automatically copied to `src/main/webui/openapi.json`.
+   Or from the project root:
+   ```bash
+   ./mvnw clean package -DskipTests
+   cd src/main/webui
+   npm run copy:openapi
+   ```
    
-   **Note:** The OpenAPI spec generation happens during the Quarkus build process when it processes your REST endpoint annotations. The spec file is automatically copied to the webui directory via the Maven resources plugin.
+   This runs the Maven `package` phase which:
+   - Compiles your Java code with OpenAPI annotations
+   - Quarkus processes the annotations and generates the OpenAPI spec
+   - Saves the spec to `target/generated/openapi/openapi.json`
+   - The `generate:openapi` script automatically copies it to `src/main/webui/openapi.json`
+   
+   **Important:** The OpenAPI spec is only generated during the `package` phase (not `compile`), as Quarkus needs to process the application context to generate the complete spec.
 
-3. **Generate TypeScript types**:
+3. **Generate TypeScript client**:
    ```bash
    cd src/main/webui
-   npm run generate:types:file
+   npm run generate:client
    ```
-
-   Or do both steps at once:
-   ```bash
-   cd src/main/webui
-   npm run generate:all:maven
-   ```
+   
+   This generates the TypeScript client code from `openapi.json` into `src/generated-client/`.
 
 ## Generate OpenAPI Spec File
 
-### Method 1: From Maven Build (Static Analysis)
+### Method 1: From Maven Build (Recommended)
 
 Generate the OpenAPI spec by analyzing Java code during the Maven build process:
 
 ```bash
 # From project root
-./mvnw clean compile -DskipTests
+./mvnw clean package -DskipTests
 ```
 
 Or from the webui directory:
-
-```bash
-npm run generate:openapi:maven
-```
-
-This will:
-- Compile your Java code with OpenAPI annotations
-- Quarkus processes the annotations during build
-- Generate the OpenAPI spec in `target/generated/openapi/openapi.json` (if `quarkus.smallrye-openapi.store-schema-directory` is configured)
-- Automatically copy it to `src/main/webui/openapi.json` via Maven resources plugin
-
-**Note:** The OpenAPI spec generation in Quarkus typically happens when the application context is initialized. For pure static analysis without any runtime, you may need to briefly start the application in test mode, or use the running server method below.
-
-**Advantages:**
-- ✅ Works in CI/CD pipelines
-- ✅ No long-running server needed
-- ✅ Can be integrated into build process
-
-### Method 2: From Running Server
-
-To save the OpenAPI specification from a running server:
 
 ```bash
 npm run generate:openapi
 ```
 
 This will:
-- Fetch the OpenAPI spec from `http://localhost:8080/q/openapi`
-- Save it as `openapi.json` in the `src/main/webui` directory
-- Pretty-print the JSON for readability
+- Compile your Java code with OpenAPI annotations
+- Run the Quarkus build process which processes the annotations
+- Generate the OpenAPI spec in `target/generated/openapi/openapi.json` (configured via `quarkus.smallrye-openapi.store-schema-directory`)
+- Automatically copy it to `src/main/webui/openapi.json` via the npm `copy:openapi` script
 
-### Custom Server URL
+**Important Notes:**
+- The OpenAPI spec generation happens during the **`package` phase**, not `compile`
+- Quarkus needs to process the application context to generate the complete spec
+- The copy step is handled by npm scripts (not Maven), keeping frontend build concerns separate from backend
 
-To fetch from a different server:
+**Advantages:**
+- ✅ Works in CI/CD pipelines
+- ✅ No long-running server needed
+- ✅ Can be integrated into build process
+- ✅ Generates complete spec with all endpoints and schemas
 
-```bash
-node scripts/fetch-openapi.js http://your-server:8080/q/openapi
-```
 
-### Generate Everything at Once
+### Using the Generated Client
 
-To generate both the OpenAPI spec file and TypeScript types:
-
-```bash
-npm run generate:all
-```
-
-This runs both `generate:openapi` and `generate:types:file` in sequence.
-
-## Alternative Methods
-
-### Generate Types from File
-
-If you've already generated the `openapi.json` file:
-
-```bash
-npm run generate:types:file
-```
-
-This is faster than fetching from the server each time.
-
-### Custom Server URL
-
-For a different server URL or port:
-
-```bash
-npx openapi-typescript http://your-server:8080/q/openapi -o src/types/generated-api.ts
-```
-
-## Using Generated Types
-
-The generated types will be in `src/types/generated-api.ts`. You can import and use them with your existing API client:
+The generated client provides type-safe API calls. Import and use it like this:
 
 ```typescript
-import type { paths, components } from './types/generated-api';
-import { apiGet } from '../services/apiClient';
+import { ReportEndpointService, ProductSummary } from '../generated-client';
+import { useApi } from '../hooks/useApi';
 
-// Example: Type-safe API call
-type ReportsSummaryResponse = 
-  paths['/api/reports/summary']['get']['responses']['200']['content']['application/json'];
-
-export async function getReportsSummary(): Promise<ReportsSummaryResponse> {
-  return apiGet<ReportsSummaryResponse>('/reports/summary');
-}
-
-// Example: Using component schemas
-type Report = components['schemas']['Report'];
-type Vulnerability = components['schemas']['Vulnerability'];
+// In a React component
+const { data: productSummaries } = useApi<Array<ProductSummary>>(() =>
+  ReportEndpointService.getApiReportsProduct()
+);
 ```
 
-See `src/types/generated-api.example.ts` for more usage examples.
+The generated client includes:
+- **Type-safe models**: All Java model classes are converted to TypeScript types
+- **Service classes**: One service class per REST endpoint
+- **Full type safety**: Request/response types are fully typed
+- **Cancelable promises**: Support for request cancellation
+
+## Available NPM Scripts
+
+- `npm run generate:openapi` - Generates OpenAPI spec from Java code (runs Maven package) and copies it to webui directory
+- `npm run copy:openapi` - Copies the OpenAPI spec from `target/generated/openapi/openapi.json` to `openapi.json` (standalone script)
+- `npm run generate:client` - Generates TypeScript client from `openapi.json`
+- `npm run generate:all` - Runs all steps in sequence: generate spec, copy it, and generate client (recommended)
 
 ## Updating Types
 
-Whenever the backend API changes, regenerate the types:
+Whenever you change backend API endpoints or model classes:
 
-```bash
-npm run generate:types
-```
+1. **Update your Java code** with new endpoints/models
+2. **Regenerate the OpenAPI spec**:
+   ```bash
+   npm run generate:openapi
+   ```
+3. **Regenerate the TypeScript client**:
+   ```bash
+   npm run generate:client
+   ```
+   
+   Or do both at once:
+   ```bash
+   npm run generate:all
+   ```
 
 This ensures your TypeScript types stay in sync with the backend API.
 
 ## Notes
 
-- **OpenAPI Spec File**: The `openapi.json` file can be committed to git for version control and to enable type generation without the server running
-- **Generated Types**: The `generated-api.ts` file should be committed to git so it's available even when the server isn't running
-- **Regeneration**: Regenerate both the spec file and types whenever you update the backend API endpoints or schemas
-- **Integration**: The generated types work seamlessly with your existing `apiClient.ts` utilities
+- **OpenAPI Spec File**: The `openapi.json` file should be committed to git for version control and to enable client generation without running Maven
+- **Generated Client**: The `src/generated-client/` directory should be committed to git so it's available even when the server isn't running
+- **Regeneration**: Regenerate both the spec file and client whenever you update the backend API endpoints or model schemas
+- **Integration**: The generated client works seamlessly with the `useApi` hook (`src/hooks/useApi.ts`) for React components
+- **Build Process**: The OpenAPI spec is automatically generated during `mvn package`, so it's always up-to-date in CI/CD pipelines
 

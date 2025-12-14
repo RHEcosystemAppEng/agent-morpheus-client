@@ -9,7 +9,6 @@ import type { Report } from '../models/Report';
 import type { ReportData } from '../models/ReportData';
 import type { ReportRequest } from '../models/ReportRequest';
 import type { ReportRequestId } from '../models/ReportRequestId';
-import type { ReportsSummary } from '../models/ReportsSummary';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -257,13 +256,17 @@ export class ReportEndpointService {
              */
             productState: string;
             /**
-             * List of Component analysis states
+             * Map of component analysis states to their counts
              */
-            componentStates: Array<string>;
+            componentStates: Record<string, number>;
             /**
              * Map of CVE vulnerabilities and their justifications
              */
             cves: Record<string, Array<Justification>>;
+            /**
+             * Map of each CVE to its status counts (status -> count)
+             */
+            cveStatusCounts: Record<string, Record<string, number>>;
         };
     }> {
         return __request(OpenAPI, {
@@ -272,21 +275,6 @@ export class ReportEndpointService {
             path: {
                 'id': id,
             },
-            errors: {
-                500: `Internal server error`,
-            },
-        });
-    }
-    /**
-     * Get reports summary
-     * Retrieves summary statistics of reports including vulnerable/non-vulnerable counts, pending requests, and new reports today
-     * @returns ReportsSummary Reports summary retrieved successfully
-     * @throws ApiError
-     */
-    public static getApiReportsSummary(): CancelablePromise<ReportsSummary> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/reports/summary',
             errors: {
                 500: `Internal server error`,
             },

@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Button,
   Label,
@@ -45,6 +45,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   cveSearchValue,
   filters,
 }) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -237,9 +238,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     <TableText>
                       <Button
                         variant="primary"
-                        isDisabled={!isAnalysisCompleted(row.analysisState)}
                         onClick={() =>
-                          console.log(`View report ${row.productId}`)
+                          navigate(`/Reports/${row.productId}/${row.cveId}`)
                         }
                       >
                         View Report
