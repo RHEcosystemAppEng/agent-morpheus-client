@@ -1,7 +1,7 @@
 # report-page Specification
 
 ## Purpose
-TBD - created by archiving change add-product-report-page. Update Purpose after archive.
+View SBOM report details
 ## Requirements
 ### Requirement: Report Page Navigation
 The application SHALL provide navigation from the reports table to a report page when a user clicks the "View Report" button.

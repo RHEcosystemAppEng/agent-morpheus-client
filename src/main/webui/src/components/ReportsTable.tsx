@@ -238,7 +238,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     <TableText>
                       <Button
                         variant="primary"
-                        isDisabled={!isAnalysisCompleted(row.analysisState)}
                         onClick={() =>
                           navigate(`/Reports/${row.productId}/${row.cveId}`)
                         }
