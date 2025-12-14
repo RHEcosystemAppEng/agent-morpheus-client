@@ -302,7 +302,7 @@ public class ReportRepositoryService {
     Bson productFilter = Filters.eq("metadata.product_id", productId);
     Map<String, Set<Justification>> cveSet = new HashMap<>();
     Map<String, Integer> componentStates = new HashMap<>();
-    Map<String, Integer> cveStatusCounts = new HashMap<>();
+    Map<String, Map<String, Integer>> cveStatusCounts = new HashMap<>();
     String productState = "unknown";
 
     getCollection()
@@ -344,7 +344,7 @@ public class ReportRepositoryService {
                   String label = justificationDoc.getString("label");
                   if (status != null && !status.isEmpty() && label != null && !label.isEmpty()) {
                     justifications.add(new Justification(status, label));
-                    cveStatusCounts.merge(status, 1, Integer::sum);
+                    cveStatusCounts.computeIfAbsent(cve, k -> new HashMap<>()).merge(status, 1, Integer::sum);
                   }
                 }
               }

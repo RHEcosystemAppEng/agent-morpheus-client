@@ -20,21 +20,21 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   cveId,
 }) => {
   const chartData = useMemo(() => {
-    const cves = productSummary.summary.cves || {};
-    const justifications = cves[cveId] || [];
+    const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
+    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
 
     let vulnerableCount = 0;
     let notVulnerableCount = 0;
     let unknownCount = 0;
 
-    justifications.forEach((justification) => {
-      const status = justification.status?.toUpperCase() || "UNKNOWN";
-      if (status === "TRUE") {
-        vulnerableCount += 1;
-      } else if (status === "FALSE") {
-        notVulnerableCount += 1;
+    Object.entries(statusCounts).forEach(([statusKey, count]) => {
+      const normalizedKey = statusKey.toUpperCase();
+      if (normalizedKey === "TRUE") {
+        vulnerableCount += count;
+      } else if (normalizedKey === "FALSE") {
+        notVulnerableCount += count;
       } else {
-        unknownCount += 1;
+        unknownCount += count;
       }
     });
 
