@@ -264,9 +264,9 @@ export class ReportEndpointService {
              */
             cves: Record<string, Array<Justification>>;
             /**
-             * Map of CVE justification status to count of components with that status
+             * Map of each CVE to its status counts (status -> count)
              */
-            cveStatusCounts: Record<string, number>;
+            cveStatusCounts: Record<string, Record<string, number>>;
         };
     }> {
         return __request(OpenAPI, {

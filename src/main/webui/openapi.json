@@ -203,10 +203,13 @@
           "cveStatusCounts": {
             "type": "object",
             "additionalProperties": {
-              "type": "integer",
-              "format": "int32"
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "int32"
+              }
             },
-            "description": "Map of CVE justification status to count of components with that status"
+            "description": "Map of each CVE to its status counts (status -> count)"
           }
         }
       },
@@ -308,10 +311,13 @@
               "cveStatusCounts": {
                 "type": "object",
                 "additionalProperties": {
-                  "type": "integer",
-                  "format": "int32"
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
                 },
-                "description": "Map of CVE justification status to count of components with that status"
+                "description": "Map of each CVE to its status counts (status -> count)"
               }
             }
           }
@@ -1470,10 +1476,13 @@
                         "cveStatusCounts": {
                           "type": "object",
                           "additionalProperties": {
-                            "type": "integer",
-                            "format": "int32"
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "integer",
+                              "format": "int32"
+                            }
                           },
-                          "description": "Map of CVE justification status to count of components with that status"
+                          "description": "Map of each CVE to its status counts (status -> count)"
                         }
                       }
                     }
