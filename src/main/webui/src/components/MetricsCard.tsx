@@ -7,7 +7,6 @@ import {
   GridItem,
   Title,
   Stack,
-  Flex,
   FlexItem,
   Icon,
 } from "@patternfly/react-core";

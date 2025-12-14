@@ -15,7 +15,6 @@ public record ProductReportsSummary(
     Map<String, Integer> componentStates,
     @Schema(required = true, description = "Map of CVE vulnerabilities and their justifications")
     Map<String, Set<Justification>> cves,
-    @Schema(required = true, description = "Map of CVE justification status to count of components with that status")
-    Map<String, Integer> cveStatusCounts) {
-
+    @Schema(required = true, description = "Map of each CVE to its status counts (status -> count)")
+    Map<String, Map<String, Integer>> cveStatusCounts) {
 }
