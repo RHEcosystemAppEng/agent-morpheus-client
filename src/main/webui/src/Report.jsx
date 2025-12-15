@@ -311,7 +311,7 @@ export default function Report() {
 
       <GridItem span={3}>
         <Title headingLevel="h2" size="lg" className="pf-v6-u-mb-md">Feedback</Title>
-        <FeedbackForm aiResponse={getReportSummary(report)} reportId={name}/>
+        <FeedbackForm aiResponse={getReportSummary(report)} reportId={params.id}/>
       </GridItem>
     </Grid>
   }
