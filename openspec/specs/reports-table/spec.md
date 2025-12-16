@@ -4,7 +4,7 @@
 The reports table displays vulnerability analysis reports in a tabular format, allowing users to view product-level analysis results. The table provides aggregate ExploitIQ status indicators that summarize the overall vulnerability posture of each product/SBOM.
 ## Requirements
 ### Requirement: Reports Table Display
-The application SHALL display a table of vulnerability analysis reports with columns for SBOM name, CVE ID, ExploitIQ status, completion date, analysis state, and actions.
+The application SHALL display a table of vulnerability analysis reports with columns for SBOM name, CVE ID, ExploitIQ status, completion date, analysis state, and actions. The completion date column SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
 #### Scenario: Reports table displays product and CVE information
 - **WHEN** a user views the reports page
@@ -37,4 +37,8 @@ The application SHALL display a table of vulnerability analysis reports with col
 #### Scenario: View Report button navigation
 - **WHEN** a user clicks the "View Report" button in the actions column
 - **THEN** the application navigates to `/Reports/:productId/:cveId` where `:productId` is the product ID and `:cveId` is the CVE ID from the row data
+
+#### Scenario: Completion date displays in standardized format
+- **WHEN** a user views the reports table AND a report has a completion date
+- **THEN** the completion date column displays the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") with the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation
 

@@ -37,6 +37,9 @@ All frontend-backend communication MUST go through REST APIs. APIs MUST be docum
 ### VI. Complex Data Processing
 When there is complex logic required to extract or transform frontend data from backend API responses, this logic MUST be encapsulated in a custom hook. The hook MUST call the backend API (using `useApi` with the generated client) and MUST include a separate, pure function that performs the data transformation logic. The hook MUST return the processed data. This separation ensures testability, reusability, and maintainability of data transformation logic while keeping components focused on presentation.
 
+### VII. Accessible Typography and Layout Units
+Font sizes and layout dimensions (heights, widths, padding, margins) that affect text readability MUST use `rem` units instead of `px` units. This ensures the UI scales properly when users adjust their browser's font size settings, which is critical for accessibility. Use `rem` for font sizes, line heights, and any layout dimensions (div heights, padding, margins) that should scale with user font preferences. Pixel units (`px`) may only be used for non-text elements like borders, shadows, or fixed-size icons that should not scale with font size changes.
+
 
 ## Technology Stack
 

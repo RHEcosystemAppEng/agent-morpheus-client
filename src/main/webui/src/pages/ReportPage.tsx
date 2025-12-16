@@ -1,4 +1,4 @@
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import {
   PageSection,
   Grid,
@@ -6,7 +6,12 @@ import {
   Spinner,
   Alert,
   AlertVariant,
+  Breadcrumb,
+  BreadcrumbItem,
+  Title,
+  Label,
 } from "@patternfly/react-core";
+import { CheckCircleIcon } from "@patternfly/react-icons";
 import { useReport } from "../hooks/useReport";
 import ReportDetails from "../components/ReportDetails";
 import ReportAdditionalDetails from "../components/ReportAdditionalDetails";
@@ -47,8 +52,53 @@ const ReportPage: React.FC = () => {
     );
   }
 
+  const sbomName = data.data.name || "";
+  const breadcrumbText = `${sbomName}/${cveId}`;
+  const productState = data.summary.productState || "";
+  const isCompleted = productState === "completed";
+
+  const renderStatusLabel = () => {
+    if (!productState) return null;
+
+    const formatToTitleCase = (text: string): string => {
+      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
+
+    if (isCompleted) {
+      return (
+        <Label variant="outline" color="green" icon={<CheckCircleIcon />}>
+          {formatToTitleCase(productState)}
+        </Label>
+      );
+    }
+
+    return (
+      <Label variant="outline" color="grey">
+        {formatToTitleCase(productState)}
+      </Label>
+    );
+  };
+
   return (
     <>
+      <PageSection>
+        <Grid hasGutter>
+          <GridItem>
+            <Breadcrumb>
+              <BreadcrumbItem>
+                <Link to="/Reports">Reports</Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem isActive>{breadcrumbText}</BreadcrumbItem>
+            </Breadcrumb>
+          </GridItem>
+          <GridItem>
+            <Title headingLevel="h1" size="3xl">
+              <strong>Report:</strong> {breadcrumbText}
+            </Title>
+            {renderStatusLabel()}
+          </GridItem>
+        </Grid>
+      </PageSection>
       <PageSection>
         <Grid hasGutter>
           <GridItem span={6}>

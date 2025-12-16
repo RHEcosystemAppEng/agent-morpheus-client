@@ -15,7 +15,7 @@ The application SHALL provide navigation from the reports table to a report page
 - **THEN** the application redirects to `/Reports` with the product ID as a filter parameter to show all repository reports for that product
 
 ### Requirement: Report Details Display
-The report page SHALL display report details in two separate cards positioned side by side at the top of the page.
+The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
@@ -23,8 +23,17 @@ The report page SHALL display report details in two separate cards positioned si
 - **AND** the left card (Details card) displays report information in two columns:
   - Left column: CVE Analyzed (the specified CVE ID as plain text, not a clickable link) and Report name
   - Right column: Number of repositories scanned (format: "scannedCount / submittedCount")
-- **AND** the right card (Additional Details card) displays: Completed date and metadata fields as labels
+- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or "-" when no completion date is available) and metadata fields as orange labels (excluding product_id, product_name, and product_submitted_count)
 - **AND** the CVE data displayed corresponds to the CVE ID from the route parameters
+
+#### Scenario: Completion date field always displayed
+- **WHEN** a user views the report page AND the report has no completion date
+- **THEN** the Additional Details card displays the Completed field with value "-"
+
+#### Scenario: Metadata filtering
+- **WHEN** a user views the report page AND the report has metadata
+- **THEN** the Additional Details card displays metadata labels in orange color
+- **AND** the metadata labels exclude product_id, product_name, and product_submitted_count fields
 
 #### Scenario: Report details loading state
 - **WHEN** report data is being fetched
@@ -79,11 +88,11 @@ The report page SHALL display a donut chart summarizing component scan states fr
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Repository Reports Table
-The report page SHALL display an embedded table listing all repository reports (CVE + component combinations) for the components in the SBOM, filtered by both the report's product ID and the CVE ID from the route parameters.
+The report page SHALL display an embedded table listing all repository reports (CVE + component combinations) for the components in the SBOM, filtered by both the report's product ID and the CVE ID from the route parameters. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST").
 
 #### Scenario: Repository reports table displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
-- **THEN** a table displays with columns: ID, Product Name, Version, CVEs, Completed At, Submitted At, State
+- **THEN** a table displays with columns: Repository, Commit ID, ExploitIQ Status, Completed (displaying dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ"), and Scan state
 - **AND** the table shows only repository reports for the current product and CVE (filtered by both product ID and CVE ID from route parameters)
 - **AND** the table is embedded in the page under the donut charts
 
@@ -106,14 +115,30 @@ The report page SHALL display an embedded table listing all repository reports (
 - **THEN** the table displays an empty state message
 
 ### Requirement: Report Page Layout
-The report page SHALL use PatternFly layout components and follow the standard page structure.
+The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation and page title at the top of the page.
 
 #### Scenario: Report page layout
 - **WHEN** a user views the report page
 - **THEN** the page uses PatternFly `PageSection` components for layout
+- **AND** a breadcrumb navigation is displayed at the top of the page with:
+  - First item: "Reports" as a clickable link that navigates to `/Reports`
+  - Second item: `<SBOM name>/<CVE ID>` displayed as non-clickable text (current page indicator)
+- **AND** a page title is displayed below the breadcrumb with the format "Report: <SBOM name>/<CVE ID>" where the word "Report" is displayed in bold
 - **AND** report details are displayed in two separate `Card` components side by side using a `Grid` layout
 - **AND** donut charts are displayed side by side in a `Grid` layout
 - **AND** the repository reports table is displayed embedded in a separate `PageSection` below the donut charts
+
+#### Scenario: Breadcrumb navigation
+- **WHEN** a user views the report page
+- **THEN** the breadcrumb displays the SBOM name from `productSummary.data.name` and the CVE ID from route parameters
+- **AND** clicking the "Reports" breadcrumb item navigates to the reports list page at `/Reports`
+
+#### Scenario: Page title display
+- **WHEN** a user views the report page
+- **THEN** the page title displays "Report: <SBOM name>/<CVE ID>" where:
+  - The word "Report" is displayed in bold
+  - The SBOM name is extracted from `productSummary.data.name`
+  - The CVE ID is extracted from route parameters
 
 ### Requirement: API Integration
 The report page SHALL use the generated OpenAPI client for all API calls.
