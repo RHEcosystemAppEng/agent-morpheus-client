@@ -126,6 +126,21 @@ public class ReportRepositoryService {
 
     var id = doc.get(RepositoryConstants.ID_KEY, ObjectId.class).toHexString();
 
+    // Extract git_repo and ref from source_info with type "code" if available
+    String gitRepo = null;
+    String ref = null;
+    var sourceInfo = image.getList("source_info", Document.class);
+    if (Objects.nonNull(sourceInfo) && !sourceInfo.isEmpty()) {
+      var codeSourceInfo = sourceInfo.stream()
+          .filter(si -> "code".equals(si.getString("type")))
+          .findFirst()
+          .orElse(null);
+      if (Objects.nonNull(codeSourceInfo)) {
+        gitRepo = codeSourceInfo.getString("git_repo");
+        ref = codeSourceInfo.getString("ref");
+      }
+    }
+
     return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
         scan.getString("started_at"),
         scan.getString("completed_at"),
@@ -133,7 +148,9 @@ public class ReportRepositoryService {
         image.getString("tag"),
         getStatus(doc, metadata),
         vulnIds,
-        metadata);
+        metadata,
+        gitRepo,
+        ref);
   }
 
   private String getStatus(Document doc, Map<String, String> metadata) {
@@ -529,6 +546,9 @@ public class ReportRepositoryService {
           break;
         case "imageTag":
           filters.add(Filters.eq("input.image.tag", e.getValue()));
+          break;
+        case "productId":
+          filters.add(Filters.eq("metadata.product_id", e.getValue()));
           break;
         default:
           filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));

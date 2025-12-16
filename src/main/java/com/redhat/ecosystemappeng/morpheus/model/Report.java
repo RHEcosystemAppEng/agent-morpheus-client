@@ -27,6 +27,10 @@ public record Report(
     @Schema(required = true, description = "Vulnerabilities in the report and their analysis results", type = SchemaType.ARRAY, implementation = VulnResult.class)
     Set<VulnResult> vulns,
     @Schema(required = true, description = "User provided metadata for the report")
-    Map<String, String> metadata) {
+    Map<String, String> metadata,
+    @Schema(description = "Git repository URL from source_info")
+    String gitRepo,
+    @Schema(description = "Git reference (commit hash, tag, or branch) from source_info")
+    String ref) {
 
 }

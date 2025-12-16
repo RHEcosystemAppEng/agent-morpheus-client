@@ -276,7 +276,31 @@ public class ReportEndpoint {
       @Parameter(
         description = "Number of items per page"
       )
-      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize,
+      @Parameter(
+        description = "Filter by report ID (input.scan.id)"
+      )
+      @QueryParam("reportId") String reportId,
+      @Parameter(
+        description = "Filter by vulnerability ID (CVE ID)"
+      )
+      @QueryParam("vulnId") String vulnId,
+      @Parameter(
+        description = "Filter by status. Valid values: completed, sent, failed, queued, expired, pending"
+      )
+      @QueryParam("status") String status,
+      @Parameter(
+        description = "Filter by image name"
+      )
+      @QueryParam("imageName") String imageName,
+      @Parameter(
+        description = "Filter by image tag"
+      )
+      @QueryParam("imageTag") String imageTag,
+      @Parameter(
+        description = "Filter by product ID (metadata.product_id)"
+      )
+      @QueryParam("productId") String productId) {
 
     var filter = uriInfo.getQueryParameters().entrySet().stream().filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
         .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getFirst()));

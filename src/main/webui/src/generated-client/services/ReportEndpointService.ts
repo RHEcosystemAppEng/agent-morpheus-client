@@ -66,10 +66,24 @@ export class ReportEndpointService {
      * @throws ApiError
      */
     public static getApiReports({
+        imageName,
+        imageTag,
         page = 0,
         pageSize = 100,
+        productId,
+        reportId,
         sortBy,
+        status,
+        vulnId,
     }: {
+        /**
+         * Filter by image name
+         */
+        imageName?: string,
+        /**
+         * Filter by image tag
+         */
+        imageTag?: string,
         /**
          * Page number (0-based)
          */
@@ -79,17 +93,39 @@ export class ReportEndpointService {
          */
         pageSize?: number,
         /**
+         * Filter by product ID (metadata.product_id)
+         */
+        productId?: string,
+        /**
+         * Filter by report ID (input.scan.id)
+         */
+        reportId?: string,
+        /**
          * Sort criteria in format 'field:direction'
          */
         sortBy?: Array<string>,
+        /**
+         * Filter by status. Valid values: completed, sent, failed, queued, expired, pending
+         */
+        status?: string,
+        /**
+         * Filter by vulnerability ID (CVE ID)
+         */
+        vulnId?: string,
     }): CancelablePromise<Array<Report>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/reports',
             query: {
+                'imageName': imageName,
+                'imageTag': imageTag,
                 'page': page,
                 'pageSize': pageSize,
+                'productId': productId,
+                'reportId': reportId,
                 'sortBy': sortBy,
+                'status': status,
+                'vulnId': vulnId,
             },
             errors: {
                 500: `Internal server error`,
