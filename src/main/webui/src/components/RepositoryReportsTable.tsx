@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Pagination,
   Spinner,
@@ -7,6 +7,7 @@ import {
   EmptyState,
   EmptyStateBody,
   Title,
+  Label,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -16,9 +17,11 @@ import {
   Tbody,
   Td,
 } from "@patternfly/react-table";
+import { CheckCircleIcon } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
 import { ReportEndpointService, Report } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
+import FormattedTimestamp from "./FormattedTimestamp";
 
 const PER_PAGE = 10;
 
@@ -33,31 +36,37 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const [page, setPage] = useState(1);
 
-  const { data: reports, loading, error } = useApi<Array<Report>>(() =>
-    ReportEndpointService.getApiReports({ page: page - 1, pageSize: PER_PAGE })
+  const { data: reports, loading, error } = useApi<Array<Report>>(
+    () =>
+      ReportEndpointService.getApiReports({
+        page: page - 1,
+        pageSize: PER_PAGE,
+        productId: productId,
+        vulnId: cveId,
+      }),
+    { deps: [page, productId, cveId] }
   );
 
-  const filteredReports = useMemo(() => {
-    if (!reports) return [];
-    return reports.filter((report) => {
-      const reportProductId = report.metadata?.productId || report.metadata?.id;
-      const hasCve = report.vulns?.some((vuln) => vuln.vulnId === cveId);
-      return reportProductId === productId && hasCve;
-    });
-  }, [reports, productId, cveId]);
+  const getVulnerabilityStatus = (report: Report) => {
+    if (!report.vulns || !cveId) return null;
+    const vuln = report.vulns.find((v) => v.vulnId === cveId);
+    return vuln?.justification?.status;
+  };
 
-  const paginatedReports = filteredReports.slice(
-    (page - 1) * PER_PAGE,
-    page * PER_PAGE
-  );
+  const renderExploitIqStatus = (report: Report) => {
+    const status = getVulnerabilityStatus(report);
+    if (!status) return "-";
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    try {
-      return new Date(dateString).toLocaleString();
-    } catch {
-      return dateString;
+    if (status === "TRUE") {
+      return <Label color="red">vulnerable</Label>;
     }
+    if (status === "FALSE") {
+      return <Label color="green">Not vulnerable</Label>;
+    }
+    if (status === "UNKNOWN") {
+      return <Label color="grey">Uncertain</Label>;
+    }
+    return "-";
   };
 
   if (loading) {
@@ -72,7 +81,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   }
 
-  if (filteredReports.length === 0) {
+  if (!reports || reports.length === 0) {
     return (
       <EmptyState>
         <Title headingLevel="h4" size="lg">
@@ -90,31 +99,35 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       <Table>
         <Thead>
           <Tr>
-            <Th>ID</Th>
-            <Th>Product Name</Th>
-            <Th>Version</Th>
-            <Th>CVEs</Th>
-            <Th>Completed At</Th>
-            <Th>Submitted At</Th>
-            <Th>State</Th>
+            <Th>Repository</Th>
+            <Th>Commit ID</Th>
+            <Th>ExploitIQ Status</Th>
+            <Th>Completed</Th>
+            <Th>Scan state</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {paginatedReports.map((report) => (
+          {reports.map((report) => (
             <Tr key={report.id}>
-              <Td>{report.id}</Td>
-              <Td>{report.name}</Td>
-              <Td>{report.metadata?.version || "-"}</Td>
-              <Td>{report.vulns?.length || 0}</Td>
-              <Td>{formatDate(report.completedAt)}</Td>
-              <Td>{formatDate(report.startedAt)}</Td>
-              <Td>{report.state}</Td>
+              <Td dataLabel="Repository">{report.gitRepo || "-"}</Td>
+              <Td dataLabel="Commit ID">{report.ref || "-"}</Td>
+              <Td dataLabel="ExploitIQ Status">
+                {renderExploitIqStatus(report)}
+              </Td>
+              <Td dataLabel="Completed">
+                <FormattedTimestamp date={report.completedAt} />
+              </Td>
+              <Td dataLabel="Scan state">
+                <Label variant="outline" icon={<CheckCircleIcon />}>
+                  {report.state}
+                </Label>
+              </Td>
             </Tr>
           ))}
         </Tbody>
       </Table>
       <Pagination
-        itemCount={filteredReports.length}
+        itemCount={reports.length}
         page={page}
         perPage={PER_PAGE}
         onSetPage={(_, newPage) => setPage(newPage)}

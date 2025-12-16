@@ -43,5 +43,13 @@ export type Report = {
      * User provided metadata for the report
      */
     metadata: Record<string, string>;
+    /**
+     * Git repository URL from source_info
+     */
+    gitRepo?: string;
+    /**
+     * Git reference (commit hash, tag, or branch) from source_info
+     */
+    ref?: string;
 };
 
