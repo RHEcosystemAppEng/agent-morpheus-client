@@ -31,6 +31,7 @@ import {
 } from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
+import FormattedTimestamp from "./FormattedTimestamp";
 
 const PER_PAGE = 8;
 
@@ -88,21 +89,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     completedAt: "Report completed at",
     analysisState: "Analysis state",
     action: "Action",
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    try {
-      const date = new Date(dateString);
-      const day = String(date.getDate()).padStart(2, "0");
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const year = date.getFullYear();
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch {
-      return dateString;
-    }
   };
 
   const handleSortToggle = (column: SortColumn) => {
@@ -225,7 +211,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     )}
                   </Td>
                   <Td dataLabel={columnNames.completedAt}>
-                    {formatDate(row.completedAt)}
+                    <FormattedTimestamp date={row.completedAt} />
                   </Td>
                   <Td dataLabel={columnNames.analysisState}>
                     {row.analysisState}

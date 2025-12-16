@@ -379,6 +379,14 @@
               "type": "string"
             },
             "description": "User provided metadata for the report"
+          },
+          "gitRepo": {
+            "type": "string",
+            "description": "Git repository URL from source_info"
+          },
+          "ref": {
+            "type": "string",
+            "description": "Git reference (commit hash, tag, or branch) from source_info"
           }
         }
       },
@@ -1141,6 +1149,22 @@
         "description": "Retrieves a paginated list of analysis reports with optional filtering and sorting",
         "parameters": [
           {
+            "description": "Filter by image name",
+            "name": "imageName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by image tag",
+            "name": "imageTag",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Page number (0-based)",
             "name": "page",
             "in": "query",
@@ -1161,6 +1185,22 @@
             }
           },
           {
+            "description": "Filter by product ID (metadata.product_id)",
+            "name": "productId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by report ID (input.scan.id)",
+            "name": "reportId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Sort criteria in format 'field:direction'",
             "name": "sortBy",
             "in": "query",
@@ -1170,6 +1210,22 @@
                 "type": "string"
               },
               "default": "submittedAt:DESC"
+            }
+          },
+          {
+            "description": "Filter by status. Valid values: completed, sent, failed, queued, expired, pending",
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by vulnerability ID (CVE ID)",
+            "name": "vulnId",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
