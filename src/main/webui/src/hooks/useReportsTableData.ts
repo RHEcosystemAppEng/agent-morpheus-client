@@ -381,13 +381,7 @@ export function useReportsTableData(
       sortDirection
     );
   }, [
-    productSummaries,
-    searchValue,
-    cveSearchValue,
-    filters,
-    sortColumn,
-    sortDirection,
-  ]);
+    productSummaries,searchValue,cveSearchValue,filters,sortColumn,sortDirection,]);
 
   return {
     rows,

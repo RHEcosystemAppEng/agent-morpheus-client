@@ -108,7 +108,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     filters.analysisState,
   ]);
 
-  // Use PatternFly components for loading and error states (Rule IV)
   if (loading) {
     return (
       <Card>
