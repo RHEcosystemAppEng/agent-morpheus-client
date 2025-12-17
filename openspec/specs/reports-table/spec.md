@@ -12,7 +12,7 @@ The application SHALL display a table of vulnerability analysis reports with col
 
 #### Scenario: ExploitIQ status column shows repository status counts per CVE
 - **WHEN** a user views the reports table AND the analysis state is "completed"
-- **THEN** the ExploitIQ status column displays repository status counts for that specific CVE, showing counts for Vulnerable, Not Vulnerable, Uncertain, and Failed repositories
+- **THEN** the ExploitIQ status column displays repository status counts for that specific CVE, showing counts for Vulnerable (red), Not Vulnerable (green), and Uncertain (orange) repositories
 
 #### Scenario: ExploitIQ status column shows blank during analysis
 - **WHEN** a user views the reports table AND the analysis state is "analysing" (i.e., analysis has not yet finished)
@@ -25,13 +25,13 @@ The application SHALL display a table of vulnerability analysis reports with col
 #### Scenario: Vulnerable status display when vulnerable repositories exist
 - **WHEN** a CVE has one or more repositories marked as Vulnerable (justification status "true") AND the analysis state is "completed"
 - **THEN** the ExploitIQ status column displays "X Vulnerable" in a red label, where X is the count of vulnerable repositories for that CVE
-- **AND** if there are additional statuses (Uncertain or Failed), those counts are also displayed
+- **AND** if there are Uncertain repositories, that count is also displayed in an orange label
 - **AND** "Not Vulnerable" count is NOT displayed together with "Vulnerable"
 
 #### Scenario: Not vulnerable status display when no vulnerable repositories
 - **WHEN** a CVE has no repositories marked as Vulnerable AND the analysis state is "completed"
 - **THEN** the ExploitIQ status column displays "X Not Vulnerable" in a green label, where X is the count of not vulnerable repositories for that CVE
-- **AND** if there are additional statuses (Uncertain or Failed), those counts are also displayed
+- **AND** if there are Uncertain repositories, that count is also displayed in an orange label
 
 #### Scenario: View Report button navigation
 - **WHEN** a user clicks the "View Report" button in the actions column
