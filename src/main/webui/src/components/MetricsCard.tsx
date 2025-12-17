@@ -57,7 +57,7 @@ const MetricsCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          False Positive Detection Metrics
+          Last 24 Hours Metrics
         </Title>
       </CardTitle>
       <CardBody>
