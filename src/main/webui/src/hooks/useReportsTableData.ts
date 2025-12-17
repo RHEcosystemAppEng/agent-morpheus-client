@@ -11,7 +11,6 @@ export type ProductStatus = {
   vulnerableCount: number;
   notVulnerableCount: number;
   uncertainCount: number;
-  failedCount: number;
   totalCount: number;
 };
 
@@ -55,34 +54,15 @@ export function calculateCveStatus(
 ): ProductStatus {
   const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
   const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
-  const componentStates = productSummary.summary.componentStates || {};
 
-  let vulnerableCount = 0;
-  let notVulnerableCount = 0;
-  let uncertainCount = 0;
-  let failedCount = 0;
+  // Take values directly from cveStatusCounts
+  const vulnerableCount = statusCounts["TRUE"] || statusCounts["true"] || 0;
+  const notVulnerableCount =
+    statusCounts["FALSE"] || statusCounts["false"] || 0;
+  const uncertainCount =
+    statusCounts["UNKNOWN"] || statusCounts["unknown"] || 0;
 
-  // Count repositories by their justification status for this CVE
-  Object.entries(statusCounts).forEach(([statusKey, count]) => {
-    const normalizedKey = statusKey.toUpperCase();
-    if (normalizedKey === "TRUE") {
-      vulnerableCount += count;
-    } else if (normalizedKey === "FALSE") {
-      notVulnerableCount += count;
-    } else if (normalizedKey === "UNKNOWN") {
-      uncertainCount += count;
-    } else {
-      // Treat other statuses as uncertain
-      uncertainCount += count;
-    }
-  });
-
-  // Count failed repositories from componentStates
-  // Failed repositories might not have a justification, so they appear in componentStates
-  failedCount = componentStates["failed"] || 0;
-
-  const totalCount =
-    vulnerableCount + notVulnerableCount + uncertainCount + failedCount;
+  const totalCount = vulnerableCount + notVulnerableCount + uncertainCount;
 
   // Determine overall status
   if (vulnerableCount > 0) {
@@ -91,7 +71,6 @@ export function calculateCveStatus(
       vulnerableCount,
       notVulnerableCount,
       uncertainCount,
-      failedCount,
       totalCount,
     };
   }
@@ -103,7 +82,6 @@ export function calculateCveStatus(
       vulnerableCount: 0,
       notVulnerableCount,
       uncertainCount,
-      failedCount,
       totalCount,
     };
   }
@@ -114,7 +92,6 @@ export function calculateCveStatus(
     vulnerableCount: 0,
     notVulnerableCount: 0,
     uncertainCount,
-    failedCount,
     totalCount,
   };
 }
@@ -142,9 +119,6 @@ export function formatStatusLabel(productStatus: ProductStatus): string {
     if (productStatus.uncertainCount > 0) {
       parts.push(`${productStatus.uncertainCount} Uncertain`);
     }
-    if (productStatus.failedCount > 0) {
-      parts.push(`${productStatus.failedCount} Failed`);
-    }
   } else if (productStatus.status === "not_vulnerable") {
     // Show not vulnerable count and other statuses
     if (productStatus.notVulnerableCount > 0) {
@@ -153,16 +127,10 @@ export function formatStatusLabel(productStatus: ProductStatus): string {
     if (productStatus.uncertainCount > 0) {
       parts.push(`${productStatus.uncertainCount} Uncertain`);
     }
-    if (productStatus.failedCount > 0) {
-      parts.push(`${productStatus.failedCount} Failed`);
-    }
   } else {
     // Unknown status - show all counts
     if (productStatus.uncertainCount > 0) {
       parts.push(`${productStatus.uncertainCount} Uncertain`);
-    }
-    if (productStatus.failedCount > 0) {
-      parts.push(`${productStatus.failedCount} Failed`);
     }
   }
 
@@ -247,7 +215,6 @@ export function transformProductSummariesToRows(
         vulnerableCount: 0,
         notVulnerableCount: 0,
         uncertainCount: 0,
-        failedCount: 0,
         totalCount: 0,
       };
       rows.push({

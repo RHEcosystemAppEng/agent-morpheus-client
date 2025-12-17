@@ -65,17 +65,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   const getStatusColor = (
     productStatus: ReportRow["productStatus"]
-  ): "red" | "green" | "grey" => {
-    // Green only for "Not Vulnerable" status
-    if (productStatus.status === "not_vulnerable") {
-      return "green";
-    }
+  ): "red" | "green" | "orange" => {
     // Red for "Vulnerable" status
     if (productStatus.status === "vulnerable") {
       return "red";
     }
-    // Grey for unknown or other statuses
-    return "grey";
+    // Green for "Not Vulnerable" status
+    if (productStatus.status === "not_vulnerable") {
+      return "green";
+    }
+    // Orange for uncertain/unknown status
+    return "orange";
   };
 
   const columnNames = {
@@ -198,11 +198,10 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                         <div>
                           The status shows repository-level counts for this CVE.
                           If any repository is marked as Vulnerable, the count
-                          is displayed in red along with any Uncertain or Failed
-                          counts. If no repositories are vulnerable, "Not
-                          Vulnerable" is shown in green with additional status
-                          counts if present. The status is blank during
-                          analysis.
+                          is displayed in red along with any Uncertain counts.
+                          If no repositories are vulnerable, "Not Vulnerable" is
+                          shown in green with additional status counts if
+                          present. The status is blank during analysis.
                         </div>
                       }
                     >
