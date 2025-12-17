@@ -104,37 +104,65 @@ export function isAnalysisCompleted(analysisState: string): boolean {
 }
 
 /**
- * Pure function to format status label based on repository counts
- * Shows "X Vulnerable" if any vulnerable repositories exist (with other statuses if present)
- * Shows "X Not Vulnerable" in green if no vulnerable repositories (with other statuses if present)
+ * Status item with count and color
  */
-export function formatStatusLabel(productStatus: ProductStatus): string {
-  const parts: string[] = [];
+export type StatusItem = {
+  count: number;
+  label: string;
+  color: "red" | "green" | "orange";
+};
+
+/**
+ * Pure function to get status items with their colors
+ * Returns an array of status items, each with its own color
+ */
+export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
+  const items: StatusItem[] = [];
 
   if (productStatus.status === "vulnerable") {
-    // Show vulnerable count and other statuses (but not not_vulnerable)
+    // Show vulnerable count in red and uncertain in orange (but not not_vulnerable)
     if (productStatus.vulnerableCount > 0) {
-      parts.push(`${productStatus.vulnerableCount} Vulnerable`);
+      items.push({
+        count: productStatus.vulnerableCount,
+        label: "Vulnerable",
+        color: "red",
+      });
     }
     if (productStatus.uncertainCount > 0) {
-      parts.push(`${productStatus.uncertainCount} Uncertain`);
+      items.push({
+        count: productStatus.uncertainCount,
+        label: "Uncertain",
+        color: "orange",
+      });
     }
   } else if (productStatus.status === "not_vulnerable") {
-    // Show not vulnerable count and other statuses
+    // Show not vulnerable count in green and uncertain in orange
     if (productStatus.notVulnerableCount > 0) {
-      parts.push(`${productStatus.notVulnerableCount} Not Vulnerable`);
+      items.push({
+        count: productStatus.notVulnerableCount,
+        label: "Not Vulnerable",
+        color: "green",
+      });
     }
     if (productStatus.uncertainCount > 0) {
-      parts.push(`${productStatus.uncertainCount} Uncertain`);
+      items.push({
+        count: productStatus.uncertainCount,
+        label: "Uncertain",
+        color: "orange",
+      });
     }
   } else {
-    // Unknown status - show all counts
+    // Unknown status - show uncertain in orange
     if (productStatus.uncertainCount > 0) {
-      parts.push(`${productStatus.uncertainCount} Uncertain`);
+      items.push({
+        count: productStatus.uncertainCount,
+        label: "Uncertain",
+        color: "orange",
+      });
     }
   }
 
-  return parts.length > 0 ? parts.join(", ") : "";
+  return items;
 }
 
 /**
@@ -267,7 +295,11 @@ export function filterAndSortReportRows(
   // Apply ExploitIQ status filter
   if (filters.exploitIqStatus.length > 0) {
     filtered = filtered.filter((row) => {
-      const formattedLabel = formatStatusLabel(row.productStatus);
+      const statusItems = getStatusItems(row.productStatus);
+      // Create a formatted string for filtering (same format as before for compatibility)
+      const formattedLabel = statusItems
+        .map((item) => `${item.count} ${item.label}`)
+        .join(", ");
       return filters.exploitIqStatus.includes(formattedLabel);
     });
   }
@@ -348,7 +380,13 @@ export function useReportsTableData(
       sortDirection
     );
   }, [
-    productSummaries,searchValue,cveSearchValue,filters,sortColumn,sortDirection,]);
+    productSummaries,
+    searchValue,
+    cveSearchValue,
+    filters,
+    sortColumn,
+    sortDirection,
+  ]);
 
   return {
     rows,

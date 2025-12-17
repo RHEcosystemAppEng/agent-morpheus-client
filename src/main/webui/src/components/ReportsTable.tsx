@@ -17,10 +17,9 @@ import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
 import {
   useReportsTableData,
-  ReportRow,
   SortDirection,
   SortColumn,
-  formatStatusLabel,
+  getStatusItems,
   isAnalysisCompleted,
 } from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
@@ -62,21 +61,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     (page - 1) * PER_PAGE,
     page * PER_PAGE
   );
-
-  const getStatusColor = (
-    productStatus: ReportRow["productStatus"]
-  ): "red" | "green" | "orange" => {
-    // Red for "Vulnerable" status
-    if (productStatus.status === "vulnerable") {
-      return "red";
-    }
-    // Green for "Not Vulnerable" status
-    if (productStatus.status === "not_vulnerable") {
-      return "green";
-    }
-    // Orange for uncertain/unknown status
-    return "orange";
-  };
 
   const columnNames = {
     reportId: "Report ID",
@@ -257,17 +241,26 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       {row.repositoriesAnalyzed}
                     </Td>
                     <Td dataLabel={columnNames.exploitIqStatus}>
-                      {isCompleted ? (
-                        formatStatusLabel(row.productStatus) ? (
-                          <Label color={getStatusColor(row.productStatus)}>
-                            {formatStatusLabel(row.productStatus)}
-                          </Label>
-                        ) : (
-                          ""
-                        )
-                      ) : (
-                        ""
-                      )}
+                      {isCompleted
+                        ? (() => {
+                            const statusItems = getStatusItems(
+                              row.productStatus
+                            );
+                            return statusItems.length > 0 ? (
+                              <Flex gap={{ default: "gapSm" }}>
+                                {statusItems.map((item, index) => (
+                                  <FlexItem key={index}>
+                                    <Label color={item.color}>
+                                      {item.count} {item.label}
+                                    </Label>
+                                  </FlexItem>
+                                ))}
+                              </Flex>
+                            ) : (
+                              ""
+                            );
+                          })()
+                        : ""}
                     </Td>
                     <Td dataLabel={columnNames.completedAt}>
                       {isCompleted ? (
