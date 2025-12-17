@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import {
-  Button,
   Label,
   Pagination,
   Flex,
@@ -11,16 +10,11 @@ import {
   AlertVariant,
   Card,
   CardBody,
+  Popover,
+  Icon,
 } from "@patternfly/react-core";
-import {
-  Table,
-  TableText,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
-} from "@patternfly/react-table";
+import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
+import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
 import {
   useReportsTableData,
   ReportRow,
@@ -46,7 +40,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   cveSearchValue,
   filters,
 }) => {
-  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -73,22 +66,25 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   const getStatusColor = (
     productStatus: ReportRow["productStatus"]
   ): "red" | "green" | "grey" => {
-    if (productStatus.status === "vulnerable") {
-      return "red";
-    }
+    // Green only for "Not Vulnerable" status
     if (productStatus.status === "not_vulnerable") {
       return "green";
     }
+    // Red for "Vulnerable" status
+    if (productStatus.status === "vulnerable") {
+      return "red";
+    }
+    // Grey for unknown or other statuses
     return "grey";
   };
 
   const columnNames = {
+    reportId: "Report ID",
     sbomName: "SBOM name",
     cveId: "CVE ID",
-    exploitIqStatus: "ExploitIQ status",
-    completedAt: "Report completed at",
-    analysisState: "Analysis state",
-    action: "Action",
+    repositoriesAnalyzed: "Repositories Analyzed",
+    exploitIqStatus: "ExploitIQ Status",
+    completedAt: "Completion Date",
   };
 
   const handleSortToggle = (column: SortColumn) => {
@@ -96,7 +92,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortColumn(column);
-      setSortDirection(column === "sbomName" ? "asc" : "desc");
+      setSortDirection(
+        column === "sbomName" || column === "reportId" ? "asc" : "desc"
+      );
     }
     setPage(1);
   };
@@ -162,33 +160,82 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   sortBy: {
                     index: 0,
                     direction:
+                      sortColumn === "reportId" ? sortDirection : undefined,
+                    defaultDirection: "asc",
+                  },
+                  onSort: () => handleSortToggle("reportId"),
+                  columnIndex: 0,
+                }}
+              >
+                {columnNames.reportId}
+              </Th>
+              <Th
+                sort={{
+                  sortBy: {
+                    index: 1,
+                    direction:
                       sortColumn === "sbomName" ? sortDirection : undefined,
                     defaultDirection: "asc",
                   },
                   onSort: () => handleSortToggle("sbomName"),
-                  columnIndex: 0,
+                  columnIndex: 1,
                 }}
               >
                 {columnNames.sbomName}
               </Th>
               <Th>{columnNames.cveId}</Th>
-              <Th>{columnNames.exploitIqStatus}</Th>
+              <Th>{columnNames.repositoriesAnalyzed}</Th>
+              <Th>
+                <Flex
+                  gap={{ default: "gapSm" }}
+                  alignItems={{ default: "alignItemsCenter" }}
+                >
+                  <FlexItem>{columnNames.exploitIqStatus}</FlexItem>
+                  <FlexItem>
+                    <Popover
+                      triggerAction="hover"
+                      aria-label="ExploitIQ Status information"
+                      bodyContent={
+                        <div>
+                          The status shows repository-level counts for this CVE.
+                          If any repository is marked as Vulnerable, the count
+                          is displayed in red along with any Uncertain or Failed
+                          counts. If no repositories are vulnerable, "Not
+                          Vulnerable" is shown in green with additional status
+                          counts if present. The status is blank during
+                          analysis.
+                        </div>
+                      }
+                    >
+                      <Icon
+                        role="button"
+                        tabIndex={0}
+                        aria-label="ExploitIQ Status help"
+                        style={{
+                          cursor: "help",
+                          color: "var(--pf-v6-global--Color--200)",
+                        }}
+                      >
+                        <OutlinedQuestionCircleIcon />
+                      </Icon>
+                    </Popover>
+                  </FlexItem>
+                </Flex>
+              </Th>
               <Th
                 sort={{
                   sortBy: {
-                    index: 3,
+                    index: 5,
                     direction:
                       sortColumn === "completedAt" ? sortDirection : undefined,
                     defaultDirection: "desc",
                   },
                   onSort: () => handleSortToggle("completedAt"),
-                  columnIndex: 3,
+                  columnIndex: 5,
                 }}
               >
                 {columnNames.completedAt}
               </Th>
-              <Th>{columnNames.analysisState}</Th>
-              <Th screenReaderText="Action" />
             </Tr>
           </Thead>
           <Tbody>
@@ -197,43 +244,43 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                 <Td colSpan={6}>No reports found</Td>
               </Tr>
             ) : (
-              paginatedRows.map((row, index) => (
-                <Tr key={`${row.productId}-${row.cveId}-${index}`}>
-                  <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
-                  <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
-                  <Td dataLabel={columnNames.exploitIqStatus}>
-                    {isAnalysisCompleted(row.analysisState) ? (
-                      <Label color={getStatusColor(row.productStatus)}>
-                        {formatStatusLabel(row.productStatus)}
-                      </Label>
-                    ) : (
-                      "-"
-                    )}
-                  </Td>
-                  <Td dataLabel={columnNames.completedAt}>
-                    <FormattedTimestamp date={row.completedAt} />
-                  </Td>
-                  <Td dataLabel={columnNames.analysisState}>
-                    {row.analysisState}
-                  </Td>
-                  <Td
-                    dataLabel={columnNames.action}
-                    modifier="fitContent"
-                    hasAction
-                  >
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${row.productId}/${row.cveId}`)
-                        }
-                      >
-                        View Report
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))
+              paginatedRows.map((row, index) => {
+                const isCompleted = isAnalysisCompleted(row.analysisState);
+                return (
+                  <Tr key={`${row.productId}-${row.cveId}-${index}`}>
+                    <Td dataLabel={columnNames.reportId}>
+                      <Link to={`/Reports/${row.productId}/${row.cveId}`}>
+                        {row.reportId}
+                      </Link>
+                    </Td>
+                    <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
+                    <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
+                    <Td dataLabel={columnNames.repositoriesAnalyzed}>
+                      {row.repositoriesAnalyzed}
+                    </Td>
+                    <Td dataLabel={columnNames.exploitIqStatus}>
+                      {isCompleted ? (
+                        formatStatusLabel(row.productStatus) ? (
+                          <Label color={getStatusColor(row.productStatus)}>
+                            {formatStatusLabel(row.productStatus)}
+                          </Label>
+                        ) : (
+                          ""
+                        )
+                      ) : (
+                        ""
+                      )}
+                    </Td>
+                    <Td dataLabel={columnNames.completedAt}>
+                      {isCompleted ? (
+                        <FormattedTimestamp date={row.completedAt} />
+                      ) : (
+                        ""
+                      )}
+                    </Td>
+                  </Tr>
+                );
+              })
             )}
           </Tbody>
         </Table>
