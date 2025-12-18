@@ -334,6 +334,39 @@ const mockReports: Report[] = [
     imageName: "microservice",
     imageTag: "v3.1.0",
   }),
+
+  // Report 9: Completed with uncertain status (UNKNOWN)
+  {
+    id: "report-9",
+    name: "Report report-9",
+    startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date().toISOString(),
+    imageName: "uncertain-app",
+    imageTag: "v1.5.0",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-2001",
+        justification: {
+          status: "UNKNOWN",
+          label: "uncertain",
+        },
+      },
+      {
+        vulnId: "CVE-2024-2002",
+        justification: {
+          status: "UNKNOWN",
+          label: "uncertain",
+        },
+      },
+    ],
+    metadata: {
+      productId: "product-1",
+      environment: "production",
+    },
+    gitRepo: "https://github.com/example/uncertain-repo",
+    ref: "main",
+  },
 ];
 
 // Generate reports summary based on actual mock data
