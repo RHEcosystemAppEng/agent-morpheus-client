@@ -296,11 +296,10 @@ export function filterAndSortReportRows(
   if (filters.exploitIqStatus.length > 0) {
     filtered = filtered.filter((row) => {
       const statusItems = getStatusItems(row.productStatus);
-      // Create a formatted string for filtering (same format as before for compatibility)
-      const formattedLabel = statusItems
-        .map((item) => `${item.count} ${item.label}`)
-        .join(", ");
-      return filters.exploitIqStatus.includes(formattedLabel);
+      // Check if any of the selected filter options match the row's status items
+      return statusItems.some((item) =>
+        filters.exploitIqStatus.includes(item.label)
+      );
     });
   }
 
