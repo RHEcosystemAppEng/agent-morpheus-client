@@ -34,18 +34,8 @@ interface ReportsToolbarProps {
 
 const ALL_EXPLOIT_IQ_STATUS_OPTIONS = [
   "Vulnerable",
-  "Uncertain",
   "Not Vulnerable",
-  "False Positive",
-  "Code Not Present",
-  "Code Not Reachable",
-  "Requires Configuration",
-  "Requires Dependency",
-  "Requires Environment",
-  "Protected By Compiler",
-  "Protected At Runtime",
-  "Protected At Perimeter",
-  "Protected By Mitigating Control",
+  "Uncertain",
 ];
 
 type ActiveAttribute =
