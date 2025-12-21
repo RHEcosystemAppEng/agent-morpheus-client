@@ -14,6 +14,7 @@ import type {
   Report,
   VulnResult,
 } from "../generated-client";
+import { mockFullReports } from "./mockFullReports";
 
 // Mock data generators with varied scenarios
 const generateMockProductSummary = (
@@ -427,6 +428,7 @@ export const handlers = [
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
     const productId = url.searchParams.get("productId");
+    const vulnId = url.searchParams.get("vulnId");
     const status = url.searchParams.get("status");
 
     let filteredReports = [...mockReports];
@@ -438,29 +440,58 @@ export const handlers = [
       );
     }
 
+    if (vulnId) {
+      filteredReports = filteredReports.filter((r) => {
+        // Check if any vulnerability in the report matches the vulnId
+        return r.vulns?.some((v) => v.vulnId === vulnId);
+      });
+    }
+
     if (status) {
       filteredReports = filteredReports.filter((r) => r.state === status);
     }
+
+    // Calculate pagination info
+    const totalElements = filteredReports.length;
+    const totalPages = Math.ceil(totalElements / pageSize);
 
     // Apply pagination
     const start = page * pageSize;
     const end = start + pageSize;
     const paginatedReports = filteredReports.slice(start, end);
 
-    return HttpResponse.json(paginatedReports);
+    return HttpResponse.json(paginatedReports, {
+      headers: {
+        "X-Total-Elements": totalElements.toString(),
+        "X-Total-Pages": totalPages.toString(),
+      },
+    });
   }),
 
-  // GET /api/reports/:id - Get analysis report by ID
+  // GET /api/reports/:id - Get analysis report by ID (FullReport)
   http.get("/api/reports/:id", ({ params }) => {
-    const { id } = params;
-    const report = mockReports.find((r) => r.id === id);
+    const { id } = params as { id: string };
+    
+    // First check if we have a FullReport mock
+    const fullReport = mockFullReports[id];
+    if (fullReport) {
+      // Return as JSON string (as per API contract - backend returns String)
+      // HttpResponse.text() returns the string directly without double-encoding
+      return HttpResponse.text(JSON.stringify(fullReport), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
+    // Fallback to Report summary if no FullReport exists
+    const report = mockReports.find((r) => r.id === id);
     if (!report) {
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
     // Return as string (as per API contract)
-    return HttpResponse.json(JSON.stringify(report));
+    return HttpResponse.text(JSON.stringify(report), {
+      headers: { "Content-Type": "application/json" },
+    });
   }),
 
   // GET /api/reports/summary - Get reports summary

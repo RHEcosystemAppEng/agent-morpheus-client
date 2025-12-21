@@ -4,6 +4,7 @@ import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import ReportsPage from "./pages/ReportsPage";
 import ReportPage from "./pages/ReportPage";
+import RepositoryReportPage from "./pages/RepositoryReportPage";
 import ProductRedirect from "./components/ProductRedirect";
 
 /**
@@ -16,6 +17,10 @@ const App: React.FC = () => {
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/Reports" element={<ReportsPage />} />
+          <Route
+            path="/Reports/:productId/:cveId/:reportId"
+            element={<RepositoryReportPage />}
+          />
           <Route path="/Reports/:productId/:cveId" element={<ReportPage />} />
           <Route path="/Reports/:productId" element={<ProductRedirect />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -40,6 +40,9 @@ When there is complex logic required to extract or transform frontend data from 
 ### VII. Accessible Typography and Layout Units
 Font sizes and layout dimensions (heights, widths, padding, margins) that affect text readability MUST use `rem` units instead of `px` units. This ensures the UI scales properly when users adjust their browser's font size settings, which is critical for accessibility. Use `rem` for font sizes, line heights, and any layout dimensions (div heights, padding, margins) that should scale with user font preferences. Pixel units (`px`) may only be used for non-text elements like borders, shadows, or fixed-size icons that should not scale with font size changes.
 
+### VIII. Loading State Patterns
+Loading states MUST use PatternFly `Skeleton` components instead of `Spinner` components. Skeletons provide better UX by showing the structure and layout of content that will appear, reducing perceived load time and layout shift. Use `Skeleton` components to match the shape and size of the content being loaded. Spinners should only be used for small, inline loading indicators (e.g., button loading states) or when skeleton placeholders are not practical.
+
 
 ## Technology Stack
 
