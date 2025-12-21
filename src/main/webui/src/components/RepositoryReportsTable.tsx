@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Pagination,
-  Spinner,
   Alert,
   AlertVariant,
   EmptyState,
@@ -9,15 +8,9 @@ import {
   Title,
   Label,
 } from "@patternfly/react-core";
-import {
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
-} from "@patternfly/react-table";
+import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
 import { CheckCircleIcon } from "@patternfly/react-icons";
+import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { useApi } from "../hooks/useApi";
 import { ReportEndpointService, Report } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
@@ -36,7 +29,11 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const [page, setPage] = useState(1);
 
-  const { data: reports, loading, error } = useApi<Array<Report>>(
+  const {
+    data: reports,
+    loading,
+    error,
+  } = useApi<Array<Report>>(
     () =>
       ReportEndpointService.getApiReports({
         page: page - 1,
@@ -70,7 +67,18 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   };
 
   if (loading) {
-    return <Spinner aria-label="Loading repository reports" />;
+    return (
+      <SkeletonTable
+        rowsCount={10}
+        columns={[
+          "Repository",
+          "Commit ID",
+          "ExploitIQ Status",
+          "Completed",
+          "Scan state",
+        ]}
+      />
+    );
   }
 
   if (error) {
@@ -138,4 +146,3 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 };
 
 export default RepositoryReportsTable;
-
