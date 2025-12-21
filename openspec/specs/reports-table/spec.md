@@ -10,9 +10,10 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **WHEN** a user views the reports page
 - **THEN** the table displays one row per CVE per product with SBOM name, CVE ID, and other metadata
 
-#### Scenario: ExploitIQ status column shows repository status counts per CVE
+#### Scenario: ExploitIQ status column shows all status counts per CVE
 - **WHEN** a user views the reports table AND the analysis state is "completed"
-- **THEN** the ExploitIQ status column displays repository status counts for that specific CVE, showing counts for Vulnerable (red), Not Vulnerable (green), and Uncertain (orange) repositories
+- **THEN** the ExploitIQ status column displays all three status types with their counts: "X vulnerable" in a red label, "Y not vulnerable" in a green label, and "Z uncertain" in an orange label
+- **AND** any status with a count of 0 is hidden (not displayed)
 
 #### Scenario: ExploitIQ status column shows blank during analysis
 - **WHEN** a user views the reports table AND the analysis state is "analysing" (i.e., analysis has not yet finished)
@@ -22,25 +23,14 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **WHEN** a user views the reports table
 - **THEN** the "View Report" button is enabled and can be clicked to view the report, regardless of analysis state
 
-#### Scenario: Vulnerable status display when vulnerable repositories exist
-- **WHEN** a CVE has one or more repositories marked as Vulnerable (justification status "true") AND the analysis state is "completed"
-- **THEN** the ExploitIQ status column displays "X Vulnerable" in a red label, where X is the count of vulnerable repositories for that CVE
-- **AND** if there are Uncertain repositories, that count is also displayed in an orange label
-- **AND** "Not Vulnerable" count is NOT displayed together with "Vulnerable"
-
-#### Scenario: Not vulnerable status display when no vulnerable repositories
-- **WHEN** a CVE has no repositories marked as Vulnerable AND the analysis state is "completed"
-- **THEN** the ExploitIQ status column displays "X Not Vulnerable" in a green label, where X is the count of not vulnerable repositories for that CVE
-- **AND** if there are Uncertain repositories, that count is also displayed in an orange label
-
 #### Scenario: View Report button navigation
 - **WHEN** a user clicks the "View Report" button in the actions column
 - **THEN** the application navigates to `/Reports/:productId/:cveId` where `:productId` is the product ID and `:cveId` is the CVE ID from the row data
 
 #### Scenario: Completion date column name and display
 - **WHEN** a user views the reports table
-- **THEN** the completion date column is labeled "Completion Date" (not "Report Completion Date")
-- **AND** when a report has a completion date, it displays the date in the format "DD/MM/YYYY HH:MM" (e.g., "07/07/2025 22:14")
+- **THEN** the completion date column is labeled "Completion Date"
+- **AND** when a report has a completion date, showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or " " when no completion date is available
 
 #### Scenario: Default sorting by completion date
 - **WHEN** a user first views the reports table
