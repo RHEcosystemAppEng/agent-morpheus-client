@@ -5,7 +5,6 @@ import {
   Pagination,
   Flex,
   FlexItem,
-  Spinner,
   Alert,
   AlertVariant,
   Card,
@@ -15,6 +14,7 @@ import {
 } from "@patternfly/react-core";
 import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
+import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import {
   useReportsTableData,
   SortDirection,
@@ -110,16 +110,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   if (loading) {
     return (
-      <Card>
-        <CardBody>
-          <Flex>
-            <FlexItem>
-              <Spinner size="lg" />
-            </FlexItem>
-            <FlexItem>Loading reports...</FlexItem>
-          </Flex>
-        </CardBody>
-      </Card>
+      <SkeletonTable
+        rowsCount={8}
+        columns={[
+          "Report ID",
+          "SBOM name",
+          "CVE ID",
+          "Repositories Analyzed",
+          "ExploitIQ Status",
+          "Completion Date",
+        ]}
+      />
     );
   }
 
