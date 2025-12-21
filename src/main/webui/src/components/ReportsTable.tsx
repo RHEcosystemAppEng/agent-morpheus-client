@@ -137,7 +137,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   return (
     <Flex direction={{ default: "column" }}>
-            <FlexItem align={{ default: "alignRight" }}>
+      <FlexItem align={{ default: "alignRight" }}>
         <Pagination
           itemCount={filteredRows.length}
           perPage={PER_PAGE}
@@ -238,8 +238,24 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                 const isCompleted = isAnalysisCompleted(row.analysisState);
                 return (
                   <Tr key={`${row.reportId}-${row.cveId}-${index}`}>
-                    <Td dataLabel={columnNames.reportId}>
-                      <Link to={`/Reports/${row.reportId}/${row.cveId}`}>
+                    <Td
+                      dataLabel={columnNames.reportId}
+                      style={{
+                        maxWidth: "10rem",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Link
+                        to={`/Reports/${row.reportId}/${row.cveId}`}
+                        style={{
+                          display: "block",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {row.reportId}
                       </Link>
                     </Td>
