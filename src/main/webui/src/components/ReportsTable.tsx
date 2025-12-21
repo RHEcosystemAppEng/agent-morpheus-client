@@ -137,7 +137,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   return (
     <Flex direction={{ default: "column" }}>
-      <FlexItem align={{ default: "alignRight" }}>
+            <FlexItem align={{ default: "alignRight" }}>
         <Pagination
           itemCount={filteredRows.length}
           perPage={PER_PAGE}
@@ -147,7 +147,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             setPage(1);
           }}
           perPageOptions={[]}
-          isCompact
         />
       </FlexItem>
       <FlexItem>
@@ -284,18 +283,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             )}
           </Tbody>
         </Table>
-      </FlexItem>
-      <FlexItem align={{ default: "alignRight" }}>
-        <Pagination
-          itemCount={filteredRows.length}
-          perPage={PER_PAGE}
-          page={page}
-          onSetPage={(_event, newPage) => setPage(newPage)}
-          onPerPageSelect={() => {
-            setPage(1);
-          }}
-          perPageOptions={[]}
-        />
       </FlexItem>
     </Flex>
   );
