@@ -7,11 +7,9 @@ import {
 import { ReportsToolbarFilters } from "../components/ReportsToolbar";
 
 export type ProductStatus = {
-  status: "vulnerable" | "not_vulnerable" | "unknown";
   vulnerableCount: number;
   notVulnerableCount: number;
   uncertainCount: number;
-  totalCount: number;
 };
 
 export interface ReportRow {
@@ -61,37 +59,10 @@ export function calculateCveStatus(
   const uncertainCount =
     statusCounts["UNKNOWN"] || statusCounts["unknown"] || 0;
 
-  const totalCount = vulnerableCount + notVulnerableCount + uncertainCount;
-
-  // Determine overall status
-  if (vulnerableCount > 0) {
-    return {
-      status: "vulnerable",
-      vulnerableCount,
-      notVulnerableCount,
-      uncertainCount,
-      totalCount,
-    };
-  }
-
-  // No vulnerable repositories
-  if (notVulnerableCount > 0 || (totalCount > 0 && vulnerableCount === 0)) {
-    return {
-      status: "not_vulnerable",
-      vulnerableCount: 0,
-      notVulnerableCount,
-      uncertainCount,
-      totalCount,
-    };
-  }
-
-  // Unknown status
   return {
-    status: "unknown",
-    vulnerableCount: 0,
-    notVulnerableCount: 0,
+    vulnerableCount,
+    notVulnerableCount,
     uncertainCount,
-    totalCount,
   };
 }
 
@@ -218,11 +189,9 @@ export function transformProductSummariesToRows(
       // If no CVEs, create a single row with empty CVE
       // Use default status with zero counts
       const productStatus: ProductStatus = {
-        status: "unknown",
         vulnerableCount: 0,
         notVulnerableCount: 0,
         uncertainCount: 0,
-        totalCount: 0,
       };
       rows.push({
         reportId,
