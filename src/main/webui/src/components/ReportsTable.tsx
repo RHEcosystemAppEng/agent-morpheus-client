@@ -76,12 +76,28 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortColumn(column);
-      setSortDirection(
-        column === "sbomName" || column === "reportId" ? "asc" : "desc"
-      );
+      setSortDirection("asc");
     }
     setPage(1);
   };
+
+  // Map sort columns to their column indices
+  const getColumnIndex = (column: SortColumn): number => {
+    switch (column) {
+      case "reportId":
+        return 0;
+      case "sbomName":
+        return 1;
+      case "completedAt":
+        return 5;
+      default:
+        return 0;
+    }
+  };
+
+  // Get the current sort index and direction for PatternFly
+  const activeSortIndex = getColumnIndex(sortColumn);
+  const activeSortDirection = sortDirection;
 
   useEffect(() => {
     setPage(1);
@@ -141,9 +157,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               <Th
                 sort={{
                   sortBy: {
-                    index: 0,
-                    direction:
-                      sortColumn === "reportId" ? sortDirection : undefined,
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
                     defaultDirection: "asc",
                   },
                   onSort: () => handleSortToggle("reportId"),
@@ -155,9 +170,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               <Th
                 sort={{
                   sortBy: {
-                    index: 1,
-                    direction:
-                      sortColumn === "sbomName" ? sortDirection : undefined,
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
                     defaultDirection: "asc",
                   },
                   onSort: () => handleSortToggle("sbomName"),
@@ -181,11 +195,10 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       bodyContent={
                         <div>
                           The status shows repository-level counts for this CVE.
-                          If any repository is marked as Vulnerable, the count
-                          is displayed in red along with any Uncertain counts.
-                          If no repositories are vulnerable, "Not Vulnerable" is
-                          shown in green with additional status counts if
-                          present. The status is blank during analysis.
+                          All status types are displayed with their
+                          counts: Vulnerable (red), Not Vulnerable (green), and
+                          Uncertain (orange). Any status with a count of 0 is
+                          hidden. The status is blank during analysis.
                         </div>
                       }
                     >
@@ -207,9 +220,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               <Th
                 sort={{
                   sortBy: {
-                    index: 5,
-                    direction:
-                      sortColumn === "completedAt" ? sortDirection : undefined,
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
                     defaultDirection: "desc",
                   },
                   onSort: () => handleSortToggle("completedAt"),
@@ -229,9 +241,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               paginatedRows.map((row, index) => {
                 const isCompleted = isAnalysisCompleted(row.analysisState);
                 return (
-                  <Tr key={`${row.productId}-${row.cveId}-${index}`}>
+                  <Tr key={`${row.reportId}-${row.cveId}-${index}`}>
                     <Td dataLabel={columnNames.reportId}>
-                      <Link to={`/Reports/${row.productId}/${row.cveId}`}>
+                      <Link to={`/Reports/${row.reportId}/${row.cveId}`}>
                         {row.reportId}
                       </Link>
                     </Td>
