@@ -20,10 +20,7 @@ import ReportComponentStatesPieChart from "../components/ReportComponentStatesPi
 import RepositoryReportsTable from "../components/RepositoryReportsTable";
 
 const ReportPage: React.FC = () => {
-  const { productId, cveId } = useParams<{
-    productId: string;
-    cveId: string;
-  }>();
+  const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
 
   const { data, loading, error } = useReport(productId || "");
 

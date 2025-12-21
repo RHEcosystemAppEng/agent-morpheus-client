@@ -8,14 +8,14 @@ import {
   Title,
   Label,
 } from "@patternfly/react-core";
-import { 
+import {
   Table,
   Thead,
-  Tr, 
-  Th, 
-  Tbody, 
-  Td 
-} from "@patternfly/react-table"; 
+  Tr,
+  Th,
+  Tbody,
+  Td, 
+} from "@patternfly/react-table";
 import { CheckCircleIcon } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { useApi } from "../hooks/useApi";
@@ -36,7 +36,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const [page, setPage] = useState(1);
 
-  const { data: reports, loading, error,} = useApi<Array<Report>>(
+  const { data: reports, loading, error } = useApi<Array<Report>>(
     () =>
       ReportEndpointService.getApiReports({
         page: page - 1,
