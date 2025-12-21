@@ -5,7 +5,6 @@ import {
   Pagination,
   Flex,
   FlexItem,
-  Spinner,
   Alert,
   AlertVariant,
   Card,
@@ -15,6 +14,7 @@ import {
 } from "@patternfly/react-core";
 import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
+import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import {
   useReportsTableData,
   SortDirection,
@@ -110,16 +110,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   if (loading) {
     return (
-      <Card>
-        <CardBody>
-          <Flex>
-            <FlexItem>
-              <Spinner size="lg" />
-            </FlexItem>
-            <FlexItem>Loading reports...</FlexItem>
-          </Flex>
-        </CardBody>
-      </Card>
+      <SkeletonTable
+        rowsCount={8}
+        columns={[
+          "Report ID",
+          "SBOM name",
+          "CVE ID",
+          "Repositories Analyzed",
+          "ExploitIQ Status",
+          "Completion Date",
+        ]}
+      />
     );
   }
 
@@ -147,7 +148,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             setPage(1);
           }}
           perPageOptions={[]}
-          isCompact
         />
       </FlexItem>
       <FlexItem>
@@ -239,8 +239,24 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                 const isCompleted = isAnalysisCompleted(row.analysisState);
                 return (
                   <Tr key={`${row.reportId}-${row.cveId}-${index}`}>
-                    <Td dataLabel={columnNames.reportId}>
-                      <Link to={`/Reports/${row.reportId}/${row.cveId}`}>
+                    <Td
+                      dataLabel={columnNames.reportId}
+                      style={{
+                        maxWidth: "10rem",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Link
+                        to={`/Reports/${row.reportId}/${row.cveId}`}
+                        style={{
+                          display: "block",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {row.reportId}
                       </Link>
                     </Td>
@@ -284,18 +300,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             )}
           </Tbody>
         </Table>
-      </FlexItem>
-      <FlexItem align={{ default: "alignRight" }}>
-        <Pagination
-          itemCount={filteredRows.length}
-          perPage={PER_PAGE}
-          page={page}
-          onSetPage={(_event, newPage) => setPage(newPage)}
-          onPerPageSelect={() => {
-            setPage(1);
-          }}
-          perPageOptions={[]}
-        />
       </FlexItem>
     </Flex>
   );

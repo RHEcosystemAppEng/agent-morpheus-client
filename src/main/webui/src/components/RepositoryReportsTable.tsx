@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Pagination,
-  Spinner,
   Alert,
   AlertVariant,
   EmptyState,
@@ -15,9 +14,10 @@ import {
   Tr,
   Th,
   Tbody,
-  Td,
+  Td, 
 } from "@patternfly/react-table";
 import { CheckCircleIcon } from "@patternfly/react-icons";
+import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { useApi } from "../hooks/useApi";
 import { ReportEndpointService, Report } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
@@ -70,7 +70,18 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   };
 
   if (loading) {
-    return <Spinner aria-label="Loading repository reports" />;
+    return (
+      <SkeletonTable
+        rowsCount={10}
+        columns={[
+          "Repository",
+          "Commit ID",
+          "ExploitIQ Status",
+          "Completed",
+          "Scan state",
+        ]}
+      />
+    );
   }
 
   if (error) {
@@ -138,4 +149,3 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 };
 
 export default RepositoryReportsTable;
-

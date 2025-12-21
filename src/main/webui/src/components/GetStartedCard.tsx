@@ -48,7 +48,7 @@ const GetStartedCard: FunctionComponent = () => {
           )}
           style={{ fontSize: "1.1rem" }}
         >
-          <Icon size="xl" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
+          <Icon size="lg" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <PlusIcon className={classes.actionIcon} />
           </Icon>
           Request analysis
@@ -79,7 +79,7 @@ const GetStartedCard: FunctionComponent = () => {
           )}
           style={{ fontSize: "1.1rem" }}
         >
-          <Icon size="xl" style={{ marginRight: "9px" }}className="pf-v6-u-pl-sm pf-v6-u-pr-md">
+          <Icon size="lg" style={{ marginRight: "9px" }}className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <ChartLineIcon className={classes.actionIcon} />
           </Icon>
           View Reports
@@ -106,7 +106,7 @@ const GetStartedCard: FunctionComponent = () => {
           )}
           style={{ fontSize: "1.1rem" }}
         >
-          <Icon size="xl" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
+          <Icon size="lg" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
             <BookOpenIcon className={classes.actionIcon} />
           </Icon>
           Learn more

@@ -3,7 +3,6 @@ import {
   PageSection,
   Grid,
   GridItem,
-  Spinner,
   Alert,
   AlertVariant,
   Breadcrumb,
@@ -12,6 +11,7 @@ import {
   Label,
 } from "@patternfly/react-core";
 import { CheckCircleIcon } from "@patternfly/react-icons";
+import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { useReport } from "../hooks/useReport";
 import ReportDetails from "../components/ReportDetails";
 import ReportAdditionalDetails from "../components/ReportAdditionalDetails";
@@ -27,7 +27,16 @@ const ReportPage: React.FC = () => {
   if (loading) {
     return (
       <PageSection>
-        <Spinner aria-label="Loading report data" />
+        <SkeletonTable
+          rowsCount={10}
+          columns={[
+            "Repository",
+            "Commit ID",
+            "ExploitIQ Status",
+            "Completed",
+            "Scan state",
+          ]}
+        />
       </PageSection>
     );
   }
@@ -127,4 +136,3 @@ const ReportPage: React.FC = () => {
 };
 
 export default ReportPage;
-
