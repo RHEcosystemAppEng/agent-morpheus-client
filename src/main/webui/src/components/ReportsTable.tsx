@@ -159,7 +159,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   sortBy: {
                     index: activeSortIndex,
                     direction: activeSortDirection,
-                    defaultDirection: "asc",
                   },
                   onSort: () => handleSortToggle("reportId"),
                   columnIndex: 0,
@@ -172,7 +171,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   sortBy: {
                     index: activeSortIndex,
                     direction: activeSortDirection,
-                    defaultDirection: "asc",
                   },
                   onSort: () => handleSortToggle("sbomName"),
                   columnIndex: 1,
@@ -195,8 +193,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       bodyContent={
                         <div>
                           The status shows repository-level counts for this CVE.
-                          All status types are displayed with their
-                          counts: Vulnerable (red), Not Vulnerable (green), and
+                          All status types are displayed with their counts:
+                          Vulnerable (red), Not Vulnerable (green), and
                           Uncertain (orange). Any status with a count of 0 is
                           hidden. The status is blank during analysis.
                         </div>
@@ -222,7 +220,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   sortBy: {
                     index: activeSortIndex,
                     direction: activeSortDirection,
-                    defaultDirection: "desc",
                   },
                   onSort: () => handleSortToggle("completedAt"),
                   columnIndex: 5,
