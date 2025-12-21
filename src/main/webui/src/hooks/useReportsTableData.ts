@@ -15,7 +15,6 @@ export type ProductStatus = {
 };
 
 export interface ReportRow {
-  productId: string;
   reportId: string;
   sbomName: string;
   cveId: string;
@@ -115,51 +114,33 @@ export type StatusItem = {
 /**
  * Pure function to get status items with their colors
  * Returns an array of status items, each with its own color
+ * Always shows all three statuses (vulnerable, not vulnerable, uncertain) if their count > 0
  */
 export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
   const items: StatusItem[] = [];
 
-  if (productStatus.status === "vulnerable") {
-    // Show vulnerable count in red and uncertain in orange (but not not_vulnerable)
-    if (productStatus.vulnerableCount > 0) {
-      items.push({
-        count: productStatus.vulnerableCount,
-        label: "Vulnerable",
-        color: "red",
-      });
-    }
-    if (productStatus.uncertainCount > 0) {
-      items.push({
-        count: productStatus.uncertainCount,
-        label: "Uncertain",
-        color: "orange",
-      });
-    }
-  } else if (productStatus.status === "not_vulnerable") {
-    // Show not vulnerable count in green and uncertain in orange
-    if (productStatus.notVulnerableCount > 0) {
-      items.push({
-        count: productStatus.notVulnerableCount,
-        label: "Not Vulnerable",
-        color: "green",
-      });
-    }
-    if (productStatus.uncertainCount > 0) {
-      items.push({
-        count: productStatus.uncertainCount,
-        label: "Uncertain",
-        color: "orange",
-      });
-    }
-  } else {
-    // Unknown status - show uncertain in orange
-    if (productStatus.uncertainCount > 0) {
-      items.push({
-        count: productStatus.uncertainCount,
-        label: "Uncertain",
-        color: "orange",
-      });
-    }
+  if (productStatus.vulnerableCount > 0) {
+    items.push({
+      count: productStatus.vulnerableCount,
+      label: "Vulnerable",
+      color: "red",
+    });
+  }
+
+  if (productStatus.notVulnerableCount > 0) {
+    items.push({
+      count: productStatus.notVulnerableCount,
+      label: "Not Vulnerable",
+      color: "green",
+    });
+  }
+
+  if (productStatus.uncertainCount > 0) {
+    items.push({
+      count: productStatus.uncertainCount,
+      label: "Uncertain",
+      color: "orange",
+    });
   }
 
   return items;
@@ -193,7 +174,6 @@ export function transformProductSummariesToRows(
   const rows: ReportRow[] = [];
 
   productSummaries.forEach((productSummary) => {
-    const productId = productSummary.data.id;
     const reportId = productSummary.data.id;
     const sbomName = productSummary.data.name || "-";
     const completedAt = productSummary.data.completedAt || "";
@@ -223,7 +203,6 @@ export function transformProductSummariesToRows(
           label: "uncertain",
         };
         rows.push({
-          productId,
           reportId,
           sbomName,
           cveId,
@@ -246,7 +225,6 @@ export function transformProductSummariesToRows(
         totalCount: 0,
       };
       rows.push({
-        productId,
         reportId,
         sbomName,
         cveId: "-",
@@ -261,6 +239,23 @@ export function transformProductSummariesToRows(
   });
 
   return rows;
+}
+
+/**
+ * Pure function to compare two strings with natural sorting
+ */
+export function compareStrings(
+  a: string,
+  b: string,
+  sortDirection: SortDirection
+): number {
+  const strA = (a || "").toLowerCase();
+  const strB = (b || "").toLowerCase();
+  const comparison = strA.localeCompare(strB, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+  return sortDirection === "asc" ? comparison : -comparison;
 }
 
 /**
@@ -313,20 +308,9 @@ export function filterAndSortReportRows(
   // Apply sorting
   filtered = [...filtered].sort((a, b) => {
     if (sortColumn === "reportId") {
-      // Sort alphabetically/numerically by Report ID
-      const idA = (a.reportId || "").toLowerCase();
-      const idB = (b.reportId || "").toLowerCase();
-      const comparison = idA.localeCompare(idB, undefined, {
-        numeric: true,
-        sensitivity: "base",
-      });
-      return sortDirection === "asc" ? comparison : -comparison;
+      return compareStrings(a.reportId, b.reportId, sortDirection);
     } else if (sortColumn === "sbomName") {
-      // Sort alphabetically by SBOM name
-      const nameA = (a.sbomName || "").toLowerCase();
-      const nameB = (b.sbomName || "").toLowerCase();
-      const comparison = nameA.localeCompare(nameB);
-      return sortDirection === "asc" ? comparison : -comparison;
+      return compareStrings(a.sbomName, b.sbomName, sortDirection);
     } else {
       // Sort by completedAt date
       const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
