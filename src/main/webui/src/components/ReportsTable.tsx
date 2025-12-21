@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import {
-  Button,
   Label,
   Pagination,
   Flex,
@@ -11,22 +10,16 @@ import {
   AlertVariant,
   Card,
   CardBody,
+  Popover,
+  Icon,
 } from "@patternfly/react-core";
-import {
-  Table,
-  TableText,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
-} from "@patternfly/react-table";
+import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
+import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
 import {
   useReportsTableData,
-  ReportRow,
   SortDirection,
   SortColumn,
-  formatStatusLabel,
+  getStatusItems,
   isAnalysisCompleted,
 } from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
@@ -46,7 +39,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   cveSearchValue,
   filters,
 }) => {
-  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -70,25 +62,13 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     page * PER_PAGE
   );
 
-  const getStatusColor = (
-    productStatus: ReportRow["productStatus"]
-  ): "red" | "green" | "grey" => {
-    if (productStatus.status === "vulnerable") {
-      return "red";
-    }
-    if (productStatus.status === "not_vulnerable") {
-      return "green";
-    }
-    return "grey";
-  };
-
   const columnNames = {
+    reportId: "Report ID",
     sbomName: "SBOM name",
     cveId: "CVE ID",
-    exploitIqStatus: "ExploitIQ status",
-    completedAt: "Report completed at",
-    analysisState: "Analysis state",
-    action: "Action",
+    repositoriesAnalyzed: "Repositories Analyzed",
+    exploitIqStatus: "ExploitIQ Status",
+    completedAt: "Completion Date",
   };
 
   const handleSortToggle = (column: SortColumn) => {
@@ -96,10 +76,28 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortColumn(column);
-      setSortDirection(column === "sbomName" ? "asc" : "desc");
+      setSortDirection("asc");
     }
     setPage(1);
   };
+
+  // Map sort columns to their column indices
+  const getColumnIndex = (column: SortColumn): number => {
+    switch (column) {
+      case "reportId":
+        return 0;
+      case "sbomName":
+        return 1;
+      case "completedAt":
+        return 5;
+      default:
+        return 0;
+    }
+  };
+
+  // Get the current sort index and direction for PatternFly
+  const activeSortIndex = getColumnIndex(sortColumn);
+  const activeSortDirection = sortDirection;
 
   useEffect(() => {
     setPage(1);
@@ -110,7 +108,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     filters.analysisState,
   ]);
 
-  // Use PatternFly components for loading and error states (Rule IV)
   if (loading) {
     return (
       <Card>
@@ -160,35 +157,76 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               <Th
                 sort={{
                   sortBy: {
-                    index: 0,
-                    direction:
-                      sortColumn === "sbomName" ? sortDirection : undefined,
-                    defaultDirection: "asc",
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
+                  },
+                  onSort: () => handleSortToggle("reportId"),
+                  columnIndex: 0,
+                }}
+              >
+                {columnNames.reportId}
+              </Th>
+              <Th
+                sort={{
+                  sortBy: {
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
                   },
                   onSort: () => handleSortToggle("sbomName"),
-                  columnIndex: 0,
+                  columnIndex: 1,
                 }}
               >
                 {columnNames.sbomName}
               </Th>
               <Th>{columnNames.cveId}</Th>
-              <Th>{columnNames.exploitIqStatus}</Th>
+              <Th>{columnNames.repositoriesAnalyzed}</Th>
+              <Th>
+                <Flex
+                  gap={{ default: "gapSm" }}
+                  alignItems={{ default: "alignItemsCenter" }}
+                >
+                  <FlexItem>{columnNames.exploitIqStatus}</FlexItem>
+                  <FlexItem>
+                    <Popover
+                      triggerAction="hover"
+                      aria-label="ExploitIQ Status information"
+                      bodyContent={
+                        <div>
+                          The status shows repository-level counts for this CVE.
+                          All status types are displayed with their counts:
+                          Vulnerable (red), Not Vulnerable (green), and
+                          Uncertain (orange). Any status with a count of 0 is
+                          hidden. The status is blank during analysis.
+                        </div>
+                      }
+                    >
+                      <Icon
+                        role="button"
+                        tabIndex={0}
+                        aria-label="ExploitIQ Status help"
+                        style={{
+                          cursor: "help",
+                          color: "var(--pf-v6-global--Color--200)",
+                        }}
+                      >
+                        <OutlinedQuestionCircleIcon />
+                      </Icon>
+                    </Popover>
+                  </FlexItem>
+                </Flex>
+              </Th>
               <Th
                 sort={{
                   sortBy: {
-                    index: 3,
-                    direction:
-                      sortColumn === "completedAt" ? sortDirection : undefined,
-                    defaultDirection: "desc",
+                    index: activeSortIndex,
+                    direction: activeSortDirection,
                   },
                   onSort: () => handleSortToggle("completedAt"),
-                  columnIndex: 3,
+                  columnIndex: 5,
                 }}
               >
                 {columnNames.completedAt}
               </Th>
-              <Th>{columnNames.analysisState}</Th>
-              <Th screenReaderText="Action" />
             </Tr>
           </Thead>
           <Tbody>
@@ -197,43 +235,52 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                 <Td colSpan={6}>No reports found</Td>
               </Tr>
             ) : (
-              paginatedRows.map((row, index) => (
-                <Tr key={`${row.productId}-${row.cveId}-${index}`}>
-                  <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
-                  <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
-                  <Td dataLabel={columnNames.exploitIqStatus}>
-                    {isAnalysisCompleted(row.analysisState) ? (
-                      <Label color={getStatusColor(row.productStatus)}>
-                        {formatStatusLabel(row.productStatus)}
-                      </Label>
-                    ) : (
-                      "-"
-                    )}
-                  </Td>
-                  <Td dataLabel={columnNames.completedAt}>
-                    <FormattedTimestamp date={row.completedAt} />
-                  </Td>
-                  <Td dataLabel={columnNames.analysisState}>
-                    {row.analysisState}
-                  </Td>
-                  <Td
-                    dataLabel={columnNames.action}
-                    modifier="fitContent"
-                    hasAction
-                  >
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${row.productId}/${row.cveId}`)
-                        }
-                      >
-                        View Report
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))
+              paginatedRows.map((row, index) => {
+                const isCompleted = isAnalysisCompleted(row.analysisState);
+                return (
+                  <Tr key={`${row.reportId}-${row.cveId}-${index}`}>
+                    <Td dataLabel={columnNames.reportId}>
+                      <Link to={`/Reports/${row.reportId}/${row.cveId}`}>
+                        {row.reportId}
+                      </Link>
+                    </Td>
+                    <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
+                    <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
+                    <Td dataLabel={columnNames.repositoriesAnalyzed}>
+                      {row.repositoriesAnalyzed}
+                    </Td>
+                    <Td dataLabel={columnNames.exploitIqStatus}>
+                      {isCompleted
+                        ? (() => {
+                            const statusItems = getStatusItems(
+                              row.productStatus
+                            );
+                            return statusItems.length > 0 ? (
+                              <Flex gap={{ default: "gapSm" }}>
+                                {statusItems.map((item, index) => (
+                                  <FlexItem key={index}>
+                                    <Label color={item.color}>
+                                      {item.count} {item.label}
+                                    </Label>
+                                  </FlexItem>
+                                ))}
+                              </Flex>
+                            ) : (
+                              ""
+                            );
+                          })()
+                        : ""}
+                    </Td>
+                    <Td dataLabel={columnNames.completedAt}>
+                      {isCompleted ? (
+                        <FormattedTimestamp date={row.completedAt} />
+                      ) : (
+                        ""
+                      )}
+                    </Td>
+                  </Tr>
+                );
+              })
             )}
           </Tbody>
         </Table>

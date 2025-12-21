@@ -5,17 +5,19 @@
   "scripts": {
     "dev": "vite",
     "dev:standalone": "VITE_STANDALONE=true vite",
+    "dev:msw": "VITE_ENABLE_MSW=true vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "copy:openapi": "node scripts/remove-servers.js ../../../target/generated/openapi/openapi.json openapi.json || (echo 'Warning: OpenAPI spec not found. Run generate:openapi first.' && exit 1)",
     "generate:openapi": "cd ../../.. && (bash ./mvnw clean package -DskipTests || mvn clean package -DskipTests) && cd src/main/webui && npm run copy:openapi",
     "generate:client": "openapi --input openapi.json --output src/generated-client --client fetch --useOptions --useUnionTypes",
-    "generate:all": "npm run generate:openapi && npm run generate:client"
+    "generate:all": "npm run generate:openapi && npm run generate:client",
+    "msw:init": "msw init public/ --save"
   },
   "dependencies": {
-    "@patternfly/react-component-groups": "^6.4.0",
     "@patternfly/react-charts": "^8.4.0",
+    "@patternfly/react-component-groups": "^6.4.0",
     "@patternfly/react-core": "^6.4.0",
     "@patternfly/react-icons": "^6.4.0",
     "@patternfly/react-table": "^6.4.0",
@@ -34,9 +36,15 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.11",
+    "msw": "^2.12.4",
     "openapi-typescript": "^7.0.0",
     "openapi-typescript-codegen": "^0.29.0",
     "typescript": "^5.5.4",
     "vite": "^5.4.2"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
