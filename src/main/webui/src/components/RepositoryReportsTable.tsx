@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
+  Button,
   Pagination,
   Alert,
   AlertVariant,
@@ -10,6 +12,7 @@ import {
 } from "@patternfly/react-core";
 import {
   Table,
+  TableText,
   Thead,
   Tr,
   Th,
@@ -18,8 +21,8 @@ import {
 } from "@patternfly/react-table";
 import { CheckCircleIcon } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
-import { useApi } from "../hooks/useApi";
-import { ReportEndpointService, Report } from "../generated-client";
+import { usePaginatedApi } from "../hooks/usePaginatedApi";
+import { Report } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 
@@ -34,16 +37,20 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   productId,
   cveId,
 }) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
 
-  const { data: reports, loading, error } = useApi<Array<Report>>(
-    () =>
-      ReportEndpointService.getApiReports({
+  const { data: reports, loading, error, pagination } = usePaginatedApi<Array<Report>>(
+    () => ({
+      method: 'GET',
+      url: '/api/reports',
+      query: {
         page: page - 1,
         pageSize: PER_PAGE,
         productId: productId,
         vulnId: cveId,
-      }),
+      },
+    }),
     { deps: [page, productId, cveId] }
   );
 
@@ -115,6 +122,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             <Th>ExploitIQ Status</Th>
             <Th>Completed</Th>
             <Th>Scan state</Th>
+            <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -133,12 +141,24 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
                   {report.state}
                 </Label>
               </Td>
+              <Td dataLabel="CVE Repository Report">
+                <TableText>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                    }
+                  >
+                    View
+                  </Button>
+                </TableText>
+              </Td>
             </Tr>
           ))}
         </Tbody>
       </Table>
       <Pagination
-        itemCount={reports.length}
+        itemCount={pagination?.totalElements ?? 0}
         page={page}
         perPage={PER_PAGE}
         onSetPage={(_, newPage) => setPage(newPage)}
