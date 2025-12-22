@@ -11,6 +11,10 @@ import {
   Title,
 } from "@patternfly/react-core";
 import { ProductSummary } from "../generated-client";
+import {
+  calculateRepositoriesAnalyzed,
+  formatRepositoriesAnalyzed,
+} from "../utils/repositoriesAnalyzed";
 
 interface ReportDetailsProps {
   productSummary: ProductSummary;
@@ -23,8 +27,12 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
 }) => {
   const name = productSummary.data.name || "";
   const submittedCount = productSummary.data.submittedCount || 0;
-  const scannedCount =
-    submittedCount - (productSummary.data.submissionFailures?.length || 0);
+  const componentStates = productSummary.summary.componentStates || {};
+  const analyzedCount = calculateRepositoriesAnalyzed(componentStates);
+  const repositoriesAnalyzed = formatRepositoriesAnalyzed(
+    analyzedCount,
+    submittedCount
+  );
 
   return (
     <Card>
@@ -51,10 +59,10 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
             <DescriptionList>
               <DescriptionListGroup>
                 <DescriptionListTerm>
-                  Number of repositories scanned
+                  Number of repositories analyzed
                 </DescriptionListTerm>
                 <DescriptionListDescription>
-                  {scannedCount} / {submittedCount}
+                  {repositoriesAnalyzed}
                 </DescriptionListDescription>
               </DescriptionListGroup>
             </DescriptionList>

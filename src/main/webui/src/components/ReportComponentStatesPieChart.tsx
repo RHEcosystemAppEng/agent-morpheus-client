@@ -14,6 +14,28 @@ interface ReportComponentStatesPieChartProps {
   productSummary: ProductSummary;
 }
 
+// State ordering: states appear in this order when present in data
+const STATE_ORDER = [
+  "completed",
+  "expired",
+  "failed",
+  "queued",
+  "sent",
+  "pending",
+  "preprocessing failed",
+] as const;
+
+// Color mapping for each component state
+const STATE_COLORS: Record<string, string> = {
+  completed: "#3E8635", // green
+  expired: "#6A6E73", // dark gray
+  failed: "#C9190B", // red
+  queued: "#F0AB00", // orange
+  sent: "#6753AC", // purple
+  pending: "#009596", // turquoise
+  "preprocessing failed": "#8A8D90", // light gray
+};
+
 const ReportComponentStatesPieChart: React.FC<
   ReportComponentStatesPieChartProps
 > = ({ productSummary }) => {
@@ -21,31 +43,52 @@ const ReportComponentStatesPieChart: React.FC<
     const componentStates = productSummary.summary.componentStates || {};
     const baseData = Object.entries(componentStates).map(([x, y]) => ({ x, y }));
     
-    // Calculate "None Scanned" count
+    // Calculate "Preprocessing failed" count
     const scannedTotal = baseData.reduce((sum, d) => sum + d.y, 0);
     const submittedCount = productSummary.data.submittedCount || 0;
-    const noneScannedCount = submittedCount - scannedTotal;
+    const preprocessingFailedCount = submittedCount - scannedTotal;
     
-    // Add "None Scanned" slice if count > 0
-    if (noneScannedCount > 0) {
-      return [...baseData, { x: "None Scanned", y: noneScannedCount }];
+    // Add "Preprocessing failed" slice if count > 0
+    if (preprocessingFailedCount > 0) {
+      baseData.push({ x: "Preprocessing failed", y: preprocessingFailedCount });
     }
     
-    return baseData;
+    // Sort data according to predefined state order
+    // States in the predefined list appear first in order, then any other states
+    const sortedData = [...baseData].sort((a, b) => {
+      const indexA = STATE_ORDER.indexOf(a.x.toLowerCase() as typeof STATE_ORDER[number]);
+      const indexB = STATE_ORDER.indexOf(b.x.toLowerCase() as typeof STATE_ORDER[number]);
+      
+      // If both are in the predefined list, sort by their order
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      // If only A is in the list, A comes first
+      if (indexA !== -1) return -1;
+      // If only B is in the list, B comes first
+      if (indexB !== -1) return 1;
+      // If neither is in the list, maintain original order (append at end)
+      return 0;
+    });
+    
+    return sortedData;
   }, [productSummary]);
 
   const colors = useMemo(() => {
-    const colorPalette = [
-      "#06c",
-      "#3e8635",
-      "#f0ab00",
-      "#c9190b",
-      "#6753ac",
-      "#009596",
-      "#8a8d90", // Gray for "None Scanned"
-    ];
-    return colorPalette.slice(0, chartData.length);
-  }, [chartData.length]);
+    // Map each data point to its corresponding color based on state name
+    return chartData.map((d): string => {
+      // Normalize state name for lookup (case-insensitive)
+      const normalizedState = d.x.toLowerCase();
+      
+      // Handle "Preprocessing failed" with different capitalizations
+      if (normalizedState === "preprocessing failed") {
+        return STATE_COLORS["preprocessing failed"] || "#8A8D90";
+      }
+      
+      // Look up color for normalized state name
+      return STATE_COLORS[normalizedState] || "#8A8D90"; // Default to light gray for unknown states
+    });
+  }, [chartData]);
 
   const total = useMemo(() => {
     // Total should include all submitted components
@@ -62,7 +105,7 @@ const ReportComponentStatesPieChart: React.FC<
       <Card>
         <CardTitle>
           <Title headingLevel="h4" size="xl">
-            Component Scan States
+            Repository analysis distribution
           </Title>
         </CardTitle>
         <CardBody>
@@ -78,7 +121,7 @@ const ReportComponentStatesPieChart: React.FC<
     <Card>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
-          Component Scan States
+          Repository analysis distribution
         </Title>
       </CardTitle>
       <CardBody>

@@ -15,16 +15,17 @@ The application SHALL provide navigation from the reports table to a report page
 - **THEN** the application redirects to `/Reports` with the product ID as a filter parameter to show all repository reports for that product
 
 ### Requirement: Report Details Display
-The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
+The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** the page displays two cards side by side using a `Grid` layout at the top of the page
 - **AND** the left card (Details card) displays report information in two columns:
   - Left column: CVE Analyzed (the specified CVE ID as plain text, not a clickable link) and Report name
-  - Right column: Number of repositories scanned (format: "scannedCount / submittedCount")
+  - Right column: Number of repositories analyzed (format: "analyzedCount / submittedCount analyzed" where analyzedCount is the count of repositories with "completed" state from `productSummary.summary.componentStates`)
 - **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or "-" when no completion date is available) and metadata fields as orange labels (excluding product_id, product_name, and product_submitted_count)
 - **AND** the CVE data displayed corresponds to the CVE ID from the route parameters
+- **AND** the repositories analyzed calculation uses the same logic as the "Repositories Analyzed" column in the SBOM reports table, counting only repositories with "completed" state
 
 #### Scenario: Completion date field always displayed
 - **WHEN** a user views the report page AND the report has no completion date
@@ -62,22 +63,36 @@ The report page SHALL display a donut chart summarizing CVE vulnerability status
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Component Scan States donut Chart
-The report page SHALL display a donut chart summarizing component scan states from the report summary data, including components that have not been scanned.
+The report page SHALL display a donut chart summarizing component scan states from the report summary data, including components that have not been scanned. Component states SHALL be displayed in a specific order: completed, expired, failed, queued, sent, pending, preprocessing failed. States that appear in the data SHALL be shown first in this order, followed by any states not in the predefined list (appended at the end). Each component state SHALL be displayed with a specific, semantically meaningful color: completed (green), expired (dark gray), failed (red), queued (orange), sent (purple), pending (turquoise), preprocessing failed (light gray).
 
 #### Scenario: Component Scan states donut chart displays
 - **WHEN** a user views the report page with report data loaded
 - **THEN** a donut chart displays with slices for each unique component state from the `componentStates` map
 - **AND** each slice shows the count of components with that state
 - **AND** the chart includes a legend showing state labels and counts
-- **AND** if `product.data.submittedCount` is greater than the sum of all values in `product.summary.componentStates`, the chart SHALL include an additional "None Scanned" slice
-- **AND** the "None Scanned" slice SHALL display the count calculated as `product.data.submittedCount` minus the sum of all values in `product.summary.componentStates`
-- **AND** the "None Scanned" slice SHALL be displayed with a distinct color
+- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending, preprocessing failed (only states present in data are shown)
+- **AND** any states not in the predefined list are displayed at the end, after the predefined states
+- **AND** each state is displayed with its specified color: completed (green), expired (dark gray), failed (red), queued (orange), sent (purple), pending (turquoise)
+- **AND** if `product.data.submittedCount` is greater than the sum of all values in `product.summary.componentStates`, the chart SHALL include an additional "Preprocessing failed" slice
+- **AND** the "Preprocessing failed" slice SHALL display the count calculated as `product.data.submittedCount` minus the sum of all values in `product.summary.componentStates`
+- **AND** the "Preprocessing failed" slice SHALL be displayed with light gray color
 
 #### Scenario: Component states donut chart with no unscanned components
 - **WHEN** a user views the report page with report data loaded
 - **AND** `product.data.submittedCount` equals the sum of all values in `product.summary.componentStates`
 - **THEN** the donut chart displays with slices for each unique component state from the `componentStates` map
-- **AND** the chart does NOT display a "None Scanned" slice
+- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending, preprocessing failed (only states present in data are shown)
+- **AND** each state is displayed with its specified color
+- **AND** the chart does NOT display a "Preprocessing failed" slice
+
+#### Scenario: Component states donut chart with states not in predefined list
+- **WHEN** a user views the report page with report data loaded
+- **AND** the `componentStates` map contains states that are not in the predefined list (completed, expired, failed, queued, sent, pending, preprocessing failed)
+- **THEN** the donut chart displays slices for all component states
+- **AND** predefined states are displayed first in the specified order (completed, expired, failed, queued, sent, pending, preprocessing failed)
+- **AND** states not in the predefined list are displayed at the end, after all predefined states
+- **AND** each predefined state uses its specified color
+- **AND** states not in the predefined list use a default color from the color palette
 
 #### Scenario: Component states donut chart empty state
 - **WHEN** no component state data is available

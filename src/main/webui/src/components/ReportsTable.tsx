@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import {
   Label,
-  Pagination,
   Flex,
   FlexItem,
   Alert,
@@ -23,6 +22,7 @@ import {
   isAnalysisCompleted,
 } from "../hooks/useReportsTableData";
 import { ReportsToolbarFilters } from "./ReportsToolbar";
+import ReportsToolbar from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 
@@ -30,14 +30,22 @@ const PER_PAGE = 8;
 
 interface ReportsTableProps {
   searchValue: string;
+  onSearchChange: (value: string) => void;
   cveSearchValue: string;
+  onCveSearchChange: (value: string) => void;
   filters: ReportsToolbarFilters;
+  onFiltersChange: (filters: ReportsToolbarFilters) => void;
+  analysisStateOptions: string[];
 }
 
 const ReportsTable: React.FC<ReportsTableProps> = ({
   searchValue,
+  onSearchChange,
   cveSearchValue,
+  onCveSearchChange,
   filters,
+  onFiltersChange,
+  analysisStateOptions,
 }) => {
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
@@ -137,21 +145,23 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   }
 
   return (
-    <Flex direction={{ default: "column" }}>
-      <FlexItem align={{ default: "alignRight" }}>
-        <Pagination
-          itemCount={filteredRows.length}
-          perPage={PER_PAGE}
-          page={page}
-          onSetPage={(_event, newPage) => setPage(newPage)}
-          onPerPageSelect={() => {
-            setPage(1);
-          }}
-          perPageOptions={[]}
-        />
-      </FlexItem>
-      <FlexItem>
-        <Table aria-label="Reports table">
+    <>
+      <ReportsToolbar
+        searchValue={searchValue}
+        onSearchChange={onSearchChange}
+        cveSearchValue={cveSearchValue}
+        onCveSearchChange={onCveSearchChange}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        analysisStateOptions={analysisStateOptions}
+        pagination={{
+          itemCount: filteredRows.length,
+          page,
+          perPage: PER_PAGE,
+          onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
+        }}
+      />
+      <Table aria-label="Reports table">
           <Thead>
             <Tr>
               <Th
@@ -300,8 +310,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             )}
           </Tbody>
         </Table>
-      </FlexItem>
-    </Flex>
+    </>
   );
 };
 
