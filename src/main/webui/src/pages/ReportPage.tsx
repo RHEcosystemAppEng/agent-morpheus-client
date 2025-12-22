@@ -11,13 +11,14 @@ import {
   Label,
 } from "@patternfly/react-core";
 import { CheckCircleIcon } from "@patternfly/react-icons";
-import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { useReport } from "../hooks/useReport";
 import ReportDetails from "../components/ReportDetails";
 import ReportAdditionalDetails from "../components/ReportAdditionalDetails";
 import ReportCveStatusPieChart from "../components/ReportCveStatusPieChart";
 import ReportComponentStatesPieChart from "../components/ReportComponentStatesPieChart";
 import RepositoryReportsTable from "../components/RepositoryReportsTable";
+import ReportPageSkeleton from "../components/ReportPageSkeleton";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const ReportPage: React.FC = () => {
   const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
@@ -25,27 +26,14 @@ const ReportPage: React.FC = () => {
   const { data, loading, error } = useReport(productId || "");
 
   if (loading) {
-    return (
-      <PageSection>
-        <SkeletonTable
-          rowsCount={10}
-          columns={[
-            "Repository",
-            "Commit ID",
-            "ExploitIQ Status",
-            "Completed",
-            "Scan state",
-          ]}
-        />
-      </PageSection>
-    );
+    return <ReportPageSkeleton />;
   }
 
   if (error) {
     return (
       <PageSection>
         <Alert variant={AlertVariant.danger} title="Error loading report">
-          {error.message}
+          {getErrorMessage(error)}
         </Alert>
       </PageSection>
     );
