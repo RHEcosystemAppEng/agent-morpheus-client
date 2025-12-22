@@ -9,6 +9,8 @@ import {
   Stack,
   FlexItem,
   Icon,
+  Divider,
+  CardFooter,
 } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
@@ -82,6 +84,8 @@ const MetricsCard: React.FC = () => {
           />
         </Grid>
       </CardBody>
+      <Divider />
+      <CardFooter className="pf-m-center" style={{ textAlign: 'center' }}> Based on the data from the last 24 hours. These metrics help identify false positives by tracking the percentage of analysis results that are correctly identified as not vulnerable.</CardFooter>
     </Card>
   );
 };
