@@ -5,6 +5,10 @@ import {
   ProductSummary,
 } from "../generated-client";
 import { ReportsToolbarFilters } from "../components/ReportsToolbar";
+import {
+  calculateRepositoriesAnalyzed,
+  formatRepositoriesAnalyzed,
+} from "../utils/repositoriesAnalyzed";
 
 export type ProductStatus = {
   vulnerableCount: number;
@@ -117,24 +121,6 @@ export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
   return items;
 }
 
-/**
- * Pure function to calculate repositories analyzed count
- */
-export function calculateRepositoriesAnalyzed(
-  componentStates: Record<string, number>
-): number {
-  return Object.values(componentStates).reduce((sum, count) => sum + count, 0);
-}
-
-/**
- * Pure function to format repositories analyzed display
- */
-export function formatRepositoriesAnalyzed(
-  analyzedCount: number,
-  totalCount: number
-): string {
-  return `${analyzedCount}/${totalCount} analyzed`;
-}
 
 /**
  * Pure function to transform product summaries into report rows

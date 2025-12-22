@@ -23,7 +23,7 @@ const Navigation: React.FC = () => {
           </NavItem>
           <NavItem
             itemId="reports"
-            isActive={location.pathname === "/Reports"}
+            isActive={location.pathname.startsWith("/Reports")}
             onClick={() => navigate("/Reports")}
             style={{ cursor: "pointer" }}
           >
