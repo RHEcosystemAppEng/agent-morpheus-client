@@ -14,6 +14,7 @@ import {
   MenuToggle,
   Badge,
   Popper,
+  Pagination,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
 
@@ -30,6 +31,12 @@ interface ReportsToolbarProps {
   filters: ReportsToolbarFilters;
   onFiltersChange: (filters: ReportsToolbarFilters) => void;
   analysisStateOptions: string[];
+  pagination?: {
+    itemCount: number;
+    page: number;
+    perPage: number;
+    onSetPage: (event: unknown, newPage: number) => void;
+  };
 }
 
 const ALL_EXPLOIT_IQ_STATUS_OPTIONS = [
@@ -52,6 +59,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
   filters,
   onFiltersChange,
   analysisStateOptions,
+  pagination,
 }) => {
   const [activeAttribute, setActiveAttribute] =
     useState<ActiveAttribute>("SBOM Name");
@@ -472,6 +480,20 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
             </ToolbarFilter>
           </ToolbarGroup>
         </ToolbarToggleGroup>
+        {pagination && (
+          <ToolbarGroup align={{ default: "alignEnd" }}>
+            <ToolbarItem>
+              <Pagination
+                itemCount={pagination.itemCount}
+                page={pagination.page}
+                perPage={pagination.perPage}
+                onSetPage={pagination.onSetPage}
+                onPerPageSelect={() => {}}
+                perPageOptions={[]}
+              />
+            </ToolbarItem>
+          </ToolbarGroup>
+        )}
       </ToolbarContent>
     </Toolbar>
   );
