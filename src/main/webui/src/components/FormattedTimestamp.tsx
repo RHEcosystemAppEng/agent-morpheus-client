@@ -16,7 +16,7 @@ const customFormat = {
 
 const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
   if (!date) {
-    return <>-</>;
+    return <></>;
   }
 
   try {
@@ -24,14 +24,14 @@ const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
     
     // Check if date is valid
     if (isNaN(dateObj.getTime())) {
-      return <>-</>;
+      return <></>;
     }
 
     return (
       <Timestamp date={dateObj} customFormat={customFormat} is12Hour />
     );
   } catch {
-    return <>-</>;
+    return <></>;
   }
 };
 

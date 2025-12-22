@@ -4,11 +4,17 @@
 The reports table displays vulnerability analysis reports in a tabular format, allowing users to view product-level analysis results. The table provides aggregate ExploitIQ status indicators that summarize the overall vulnerability posture of each product/SBOM.
 ## Requirements
 ### Requirement: Reports Table Display
-The application SHALL display a table of vulnerability analysis reports with columns for SBOM name, CVE ID, ExploitIQ status, completion date, analysis state, and actions. The completion date column SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
+The application SHALL display a table of vulnerability analysis reports with columns for SBOM name, CVE ID, Repositories Analyzed, ExploitIQ status, completion date, analysis state, and actions. The completion date column SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
 #### Scenario: Reports table displays product and CVE information
 - **WHEN** a user views the reports page
 - **THEN** the table displays one row per CVE per product with SBOM name, CVE ID, and other metadata
+
+#### Scenario: Repositories Analyzed column displays
+- **WHEN** a user views the reports table
+- **THEN** the table displays a "Repositories Analyzed" column
+- **AND** the column shows the format "analyzedCount / submittedCount analyzed" where analyzedCount is the count of repositories with "completed" state from `productSummary.summary.componentStates`
+- **AND** only repositories with "completed" state are counted, not all component states
 
 #### Scenario: ExploitIQ status column shows all status counts per CVE
 - **WHEN** a user views the reports table AND the analysis state is "completed"

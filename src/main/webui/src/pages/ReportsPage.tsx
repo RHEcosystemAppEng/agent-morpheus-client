@@ -6,9 +6,7 @@ import {
   ProductSummary,
 } from "../generated-client";
 import ReportsTable from "../components/ReportsTable";
-import ReportsToolbar, {
-  ReportsToolbarFilters,
-} from "../components/ReportsToolbar";
+import { ReportsToolbarFilters } from "../components/ReportsToolbar";
 
 const ReportsPage: React.FC = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -47,7 +45,7 @@ const ReportsPage: React.FC = () => {
         </p>
       </PageSection>
       <PageSection>
-        <ReportsToolbar
+        <ReportsTable
           searchValue={searchValue}
           onSearchChange={setSearchValue}
           cveSearchValue={cveSearchValue}
@@ -55,11 +53,6 @@ const ReportsPage: React.FC = () => {
           filters={filters}
           onFiltersChange={setFilters}
           analysisStateOptions={analysisStateOptions}
-        />
-        <ReportsTable
-          searchValue={searchValue}
-          cveSearchValue={cveSearchValue}
-          filters={filters}
         />
       </PageSection>
     </>

@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo, type CSSProperties } from "react";
 import { useNavigate } from "react-router";
 import {
   Button,
-  Pagination,
   Alert,
   AlertVariant,
   EmptyState,
@@ -22,23 +21,40 @@ import {
 import { CheckCircleIcon } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { usePaginatedApi } from "../hooks/usePaginatedApi";
-import { Report } from "../generated-client";
+import { Report, ProductSummary } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
+import RepositoryTableToolbar from "./RepositoryTableToolbar";
 
 const PER_PAGE = 10;
+
+// Shared style function for table cells with ellipsis truncation
+const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
+  maxWidth: `${maxWidthRem}rem`,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
 
 interface RepositoryReportsTableProps {
   productId: string;
   cveId: string;
+  productSummary: ProductSummary;
 }
 
 const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   productId,
   cveId,
+  productSummary,
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
+
+  const scanStateOptions = useMemo(() => {
+    const componentStates = productSummary.summary.componentStates || {};
+    return Object.keys(componentStates).sort();
+  }, [productSummary.summary.componentStates]);
 
   const { data: reports, loading, error, pagination } = usePaginatedApi<Array<Report>>(
     () => ({
@@ -49,10 +65,16 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         pageSize: PER_PAGE,
         productId: productId,
         vulnId: cveId,
+        ...(scanStateFilter.length > 0 && scanStateFilter[0] && { status: scanStateFilter[0] }),
       },
     }),
-    { deps: [page, productId, cveId] }
+    { deps: [page, productId, cveId, scanStateFilter] }
   );
+
+  const handleFilterChange = (filters: string[]) => {
+    setScanStateFilter(filters);
+    setPage(1);
+  };
 
   const getVulnerabilityStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
@@ -62,7 +84,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 
   const renderExploitIqStatus = (report: Report) => {
     const status = getVulnerabilityStatus(report);
-    if (!status) return "-";
+    if (!status) return "";
 
     if (status === "TRUE") {
       return <Label color="red">vulnerable</Label>;
@@ -73,7 +95,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     if (status === "UNKNOWN") {
       return <Label color="grey">Uncertain</Label>;
     }
-    return "-";
+    return "";
   };
 
   if (loading) {
@@ -85,7 +107,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           "Commit ID",
           "ExploitIQ Status",
           "Completed",
-          "Scan state",
+          "Analysis state",
         ]}
       />
     );
@@ -101,69 +123,98 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 
   if (!reports || reports.length === 0) {
     return (
-      <EmptyState>
-        <Title headingLevel="h4" size="lg">
-          No repository reports found
-        </Title>
-        <EmptyStateBody>
-          No repository reports found for this product and CVE combination.
-        </EmptyStateBody>
-      </EmptyState>
+      <>
+        <RepositoryTableToolbar
+          scanStateFilter={scanStateFilter}
+          scanStateOptions={scanStateOptions}
+          loading={loading}
+          onFilterChange={handleFilterChange}
+          pagination={
+            pagination
+              ? {
+                  itemCount: pagination.totalElements ?? 0,
+                  page,
+                  perPage: PER_PAGE,
+                  onSetPage: (_, newPage) => setPage(newPage),
+                }
+              : undefined
+          }
+        />
+        <EmptyState>
+          <Title headingLevel="h4" size="lg">
+            No repository reports found
+          </Title>
+          <EmptyStateBody>
+            {scanStateFilter.length > 0
+              ? "No repository reports found matching the selected filters."
+              : "No repository reports found for this product and CVE combination."}
+          </EmptyStateBody>
+        </EmptyState>
+      </>
     );
   }
 
   return (
     <>
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Repository</Th>
-            <Th>Commit ID</Th>
-            <Th>ExploitIQ Status</Th>
-            <Th>Completed</Th>
-            <Th>Scan state</Th>
-            <Th>CVE Repository Report</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {reports.map((report) => (
-            <Tr key={report.id}>
-              <Td dataLabel="Repository">{report.gitRepo || "-"}</Td>
-              <Td dataLabel="Commit ID">{report.ref || "-"}</Td>
-              <Td dataLabel="ExploitIQ Status">
-                {renderExploitIqStatus(report)}
-              </Td>
-              <Td dataLabel="Completed">
-                <FormattedTimestamp date={report.completedAt} />
-              </Td>
-              <Td dataLabel="Scan state">
-                <Label variant="outline" icon={<CheckCircleIcon />}>
-                  {report.state}
-                </Label>
-              </Td>
-              <Td dataLabel="CVE Repository Report">
-                <TableText>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                    }
-                  >
-                    View
-                  </Button>
-                </TableText>
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
-      <Pagination
-        itemCount={pagination?.totalElements ?? 0}
-        page={page}
-        perPage={PER_PAGE}
-        onSetPage={(_, newPage) => setPage(newPage)}
-        onPerPageSelect={() => {}}
+      <RepositoryTableToolbar
+        scanStateFilter={scanStateFilter}
+        scanStateOptions={scanStateOptions}
+        loading={loading}
+        onFilterChange={handleFilterChange}
+        pagination={{
+          itemCount: pagination?.totalElements ?? 0,
+          page,
+          perPage: PER_PAGE,
+          onSetPage: (_, newPage) => setPage(newPage),
+        }}
       />
+      <Table>
+            <Thead>
+              <Tr>
+                <Th>Repository</Th>
+                <Th>Commit ID</Th>
+                <Th>ExploitIQ Status</Th>
+                <Th>Completed</Th>
+                <Th>Analysis state</Th>
+                <Th>CVE Repository Report</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {reports.map((report) => (
+                <Tr key={report.id}>
+                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                    {report.gitRepo || ""}
+                  </Td>
+                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                    {report.ref || ""}
+                  </Td>
+                  <Td dataLabel="ExploitIQ Status">
+                    {renderExploitIqStatus(report)}
+                  </Td>
+                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+                    <FormattedTimestamp date={report.completedAt} />
+                  </Td>
+                  <Td dataLabel="Analysis state">
+                    <Label variant="outline" icon={<CheckCircleIcon />}>
+                      {report.state}
+                    </Label>
+                  </Td>
+                  <Td dataLabel="CVE Repository Report">
+                    <TableText>
+                      <Button
+                        variant="primary"
+                        onClick={() =>
+                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                        }
+                      >
+                        View
+                      </Button>
+                    </TableText>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
     </>
   );
 };
