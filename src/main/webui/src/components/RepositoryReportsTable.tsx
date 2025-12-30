@@ -52,16 +52,30 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
+  const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
+    []
+  );
 
   const scanStateOptions = useMemo(() => {
     const componentStates = productSummary.summary.componentStates || {};
     return Object.keys(componentStates).sort();
   }, [productSummary.summary.componentStates]);
 
-  const { data: reports, loading, error, pagination } = usePaginatedApi<Array<Report>>(
+  const getVulnerabilityStatus = (report: Report) => {
+    if (!report.vulns || !cveId) return null;
+    const vuln = report.vulns.find((v) => v.vulnId === cveId);
+    return vuln?.justification?.status;
+  };
+
+  const {
+    data: reports,
+    loading,
+    error,
+    pagination,
+  } = usePaginatedApi<Array<Report>>(
     () => ({
-      method: 'GET',
-      url: '/api/reports',
+      method: "GET",
+      url: "/api/reports",
       query: {
         page: page - 1,
         pageSize: perPage,
@@ -71,11 +85,50 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           scanStateFilter[0] && { status: scanStateFilter[0] }),
       },
     }),
-    { deps: [page, perPage, productId, cveId, scanStateFilter] }
+    {
+      deps: [
+        page,
+        perPage,
+        productId,
+        cveId,
+        scanStateFilter,
+        exploitIqStatusFilter,
+      ],
+    }
   );
 
-  const handleFilterChange = (filters: string[]) => {
+  // Filter reports by ExploitIQ status on the client side
+  const filteredReports = useMemo(() => {
+    if (!reports || exploitIqStatusFilter.length === 0) {
+      return reports || [];
+    }
+
+    return reports.filter((report) => {
+      const status = getVulnerabilityStatus(report);
+      if (!status) return false;
+      // Map status to filter format: TRUE -> Vulnerable, FALSE -> Not Vulnerable, UNKNOWN -> Uncertain
+      const filterLabel =
+        status === "TRUE"
+          ? "Vulnerable"
+          : status === "FALSE"
+          ? "Not Vulnerable"
+          : status === "UNKNOWN"
+          ? "Uncertain"
+          : "";
+      return filterLabel && exploitIqStatusFilter.includes(filterLabel);
+    });
+  }, [reports, exploitIqStatusFilter, cveId]);
+
+  const displayReports = filteredReports;
+  const totalFilteredCount = pagination?.totalElements ?? 0;
+
+  const handleScanStateFilterChange = (filters: string[]) => {
     setScanStateFilter(filters);
+    setPage(1);
+  };
+
+  const handleExploitIqStatusFilterChange = (filters: string[]) => {
+    setExploitIqStatusFilter(filters);
     setPage(1);
   };
 
@@ -93,12 +146,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   ) => {
     setPerPage(newPerPage);
     setPage(newPage);
-  };
-
-  const getVulnerabilityStatus = (report: Report) => {
-    if (!report.vulns || !cveId) return null;
-    const vuln = report.vulns.find((v) => v.vulnId === cveId);
-    return vuln?.justification?.status;
   };
 
   const renderExploitIqStatus = (report: Report) => {
@@ -140,18 +187,20 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   }
 
-  if (!reports || reports.length === 0) {
+  if (!reports || (reports.length === 0 && !loading)) {
     return (
       <>
         <RepositoryTableToolbar
           scanStateFilter={scanStateFilter}
           scanStateOptions={scanStateOptions}
+          exploitIqStatusFilter={exploitIqStatusFilter}
           loading={loading}
-          onFilterChange={handleFilterChange}
+          onScanStateFilterChange={handleScanStateFilterChange}
+          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
           pagination={
             pagination
               ? {
-                  itemCount: pagination.totalElements ?? 0,
+                  itemCount: totalFilteredCount,
                   page,
                   perPage: perPage,
                   onSetPage: onSetPage,
@@ -165,7 +214,39 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             No repository reports found
           </Title>
           <EmptyStateBody>
-            {scanStateFilter.length > 0
+            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
+              ? "No repository reports found matching the selected filters."
+              : "No repository reports found for this product and CVE combination."}
+          </EmptyStateBody>
+        </EmptyState>
+      </>
+    );
+  }
+
+  if (!displayReports || displayReports.length === 0) {
+    return (
+      <>
+        <RepositoryTableToolbar
+          scanStateFilter={scanStateFilter}
+          scanStateOptions={scanStateOptions}
+          exploitIqStatusFilter={exploitIqStatusFilter}
+          loading={loading}
+          onScanStateFilterChange={handleScanStateFilterChange}
+          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
+          pagination={{
+            itemCount: totalFilteredCount,
+            page,
+            perPage: perPage,
+            onSetPage: onSetPage,
+            onPerPageSelect: onPerPageSelect,
+          }}
+        />
+        <EmptyState>
+          <Title headingLevel="h4" size="lg">
+            No repository reports found
+          </Title>
+          <EmptyStateBody>
+            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
               ? "No repository reports found matching the selected filters."
               : "No repository reports found for this product and CVE combination."}
           </EmptyStateBody>
@@ -179,10 +260,12 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       <RepositoryTableToolbar
         scanStateFilter={scanStateFilter}
         scanStateOptions={scanStateOptions}
+        exploitIqStatusFilter={exploitIqStatusFilter}
         loading={loading}
-        onFilterChange={handleFilterChange}
+        onScanStateFilterChange={handleScanStateFilterChange}
+        onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
         pagination={{
-          itemCount: pagination?.totalElements ?? 0,
+          itemCount: totalFilteredCount,
           page,
           perPage: perPage,
           onSetPage: onSetPage,
@@ -190,52 +273,52 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         }}
       />
       <Table>
-            <Thead>
-              <Tr>
-                <Th>Repository</Th>
-                <Th>Commit ID</Th>
-                <Th>ExploitIQ Status</Th>
-                <Th>Completed</Th>
-                <Th>Analysis state</Th>
-                <Th>CVE Repository Report</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {reports.map((report) => (
-                <Tr key={report.id}>
-                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                    {report.gitRepo || ""}
-                  </Td>
-                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                    {report.ref || ""}
-                  </Td>
-                  <Td dataLabel="ExploitIQ Status">
-                    {renderExploitIqStatus(report)}
-                  </Td>
-                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
-                    <FormattedTimestamp date={report.completedAt} />
-                  </Td>
-                  <Td dataLabel="Analysis state">
-                    <Label variant="outline" icon={<CheckCircleIcon />}>
-                      {report.state}
-                    </Label>
-                  </Td>
-                  <Td dataLabel="CVE Repository Report">
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                        }
-                      >
-                        View
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+        <Thead>
+          <Tr>
+            <Th>Repository</Th>
+            <Th>Commit ID</Th>
+            <Th>ExploitIQ Status</Th>
+            <Th>Completed</Th>
+            <Th>Analysis state</Th>
+            <Th>CVE Repository Report</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {displayReports.map((report) => (
+            <Tr key={report.id}>
+              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                {report.gitRepo || ""}
+              </Td>
+              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                {report.ref || ""}
+              </Td>
+              <Td dataLabel="ExploitIQ Status">
+                {renderExploitIqStatus(report)}
+              </Td>
+              <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+                <FormattedTimestamp date={report.completedAt} />
+              </Td>
+              <Td dataLabel="Analysis state">
+                <Label variant="outline" icon={<CheckCircleIcon />}>
+                  {report.state}
+                </Label>
+              </Td>
+              <Td dataLabel="CVE Repository Report">
+                <TableText>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                    }
+                  >
+                    View
+                  </Button>
+                </TableText>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
     </>
   );
 };
