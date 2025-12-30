@@ -168,5 +168,96 @@ export const mockFullReports: Record<string, FullReport> = {
       environment: "staging",
     },
   },
+  "report-product1-cve1001-1": {
+    _id: "report-product1-cve1001-1",
+    input: {
+      scan: {
+        id: "scan-product1-cve1001-1",
+        type: "image",
+        started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-1001",
+            description: "Sample Product A vulnerability - Critical security issue in dependency",
+            score: 8.5,
+            severity: "HIGH",
+            published_date: "2024-01-15",
+            last_modified_date: "2024-02-01",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-1001",
+            feed_group: "nvd",
+            package: "vulnerable-package",
+            package_version: "1.2.3",
+            package_name: "vulnerable-package",
+            package_type: "npm",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "image",
+        ecosystem: "nodejs",
+        name: "sample-product-a-repo-1",
+        tag: "v1.0.0",
+        source_info: [
+          {
+            type: "git",
+            git_repo: "https://github.com/example/sample-product-a-repo-1",
+            ref: "main",
+            include: ["**/*.js", "package.json"],
+            exclude: ["node_modules/**"],
+          },
+        ],
+        sbom_info: {
+          packages: [
+            {
+              name: "vulnerable-package",
+              version: "1.2.3",
+            },
+          ],
+        },
+      },
+    },
+    output: [
+      {
+        vuln_id: "CVE-2024-1001",
+        checklist: [
+          {
+            input: "Verify if the vulnerable package is being used",
+            response: "The package vulnerable-package version 1.2.3 is confirmed to be in use in this repository.",
+            intermediate_steps: null,
+          },
+          {
+            input: "Assess the impact of the vulnerability",
+            response: "The vulnerability has a high severity score (8.5) and could lead to remote code execution in the production environment.",
+            intermediate_steps: null,
+          },
+        ],
+        summary: "The CVE is exploitable. Sample Product A repository 1 uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
+        justification: {
+          status: "TRUE",
+          label: "vulnerable",
+          reason: "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context. Immediate action is required.",
+        },
+        intel_score: 90,
+        cvss: {
+          score: "8.5",
+          vector_string: "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:N",
+        },
+      },
+    ],
+    info: {
+      vdb: {
+        version: "2024.1",
+      },
+      intel: {
+        score: 90,
+      },
+    },
+    metadata: {
+      productId: "product-1",
+      environment: "production",
+      team: "security",
+    },
+  },
 };
 

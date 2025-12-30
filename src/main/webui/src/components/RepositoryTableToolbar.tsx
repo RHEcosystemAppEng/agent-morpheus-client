@@ -26,7 +26,15 @@ interface RepositoryTableToolbarProps {
     itemCount: number;
     page: number;
     perPage: number;
-    onSetPage: (event: unknown, newPage: number) => void;
+    onSetPage: (
+      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+      newPage: number
+    ) => void;
+    onPerPageSelect?: (
+      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+      newPerPage: number,
+      newPage: number
+    ) => void;
   };
 }
 
@@ -183,8 +191,13 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
                 page={pagination.page}
                 perPage={pagination.perPage}
                 onSetPage={pagination.onSetPage}
-                onPerPageSelect={() => {}}
-                perPageOptions={[]}
+                onPerPageSelect={pagination.onPerPageSelect || (() => {})}
+                perPageOptions={[
+                  { title: "10", value: 10 },
+                  { title: "20", value: 20 },
+                  { title: "50", value: 50 },
+                  { title: "100", value: 100 },
+                ]}
               />
             </ToolbarItem>
           </ToolbarGroup>
