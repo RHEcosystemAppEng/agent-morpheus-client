@@ -368,6 +368,66 @@ const mockReports: Report[] = [
     gitRepo: "https://github.com/example/uncertain-repo",
     ref: "main",
   },
+
+  // Report 10: Sample Product A / CVE-2024-1001 - First report for pagination testing
+  {
+    id: "report-product1-cve1001-1",
+    name: "Report report-product1-cve1001-1",
+    startedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "sample-product-a-repo-1",
+    imageTag: "v1.0.0",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-1001",
+        justification: {
+          status: "TRUE",
+          label: "vulnerable",
+        },
+      },
+    ],
+    metadata: {
+      productId: "product-1",
+      environment: "production",
+    },
+    gitRepo: "https://github.com/example/sample-product-a-repo-1",
+    ref: "main",
+  },
+
+  // Generate 30+ additional reports for Sample Product A / CVE-2024-1001 for pagination testing
+  ...Array.from({ length: 30 }, (_, i) => {
+    const reportNum = i + 2;
+    const daysAgo = 3 + Math.floor(i / 10);
+    const isVulnerable = i % 3 === 0; // Mix of vulnerable, not vulnerable, and uncertain
+    const status = isVulnerable ? "TRUE" : i % 3 === 1 ? "FALSE" : "UNKNOWN";
+    const label = isVulnerable ? "vulnerable" : i % 3 === 1 ? "not_vulnerable" : "uncertain";
+    
+    return {
+      id: `report-product1-cve1001-${reportNum}`,
+      name: `Report report-product1-cve1001-${reportNum}`,
+      startedAt: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
+      completedAt: new Date(Date.now() - (daysAgo - 1) * 24 * 60 * 60 * 1000).toISOString(),
+      imageName: `sample-product-a-repo-${reportNum}`,
+      imageTag: `v1.${reportNum}.0`,
+      state: "completed" as const,
+      vulns: [
+        {
+          vulnId: "CVE-2024-1001",
+          justification: {
+            status,
+            label,
+          },
+        },
+      ],
+      metadata: {
+        productId: "product-1",
+        environment: "production",
+      },
+      gitRepo: `https://github.com/example/sample-product-a-repo-${reportNum}`,
+      ref: `branch-${reportNum}`,
+    };
+  }),
 ];
 
 // Generate reports summary based on actual mock data
