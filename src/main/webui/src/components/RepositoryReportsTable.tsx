@@ -1,4 +1,5 @@
 import { useState, useMemo, type CSSProperties } from "react";
+import type React from "react";
 import { useNavigate } from "react-router";
 import {
   Button,
@@ -16,7 +17,7 @@ import {
   Tr,
   Th,
   Tbody,
-  Td, 
+  Td,
 } from "@patternfly/react-table";
 import { CheckCircleIcon } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
@@ -49,6 +50,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(PER_PAGE);
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
 
   const scanStateOptions = useMemo(() => {
@@ -62,18 +64,35 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       url: '/api/reports',
       query: {
         page: page - 1,
-        pageSize: PER_PAGE,
+        pageSize: perPage,
         productId: productId,
         vulnId: cveId,
-        ...(scanStateFilter.length > 0 && scanStateFilter[0] && { status: scanStateFilter[0] }),
+        ...(scanStateFilter.length > 0 &&
+          scanStateFilter[0] && { status: scanStateFilter[0] }),
       },
     }),
-    { deps: [page, productId, cveId, scanStateFilter] }
+    { deps: [page, perPage, productId, cveId, scanStateFilter] }
   );
 
   const handleFilterChange = (filters: string[]) => {
     setScanStateFilter(filters);
     setPage(1);
+  };
+
+  const onSetPage = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const onPerPageSelect = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPerPage: number,
+    newPage: number
+  ) => {
+    setPerPage(newPerPage);
+    setPage(newPage);
   };
 
   const getVulnerabilityStatus = (report: Report) => {
@@ -134,8 +153,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
               ? {
                   itemCount: pagination.totalElements ?? 0,
                   page,
-                  perPage: PER_PAGE,
-                  onSetPage: (_, newPage) => setPage(newPage),
+                  perPage: perPage,
+                  onSetPage: onSetPage,
+                  onPerPageSelect: onPerPageSelect,
                 }
               : undefined
           }
@@ -164,8 +184,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         pagination={{
           itemCount: pagination?.totalElements ?? 0,
           page,
-          perPage: PER_PAGE,
-          onSetPage: (_, newPage) => setPage(newPage),
+          perPage: perPage,
+          onSetPage: onSetPage,
+          onPerPageSelect: onPerPageSelect,
         }}
       />
       <Table>
