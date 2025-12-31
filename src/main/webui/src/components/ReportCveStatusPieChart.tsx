@@ -1,12 +1,5 @@
 import { useMemo } from "react";
-import {
-  Card,
-  CardTitle,
-  CardBody,
-  Title,
-  EmptyState,
-  EmptyStateBody,
-} from "@patternfly/react-core";
+import { Card, CardTitle, CardBody, Title } from "@patternfly/react-core";
 import { ProductSummary } from "../generated-client";
 import DonutChartWrapper from "./DonutChartWrapper";
 
@@ -21,7 +14,10 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
 }) => {
   const chartData = useMemo(() => {
     const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
-    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
+    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<
+      string,
+      number
+    >;
 
     let vulnerableCount = 0;
     let notVulnerableCount = 0;
@@ -38,18 +34,12 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
       }
     });
 
-    const slices = [];
-    if (vulnerableCount > 0) {
-      slices.push({ x: "vulnerable", y: vulnerableCount });
-    }
-    if (notVulnerableCount > 0) {
-      slices.push({ x: "not_vulnerable", y: notVulnerableCount });
-    }
-    if (unknownCount > 0) {
-      slices.push({ x: "uncertain", y: unknownCount });
-    }
-
-    return slices;
+    // Always include all 3 statuses, even if count is 0
+    return [
+      { x: "vulnerable", y: vulnerableCount },
+      { x: "not_vulnerable", y: notVulnerableCount },
+      { x: "uncertain", y: unknownCount },
+    ];
   }, [productSummary, cveId]);
 
   const computeColors = (slices: Array<{ x: string; y: number }>) => {
@@ -75,7 +65,10 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   };
 
   const colors = useMemo(() => computeColors(chartData), [chartData]);
-  const total = useMemo(() => chartData.reduce((sum, d) => sum + d.y, 0), [chartData]);
+  const total = useMemo(
+    () => chartData.reduce((sum, d) => sum + d.y, 0),
+    [chartData]
+  );
   const legendData = useMemo(
     () => chartData.map((d) => ({ name: `${toTitleCase(d.x)}: ${d.y}` })),
     [chartData]
@@ -89,22 +82,16 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
         </Title>
       </CardTitle>
       <CardBody>
-        {chartData.length === 0 ? (
-          <EmptyState>
-            <EmptyStateBody>No CVE incidents found for this CVE.</EmptyStateBody>
-          </EmptyState>
-        ) : (
-          <DonutChartWrapper
-            ariaDesc="CVE incidents by status"
-            ariaTitle="CVE incidents by status"
-            data={chartData}
-            colorScale={colors}
-            legendData={legendData}
-            title={`${total}`}
-            subTitle="Statuses"
-            total={total}
-          />
-        )}
+        <DonutChartWrapper
+          ariaDesc="CVE incidents by status"
+          ariaTitle="CVE incidents by status"
+          data={chartData}
+          colorScale={colors}
+          legendData={legendData}
+          title={`${total}`}
+          subTitle="Statuses"
+          total={total}
+        />
       </CardBody>
     </Card>
   );
