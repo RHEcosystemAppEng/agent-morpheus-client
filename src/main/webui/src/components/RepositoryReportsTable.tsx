@@ -26,6 +26,7 @@ import { Report, ProductSummary } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
+import { mapDisplayLabelToApiValue } from "./Filtering";
 
 const PER_PAGE = 10;
 
@@ -56,6 +57,13 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     []
   );
 
+  // Convert filter array to single API value (use first selected value)
+  const exploitIqStatusApiValue = useMemo(() => {
+    if (exploitIqStatusFilter.length === 0 || !exploitIqStatusFilter[0])
+      return undefined;
+    return mapDisplayLabelToApiValue(exploitIqStatusFilter[0]);
+  }, [exploitIqStatusFilter]);
+
   const scanStateOptions = useMemo(() => {
     const componentStates = productSummary.summary.componentStates || {};
     return Object.keys(componentStates).sort();
@@ -83,6 +91,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         vulnId: cveId,
         ...(scanStateFilter.length > 0 &&
           scanStateFilter[0] && { status: scanStateFilter[0] }),
+        ...(exploitIqStatusApiValue && {
+          exploitIqStatus: exploitIqStatusApiValue,
+        }),
       },
     }),
     {
@@ -92,34 +103,12 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         productId,
         cveId,
         scanStateFilter,
-        exploitIqStatusFilter,
+        exploitIqStatusApiValue,
       ],
     }
   );
 
-  // Filter reports by ExploitIQ status on the client side
-  const filteredReports = useMemo(() => {
-    if (!reports || exploitIqStatusFilter.length === 0) {
-      return reports || [];
-    }
-
-    return reports.filter((report) => {
-      const status = getVulnerabilityStatus(report);
-      if (!status) return false;
-      // Map status to filter format: TRUE -> Vulnerable, FALSE -> Not Vulnerable, UNKNOWN -> Uncertain
-      const filterLabel =
-        status === "TRUE"
-          ? "Vulnerable"
-          : status === "FALSE"
-          ? "Not Vulnerable"
-          : status === "UNKNOWN"
-          ? "Uncertain"
-          : "";
-      return filterLabel && exploitIqStatusFilter.includes(filterLabel);
-    });
-  }, [reports, exploitIqStatusFilter, cveId]);
-
-  const displayReports = filteredReports;
+  const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;
 
   const handleScanStateFilterChange = (filters: string[]) => {
@@ -272,53 +261,53 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           onPerPageSelect: onPerPageSelect,
         }}
       />
-      <Table>
-        <Thead>
-          <Tr>
-            <Th>Repository</Th>
-            <Th>Commit ID</Th>
-            <Th>ExploitIQ Status</Th>
-            <Th>Completed</Th>
-            <Th>Analysis state</Th>
-            <Th>CVE Repository Report</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {displayReports.map((report) => (
-            <Tr key={report.id}>
-              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                {report.gitRepo || ""}
-              </Td>
-              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                {report.ref || ""}
-              </Td>
-              <Td dataLabel="ExploitIQ Status">
-                {renderExploitIqStatus(report)}
-              </Td>
-              <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
-                <FormattedTimestamp date={report.completedAt} />
-              </Td>
-              <Td dataLabel="Analysis state">
-                <Label variant="outline" icon={<CheckCircleIcon />}>
-                  {report.state}
-                </Label>
-              </Td>
-              <Td dataLabel="CVE Repository Report">
-                <TableText>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                    }
-                  >
-                    View
-                  </Button>
-                </TableText>
-              </Td>
-            </Tr>
-          ))}
-        </Tbody>
-      </Table>
+       <Table>
+            <Thead>
+              <Tr>
+                <Th>Repository</Th>
+                <Th>Commit ID</Th>
+                <Th>ExploitIQ Status</Th>
+                <Th>Completed</Th>
+                <Th>Analysis state</Th>
+                <Th>CVE Repository Report</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {reports.map((report) => (
+                <Tr key={report.id}>
+                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                    {report.gitRepo || ""}
+                  </Td>
+                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                    {report.ref || ""}
+                  </Td>
+                  <Td dataLabel="ExploitIQ Status">
+                    {renderExploitIqStatus(report)}
+                  </Td>
+                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+                    <FormattedTimestamp date={report.completedAt} />
+                  </Td>
+                  <Td dataLabel="Analysis state">
+                    <Label variant="outline" icon={<CheckCircleIcon />}>
+                      {report.state}
+                    </Label>
+                  </Td>
+                  <Td dataLabel="CVE Repository Report">
+                    <TableText>
+                      <Button
+                        variant="primary"
+                        onClick={() =>
+                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                        }
+                      >
+                        View
+                      </Button>
+                    </TableText>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
     </>
   );
 };

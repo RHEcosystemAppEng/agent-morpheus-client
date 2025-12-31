@@ -128,6 +128,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
                 selected={exploitIqStatusFilter}
                 onSelect={onExploitIqStatusFilterChange}
                 loading={loading}
+                singleSelect={true}
               />
             </ToolbarFilter>
           </ToolbarGroup>
