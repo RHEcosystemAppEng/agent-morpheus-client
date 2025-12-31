@@ -9,6 +9,7 @@ import {
   EmptyStateBody,
   Title,
   Label,
+  Icon,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -19,7 +20,10 @@ import {
   Tbody,
   Td,
 } from "@patternfly/react-table";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+} from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { usePaginatedApi } from "../hooks/usePaginatedApi";
 import { Report, ProductSummary } from "../generated-client";
@@ -153,6 +157,48 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return "";
   };
 
+  const renderAnalysisState = (report: Report) => {
+    const state = report.state?.toLowerCase();
+
+    if (state === "completed") {
+      return (
+        <Label
+          variant="outline"
+          color="green"
+          icon={
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
+    if (state === "expired") {
+      return (
+        <Label
+          variant="outline"
+          color="orange"
+          icon={
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
+    return (
+      <Label variant="outline" icon={<CheckCircleIcon />}>
+        {report.state}
+      </Label>
+    );
+  };
+
   if (loading) {
     return (
       <SkeletonTable
@@ -261,53 +307,49 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           onPerPageSelect: onPerPageSelect,
         }}
       />
-       <Table>
-            <Thead>
-              <Tr>
-                <Th>Repository</Th>
-                <Th>Commit ID</Th>
-                <Th>ExploitIQ Status</Th>
-                <Th>Completed</Th>
-                <Th>Analysis state</Th>
-                <Th>CVE Repository Report</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {reports.map((report) => (
-                <Tr key={report.id}>
-                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                    {report.gitRepo || ""}
-                  </Td>
-                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                    {report.ref || ""}
-                  </Td>
-                  <Td dataLabel="ExploitIQ Status">
-                    {renderExploitIqStatus(report)}
-                  </Td>
-                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
-                    <FormattedTimestamp date={report.completedAt} />
-                  </Td>
-                  <Td dataLabel="Analysis state">
-                    <Label variant="outline" icon={<CheckCircleIcon />}>
-                      {report.state}
-                    </Label>
-                  </Td>
-                  <Td dataLabel="CVE Repository Report">
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                        }
-                      >
-                        View
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>Repository</Th>
+            <Th>Commit ID</Th>
+            <Th>ExploitIQ Status</Th>
+            <Th>Completed</Th>
+            <Th>Analysis state</Th>
+            <Th>CVE Repository Report</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {reports.map((report) => (
+            <Tr key={report.id}>
+              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                {report.gitRepo || ""}
+              </Td>
+              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                {report.ref || ""}
+              </Td>
+              <Td dataLabel="ExploitIQ Status">
+                {renderExploitIqStatus(report)}
+              </Td>
+              <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+                <FormattedTimestamp date={report.completedAt} />
+              </Td>
+              <Td dataLabel="Analysis state">{renderAnalysisState(report)}</Td>
+              <Td dataLabel="CVE Repository Report">
+                <TableText>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                    }
+                  >
+                    View
+                  </Button>
+                </TableText>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
     </>
   );
 };
