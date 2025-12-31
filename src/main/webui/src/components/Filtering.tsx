@@ -17,6 +17,22 @@ export const ALL_EXPLOIT_IQ_STATUS_OPTIONS = [
 ];
 
 /**
+ * Maps display label to API value for ExploitIQ status
+ */
+export function mapDisplayLabelToApiValue(displayLabel: string): string {
+  switch (displayLabel) {
+    case "Vulnerable":
+      return "TRUE";
+    case "Not Vulnerable":
+      return "FALSE";
+    case "Uncertain":
+      return "UNKNOWN";
+    default:
+      return displayLabel.toLowerCase().replace(/\s+/g, "_");
+  }
+}
+
+/**
  * Hook for managing menu open/close state with keyboard and click outside handlers
  */
 export function useMenuHandlers(
@@ -160,6 +176,7 @@ export interface CheckboxFilterProps {
   selected: string[];
   onSelect: (selected: string[]) => void;
   loading?: boolean;
+  singleSelect?: boolean;
 }
 
 export function CheckboxFilter({
@@ -169,6 +186,7 @@ export function CheckboxFilter({
   selected,
   onSelect,
   loading = false,
+  singleSelect = false,
 }: CheckboxFilterProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -197,11 +215,19 @@ export function CheckboxFilter({
     if (typeof itemId === "undefined") return;
     const itemStr = itemId.toString();
     const isSelected = selected.includes(itemStr);
-    onSelect(
-      isSelected
-        ? selected.filter((v) => v !== itemStr)
-        : [...selected, itemStr]
-    );
+
+    if (singleSelect) {
+      // Single selection: replace current selection with new one, or clear if clicking the same
+      onSelect(isSelected ? [] : [itemStr]);
+      setIsMenuOpen(false);
+    } else {
+      // Multiple selection: toggle the item
+      onSelect(
+        isSelected
+          ? selected.filter((v) => v !== itemStr)
+          : [...selected, itemStr]
+      );
+    }
   };
 
   const toggle = (
@@ -209,13 +235,14 @@ export function CheckboxFilter({
       ref={toggleRef}
       onClick={onToggleClick}
       isExpanded={isMenuOpen}
-      {...(selected.length > 0 && {
-        badge: <Badge isRead>{selected.length}</Badge>,
-      })}
+      {...(!singleSelect &&
+        selected.length > 0 && {
+          badge: <Badge isRead>{selected.length}</Badge>,
+        })}
       style={{ width: "200px" } as React.CSSProperties}
       isDisabled={loading}
     >
-      {label}
+      {singleSelect && selected.length > 0 ? `${label}: ${selected[0]}` : label}
     </MenuToggle>
   );
 

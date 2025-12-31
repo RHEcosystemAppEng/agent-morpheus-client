@@ -530,6 +530,9 @@ public class ReportRepositoryService {
 
   private Bson buildQueryFilter(Map<String, String> queryFilter) {
     List<Bson> filters = new ArrayList<>();
+    String vulnId = queryFilter.get("vulnId");
+    String exploitIqStatus = queryFilter.get("exploitIqStatus");
+    
     queryFilter.entrySet().forEach(e -> {
 
       switch (e.getKey()) {
@@ -552,12 +555,33 @@ public class ReportRepositoryService {
         case "productId":
           filters.add(Filters.eq("metadata.product_id", e.getValue()));
           break;
+        case "exploitIqStatus":
+          // Skip here, will be handled after the loop
+          break;
         default:
           filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
           break;
 
       }
     });
+    
+    // Handle exploitIqStatus filter after processing other filters
+    if (exploitIqStatus != null && !exploitIqStatus.isEmpty()) {
+      if (vulnId != null && !vulnId.isEmpty()) {
+        // If vulnId is specified: filter reports where the specified CVE has the matching status
+        filters.add(Filters.elemMatch("output", 
+          Filters.and(
+            Filters.eq("vuln_id", vulnId),
+            Filters.eq("justification.status", exploitIqStatus)
+          )
+        ));
+      } else {
+        // If vulnId is NOT specified: filter reports where any CVE has the matching status
+        filters.add(Filters.elemMatch("output", 
+          Filters.eq("justification.status", exploitIqStatus)
+        ));
+      }
+    }
     var filter = Filters.empty();
     if (!filters.isEmpty()) {
       filter = Filters.and(filters);
