@@ -14,10 +14,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
 }) => {
   const chartData = useMemo(() => {
     const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
-    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<
-      string,
-      number
-    >;
+    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string,number>;
 
     let vulnerableCount = 0;
     let notVulnerableCount = 0;
@@ -65,10 +62,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   };
 
   const colors = useMemo(() => computeColors(chartData), [chartData]);
-  const total = useMemo(
-    () => chartData.reduce((sum, d) => sum + d.y, 0),
-    [chartData]
-  );
+  const total = useMemo(() => chartData.reduce((sum, d) => sum + d.y, 0), [chartData]);
   const legendData = useMemo(
     () => chartData.map((d) => ({ name: `${toTitleCase(d.x)}: ${d.y}` })),
     [chartData]
