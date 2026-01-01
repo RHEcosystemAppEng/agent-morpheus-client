@@ -10,6 +10,8 @@ import {
   Title,
   Label,
   Icon,
+  Flex,
+  FlexItem,
 } from "@patternfly/react-core";
 import {CheckCircleIcon,ExclamationTriangleIcon,} from "@patternfly/react-icons";
 import { useReport } from "../hooks/useReport";
@@ -115,10 +117,17 @@ const ReportPage: React.FC = () => {
             </Breadcrumb>
           </GridItem>
           <GridItem>
-            <Title headingLevel="h1" size="3xl">
-              <strong>Report:</strong> {breadcrumbText}
-            </Title>
-            {renderStatusLabel()}
+            <Flex
+              justifyContent={{ default: "justifyContentSpaceBetween" }}
+              alignItems={{ default: "alignItemsCenter" }}
+            >
+              <FlexItem>
+                <Title headingLevel="h1" size="3xl">
+                  <strong>Report:</strong> {breadcrumbText}
+                </Title>
+              </FlexItem>
+              <FlexItem>{renderStatusLabel()}</FlexItem>
+            </Flex>
           </GridItem>
         </Grid>
       </PageSection>
