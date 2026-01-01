@@ -1,5 +1,4 @@
 import { useState, useMemo, type CSSProperties } from "react";
-import type React from "react";
 import { useNavigate } from "react-router";
 import {
   Button,
@@ -34,6 +33,9 @@ import { mapDisplayLabelToApiValue } from "./Filtering";
 
 const PER_PAGE = 10;
 
+type SortColumn = "ref" | "completedAt" | "state";
+type SortDirection = "asc" | "desc";
+
 // Shared style function for table cells with ellipsis truncation
 const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
   maxWidth: `${maxWidthRem}rem`,
@@ -56,6 +58,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
   const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
     []
@@ -79,6 +83,16 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return vuln?.justification?.status;
   };
 
+  // Build sortBy parameter for API
+  const sortByParam = useMemo(() => {
+    if (sortColumn === "completedAt") {
+      // Use server-side sorting for completedAt
+      return [`completedAt:${sortDirection.toUpperCase()}`];
+    }
+    // For ref and state, we'll sort client-side (not supported by server)
+    return [`completedAt:DESC`]; // Default: completed items first
+  }, [sortColumn, sortDirection]);
+
   const {
     data: reports,
     loading,
@@ -93,6 +107,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         pageSize: perPage,
         productId: productId,
         vulnId: cveId,
+        sortBy: sortByParam,
         ...(scanStateFilter.length > 0 &&
           scanStateFilter[0] && { status: scanStateFilter[0] }),
         ...(exploitIqStatusApiValue && {
@@ -108,11 +123,53 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         cveId,
         scanStateFilter,
         exploitIqStatusApiValue,
+        sortByParam,
       ],
     }
   );
 
-  const displayReports = reports || [];
+  // Sort reports based on current sort column and direction
+  // Note: completedAt is sorted server-side, but we still need client-side sorting for ref and state
+  const sortedReports = useMemo(() => {
+    if (!reports || reports.length === 0) return [];
+
+    // If sorting by completedAt, server already sorted it, just return as-is
+    if (sortColumn === "completedAt") {
+      return reports;
+    }
+
+    // Client-side sorting for ref and state
+    const sorted = [...reports].sort((a, b) => {
+      let comparison = 0;
+
+      if (sortColumn === "ref") {
+        const aValue = a.ref || "";
+        const bValue = b.ref || "";
+        comparison = aValue.localeCompare(bValue);
+      } else if (sortColumn === "state") {
+        // Sort by state: completed first, then expired, then others
+        const getStatePriority = (state: string | undefined): number => {
+          const normalizedState = state?.toLowerCase();
+          if (normalizedState === "completed") return 1;
+          if (normalizedState === "expired") return 2;
+          return 3;
+        };
+        const aPriority = getStatePriority(a.state);
+        const bPriority = getStatePriority(b.state);
+        comparison = aPriority - bPriority;
+        // If same priority, sort alphabetically
+        if (comparison === 0) {
+          comparison = (a.state || "").localeCompare(b.state || "");
+        }
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [reports, sortColumn, sortDirection]);
+
+  const displayReports = sortedReports;
   const totalFilteredCount = pagination?.totalElements ?? 0;
 
   const handleScanStateFilterChange = (filters: string[]) => {
@@ -140,6 +197,34 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     setPerPage(newPerPage);
     setPage(newPage);
   };
+
+  const handleSortToggle = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
+
+  // Map sort columns to their column indices
+  const getColumnIndex = (column: SortColumn): number => {
+    switch (column) {
+      case "ref":
+        return 1;
+      case "completedAt":
+        return 3;
+      case "state":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
+  // Get the current sort index and direction for PatternFly
+  const activeSortIndex = getColumnIndex(sortColumn);
+  const activeSortDirection = sortDirection;
 
   const renderExploitIqStatus = (report: Report) => {
     const status = getVulnerabilityStatus(report);
@@ -311,15 +396,48 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         <Thead>
           <Tr>
             <Th>Repository</Th>
-            <Th>Commit ID</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("ref"),
+                columnIndex: 1,
+              }}
+            >
+              Commit ID
+            </Th>
             <Th>ExploitIQ Status</Th>
-            <Th>Completed</Th>
-            <Th>Analysis state</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("completedAt"),
+                columnIndex: 3,
+              }}
+            >
+              Completed
+            </Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("state"),
+                columnIndex: 4,
+              }}
+            >
+              Analysis state
+            </Th>
             <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {reports.map((report) => (
+          {displayReports.map((report) => (
             <Tr key={report.id}>
               <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
                 {report.gitRepo || ""}
