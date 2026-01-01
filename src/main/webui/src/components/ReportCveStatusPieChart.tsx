@@ -14,7 +14,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
 }) => {
   const chartData = useMemo(() => {
     const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
-    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string,number>;
+    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
 
     let vulnerableCount = 0;
     let notVulnerableCount = 0;
