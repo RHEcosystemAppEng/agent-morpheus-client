@@ -8,6 +8,7 @@ import {
   EmptyStateBody,
   Title,
   Label,
+  Icon,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -16,17 +17,24 @@ import {
   Tr,
   Th,
   Tbody,
-  Td, 
+  Td,
 } from "@patternfly/react-table";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+} from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { usePaginatedApi } from "../hooks/usePaginatedApi";
 import { Report, ProductSummary } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
+import { mapDisplayLabelToApiValue } from "./Filtering";
 
 const PER_PAGE = 10;
+
+type SortColumn = "ref" | "completedAt" | "state";
+type SortDirection = "asc" | "desc";
 
 // Shared style function for table cells with ellipsis truncation
 const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
@@ -49,38 +57,174 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(PER_PAGE);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
+  const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
+    []
+  );
+
+  // Convert filter array to single API value (use first selected value)
+  const exploitIqStatusApiValue = useMemo(() => {
+    if (exploitIqStatusFilter.length === 0 || !exploitIqStatusFilter[0])
+      return undefined;
+    return mapDisplayLabelToApiValue(exploitIqStatusFilter[0]);
+  }, [exploitIqStatusFilter]);
 
   const scanStateOptions = useMemo(() => {
     const componentStates = productSummary.summary.componentStates || {};
     return Object.keys(componentStates).sort();
   }, [productSummary.summary.componentStates]);
 
-  const { data: reports, loading, error, pagination } = usePaginatedApi<Array<Report>>(
-    () => ({
-      method: 'GET',
-      url: '/api/reports',
-      query: {
-        page: page - 1,
-        pageSize: PER_PAGE,
-        productId: productId,
-        vulnId: cveId,
-        ...(scanStateFilter.length > 0 && scanStateFilter[0] && { status: scanStateFilter[0] }),
-      },
-    }),
-    { deps: [page, productId, cveId, scanStateFilter] }
-  );
-
-  const handleFilterChange = (filters: string[]) => {
-    setScanStateFilter(filters);
-    setPage(1);
-  };
-
   const getVulnerabilityStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
     const vuln = report.vulns.find((v) => v.vulnId === cveId);
     return vuln?.justification?.status;
   };
+
+  // Build sortBy parameter for API
+  const sortByParam = useMemo(() => {
+    if (sortColumn === "completedAt") {
+      // Use server-side sorting for completedAt
+      return [`completedAt:${sortDirection.toUpperCase()}`];
+    }
+    // For ref and state, we'll sort client-side (not supported by server)
+    return [`completedAt:DESC`]; // Default: completed items first
+  }, [sortColumn, sortDirection]);
+
+  const {
+    data: reports,
+    loading,
+    error,
+    pagination,
+  } = usePaginatedApi<Array<Report>>(
+    () => ({
+      method: "GET",
+      url: "/api/reports",
+      query: {
+        page: page - 1,
+        pageSize: perPage,
+        productId: productId,
+        vulnId: cveId,
+        sortBy: sortByParam,
+        ...(scanStateFilter.length > 0 &&
+          scanStateFilter[0] && { status: scanStateFilter[0] }),
+        ...(exploitIqStatusApiValue && {
+          exploitIqStatus: exploitIqStatusApiValue,
+        }),
+      },
+    }),
+    {
+      deps: [
+        page,
+        perPage,
+        productId,
+        cveId,
+        scanStateFilter,
+        exploitIqStatusApiValue,
+        sortByParam,
+      ],
+    }
+  );
+
+  // Sort reports based on current sort column and direction
+  // Note: completedAt is sorted server-side, but we still need client-side sorting for ref and state
+  const sortedReports = useMemo(() => {
+    if (!reports || reports.length === 0) return [];
+
+    // If sorting by completedAt, server already sorted it, just return as-is
+    if (sortColumn === "completedAt") {
+      return reports;
+    }
+
+    // Client-side sorting for ref and state
+    const sorted = [...reports].sort((a, b) => {
+      let comparison = 0;
+
+      if (sortColumn === "ref") {
+        const aValue = a.ref || "";
+        const bValue = b.ref || "";
+        comparison = aValue.localeCompare(bValue);
+      } else if (sortColumn === "state") {
+        // Sort by state: completed first, then expired, then others
+        const getStatePriority = (state: string | undefined): number => {
+          const normalizedState = state?.toLowerCase();
+          if (normalizedState === "completed") return 1;
+          if (normalizedState === "expired") return 2;
+          return 3;
+        };
+        const aPriority = getStatePriority(a.state);
+        const bPriority = getStatePriority(b.state);
+        comparison = aPriority - bPriority;
+        // If same priority, sort alphabetically
+        if (comparison === 0) {
+          comparison = (a.state || "").localeCompare(b.state || "");
+        }
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [reports, sortColumn, sortDirection]);
+
+  const displayReports = sortedReports;
+  const totalFilteredCount = pagination?.totalElements ?? 0;
+
+  const handleScanStateFilterChange = (filters: string[]) => {
+    setScanStateFilter(filters);
+    setPage(1);
+  };
+
+  const handleExploitIqStatusFilterChange = (filters: string[]) => {
+    setExploitIqStatusFilter(filters);
+    setPage(1);
+  };
+
+  const onSetPage = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const onPerPageSelect = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPerPage: number,
+    newPage: number
+  ) => {
+    setPerPage(newPerPage);
+    setPage(newPage);
+  };
+
+  const handleSortToggle = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
+
+  // Map sort columns to their column indices
+  const getColumnIndex = (column: SortColumn): number => {
+    switch (column) {
+      case "ref":
+        return 1;
+      case "completedAt":
+        return 3;
+      case "state":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
+  // Get the current sort index and direction for PatternFly
+  const activeSortIndex = getColumnIndex(sortColumn);
+  const activeSortDirection = sortDirection;
 
   const renderExploitIqStatus = (report: Report) => {
     const status = getVulnerabilityStatus(report);
@@ -96,6 +240,48 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       return <Label color="grey">Uncertain</Label>;
     }
     return "";
+  };
+
+  const renderAnalysisState = (report: Report) => {
+    const state = report.state?.toLowerCase();
+
+    if (state === "completed") {
+      return (
+        <Label
+          variant="outline"
+          color="green"
+          icon={
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
+    if (state === "expired") {
+      return (
+        <Label
+          variant="outline"
+          color="orange"
+          icon={
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
+    return (
+      <Label variant="outline" icon={<CheckCircleIcon />}>
+        {report.state}
+      </Label>
+    );
   };
 
   if (loading) {
@@ -121,21 +307,24 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   }
 
-  if (!reports || reports.length === 0) {
+  if (!reports || (reports.length === 0 && !loading)) {
     return (
       <>
         <RepositoryTableToolbar
           scanStateFilter={scanStateFilter}
           scanStateOptions={scanStateOptions}
+          exploitIqStatusFilter={exploitIqStatusFilter}
           loading={loading}
-          onFilterChange={handleFilterChange}
+          onScanStateFilterChange={handleScanStateFilterChange}
+          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
           pagination={
             pagination
               ? {
-                  itemCount: pagination.totalElements ?? 0,
+                  itemCount: totalFilteredCount,
                   page,
-                  perPage: PER_PAGE,
-                  onSetPage: (_, newPage) => setPage(newPage),
+                  perPage: perPage,
+                  onSetPage: onSetPage,
+                  onPerPageSelect: onPerPageSelect,
                 }
               : undefined
           }
@@ -145,7 +334,39 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             No repository reports found
           </Title>
           <EmptyStateBody>
-            {scanStateFilter.length > 0
+            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
+              ? "No repository reports found matching the selected filters."
+              : "No repository reports found for this product and CVE combination."}
+          </EmptyStateBody>
+        </EmptyState>
+      </>
+    );
+  }
+
+  if (!displayReports || displayReports.length === 0) {
+    return (
+      <>
+        <RepositoryTableToolbar
+          scanStateFilter={scanStateFilter}
+          scanStateOptions={scanStateOptions}
+          exploitIqStatusFilter={exploitIqStatusFilter}
+          loading={loading}
+          onScanStateFilterChange={handleScanStateFilterChange}
+          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
+          pagination={{
+            itemCount: totalFilteredCount,
+            page,
+            perPage: perPage,
+            onSetPage: onSetPage,
+            onPerPageSelect: onPerPageSelect,
+          }}
+        />
+        <EmptyState>
+          <Title headingLevel="h4" size="lg">
+            No repository reports found
+          </Title>
+          <EmptyStateBody>
+            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
               ? "No repository reports found matching the selected filters."
               : "No repository reports found for this product and CVE combination."}
           </EmptyStateBody>
@@ -159,62 +380,94 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       <RepositoryTableToolbar
         scanStateFilter={scanStateFilter}
         scanStateOptions={scanStateOptions}
+        exploitIqStatusFilter={exploitIqStatusFilter}
         loading={loading}
-        onFilterChange={handleFilterChange}
+        onScanStateFilterChange={handleScanStateFilterChange}
+        onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
         pagination={{
-          itemCount: pagination?.totalElements ?? 0,
+          itemCount: totalFilteredCount,
           page,
-          perPage: PER_PAGE,
-          onSetPage: (_, newPage) => setPage(newPage),
+          perPage: perPage,
+          onSetPage: onSetPage,
+          onPerPageSelect: onPerPageSelect,
         }}
       />
       <Table>
-            <Thead>
-              <Tr>
-                <Th>Repository</Th>
-                <Th>Commit ID</Th>
-                <Th>ExploitIQ Status</Th>
-                <Th>Completed</Th>
-                <Th>Analysis state</Th>
-                <Th>CVE Repository Report</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {reports.map((report) => (
-                <Tr key={report.id}>
-                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                    {report.gitRepo || ""}
-                  </Td>
-                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                    {report.ref || ""}
-                  </Td>
-                  <Td dataLabel="ExploitIQ Status">
-                    {renderExploitIqStatus(report)}
-                  </Td>
-                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
-                    <FormattedTimestamp date={report.completedAt} />
-                  </Td>
-                  <Td dataLabel="Analysis state">
-                    <Label variant="outline" icon={<CheckCircleIcon />}>
-                      {report.state}
-                    </Label>
-                  </Td>
-                  <Td dataLabel="CVE Repository Report">
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                        }
-                      >
-                        View
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+        <Thead>
+          <Tr>
+            <Th>Repository</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("ref"),
+                columnIndex: 1,
+              }}
+            >
+              Commit ID
+            </Th>
+            <Th>ExploitIQ Status</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("completedAt"),
+                columnIndex: 3,
+              }}
+            >
+              Completed
+            </Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("state"),
+                columnIndex: 4,
+              }}
+            >
+              Analysis state
+            </Th>
+            <Th>CVE Repository Report</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {displayReports.map((report) => (
+            <Tr key={report.id}>
+              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                {report.gitRepo || ""}
+              </Td>
+              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                {report.ref || ""}
+              </Td>
+              <Td dataLabel="ExploitIQ Status">
+                {renderExploitIqStatus(report)}
+              </Td>
+              <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+                <FormattedTimestamp date={report.completedAt} />
+              </Td>
+              <Td dataLabel="Analysis state">{renderAnalysisState(report)}</Td>
+              <Td dataLabel="CVE Repository Report">
+                <TableText>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                    }
+                  >
+                    View
+                  </Button>
+                </TableText>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
     </>
   );
 };

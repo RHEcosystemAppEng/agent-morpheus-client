@@ -28,7 +28,7 @@ const STATE_ORDER = [
 // Color mapping for each component state
 const STATE_COLORS: Record<string, string> = {
   completed: "#3E8635", // green
-  expired: "#6A6E73", // dark gray
+  expired: "#F0AB00", // orange
   failed: "#C9190B", // red
   queued: "#F0AB00", // orange
   sent: "#6753AC", // purple

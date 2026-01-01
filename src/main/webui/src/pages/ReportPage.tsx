@@ -9,8 +9,11 @@ import {
   BreadcrumbItem,
   Title,
   Label,
+  Icon,
+  Flex,
+  FlexItem,
 } from "@patternfly/react-core";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import {CheckCircleIcon,ExclamationTriangleIcon,} from "@patternfly/react-icons";
 import { useReport } from "../hooks/useReport";
 import ReportDetails from "../components/ReportDetails";
 import ReportAdditionalDetails from "../components/ReportAdditionalDetails";
@@ -52,7 +55,6 @@ const ReportPage: React.FC = () => {
   const sbomName = data.data.name || "";
   const breadcrumbText = `${sbomName}/${cveId}`;
   const productState = data.summary.productState || "";
-  const isCompleted = productState === "completed";
 
   const renderStatusLabel = () => {
     if (!productState) return null;
@@ -61,9 +63,35 @@ const ReportPage: React.FC = () => {
       return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     };
 
-    if (isCompleted) {
+    const state = productState.toLowerCase();
+
+    if (state === "completed") {
       return (
-        <Label variant="outline" color="green" icon={<CheckCircleIcon />}>
+        <Label
+          variant="outline"
+          color="green"
+          icon={
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>
+          }
+        >
+          {formatToTitleCase(productState)}
+        </Label>
+      );
+    }
+
+    if (state === "expired") {
+      return (
+        <Label
+          variant="outline"
+          color="orange"
+          icon={
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>
+          }
+        >
           {formatToTitleCase(productState)}
         </Label>
       );
@@ -89,10 +117,17 @@ const ReportPage: React.FC = () => {
             </Breadcrumb>
           </GridItem>
           <GridItem>
-            <Title headingLevel="h1" size="3xl">
-              <strong>Report:</strong> {breadcrumbText}
-            </Title>
-            {renderStatusLabel()}
+            <Flex
+              justifyContent={{ default: "justifyContentSpaceBetween" }}
+              alignItems={{ default: "alignItemsCenter" }}
+            >
+              <FlexItem>
+                <Title headingLevel="h1" size="3xl">
+                  <strong>Report:</strong> {breadcrumbText}
+                </Title>
+              </FlexItem>
+              <FlexItem>{renderStatusLabel()}</FlexItem>
+            </Flex>
           </GridItem>
         </Grid>
       </PageSection>

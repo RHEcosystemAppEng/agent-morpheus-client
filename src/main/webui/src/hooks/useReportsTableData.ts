@@ -242,7 +242,8 @@ export function filterAndSortReportRows(
     );
   }
 
-  // Apply ExploitIQ status filter
+  // ExploitIQ status filtering is now handled server-side via /api/reports endpoint
+  // This client-side filter is kept for backward compatibility with product summaries endpoint but should be removed once ReportsTable switches to using /api/reports with exploitIqStatus filter
   if (filters.exploitIqStatus.length > 0) {
     filtered = filtered.filter((row) => {
       const statusItems = getStatusItems(row.productStatus);
