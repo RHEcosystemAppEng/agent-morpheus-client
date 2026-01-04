@@ -31,7 +31,7 @@ import TableEmptyState from "./TableEmptyState";
 
 const PER_PAGE = 10;
 
-type SortColumn = "ref" | "completedAt" | "state";
+type SortColumn = "gitRepo" | "completedAt";
 type SortDirection = "asc" | "desc";
 
 // Shared style function for table cells with ellipsis truncation
@@ -56,12 +56,14 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
-  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("gitRepo");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
   const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
     []
   );
+  const [repositorySearchValue, setRepositorySearchValue] =
+    useState<string>("");
 
   // Convert filter array to single API value (use first selected value)
   const exploitIqStatusApiValue = useMemo(() => {
@@ -106,6 +108,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         ...(exploitIqStatusApiValue && {
           exploitIqStatus: exploitIqStatusApiValue,
         }),
+        ...(repositorySearchValue && { gitRepo: repositorySearchValue }),
       },
     }),
     {
@@ -114,9 +117,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         perPage,
         productId,
         cveId,
+        sortByParam,
         scanStateFilter,
         exploitIqStatusApiValue,
-        sortByParam,
+        repositorySearchValue,
       ],
     }
   );
@@ -131,6 +135,11 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 
   const handleExploitIqStatusFilterChange = (filters: string[]) => {
     setExploitIqStatusFilter(filters);
+    setPage(1);
+  };
+
+  const handleRepositorySearchChange = (value: string) => {
+    setRepositorySearchValue(value);
     setPage(1);
   };
 
@@ -163,12 +172,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
-      case "ref":
-        return 1;
+      case "gitRepo":
+        return 0;
       case "completedAt":
         return 3;
-      case "state":
-        return 4;
       default:
         return 0;
     }
@@ -263,6 +270,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return (
       <>
         <RepositoryTableToolbar
+          repositorySearchValue={repositorySearchValue}
+          onRepositorySearchChange={handleRepositorySearchChange}
           scanStateFilter={scanStateFilter}
           scanStateOptions={scanStateOptions}
           exploitIqStatusFilter={exploitIqStatusFilter}
@@ -293,6 +302,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return (
       <>
         <RepositoryTableToolbar
+          repositorySearchValue={repositorySearchValue}
+          onRepositorySearchChange={handleRepositorySearchChange}
           scanStateFilter={scanStateFilter}
           scanStateOptions={scanStateOptions}
           exploitIqStatusFilter={exploitIqStatusFilter}
@@ -318,6 +329,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   return (
     <>
       <RepositoryTableToolbar
+        repositorySearchValue={repositorySearchValue}
+        onRepositorySearchChange={handleRepositorySearchChange}
         scanStateFilter={scanStateFilter}
         scanStateOptions={scanStateOptions}
         exploitIqStatusFilter={exploitIqStatusFilter}
@@ -335,19 +348,19 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       <Table>
         <Thead>
           <Tr>
-            <Th>Repository</Th>
             <Th
               sort={{
                 sortBy: {
                   index: activeSortIndex,
                   direction: activeSortDirection,
                 },
-                onSort: () => handleSortToggle("ref"),
-                columnIndex: 1,
+                onSort: () => handleSortToggle("gitRepo"),
+                columnIndex: 0,
               }}
             >
-              Commit ID
+              Repository
             </Th>
+            <Th>Commit ID</Th>
             <Th style={{ width: "10%" }}>ExploitIQ Status</Th>
             <Th
               style={{ width: "22%", paddingLeft: "0.5rem" }}
@@ -362,18 +375,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Completed
             </Th>
-            <Th
-              sort={{
-                sortBy: {
-                  index: activeSortIndex,
-                  direction: activeSortDirection,
-                },
-                onSort: () => handleSortToggle("state"),
-                columnIndex: 4,
-              }}
-            >
-              Analysis state
-            </Th>
+            <Th>Analysis state</Th>
             <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
@@ -381,10 +383,64 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           {displayReports.map((report) => (
             <Tr key={report.id}>
               <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                {report.gitRepo || ""}
+                {report.gitRepo ? (
+                  <a
+                    href={report.gitRepo}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.gitRepo}
+                  </a>
+                ) : (
+                  <span
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.gitRepo || ""}
+                  </span>
+                )}
               </Td>
               <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                {report.ref || ""}
+                {report.gitRepo && report.ref ? (
+                  <a
+                    href={`${
+                      report.gitRepo.endsWith("/")
+                        ? report.gitRepo.slice(0, -1)
+                        : report.gitRepo
+                    }/commit/${report.ref}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.ref.substring(0, 7)}
+                  </a>
+                ) : (
+                  <span
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.ref ? report.ref.substring(0, 7) : ""}
+                  </span>
+                )}
               </Td>
               <Td dataLabel="ExploitIQ Status" style={{ width: "10%" }}>
                 {renderExploitIqStatus(report)}
