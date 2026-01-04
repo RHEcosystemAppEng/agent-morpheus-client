@@ -25,6 +25,7 @@ import { ReportsToolbarFilters } from "./ReportsToolbar";
 import ReportsToolbar from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
+import TableEmptyState from "./TableEmptyState";
 
 const PER_PAGE = 8;
 
@@ -141,6 +142,29 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           </Alert>
         </CardBody>
       </Card>
+    );
+  }
+
+  if (paginatedRows.length === 0) {
+    return (
+      <>
+        <ReportsToolbar
+          searchValue={searchValue}
+          onSearchChange={onSearchChange}
+          cveSearchValue={cveSearchValue}
+          onCveSearchChange={onCveSearchChange}
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          analysisStateOptions={analysisStateOptions}
+          pagination={{
+            itemCount: filteredRows.length,
+            page,
+            perPage: PER_PAGE,
+            onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
+          }}
+        />
+        <TableEmptyState columnCount={6} titleText="No reports found" />
+      </>
     );
   }
 
