@@ -85,12 +85,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 
   // Build sortBy parameter for API
   const sortByParam = useMemo(() => {
-    if (sortColumn === "completedAt") {
-      // Use server-side sorting for completedAt
-      return [`completedAt:${sortDirection.toUpperCase()}`];
-    }
-    // For ref and state, we'll sort client-side (not supported by server)
-    return [`completedAt:DESC`]; // Default: completed items first
+    return [`${sortColumn}:${sortDirection.toUpperCase()}`];
   }, [sortColumn, sortDirection]);
 
   const {
@@ -128,48 +123,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     }
   );
 
-  // Sort reports based on current sort column and direction
-  // Note: completedAt is sorted server-side, but we still need client-side sorting for ref and state
-  const sortedReports = useMemo(() => {
-    if (!reports || reports.length === 0) return [];
-
-    // If sorting by completedAt, server already sorted it, just return as-is
-    if (sortColumn === "completedAt") {
-      return reports;
-    }
-
-    // Client-side sorting for ref and state
-    const sorted = [...reports].sort((a, b) => {
-      let comparison = 0;
-
-      if (sortColumn === "ref") {
-        const aValue = a.ref || "";
-        const bValue = b.ref || "";
-        comparison = aValue.localeCompare(bValue);
-      } else if (sortColumn === "state") {
-        // Sort by state: completed first, then expired, then others
-        const getStatePriority = (state: string | undefined): number => {
-          const normalizedState = state?.toLowerCase();
-          if (normalizedState === "completed") return 1;
-          if (normalizedState === "expired") return 2;
-          return 3;
-        };
-        const aPriority = getStatePriority(a.state);
-        const bPriority = getStatePriority(b.state);
-        comparison = aPriority - bPriority;
-        // If same priority, sort alphabetically
-        if (comparison === 0) {
-          comparison = (a.state || "").localeCompare(b.state || "");
-        }
-      }
-
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
-
-    return sorted;
-  }, [reports, sortColumn, sortDirection]);
-
-  const displayReports = sortedReports;
+  const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;
 
   const handleScanStateFilterChange = (filters: string[]) => {
