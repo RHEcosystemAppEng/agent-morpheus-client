@@ -110,11 +110,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={[
-                  "Repository",
-                  "Analysis State",
-                  "ExploitIQ Status",
-                ]}
+                attributes={["Repository","Analysis State","ExploitIQ Status",]}
                 onAttributeChange={(attr) =>
                   setActiveAttribute(attr as ActiveAttribute)
                 }
