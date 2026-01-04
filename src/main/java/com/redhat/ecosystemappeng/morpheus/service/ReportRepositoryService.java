@@ -268,7 +268,8 @@ public class ReportRepositoryService {
       "completedAt", "input.scan.completed_at",
       "submittedAt", "metadata.submitted_at",
       "name", "input.scan.id",
-      "vuln_id", "output.analysis.vuln_id");
+      "vuln_id", "output.analysis.vuln_id",
+      "ref", "input.image.source_info.ref");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
@@ -277,11 +278,18 @@ public class ReportRepositoryService {
 
     List<Bson> sorts = new ArrayList<>();
     sortFields.forEach(sf -> {
-      var fieldName = SORT_MAPPINGS.get(sf.field());
-      if (SortType.ASC.equals(sf.type())) {
-        sorts.add(Sorts.ascending(fieldName));
+      if ("state".equals(sf.field())) {
+        sorts.add(Sorts.descending("input.scan.completed_at"));
+        sorts.add(Sorts.ascending("error.type"));
       } else {
-        sorts.add(Sorts.descending(fieldName));
+        var fieldName = SORT_MAPPINGS.get(sf.field());
+        if (fieldName != null) {
+          if (SortType.ASC.equals(sf.type())) {
+            sorts.add(Sorts.ascending(fieldName));
+          } else {
+            sorts.add(Sorts.descending(fieldName));
+          }
+        }
       }
     });
     
