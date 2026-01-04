@@ -267,9 +267,9 @@ public class ReportRepositoryService {
   private static final Map<String, String> SORT_MAPPINGS = Map.of(
       "completedAt", "input.scan.completed_at",
       "submittedAt", "metadata.submitted_at",
-      "name", "input.scan.id",
-      "vuln_id", "output.analysis.vuln_id",
-      "ref", "input.image.source_info.ref");
+      "vuln_id", "output.vuln_id",
+      "ref", "input.image.source_info.ref",
+      "gitRepo", "input.image.source_info.git_repo");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
@@ -560,6 +560,16 @@ public class ReportRepositoryService {
           break;
         case "productId":
           filters.add(Filters.eq("metadata.product_id", e.getValue()));
+          break;
+        case "gitRepo":
+          // Filter by git repository name (partial match using regex)
+          // source_info is an array, so we need to use elemMatch to search within it
+          filters.add(Filters.elemMatch("input.image.source_info", 
+            Filters.and(
+              Filters.eq("type", "code"),
+              Filters.regex("git_repo", e.getValue(), "i")
+            )
+          ));
           break;
         case "exploitIqStatus":
           // Skip here, will be handled after the loop

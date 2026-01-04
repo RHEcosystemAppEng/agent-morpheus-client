@@ -6,6 +6,7 @@ import {
   ToolbarGroup,
   ToolbarFilter,
   ToolbarToggleGroup,
+  SearchInput,
   Pagination,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
@@ -16,6 +17,8 @@ import {
 } from "./Filtering";
 
 interface RepositoryTableToolbarProps {
+  repositorySearchValue: string;
+  onRepositorySearchChange: (value: string) => void;
   scanStateFilter: string[];
   scanStateOptions: string[];
   exploitIqStatusFilter: string[];
@@ -38,9 +41,11 @@ interface RepositoryTableToolbarProps {
   };
 }
 
-type ActiveAttribute = "Analysis State" | "ExploitIQ Status";
+type ActiveAttribute = "Repository" | "Analysis State" | "ExploitIQ Status";
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
+  repositorySearchValue,
+  onRepositorySearchChange,
   scanStateFilter,
   scanStateOptions,
   exploitIqStatusFilter,
@@ -50,7 +55,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   pagination,
 }) => {
   const [activeAttribute, setActiveAttribute] =
-    useState<ActiveAttribute>("Analysis State");
+    useState<ActiveAttribute>("Repository");
 
   const handleScanStateFilterDelete = (
     _category: string | unknown,
@@ -73,15 +78,28 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   };
 
   const handleFilterDeleteGroup = () => {
+    onRepositorySearchChange("");
     onScanStateFilterChange([]);
     onExploitIqStatusFilterChange([]);
   };
+
+  const repositorySearchInput = (
+    <SearchInput
+      aria-label="Search by repository name"
+      placeholder="Search by Repository Name"
+      value={repositorySearchValue}
+      onChange={(_event, value) => onRepositorySearchChange(value)}
+      onClear={() => onRepositorySearchChange("")}
+    />
+  );
 
   return (
     <Toolbar
       id="repository-reports-toolbar"
       clearAllFilters={
-        scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
+        repositorySearchValue !== "" ||
+        scanStateFilter.length > 0 ||
+        exploitIqStatusFilter.length > 0
           ? handleFilterDeleteGroup
           : undefined
       }
@@ -92,12 +110,27 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={["Analysis State", "ExploitIQ Status"]}
+                attributes={[
+                  "Repository",
+                  "Analysis State",
+                  "ExploitIQ Status",
+                ]}
                 onAttributeChange={(attr) =>
                   setActiveAttribute(attr as ActiveAttribute)
                 }
               />
             </ToolbarItem>
+            <ToolbarFilter
+              labels={
+                repositorySearchValue !== "" ? [repositorySearchValue] : []
+              }
+              deleteLabel={() => onRepositorySearchChange("")}
+              deleteLabelGroup={() => onRepositorySearchChange("")}
+              categoryName="Repository"
+              showToolbarItem={activeAttribute === "Repository"}
+            >
+              {repositorySearchInput}
+            </ToolbarFilter>
             <ToolbarFilter
               labels={scanStateFilter}
               deleteLabel={handleScanStateFilterDelete}
