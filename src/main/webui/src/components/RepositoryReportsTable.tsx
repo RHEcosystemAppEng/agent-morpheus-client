@@ -4,9 +4,6 @@ import {
   Button,
   Alert,
   AlertVariant,
-  EmptyState,
-  EmptyStateBody,
-  Title,
   Label,
   Icon,
 } from "@patternfly/react-core";
@@ -30,6 +27,7 @@ import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
 import { mapDisplayLabelToApiValue } from "./Filtering";
+import TableEmptyState from "./TableEmptyState";
 
 const PER_PAGE = 10;
 
@@ -283,16 +281,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
               : undefined
           }
         />
-        <EmptyState>
-          <Title headingLevel="h4" size="lg">
-            No repository reports found
-          </Title>
-          <EmptyStateBody>
-            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
-              ? "No repository reports found matching the selected filters."
-              : "No repository reports found for this product and CVE combination."}
-          </EmptyStateBody>
-        </EmptyState>
+        <TableEmptyState
+          columnCount={6}
+          titleText="No repository reports found"
+        />
       </>
     );
   }
@@ -315,16 +307,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             onPerPageSelect: onPerPageSelect,
           }}
         />
-        <EmptyState>
-          <Title headingLevel="h4" size="lg">
-            No repository reports found
-          </Title>
-          <EmptyStateBody>
-            {scanStateFilter.length > 0 || exploitIqStatusFilter.length > 0
-              ? "No repository reports found matching the selected filters."
-              : "No repository reports found for this product and CVE combination."}
-          </EmptyStateBody>
-        </EmptyState>
+        <TableEmptyState
+          columnCount={6}
+          titleText="No repository reports found"
+        />
       </>
     );
   }
@@ -362,8 +348,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Commit ID
             </Th>
-            <Th>ExploitIQ Status</Th>
+            <Th style={{ width: "10%" }}>ExploitIQ Status</Th>
             <Th
+              style={{ width: "22%", paddingLeft: "0.5rem" }}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -399,10 +386,17 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
               <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
                 {report.ref || ""}
               </Td>
-              <Td dataLabel="ExploitIQ Status">
+              <Td dataLabel="ExploitIQ Status" style={{ width: "10%" }}>
                 {renderExploitIqStatus(report)}
               </Td>
-              <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
+              <Td
+                dataLabel="Completed"
+                style={{
+                  width: "22%",
+                  paddingLeft: "0.5rem",
+                  ...getEllipsisStyle(22),
+                }}
+              >
                 <FormattedTimestamp date={report.completedAt} />
               </Td>
               <Td dataLabel="Analysis state">{renderAnalysisState(report)}</Td>
