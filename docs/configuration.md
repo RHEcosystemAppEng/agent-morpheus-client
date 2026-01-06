@@ -2,34 +2,9 @@
 
 ## Authentication
 
-For development a Keycloak instance will be instantiated with the users defined in the configuration.
+For detailed authentication configuration including OpenShift OAuth, Keycloak, and external identity providers (Google, GitHub, Azure AD), see the [Authentication Guide](./authentication.md).
 
-```properties
-%dev.quarkus.keycloak.devservices.users.joe=pass123
-```
-
-For production the OpenShift OAuth2 provider will be used so it is required to
-provide the following environment variables:
-
-* `OPENSHIFT_DOMAIN`: e.g. `example.openshift.com`
-* `OAUTH_CLIENT_SECRET`: With the secret defined for the `agent-morpheus-client` in the OpenShift cluster.
-
-In the cluster you have to create an `OAuthClient` with the right redirect URLs
-
-```yaml
-apiVersion: oauth.openshift.io/v1
-kind: OAuthClient
-metadata:
-  name: agent-morpheus-client
-grantMethod: prompt
-secret: some-long-secret-used-by-the-oauth-client
-redirectURIs:
-  - "http://agent-morpheus-client:8080"
-  - "https://agent-morpheus-client.example.openshift.com"
-  - "http://agent-morpheus-client.example.openshift.com"
-```
-
-## External services (GitHub / Morpheus)
+## External Services (GitHub / Morpheus)
 
 Use the `rest-client` properties for updating the default the github and morpheus RestClient endpoints:
 

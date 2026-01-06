@@ -81,7 +81,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    logoutUser().then(() => window.location.replace("/"));
+    logoutUser();
   }
 
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);

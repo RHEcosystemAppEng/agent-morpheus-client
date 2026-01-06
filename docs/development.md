@@ -2,7 +2,9 @@
 
 ## Configuration
 
-To see all the configuration options check the [configuration](./configuration.md) README.
+To see all the configuration options check the [configuration](./configuration.md) guide.
+
+For authentication setup (Keycloak, external identity providers, testing), see the [authentication](./authentication.md) guide.
 
 ## Running the application in dev mode
 
