@@ -26,17 +26,22 @@ import redhatLogo from '../assets/redhat.svg?url';
  */
 const Brand: React.FC = () => {
   return (
-    <div style={{ display: 'flex', alignItems: 'top', gap: '8px' }}>
-      <img src={redhatLogo} alt="Red Hat" style={{ height: 24 }} />
+    <div style={{ display: "flex", gap: "10px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+        <img src={redhatLogo} alt="Red Hat" style={{ height: 38 }} />
+        <div
+          style={{borderLeft: "0.3px solid #737679",height: 38,}}
+        />
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <Title headingLevel="h2" size="md">
-          <strong>Red Hat</strong>
+          Red Hat
+        </Title>
+        <Title headingLevel="h6" size="md" >
+          <strong>Trusted Profile Analyzer</strong>
         </Title>
         <Title headingLevel="h6" size="md">
-          Trusted Profile
-        </Title>
-        <Title headingLevel="h6" size="md">
-          Analyzer ExploitIQ
+          <strong>ExploitIQ</strong>
         </Title>
       </div>
     </div>
