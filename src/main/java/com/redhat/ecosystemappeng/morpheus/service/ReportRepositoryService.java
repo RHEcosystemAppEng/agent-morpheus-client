@@ -536,6 +536,21 @@ public class ReportRepositoryService {
     LOGGER.debugf("Removed %s reports before %s", count, threshold);
   }
 
+  private void handleMultipleValues(String valueString, 
+                                     java.util.function.Function<String, Bson> filterBuilder,
+                                     List<Bson> filters) {
+    String[] values = valueString.split(",");
+    if (values.length == 1) {
+      filters.add(filterBuilder.apply(values[0].trim()));
+    } else {
+      List<Bson> valueFilters = new ArrayList<>();
+      for (String value : values) {
+        valueFilters.add(filterBuilder.apply(value.trim()));
+      }
+      filters.add(valueFilters.size() == 1 ? valueFilters.get(0) : Filters.or(valueFilters));
+    }
+  }
+
   private Bson buildQueryFilter(Map<String, String> queryFilter) {
     List<Bson> filters = new ArrayList<>();
     String vulnId = queryFilter.get("vulnId");
@@ -545,59 +560,101 @@ public class ReportRepositoryService {
 
       switch (e.getKey()) {
         case "reportId":
-          filters.add(Filters.eq("input.scan.id", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.scan.id", value), filters);
           break;
         case "vulnId":
-          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", value)), filters);
           break;
         case "status":
-          var field = e.getValue();
-          filters.add(STATUS_FILTERS.get(field));
+          var statusValues = e.getValue().split(",");
+          if (statusValues.length == 1) {
+            var statusFilter = STATUS_FILTERS.get(statusValues[0].trim());
+            if (statusFilter != null) {
+              filters.add(statusFilter);
+            }
+          } else {
+            List<Bson> statusFilters = new ArrayList<>();
+            for (String statusValue : statusValues) {
+              var statusFilter = STATUS_FILTERS.get(statusValue.trim());
+              if (statusFilter != null) {
+                statusFilters.add(statusFilter);
+              }
+            }
+            if (!statusFilters.isEmpty()) {
+              filters.add(Filters.or(statusFilters));
+            }
+          }
           break;
         case "imageName":
-          filters.add(Filters.eq("input.image.name", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.image.name", value), filters);
           break;
         case "imageTag":
-          filters.add(Filters.eq("input.image.tag", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.image.tag", value), filters);
           break;
         case "productId":
-          filters.add(Filters.eq("metadata.product_id", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("metadata.product_id", value), filters);
           break;
         case "gitRepo":
-          // Filter by git repository name (partial match using regex)
-          // source_info is an array, so we need to use elemMatch to search within it
-          filters.add(Filters.elemMatch("input.image.source_info", 
-            Filters.and(
-              Filters.eq("type", "code"),
-              Filters.regex("git_repo", e.getValue(), "i")
-            )
-          ));
+          var gitRepoValues = e.getValue().split(",");
+          if (gitRepoValues.length == 1) {
+            filters.add(Filters.elemMatch("input.image.source_info", 
+              Filters.and(
+                Filters.eq("type", "code"),
+                Filters.regex("git_repo", gitRepoValues[0].trim(), "i")
+              )
+            ));
+          } else {
+            List<Bson> gitRepoFilters = new ArrayList<>();
+            for (String gitRepoValue : gitRepoValues) {
+              gitRepoFilters.add(Filters.elemMatch("input.image.source_info", 
+                Filters.and(
+                  Filters.eq("type", "code"),
+                  Filters.regex("git_repo", gitRepoValue.trim(), "i")
+                )
+              ));
+            }
+            filters.add(Filters.or(gitRepoFilters));
+          }
           break;
         case "exploitIqStatus":
-          // Skip here, will be handled after the loop
           break;
         default:
-          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq(String.format("metadata.%s", e.getKey()), value), filters);
           break;
 
       }
     });
     
-    // Handle exploitIqStatus filter after processing other filters
     if (exploitIqStatus != null && !exploitIqStatus.isEmpty()) {
-      if (vulnId != null && !vulnId.isEmpty()) {
-        // If vulnId is specified: filter reports where the specified CVE has the matching status
-        filters.add(Filters.elemMatch("output", 
-          Filters.and(
-            Filters.eq("vuln_id", vulnId),
-            Filters.eq("justification.status", exploitIqStatus)
-          )
-        ));
-      } else {
-        // If vulnId is NOT specified: filter reports where any CVE has the matching status
-        filters.add(Filters.elemMatch("output", 
-          Filters.eq("justification.status", exploitIqStatus)
-        ));
+      String[] exploitIqStatusValues = exploitIqStatus.split(",");
+      List<Bson> exploitIqStatusFilters = new ArrayList<>();
+      
+      for (String statusValue : exploitIqStatusValues) {
+        String trimmedStatus = statusValue.trim();
+        if (vulnId != null && !vulnId.isEmpty()) {
+          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+            Filters.and(
+              Filters.eq("vuln_id", vulnId),
+              Filters.eq("justification.status", trimmedStatus)
+            )
+          ));
+        } else {
+          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+            Filters.eq("justification.status", trimmedStatus)
+          ));
+        }
+      }
+      
+      if (!exploitIqStatusFilters.isEmpty()) {
+        filters.add(exploitIqStatusFilters.size() == 1 
+          ? exploitIqStatusFilters.get(0) 
+          : Filters.or(exploitIqStatusFilters));
       }
     }
     var filter = Filters.empty();

@@ -65,11 +65,13 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const [repositorySearchValue, setRepositorySearchValue] =
     useState<string>("");
 
-  // Convert filter array to single API value (use first selected value)
+  // Convert filter array to comma-separated API values (all selected values)
   const exploitIqStatusApiValue = useMemo(() => {
-    if (exploitIqStatusFilter.length === 0 || !exploitIqStatusFilter[0])
-      return undefined;
-    return mapDisplayLabelToApiValue(exploitIqStatusFilter[0]);
+    if (exploitIqStatusFilter.length === 0) return undefined;
+    // Map all selected display labels to API values and join with comma
+    return exploitIqStatusFilter
+      .map((label) => mapDisplayLabelToApiValue(label))
+      .join(",");
   }, [exploitIqStatusFilter]);
 
   const scanStateOptions = useMemo(() => {
@@ -88,6 +90,12 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return [`${sortColumn}:${sortDirection.toUpperCase()}`];
   }, [sortColumn, sortDirection]);
 
+  // Build status filter - send all selected status values as comma-separated string
+  const statusFilterValue = useMemo(() => {
+    if (scanStateFilter.length === 0) return undefined;
+    return scanStateFilter.join(",");
+  }, [scanStateFilter]);
+
   const {
     data: reports,
     loading,
@@ -103,8 +111,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         productId: productId,
         vulnId: cveId,
         sortBy: sortByParam,
-        ...(scanStateFilter.length > 0 &&
-          scanStateFilter[0] && { status: scanStateFilter[0] }),
+        ...(statusFilterValue && { status: statusFilterValue }),
         ...(exploitIqStatusApiValue && {
           exploitIqStatus: exploitIqStatusApiValue,
         }),
@@ -118,7 +125,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         productId,
         cveId,
         sortByParam,
-        scanStateFilter,
+        statusFilterValue,
         exploitIqStatusApiValue,
         repositorySearchValue,
       ],
@@ -245,8 +252,44 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   };
 
-  if (loading) {
+  const toolbar = (
+    <RepositoryTableToolbar
+      repositorySearchValue={repositorySearchValue}
+      onRepositorySearchChange={handleRepositorySearchChange}
+      scanStateFilter={scanStateFilter}
+      scanStateOptions={scanStateOptions}
+      exploitIqStatusFilter={exploitIqStatusFilter}
+      loading={loading}
+      onScanStateFilterChange={handleScanStateFilterChange}
+      onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
+      pagination={
+        pagination
+          ? {
+              itemCount: pagination.totalElements ?? totalFilteredCount,
+              page,
+              perPage: perPage,
+              onSetPage: onSetPage,
+              onPerPageSelect: onPerPageSelect,
+            }
+          : undefined
+      }
+    />
+  );
+
+  if (error) {
     return (
+      <>
+        {toolbar}
+        <Alert variant={AlertVariant.danger} title="Error loading reports">
+          {getErrorMessage(error)}
+        </Alert>
+      </>
+    );
+  }
+
+  let content;
+  if (loading) {
+    content = (
       <SkeletonTable
         rowsCount={10}
         columns={[
@@ -258,95 +301,15 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         ]}
       />
     );
-  }
-
-  if (error) {
-    return (
-      <Alert variant={AlertVariant.danger} title="Error loading reports">
-        {getErrorMessage(error)}
-      </Alert>
-    );
-  }
-
-  if (!reports || (reports.length === 0 && !loading)) {
-    return (
-      <>
-        <RepositoryTableToolbar
-          repositorySearchValue={repositorySearchValue}
-          onRepositorySearchChange={handleRepositorySearchChange}
-          scanStateFilter={scanStateFilter}
-          scanStateOptions={scanStateOptions}
-          exploitIqStatusFilter={exploitIqStatusFilter}
-          loading={loading}
-          onScanStateFilterChange={handleScanStateFilterChange}
-          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
-          pagination={
-            pagination
-              ? {
-                  itemCount: totalFilteredCount,
-                  page,
-                  perPage: perPage,
-                  onSetPage: onSetPage,
-                  onPerPageSelect: onPerPageSelect,
-                }
-              : undefined
-          }
-        />
-        <TableEmptyState
-          columnCount={6}
-          titleText="No repository reports found"
-        />
-      </>
-    );
-  }
-
-  if (!displayReports || displayReports.length === 0) {
-    return (
-      <>
-        <RepositoryTableToolbar
-          repositorySearchValue={repositorySearchValue}
-          onRepositorySearchChange={handleRepositorySearchChange}
-          scanStateFilter={scanStateFilter}
-          scanStateOptions={scanStateOptions}
-          exploitIqStatusFilter={exploitIqStatusFilter}
-          loading={loading}
-          onScanStateFilterChange={handleScanStateFilterChange}
-          onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
-          pagination={{
-            itemCount: totalFilteredCount,
-            page,
-            perPage: perPage,
-            onSetPage: onSetPage,
-            onPerPageSelect: onPerPageSelect,
-          }}
-        />
-        <TableEmptyState
-          columnCount={6}
-          titleText="No repository reports found"
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <RepositoryTableToolbar
-        repositorySearchValue={repositorySearchValue}
-        onRepositorySearchChange={handleRepositorySearchChange}
-        scanStateFilter={scanStateFilter}
-        scanStateOptions={scanStateOptions}
-        exploitIqStatusFilter={exploitIqStatusFilter}
-        loading={loading}
-        onScanStateFilterChange={handleScanStateFilterChange}
-        onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
-        pagination={{
-          itemCount: totalFilteredCount,
-          page,
-          perPage: perPage,
-          onSetPage: onSetPage,
-          onPerPageSelect: onPerPageSelect,
-        }}
+  } else if (!reports || reports.length === 0) {
+    content = (
+      <TableEmptyState
+        columnCount={6}
+        titleText="No repository reports found"
       />
+    );
+  } else {
+    content = (
       <Table>
         <Thead>
           <Tr>
@@ -485,6 +448,13 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
           ))}
         </Tbody>
       </Table>
+    );
+  }
+
+  return (
+    <>
+      {toolbar}
+      {content}
     </>
   );
 };
