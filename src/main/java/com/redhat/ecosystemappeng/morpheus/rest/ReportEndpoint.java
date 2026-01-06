@@ -306,8 +306,14 @@ public class ReportEndpoint {
       )
       @QueryParam("exploitIqStatus") String exploitIqStatus) {
 
-    var filter = uriInfo.getQueryParameters().entrySet().stream().filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
-        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getFirst()));
+    var filter = uriInfo.getQueryParameters().entrySet().stream()
+        .filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            e -> e.getValue().size() > 1 
+              ? String.join(",", e.getValue()) 
+              : e.getValue().getFirst()
+        ));
     var result = reportService.list(filter, SortField.fromSortBy(sortBy), page, pageSize);
     return Response.ok(result.results)
         .header("X-Total-Pages", result.totalPages)
