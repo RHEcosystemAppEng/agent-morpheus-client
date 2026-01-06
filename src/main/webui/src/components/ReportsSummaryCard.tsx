@@ -22,6 +22,7 @@ import {
   ExclamationTriangleIcon,
   InProgressIcon,
 } from "@patternfly/react-icons";
+import SkeletonCard from "./SkeletonCard";
 
 interface SummaryStatItemProps {
   label: string;
@@ -56,21 +57,6 @@ const SummaryStatItem: React.FC<SummaryStatItemProps> = ({
         </CardBody>
       </Card>
     </GridItem>
-  );
-};
-
-const LoadingState: React.FC = () => {
-  return (
-    <Card>
-      <CardBody>
-        <Flex>
-          <FlexItem>
-            <Spinner size="lg" />
-          </FlexItem>
-          <FlexItem>Loading reports summary...</FlexItem>
-        </Flex>
-      </CardBody>
-    </Card>
   );
 };
 
@@ -109,7 +95,7 @@ const ReportsSummaryCard: React.FC = () => {
   const { summary, loading, error, reports } = useSummary();
 
   if (loading) {
-    return <LoadingState />;
+    return <SkeletonCard lines={4} widths={["30%", "50%", "45%"]} screenreaderText="Loading reports summary" />;
   }
 
   if (error) {

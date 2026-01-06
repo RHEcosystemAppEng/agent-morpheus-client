@@ -59,7 +59,7 @@ const MetricsCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          Last 24 Hours Metrics
+          Last Week Metrics
         </Title>
       </CardTitle>
       <CardBody>
@@ -85,7 +85,7 @@ const MetricsCard: React.FC = () => {
         </Grid>
       </CardBody>
       <Divider />
-      <CardFooter className="pf-m-center" style={{ textAlign: 'center' }}> Based on the data from the last 24 hours. These metrics help identify false positives by tracking the percentage of analysis results that are correctly identified as not vulnerable.</CardFooter>
+      <CardFooter className="pf-m-center" style={{ textAlign: 'center' }}> Based on the data from the last week. These metrics help identify false positives by tracking the percentage of analysis results that are correctly identified as not vulnerable.</CardFooter>
     </Card>
   );
 };
