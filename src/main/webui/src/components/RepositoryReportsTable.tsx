@@ -31,7 +31,7 @@ import TableEmptyState from "./TableEmptyState";
 
 const PER_PAGE = 10;
 
-type SortColumn = "gitRepo" | "completedAt";
+type SortColumn = "gitRepo" | "completedAt" | "state";
 type SortDirection = "asc" | "desc";
 
 // Shared style function for table cells with ellipsis truncation
@@ -56,7 +56,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
-  const [sortColumn, setSortColumn] = useState<SortColumn>("gitRepo");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("state");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
   const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
@@ -176,6 +176,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         return 0;
       case "completedAt":
         return 3;
+      case "state":
+        return 4;
       default:
         return 0;
     }
@@ -375,7 +377,18 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Completed
             </Th>
-            <Th>Analysis state</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("state"),
+                columnIndex: 4,
+              }}
+            >
+              Analysis state
+            </Th>
             <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
