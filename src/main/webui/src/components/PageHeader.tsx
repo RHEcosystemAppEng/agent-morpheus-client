@@ -19,7 +19,6 @@ import {
 import { PageToggleButton } from '@patternfly/react-core';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
 import UserAvatarDropdown from './UserAvatarDropdown';
-import redhatLogo from '../assets/redhat.svg?url';
 
 /**
  * Brand component - displays Red Hat logo and product name
@@ -28,7 +27,7 @@ const Brand: React.FC = () => {
   return (
     <div style={{ display: "flex", gap: "10px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-        <img src={redhatLogo} alt="Red Hat" style={{ height: 38 }} />
+        <img src="/redhat.svg" alt="Red Hat" style={{ height: 38 }} />
         <div
           style={{borderLeft: "0.3px solid #737679",height: 38,}}
         />

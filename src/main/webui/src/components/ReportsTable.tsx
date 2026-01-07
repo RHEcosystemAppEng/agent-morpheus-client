@@ -27,7 +27,7 @@ import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import TableEmptyState from "./TableEmptyState";
 
-const PER_PAGE = 8;
+const PER_PAGE = 10;
 
 interface ReportsTableProps {
   searchValue: string;
@@ -120,7 +120,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   if (loading) {
     return (
       <SkeletonTable
-        rowsCount={8}
+        rowsCount={10}
         columns={[
           "Report ID",
           "SBOM name",
