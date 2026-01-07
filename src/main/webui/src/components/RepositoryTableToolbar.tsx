@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Toolbar,
   ToolbarContent,
@@ -6,172 +6,162 @@ import {
   ToolbarGroup,
   ToolbarFilter,
   ToolbarToggleGroup,
-  Menu,
-  MenuContent,
-  MenuList,
-  MenuItem,
-  MenuToggle,
-  Badge,
-  Popper,
+  SearchInput,
   Pagination,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
+import {
+  AttributeSelector,
+  CheckboxFilter,
+  ALL_EXPLOIT_IQ_STATUS_OPTIONS,
+} from "./Filtering";
 
 interface RepositoryTableToolbarProps {
+  repositorySearchValue: string;
+  onRepositorySearchChange: (value: string) => void;
   scanStateFilter: string[];
   scanStateOptions: string[];
+  exploitIqStatusFilter: string[];
   loading: boolean;
-  onFilterChange: (filters: string[]) => void;
+  onScanStateFilterChange: (filters: string[]) => void;
+  onExploitIqStatusFilterChange: (filters: string[]) => void;
   pagination?: {
     itemCount: number;
     page: number;
     perPage: number;
-    onSetPage: (event: unknown, newPage: number) => void;
+    onSetPage: (
+      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+      newPage: number
+    ) => void;
+    onPerPageSelect?: (
+      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+      newPerPage: number,
+      newPage: number
+    ) => void;
   };
 }
 
+type ActiveAttribute = "Repository" | "Analysis State" | "ExploitIQ Status";
+
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
+  repositorySearchValue,
+  onRepositorySearchChange,
   scanStateFilter,
   scanStateOptions,
+  exploitIqStatusFilter,
   loading,
-  onFilterChange,
+  onScanStateFilterChange,
+  onExploitIqStatusFilterChange,
   pagination,
 }) => {
-  const [isScanStateMenuOpen, setIsScanStateMenuOpen] = useState(false);
+  const [activeAttribute, setActiveAttribute] =
+    useState<ActiveAttribute>("Repository");
 
-  const scanStateToggleRef = useRef<HTMLButtonElement>(null);
-  const scanStateMenuRef = useRef<HTMLDivElement>(null);
-  const scanStateContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScanStateMenuKeys = (event: KeyboardEvent) => {
-    if (
-      isScanStateMenuOpen &&
-      scanStateMenuRef.current?.contains(event.target as Node)
-    ) {
-      if (event.key === "Escape" || event.key === "Tab") {
-        setIsScanStateMenuOpen(false);
-        scanStateToggleRef.current?.focus();
-      }
-    }
-  };
-
-  const handleScanStateClickOutside = (event: MouseEvent) => {
-    if (
-      isScanStateMenuOpen &&
-      !scanStateMenuRef.current?.contains(event.target as Node) &&
-      !scanStateToggleRef.current?.contains(event.target as Node) &&
-      !scanStateContainerRef.current?.contains(event.target as Node)
-    ) {
-      setIsScanStateMenuOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleScanStateMenuKeys);
-    window.addEventListener("click", handleScanStateClickOutside);
-    return () => {
-      window.removeEventListener("keydown", handleScanStateMenuKeys);
-      window.removeEventListener("click", handleScanStateClickOutside);
-    };
-  }, [isScanStateMenuOpen]);
-
-  const onScanStateToggleClick = () => {
-    setIsScanStateMenuOpen(!isScanStateMenuOpen);
-  };
-
-  const handleScanStateSelect = (
-    _event: React.MouseEvent | undefined,
-    itemId: string | number | undefined
+  const handleScanStateFilterDelete = (
+    _category: string | unknown,
+    label: string | unknown
   ) => {
-    if (typeof itemId === "undefined") return;
-    const itemStr = itemId.toString();
-    const isSelected = scanStateFilter.includes(itemStr);
-    onFilterChange(
-      isSelected
-        ? scanStateFilter.filter((v) => v !== itemStr)
-        : [...scanStateFilter, itemStr]
-    );
+    if (typeof label === "string") {
+      onScanStateFilterChange(scanStateFilter.filter((fil) => fil !== label));
+    }
   };
 
-  const handleFilterDelete = (_category: string | unknown, label: string | unknown) => {
+  const handleExploitIqStatusFilterDelete = (
+    _category: string | unknown,
+    label: string | unknown
+  ) => {
     if (typeof label === "string") {
-      onFilterChange(scanStateFilter.filter((fil) => fil !== label));
+      onExploitIqStatusFilterChange(
+        exploitIqStatusFilter.filter((fil) => fil !== label)
+      );
     }
   };
 
   const handleFilterDeleteGroup = () => {
-    onFilterChange([]);
+    onRepositorySearchChange("");
+    onScanStateFilterChange([]);
+    onExploitIqStatusFilterChange([]);
   };
 
-  const scanStateToggle = (
-    <MenuToggle
-      ref={scanStateToggleRef}
-      onClick={onScanStateToggleClick}
-      isExpanded={isScanStateMenuOpen}
-      {...(scanStateFilter.length > 0 && {
-        badge: <Badge isRead>{scanStateFilter.length}</Badge>,
-      })}
-      style={{ width: "200px" } as React.CSSProperties}
-      isDisabled={loading}
-    >
-      Filter by Analysis State
-    </MenuToggle>
-  );
-
-  const scanStateMenu = (
-    <Menu
-      ref={scanStateMenuRef}
-      id="scan-state-menu"
-      onSelect={handleScanStateSelect}
-      selected={scanStateFilter}
-    >
-      <MenuContent>
-        <MenuList>
-          {scanStateOptions.map((option) => (
-            <MenuItem
-              hasCheckbox
-              key={option}
-              itemId={option}
-              isSelected={scanStateFilter.includes(option)}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </MenuList>
-      </MenuContent>
-    </Menu>
-  );
-
-  const scanStateSelect = (
-    <div ref={scanStateContainerRef}>
-      <Popper
-        trigger={scanStateToggle}
-        triggerRef={scanStateToggleRef}
-        popper={scanStateMenu}
-        popperRef={scanStateMenuRef}
-        appendTo={scanStateContainerRef.current || undefined}
-        isVisible={isScanStateMenuOpen}
-      />
-    </div>
+  const repositorySearchInput = (
+    <SearchInput
+      aria-label="Search by repository name"
+      placeholder="Search by Repository Name"
+      value={repositorySearchValue}
+      onChange={(_event, value) => onRepositorySearchChange(value)}
+      onClear={() => onRepositorySearchChange("")}
+    />
   );
 
   return (
     <Toolbar
       id="repository-reports-toolbar"
       clearAllFilters={
-        scanStateFilter.length > 0 ? handleFilterDeleteGroup : undefined
+        repositorySearchValue !== "" ||
+        scanStateFilter.length > 0 ||
+        exploitIqStatusFilter.length > 0
+          ? handleFilterDeleteGroup
+          : undefined
       }
     >
       <ToolbarContent>
         <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
           <ToolbarGroup variant="filter-group">
+            <ToolbarItem>
+              <AttributeSelector
+                activeAttribute={activeAttribute}
+                attributes={[
+                  "Repository",
+                  "Analysis State",
+                  "ExploitIQ Status",
+                ]}
+                onAttributeChange={(attr) =>
+                  setActiveAttribute(attr as ActiveAttribute)
+                }
+              />
+            </ToolbarItem>
+            <ToolbarFilter
+              labels={
+                repositorySearchValue !== "" ? [repositorySearchValue] : []
+              }
+              deleteLabel={() => onRepositorySearchChange("")}
+              deleteLabelGroup={() => onRepositorySearchChange("")}
+              categoryName="Repository"
+              showToolbarItem={activeAttribute === "Repository"}
+            >
+              {repositorySearchInput}
+            </ToolbarFilter>
             <ToolbarFilter
               labels={scanStateFilter}
-              deleteLabel={handleFilterDelete}
+              deleteLabel={handleScanStateFilterDelete}
               deleteLabelGroup={handleFilterDeleteGroup}
               categoryName="Analysis State"
+              showToolbarItem={activeAttribute === "Analysis State"}
             >
-              {scanStateSelect}
+              <CheckboxFilter
+                id="scan-state-menu"
+                label="Filter by Analysis State"
+                options={scanStateOptions}
+                selected={scanStateFilter}
+                onSelect={onScanStateFilterChange}
+                loading={loading}
+              />
+            </ToolbarFilter>
+            <ToolbarFilter
+              labels={exploitIqStatusFilter}
+              deleteLabel={handleExploitIqStatusFilterDelete}
+              deleteLabelGroup={handleFilterDeleteGroup}
+              categoryName="ExploitIQ Status"
+              showToolbarItem={activeAttribute === "ExploitIQ Status"}
+            >
+              <CheckboxFilter
+                id="exploit-iq-status-menu"
+                label="Filter by ExploitIQ Status"
+                options={ALL_EXPLOIT_IQ_STATUS_OPTIONS}
+                selected={exploitIqStatusFilter}
+                onSelect={onExploitIqStatusFilterChange}
+                loading={loading}
+              />
             </ToolbarFilter>
           </ToolbarGroup>
         </ToolbarToggleGroup>
@@ -183,8 +173,13 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
                 page={pagination.page}
                 perPage={pagination.perPage}
                 onSetPage={pagination.onSetPage}
-                onPerPageSelect={() => {}}
-                perPageOptions={[]}
+                onPerPageSelect={pagination.onPerPageSelect || (() => {})}
+                perPageOptions={[
+                  { title: "10", value: 10 },
+                  { title: "20", value: 20 },
+                  { title: "50", value: 50 },
+                  { title: "100", value: 100 },
+                ]}
               />
             </ToolbarItem>
           </ToolbarGroup>
@@ -195,4 +190,3 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
 };
 
 export default RepositoryTableToolbar;
-

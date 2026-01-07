@@ -270,8 +270,9 @@ public class ReportRepositoryService {
   private static final Map<String, String> SORT_MAPPINGS = Map.of(
       "completedAt", "input.scan.completed_at",
       "submittedAt", "metadata.submitted_at",
-      "name", "input.scan.id",
-      "vuln_id", "output.vuln_id");
+      "vuln_id", "output.vuln_id",
+      "ref", "input.image.source_info.ref",
+      "gitRepo", "input.image.source_info.git_repo");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
@@ -280,11 +281,18 @@ public class ReportRepositoryService {
 
     List<Bson> sorts = new ArrayList<>();
     sortFields.forEach(sf -> {
-      var fieldName = SORT_MAPPINGS.get(sf.field());
-      if (SortType.ASC.equals(sf.type())) {
-        sorts.add(Sorts.ascending(fieldName));
+      if ("state".equals(sf.field())) {
+        sorts.add(Sorts.descending("input.scan.completed_at"));
+        sorts.add(Sorts.ascending("error.type"));
       } else {
-        sorts.add(Sorts.descending(fieldName));
+        var fieldName = SORT_MAPPINGS.get(sf.field());
+        if (fieldName != null) {
+          if (SortType.ASC.equals(sf.type())) {
+            sorts.add(Sorts.ascending(fieldName));
+          } else {
+            sorts.add(Sorts.descending(fieldName));
+          }
+        }
       }
     });
     
@@ -528,36 +536,127 @@ public class ReportRepositoryService {
     LOGGER.debugf("Removed %s reports before %s", count, threshold);
   }
 
+  private void handleMultipleValues(String valueString, 
+                                     java.util.function.Function<String, Bson> filterBuilder,
+                                     List<Bson> filters) {
+    String[] values = valueString.split(",");
+    if (values.length == 1) {
+      filters.add(filterBuilder.apply(values[0].trim()));
+    } else {
+      List<Bson> valueFilters = new ArrayList<>();
+      for (String value : values) {
+        valueFilters.add(filterBuilder.apply(value.trim()));
+      }
+      filters.add(valueFilters.size() == 1 ? valueFilters.get(0) : Filters.or(valueFilters));
+    }
+  }
+
   private Bson buildQueryFilter(Map<String, String> queryFilter) {
     List<Bson> filters = new ArrayList<>();
+    String vulnId = queryFilter.get("vulnId");
+    String exploitIqStatus = queryFilter.get("exploitIqStatus");
+    
     queryFilter.entrySet().forEach(e -> {
 
       switch (e.getKey()) {
         case "reportId":
-          filters.add(Filters.eq("input.scan.id", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.scan.id", value), filters);
           break;
         case "vulnId":
-          filters.add(Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", e.getValue())));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", value)), filters);
           break;
         case "status":
-          var field = e.getValue();
-          filters.add(STATUS_FILTERS.get(field));
+          var statusValues = e.getValue().split(",");
+          if (statusValues.length == 1) {
+            var statusFilter = STATUS_FILTERS.get(statusValues[0].trim());
+            if (statusFilter != null) {
+              filters.add(statusFilter);
+            }
+          } else {
+            List<Bson> statusFilters = new ArrayList<>();
+            for (String statusValue : statusValues) {
+              var statusFilter = STATUS_FILTERS.get(statusValue.trim());
+              if (statusFilter != null) {
+                statusFilters.add(statusFilter);
+              }
+            }
+            if (!statusFilters.isEmpty()) {
+              filters.add(Filters.or(statusFilters));
+            }
+          }
           break;
         case "imageName":
-          filters.add(Filters.eq("input.image.name", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.image.name", value), filters);
           break;
         case "imageTag":
-          filters.add(Filters.eq("input.image.tag", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("input.image.tag", value), filters);
           break;
         case "productId":
-          filters.add(Filters.eq("metadata.product_id", e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq("metadata.product_id", value), filters);
+          break;
+        case "gitRepo":
+          var gitRepoValues = e.getValue().split(",");
+          if (gitRepoValues.length == 1) {
+            filters.add(Filters.elemMatch("input.image.source_info", 
+              Filters.and(
+                Filters.eq("type", "code"),
+                Filters.regex("git_repo", gitRepoValues[0].trim(), "i")
+              )
+            ));
+          } else {
+            List<Bson> gitRepoFilters = new ArrayList<>();
+            for (String gitRepoValue : gitRepoValues) {
+              gitRepoFilters.add(Filters.elemMatch("input.image.source_info", 
+                Filters.and(
+                  Filters.eq("type", "code"),
+                  Filters.regex("git_repo", gitRepoValue.trim(), "i")
+                )
+              ));
+            }
+            filters.add(Filters.or(gitRepoFilters));
+          }
+          break;
+        case "exploitIqStatus":
           break;
         default:
-          filters.add(Filters.eq(String.format("metadata.%s", e.getKey()), e.getValue()));
+          handleMultipleValues(e.getValue(), (value) -> 
+            Filters.eq(String.format("metadata.%s", e.getKey()), value), filters);
           break;
 
       }
     });
+    
+    if (exploitIqStatus != null && !exploitIqStatus.isEmpty()) {
+      String[] exploitIqStatusValues = exploitIqStatus.split(",");
+      List<Bson> exploitIqStatusFilters = new ArrayList<>();
+      
+      for (String statusValue : exploitIqStatusValues) {
+        String trimmedStatus = statusValue.trim();
+        if (vulnId != null && !vulnId.isEmpty()) {
+          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+            Filters.and(
+              Filters.eq("vuln_id", vulnId),
+              Filters.eq("justification.status", trimmedStatus)
+            )
+          ));
+        } else {
+          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+            Filters.eq("justification.status", trimmedStatus)
+          ));
+        }
+      }
+      
+      if (!exploitIqStatusFilters.isEmpty()) {
+        filters.add(exploitIqStatusFilters.size() == 1 
+          ? exploitIqStatusFilters.get(0) 
+          : Filters.or(exploitIqStatusFilters));
+      }
+    }
     var filter = Filters.empty();
     if (!filters.isEmpty()) {
       filter = Filters.and(filters);

@@ -4,10 +4,8 @@ import {
   Button,
   Alert,
   AlertVariant,
-  EmptyState,
-  EmptyStateBody,
-  Title,
   Label,
+  Icon,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -16,17 +14,25 @@ import {
   Tr,
   Th,
   Tbody,
-  Td, 
+  Td,
 } from "@patternfly/react-table";
-import { CheckCircleIcon } from "@patternfly/react-icons";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+} from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { usePaginatedApi } from "../hooks/usePaginatedApi";
 import { Report, ProductSummary } from "../generated-client";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
+import { mapDisplayLabelToApiValue } from "./Filtering";
+import TableEmptyState from "./TableEmptyState";
 
 const PER_PAGE = 10;
+
+type SortColumn = "gitRepo" | "completedAt" | "state";
+type SortDirection = "asc" | "desc";
 
 // Shared style function for table cells with ellipsis truncation
 const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
@@ -49,38 +55,144 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(PER_PAGE);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("state");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
+  const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
+    []
+  );
+  const [repositorySearchValue, setRepositorySearchValue] =
+    useState<string>("");
+
+  // Convert filter array to comma-separated API values (all selected values)
+  const exploitIqStatusApiValue = useMemo(() => {
+    if (exploitIqStatusFilter.length === 0) return undefined;
+    // Map all selected display labels to API values and join with comma
+    return exploitIqStatusFilter
+      .map((label) => mapDisplayLabelToApiValue(label))
+      .join(",");
+  }, [exploitIqStatusFilter]);
 
   const scanStateOptions = useMemo(() => {
     const componentStates = productSummary.summary.componentStates || {};
     return Object.keys(componentStates).sort();
   }, [productSummary.summary.componentStates]);
 
-  const { data: reports, loading, error, pagination } = usePaginatedApi<Array<Report>>(
-    () => ({
-      method: 'GET',
-      url: '/api/reports',
-      query: {
-        page: page - 1,
-        pageSize: PER_PAGE,
-        productId: productId,
-        vulnId: cveId,
-        ...(scanStateFilter.length > 0 && scanStateFilter[0] && { status: scanStateFilter[0] }),
-      },
-    }),
-    { deps: [page, productId, cveId, scanStateFilter] }
-  );
-
-  const handleFilterChange = (filters: string[]) => {
-    setScanStateFilter(filters);
-    setPage(1);
-  };
-
   const getVulnerabilityStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
     const vuln = report.vulns.find((v) => v.vulnId === cveId);
     return vuln?.justification?.status;
   };
+
+  // Build sortBy parameter for API
+  const sortByParam = useMemo(() => {
+    return [`${sortColumn}:${sortDirection.toUpperCase()}`];
+  }, [sortColumn, sortDirection]);
+
+  // Build status filter - send all selected status values as comma-separated string
+  const statusFilterValue = useMemo(() => {
+    if (scanStateFilter.length === 0) return undefined;
+    return scanStateFilter.join(",");
+  }, [scanStateFilter]);
+
+  const {
+    data: reports,
+    loading,
+    error,
+    pagination,
+  } = usePaginatedApi<Array<Report>>(
+    () => ({
+      method: "GET",
+      url: "/api/reports",
+      query: {
+        page: page - 1,
+        pageSize: perPage,
+        productId: productId,
+        vulnId: cveId,
+        sortBy: sortByParam,
+        ...(statusFilterValue && { status: statusFilterValue }),
+        ...(exploitIqStatusApiValue && {
+          exploitIqStatus: exploitIqStatusApiValue,
+        }),
+        ...(repositorySearchValue && { gitRepo: repositorySearchValue }),
+      },
+    }),
+    {
+      deps: [
+        page,
+        perPage,
+        productId,
+        cveId,
+        sortByParam,
+        statusFilterValue,
+        exploitIqStatusApiValue,
+        repositorySearchValue,
+      ],
+    }
+  );
+
+  const displayReports = reports || [];
+  const totalFilteredCount = pagination?.totalElements ?? 0;
+
+  const handleScanStateFilterChange = (filters: string[]) => {
+    setScanStateFilter(filters);
+    setPage(1);
+  };
+
+  const handleExploitIqStatusFilterChange = (filters: string[]) => {
+    setExploitIqStatusFilter(filters);
+    setPage(1);
+  };
+
+  const handleRepositorySearchChange = (value: string) => {
+    setRepositorySearchValue(value);
+    setPage(1);
+  };
+
+  const onSetPage = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const onPerPageSelect = (
+    _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+    newPerPage: number,
+    newPage: number
+  ) => {
+    setPerPage(newPerPage);
+    setPage(newPage);
+  };
+
+  const handleSortToggle = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  };
+
+  // Map sort columns to their column indices
+  const getColumnIndex = (column: SortColumn): number => {
+    switch (column) {
+      case "gitRepo":
+        return 0;
+      case "completedAt":
+        return 3;
+      case "state":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
+  // Get the current sort index and direction for PatternFly
+  const activeSortIndex = getColumnIndex(sortColumn);
+  const activeSortDirection = sortDirection;
 
   const renderExploitIqStatus = (report: Report) => {
     const status = getVulnerabilityStatus(report);
@@ -98,8 +210,86 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return "";
   };
 
-  if (loading) {
+  const renderAnalysisState = (report: Report) => {
+    const state = report.state?.toLowerCase();
+
+    if (state === "completed") {
+      return (
+        <Label
+          variant="outline"
+          color="green"
+          icon={
+            <Icon status="success">
+              <CheckCircleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
+    if (state === "expired") {
+      return (
+        <Label
+          variant="outline"
+          color="orange"
+          icon={
+            <Icon status="warning">
+              <ExclamationTriangleIcon />
+            </Icon>
+          }
+        >
+          {report.state}
+        </Label>
+      );
+    }
+
     return (
+      <Label variant="outline" icon={<CheckCircleIcon />}>
+        {report.state}
+      </Label>
+    );
+  };
+
+  const toolbar = (
+    <RepositoryTableToolbar
+      repositorySearchValue={repositorySearchValue}
+      onRepositorySearchChange={handleRepositorySearchChange}
+      scanStateFilter={scanStateFilter}
+      scanStateOptions={scanStateOptions}
+      exploitIqStatusFilter={exploitIqStatusFilter}
+      loading={loading}
+      onScanStateFilterChange={handleScanStateFilterChange}
+      onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
+      pagination={
+        pagination
+          ? {
+              itemCount: pagination.totalElements ?? totalFilteredCount,
+              page,
+              perPage: perPage,
+              onSetPage: onSetPage,
+              onPerPageSelect: onPerPageSelect,
+            }
+          : undefined
+      }
+    />
+  );
+
+  if (error) {
+    return (
+      <>
+        {toolbar}
+        <Alert variant={AlertVariant.danger} title="Error loading reports">
+          {getErrorMessage(error)}
+        </Alert>
+      </>
+    );
+  }
+
+  let content;
+  if (loading) {
+    content = (
       <SkeletonTable
         rowsCount={10}
         columns={[
@@ -111,110 +301,160 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         ]}
       />
     );
-  }
-
-  if (error) {
-    return (
-      <Alert variant={AlertVariant.danger} title="Error loading reports">
-        {getErrorMessage(error)}
-      </Alert>
+  } else if (!reports || reports.length === 0) {
+    content = (
+      <TableEmptyState
+        columnCount={6}
+        titleText="No repository reports found"
+      />
     );
-  }
-
-  if (!reports || reports.length === 0) {
-    return (
-      <>
-        <RepositoryTableToolbar
-          scanStateFilter={scanStateFilter}
-          scanStateOptions={scanStateOptions}
-          loading={loading}
-          onFilterChange={handleFilterChange}
-          pagination={
-            pagination
-              ? {
-                  itemCount: pagination.totalElements ?? 0,
-                  page,
-                  perPage: PER_PAGE,
-                  onSetPage: (_, newPage) => setPage(newPage),
-                }
-              : undefined
-          }
-        />
-        <EmptyState>
-          <Title headingLevel="h4" size="lg">
-            No repository reports found
-          </Title>
-          <EmptyStateBody>
-            {scanStateFilter.length > 0
-              ? "No repository reports found matching the selected filters."
-              : "No repository reports found for this product and CVE combination."}
-          </EmptyStateBody>
-        </EmptyState>
-      </>
+  } else {
+    content = (
+      <Table>
+        <Thead>
+          <Tr>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("gitRepo"),
+                columnIndex: 0,
+              }}
+            >
+              Repository
+            </Th>
+            <Th>Commit ID</Th>
+            <Th style={{ width: "10%" }}>ExploitIQ Status</Th>
+            <Th
+              style={{ width: "22%", paddingLeft: "0.5rem" }}
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("completedAt"),
+                columnIndex: 3,
+              }}
+            >
+              Completed
+            </Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("state"),
+                columnIndex: 4,
+              }}
+            >
+              Analysis state
+            </Th>
+            <Th>CVE Repository Report</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {displayReports.map((report) => (
+            <Tr key={report.id}>
+              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
+                {report.gitRepo ? (
+                  <a
+                    href={report.gitRepo}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.gitRepo}
+                  </a>
+                ) : (
+                  <span
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.gitRepo || ""}
+                  </span>
+                )}
+              </Td>
+              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
+                {report.gitRepo && report.ref ? (
+                  <a
+                    href={`${
+                      report.gitRepo.endsWith("/")
+                        ? report.gitRepo.slice(0, -1)
+                        : report.gitRepo
+                    }/commit/${report.ref}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.ref.substring(0, 7)}
+                  </a>
+                ) : (
+                  <span
+                    style={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {report.ref ? report.ref.substring(0, 7) : ""}
+                  </span>
+                )}
+              </Td>
+              <Td dataLabel="ExploitIQ Status" style={{ width: "10%" }}>
+                {renderExploitIqStatus(report)}
+              </Td>
+              <Td
+                dataLabel="Completed"
+                style={{
+                  width: "22%",
+                  paddingLeft: "0.5rem",
+                  ...getEllipsisStyle(22),
+                }}
+              >
+                <FormattedTimestamp date={report.completedAt} />
+              </Td>
+              <Td dataLabel="Analysis state">{renderAnalysisState(report)}</Td>
+              <Td dataLabel="CVE Repository Report">
+                <TableText>
+                  <Button
+                    variant="primary"
+                    onClick={() =>
+                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                    }
+                  >
+                    View
+                  </Button>
+                </TableText>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
     );
   }
 
   return (
     <>
-      <RepositoryTableToolbar
-        scanStateFilter={scanStateFilter}
-        scanStateOptions={scanStateOptions}
-        loading={loading}
-        onFilterChange={handleFilterChange}
-        pagination={{
-          itemCount: pagination?.totalElements ?? 0,
-          page,
-          perPage: PER_PAGE,
-          onSetPage: (_, newPage) => setPage(newPage),
-        }}
-      />
-      <Table>
-            <Thead>
-              <Tr>
-                <Th>Repository</Th>
-                <Th>Commit ID</Th>
-                <Th>ExploitIQ Status</Th>
-                <Th>Completed</Th>
-                <Th>Analysis state</Th>
-                <Th>CVE Repository Report</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {reports.map((report) => (
-                <Tr key={report.id}>
-                  <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                    {report.gitRepo || ""}
-                  </Td>
-                  <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                    {report.ref || ""}
-                  </Td>
-                  <Td dataLabel="ExploitIQ Status">
-                    {renderExploitIqStatus(report)}
-                  </Td>
-                  <Td dataLabel="Completed" style={getEllipsisStyle(10)}>
-                    <FormattedTimestamp date={report.completedAt} />
-                  </Td>
-                  <Td dataLabel="Analysis state">
-                    <Label variant="outline" icon={<CheckCircleIcon />}>
-                      {report.state}
-                    </Label>
-                  </Td>
-                  <Td dataLabel="CVE Repository Report">
-                    <TableText>
-                      <Button
-                        variant="primary"
-                        onClick={() =>
-                          navigate(`/Reports/${productId}/${cveId}/${report.id}`)
-                        }
-                      >
-                        View
-                      </Button>
-                    </TableText>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+      {toolbar}
+      {content}
     </>
   );
 };
