@@ -5,10 +5,14 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Button,
+  CodeBlock,
+  CodeBlockCode,
   Divider,
   EmptyState,
   EmptyStateBody,
+  ExpandableSection,
   Flex,
+  FlexItem,
   Grid,
   GridItem,
   PageSection,
@@ -42,6 +46,7 @@ export default function Report() {
   const [errorReport, setErrorReport] = React.useState({});
   const [comments, setComments] = React.useState({});
   const [name, setName] = React.useState();
+  const [vexExpanded, setVexExpanded] = React.useState(false);
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -56,14 +61,15 @@ export default function Report() {
       .catch(e => setErrorReport(e));
   }, []);
 
-  const onDownload = () => {
+  const onDownload = (data, filename) => {
     const element = document.createElement("a");
-    const file = new Blob([JSON.stringify(report)], {type: 'application/json'});
+    const file = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     element.href = URL.createObjectURL(file);
-    element.download = `${name}.json`;
+    element.download = filename;
     document.body.appendChild(element);
     element.click();
-  }
+    document.body.removeChild(element); // cleanup
+  };
 
   const time_meta_fields = [
     "submitted_at",
@@ -118,8 +124,8 @@ export default function Report() {
     lines.push(`Image: ${report.input.image.name}`);
     lines.push('');
 
-    if (report.output) {
-      report.output.forEach(vuln => {
+    if (report.output?.analysis) {
+      report.output.analysis.forEach(vuln => {
         lines.push(`Vulnerability: ${vuln.vuln_id}`);
         lines.push("");
         if (vuln.justification?.label) {
@@ -188,7 +194,7 @@ export default function Report() {
     }
 
     const image = report.input.image
-    const output = report.output;
+    const analysis = report.output?.analysis;
     let metadata = [];
     let timestamps = [];
     if (report.metadata !== undefined) {
@@ -238,7 +244,7 @@ export default function Report() {
         </DescriptionListGroup>
       </DescriptionList>
 
-      {output?.map((vuln, v_idx) => {
+      {analysis?.map((vuln, v_idx) => {
         const uid = getUniqueId();
         let userComments = '';
         if(comments[vuln.vuln_id] !== undefined) {
@@ -279,7 +285,43 @@ export default function Report() {
                   </>
                   )
               }
+            <DescriptionListGroup>
+                <DescriptionListTerm>VEX</DescriptionListTerm>
+                <DescriptionListDescription>
+                  {report.output?.vex && 
+                  <Flex columnGap={{ default: 'columnGapSm' }} alignItems={{ default: 'alignItemsFlexStart' }}>
+                    <FlexItem>
+                      <Button 
+                        variant="secondary" 
+                        onClick={() => onDownload(report.output.vex, `${name}_vex.json`)}
+                        size="sm"
+                      >
+                        Download VEX
+                      </Button>
+                    </FlexItem>
+                    <FlexItem>
+                      <ExpandableSection
+                        toggleText={vexExpanded ? "Hide VEX document" : "Show VEX document"}
+                        onToggle={(_event, isExpanded) => setVexExpanded(isExpanded)}
+                        isExpanded={vexExpanded}
+                        isIndented
+                        isDisabled={!report.output?.vex}
+                      >
+                        {report.output?.vex && (
+                          <CodeBlock>
+                            <CodeBlockCode>
+                              {JSON.stringify(report.output.vex, null, 2)}
+                            </CodeBlockCode>
+                          </CodeBlock>
+                        )}
+                      </ExpandableSection>
+                    </FlexItem>
+                  </Flex>
+                  }
+                </DescriptionListDescription>
+            </DescriptionListGroup>
             </DescriptionList>
+
             {Array.isArray(vuln.checklist) && vuln.checklist.length > 0 && (
                 <>
                   <Content component="h2">Checklist:</Content>
@@ -301,7 +343,7 @@ export default function Report() {
       })}
       <GridItem>
         <Flex columnGap={{ default: 'columnGapSm' }}>
-          <Button variant="secondary" onClick={onDownload}>Download</Button>
+          <Button variant="secondary" onClick={() => onDownload(report, `${name}_report.json`)}>Download</Button>
           <ConfirmationButton btnVariant="danger"
                               onConfirm={() => onDelete()}
                               message={`The report with id: ${name} will be permanently deleted.`}>Delete</ConfirmationButton>

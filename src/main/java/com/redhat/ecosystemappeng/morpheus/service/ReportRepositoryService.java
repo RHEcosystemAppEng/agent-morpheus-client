@@ -106,13 +106,14 @@ public class ReportRepositoryService {
     var input = doc.get("input", Document.class);
     var scan = input.get("scan", Document.class);
     var image = input.get("image", Document.class);
-    var output = doc.getList("output", Document.class);
+    var output = doc.get("output", Document.class);
+    var analysis = Objects.nonNull(output) ? output.getList("analysis", Document.class) : null;
     var metadata = extractMetadata(doc);
     var vulnIds = new HashSet<VulnResult>();
-    if (Objects.nonNull(output)) {
-      output.forEach(o -> {
-        var vulnId = o.getString("vuln_id");
-        var justification = o.get("justification", Document.class);
+    if (Objects.nonNull(analysis)) {
+      analysis.forEach(a -> {
+        var vulnId = a.getString("vuln_id");
+        var justification = a.get("justification", Document.class);
 
         vulnIds.add(new VulnResult(vulnId,
             new Justification(justification.getString("status"), justification.getString("label"))));
@@ -171,15 +172,15 @@ public class ReportRepositoryService {
     
     Set<String> productIds = getProductId(ids);
     
-    List<Document> outputDocs = objectMapper.readValue(report.get("output").toPrettyString(),
-        new TypeReference<List<Document>>() {
+    Document outputDoc = objectMapper.readValue(report.get("output").toPrettyString(),
+        new TypeReference<Document>() {
 
         });
     var scan = report.get("input").get("scan").toPrettyString();
     var info = report.get("info").toPrettyString();
     var updates = Updates.combine(Updates.set("input.scan", Document.parse(scan)),
         Updates.set("info", Document.parse(info)),
-        Updates.set("output", outputDocs),
+        Updates.set("output", outputDoc),
         Updates.unset("error"));
     var bulk = ids.stream()
         .map(id -> new UpdateOneModel<Document>(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id)), updates))
@@ -254,7 +255,7 @@ public class ReportRepositoryService {
       "completedAt", "input.scan.completed_at",
       "submittedAt", "metadata.submitted_at",
       "name", "input.scan.id",
-      "vuln_id", "output.vuln_id");
+      "vuln_id", "output.analysis.vuln_id");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
@@ -330,14 +331,15 @@ public class ReportRepositoryService {
           }
         }
 
-        Object outputObj = doc.get("output");
-        if (outputObj instanceof List<?> outputList) {
-          for (Object output : outputList) {
-            if (output instanceof org.bson.Document outputDoc) {
-              String cve = outputDoc.getString("vuln_id");
+        Document outputDoc = doc.get("output", Document.class);
+        Object analysisObj = Objects.nonNull(outputDoc) ? outputDoc.get("analysis") : null;
+        if (analysisObj instanceof List<?> analysisList) {
+          for (Object analysis : analysisList) {
+            if (analysis instanceof org.bson.Document analysisDoc) {
+              String cve = analysisDoc.getString("vuln_id");
               if (cve != null && !cve.isEmpty()) {
                 Set<Justification> justifications = cveSet.computeIfAbsent(cve, k -> new HashSet<>());
-                Object justificationObj = outputDoc.get("justification");
+                Object justificationObj = analysisDoc.get("justification");
                 if (justificationObj instanceof org.bson.Document justificationDoc) {
                   String status = justificationDoc.getString("status");
                   String label = justificationDoc.getString("label");
