@@ -17,7 +17,6 @@
     "**/*.js",
     "**/*.mjs",
     "**/*.cjs",
-    "**/*.jsx",
     "webpack.config.js",
     "rollup.config.js",
     "babel.config.js",
