@@ -59,6 +59,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 APP_NAMESPACE=""
 KC_BASE_URL=""
 KC_TOKEN=""
+DEBUG="${DEBUG:-false}"
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -86,6 +87,12 @@ print_info() {
   echo "$1"
 }
 
+print_debug() {
+  if [ "$DEBUG" = "true" ]; then
+    echo -e "${YELLOW}[DEBUG] $1${NC}"
+  fi
+}
+
 show_help() {
   cat << EOF
 Authentication Testing Script
@@ -94,17 +101,19 @@ Usage: $0 [OPTIONS]
 
 Options:
   --help, -h    Show this help message
+  --debug, -d   Enable debug output (shows curl responses, URLs, etc.)
 
 Environment Variables:
-  CONTAINER_ENGINE     Container runtime: podman or docker (auto-detected)
-  APP_SERVICE_NAME     Kubernetes deployment name (default: exploit-iq-client)
   APP_CLIENT_ID        OIDC client ID (default: exploit-iq-client)
   APP_CLIENT_SECRET    OIDC client secret (default: example-credentials)
-  KC_LOCAL_PORT        Local Keycloak port (default: 8190)
+  APP_SERVICE_NAME     Kubernetes deployment name (default: exploit-iq-client)
+  CONTAINER_ENGINE     Container runtime: podman or docker (auto-detected)
+  DEBUG              Enable debug mode (true/false, default: false)
+  KC_ADMIN_PASS        Keycloak admin password (default: admin)
+  KC_ADMIN_USER        Keycloak admin username (default: admin)
   KC_CONTAINER_NAME    Keycloak container name (default: keycloak-standalone)
   KC_IMAGE             Keycloak container image (default: quay.io/keycloak/keycloak:26.4)
-  KC_ADMIN_USER        Keycloak admin username (default: admin)
-  KC_ADMIN_PASS        Keycloak admin password (default: admin)
+  KC_LOCAL_PORT        Local Keycloak port (default: 8190)
   KC_OCP_NAMESPACE     OpenShift namespace for Keycloak (default: keycloak-dev)
 
 Scenarios:
@@ -213,10 +222,19 @@ setup_local_keycloak() {
     -e KC_HEALTH_ENABLED=true \
     -e KC_METRICS_ENABLED=true \
     -e KC_HTTP_MANAGEMENT_HEALTH_ENABLED=false \
+    -e KC_HOSTNAME=localhost \
+    -e KC_HTTP_ENABLED=true \
     "${KC_IMAGE}" start-dev >/dev/null
 
   KC_BASE_URL="http://localhost:${KC_LOCAL_PORT}"
   wait_for_keycloak_health "$KC_BASE_URL"
+  
+  # Disable SSL requirement for local development (Keycloak 26.x requires this)
+  print_info "Configuring Keycloak for HTTP access..."
+  ${CONTAINER_ENGINE} exec "${KC_CONTAINER_NAME}" /opt/keycloak/bin/kcadm.sh config credentials \
+    --server http://localhost:8080 --realm master --user "${KC_ADMIN_USER}" --password "${KC_ADMIN_PASS}" >/dev/null
+  ${CONTAINER_ENGINE} exec "${KC_CONTAINER_NAME}" /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE >/dev/null
+  print_success "Keycloak configured for HTTP"
   echo ""
 }
 
@@ -294,15 +312,24 @@ wait_for_keycloak_health() {
 # ==============================================================================
 
 get_admin_token() {
-  KC_TOKEN=$(curl -k -s -X POST "${KC_BASE_URL}/realms/master/protocol/openid-connect/token" \
+  local token_url="${KC_BASE_URL}/realms/master/protocol/openid-connect/token"
+  print_debug "Token URL: $token_url"
+  print_debug "Admin user: ${KC_ADMIN_USER}"
+  
+  local response
+  response=$(curl -k -s -X POST "$token_url" \
     -d "username=${KC_ADMIN_USER}" \
     -d "password=${KC_ADMIN_PASS}" \
     -d "grant_type=password" \
-    -d "client_id=admin-cli" \
-    | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
+    -d "client_id=admin-cli")
+  
+  print_debug "Token response: $response"
+  
+  KC_TOKEN=$(echo "$response" | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
   
   if [ -z "$KC_TOKEN" ]; then
     print_error "Failed to obtain Keycloak admin token"
+    print_error "Response: $response"
     exit 1
   fi
 }
@@ -319,12 +346,12 @@ configure_keycloak() {
     -H "Authorization: Bearer $KC_TOKEN" || true
   print_success "done"
 
-  # Create realm
+  # Create realm (with sslRequired=NONE for local development)
   echo -n "Creating realm '${KC_REALM}'... "
   curl -k -s -o /dev/null -X POST "${KC_BASE_URL}/admin/realms" \
     -H "Authorization: Bearer $KC_TOKEN" \
     -H "Content-Type: application/json" \
-    -d "{\"realm\": \"${KC_REALM}\", \"enabled\": true}"
+    -d "{\"realm\": \"${KC_REALM}\", \"enabled\": true, \"sslRequired\": \"NONE\"}"
   print_success "done"
 
   sleep 1
@@ -343,7 +370,7 @@ configure_keycloak() {
       \"webOrigins\": [\"${app_url}\"],
       \"publicClient\": false,
       \"standardFlowEnabled\": true,
-      \"directAccessGrantsEnabled\": false,
+      \"directAccessGrantsEnabled\": true,
       \"attributes\": {
         \"post.logout.redirect.uris\": \"${app_url}/logged-out\"
       }
@@ -739,11 +766,20 @@ scenario_direct_google() {
 
 main() {
   # Parse arguments
-  case "${1:-}" in
-    --help|-h)
-      show_help
-      ;;
-  esac
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --help|-h)
+        show_help
+        ;;
+      --debug|-d)
+        DEBUG=true
+        shift
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
 
   check_dependencies
   cd "$PROJECT_ROOT"
