@@ -2,7 +2,9 @@
 
 ## Configuration
 
-To see all the configuration options check the [configuration](./configuration.md) README.
+To see all the configuration options check the [configuration](./configuration.md) guide.
+
+For authentication setup (Keycloak, external identity providers, testing), see the [authentication](./authentication.md) guide.
 
 ## Running the application in dev mode
 
@@ -58,6 +60,20 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 ```
 
 You can then execute your native executable with: `./target/agent-morpheus-client-1.0.0-SNAPSHOT-runner`
+
+### Building with profiles
+
+Some Quarkus properties are **build-time only** and cannot be changed at runtime. When building for a specific deployment target, include the profile:
+
+```shell
+# For external-idp deployments (Keycloak, Google, etc.)
+./mvnw package -Dnative -Dquarkus.profile=external-idp
+
+# For prod deployments (OpenShift OAuth) - default
+./mvnw package -Dnative
+```
+
+**Important:** The CI/CD pipeline builds a universal image without a specific profile. Runtime profile selection via `QUARKUS_PROFILE` works for most configurations, but build-time properties (like `@IfBuildProfile` annotations) are fixed at compile time.
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 

@@ -15,10 +15,17 @@ public class UserService {
 
   public String getUserName() {
     if(Objects.nonNull(userInfo)) {
-      var name = userInfo.getString("upn");
+      // Try email first
+      var name = userInfo.getString("email");
       if(Objects.nonNull(name)) {
         return name;
       }
+      // Fallback to upn
+      name = userInfo.getString("upn");
+      if(Objects.nonNull(name)) {
+        return name;
+      }
+      // Fallback to metadata.name
       var metadata = userInfo.getObject("metadata");
       if(Objects.nonNull(metadata)) {
         name = metadata.getString("name");

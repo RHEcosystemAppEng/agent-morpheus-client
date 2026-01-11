@@ -15,13 +15,11 @@ export const getUserName = async () => {
 
 
 export const logoutUser = async () => {
-  // delete the credential cookie, essentially killing the session
-  const removeCookie = `q_session=; Max-Age=0;path=/`;
-  document.cookie = removeCookie;
-  
-  const response = await fetch('/api/v1/user/logout', { method: 'POST' });
-  if (!response.ok) {
-    throw new ClientRequestError(response.status, response.statusText);
-  }
-  
+  // Local-only logout (no IdP session termination)
+  // Clears cookies/storage via Clear-Site-Data header and shows logout page
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/api/v1/user/logout';
+  document.body.appendChild(form);
+  form.submit();
 }
