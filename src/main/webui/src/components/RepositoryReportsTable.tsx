@@ -104,7 +104,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   } = usePaginatedApi<Array<Report>>(
     () => ({
       method: "GET",
-      url: "/api/reports",
+      url: "/api/v1/reports",
       query: {
         page: page - 1,
         pageSize: perPage,
@@ -131,7 +131,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       ],
     }
   );
-
   const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;
 
