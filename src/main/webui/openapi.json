@@ -25,30 +25,48 @@
           }
         }
       },
-      "FeedbackDto": {
+      "Feedback": {
+        "description": "Data Transfer Object for submitting user feedback about a specific report.",
         "type": "object",
+        "required": [
+          "response",
+          "rating",
+          "reportId",
+          "accuracy",
+          "reasoning",
+          "checklist"
+        ],
         "properties": {
           "response": {
-            "type": "string"
+            "type": "string",
+            "description": "The response feedback"
           },
           "rating": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "maximum": 5,
+            "minimum": 1,
+            "description": "Rating value from 1 to 5"
           },
           "comment": {
-            "type": "string"
+            "type": "string",
+            "description": "Additional comment or feedback text"
           },
           "reportId": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier of the report"
           },
           "accuracy": {
-            "type": "string"
+            "type": "string",
+            "description": "Accuracy assessment of the report"
           },
           "reasoning": {
-            "type": "string"
+            "type": "string",
+            "description": "Reasoning or explanation of the report"
           },
           "checklist": {
-            "type": "string"
+            "type": "string",
+            "description": "Checklist assessment of the report"
           }
         }
       },
@@ -794,13 +812,16 @@
     }
   },
   "paths": {
-    "/api/feedback": {
+    "/api/v1/feedback": {
       "post": {
+        "summary": "Submit user feedback for an AI response",
+        "description": "Submits user feedback for an AI response to the feedback service",
         "requestBody": {
+          "description": "User feedback data",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FeedbackDto"
+                "$ref": "#/components/schemas/Feedback"
               }
             }
           },
@@ -808,30 +829,41 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Feedback successfully processed",
             "content": {
               "application/json": {
-                "schema": {}
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "status": "success"
+                    }
+                  }
+                }
               }
             }
           },
           "400": {
             "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "summary": "Forward To User Feedback Service",
         "tags": [
           "Feedback Resource"
         ]
       }
     },
-    "/api/feedback/{reportId}/exists": {
+    "/api/v1/feedback/{reportId}/exists": {
       "get": {
+        "summary": "Check if feedback exists for a report",
+        "description": "Checks if feedback has been submitted for a specific report",
         "parameters": [
           {
+            "description": "Report identifier",
+            "required": true,
             "name": "reportId",
             "in": "path",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -839,21 +871,34 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Feedback existence status retrieved successfully",
             "content": {
               "application/json": {
-                "schema": {}
+                "examples": {
+                  "Feedback exists": {
+                    "value": {
+                      "exists": true
+                    }
+                  },
+                  "Feedback does not exist": {
+                    "value": {
+                      "exists": false
+                    }
+                  }
+                }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
-        "summary": "Check Feedback Exists",
         "tags": [
           "Feedback Resource"
         ]
       }
     },
-    "/api/generate-sbom": {
+    "/api/v1/generate-sbom": {
       "post": {
         "summary": "Generate SBOM",
         "description": "Generates a Software Bill of Materials (SBOM) for a container image",
@@ -920,7 +965,7 @@
         ]
       }
     },
-    "/api/pre-processing": {
+    "/api/v1/pre-processing": {
       "post": {
         "summary": "Submit report requests for pre-processing",
         "description": "Submits a list of report requests for pre-processing to the Component Syncer",
@@ -964,7 +1009,7 @@
         ]
       }
     },
-    "/api/product": {
+    "/api/v1/product": {
       "post": {
         "summary": "Save product",
         "description": "Saves product metadata to database",
@@ -1000,7 +1045,7 @@
         ]
       }
     },
-    "/api/product/{id}": {
+    "/api/v1/product/{id}": {
       "delete": {
         "parameters": [
           {
@@ -1073,7 +1118,7 @@
         ]
       }
     },
-    "/api/reports": {
+    "/api/v1/reports": {
       "delete": {
         "summary": "Delete multiple analysis reports",
         "description": "Deletes multiple analysis reports by IDs or using filter parameters",
@@ -1148,6 +1193,14 @@
         "summary": "List analysis reports",
         "description": "Retrieves a paginated list of analysis reports with optional filtering and sorting",
         "parameters": [
+          {
+            "description": "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN",
+            "name": "exploitIqStatus",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "description": "Filter by image name",
             "name": "imageName",
@@ -1257,7 +1310,7 @@
         ]
       }
     },
-    "/api/reports/new": {
+    "/api/v1/reports/new": {
       "post": {
         "summary": "Create new analysis request",
         "description": "Creates a new analysis report request, processes it and optionally submits it to ExploitIQ for analysis",
@@ -1314,7 +1367,7 @@
         ]
       }
     },
-    "/api/reports/product": {
+    "/api/v1/reports/product": {
       "delete": {
         "summary": "Delete product by IDs",
         "description": "Deletes all component analysis reports and product metadata associated with specified product IDs",
@@ -1383,7 +1436,7 @@
         ]
       }
     },
-    "/api/reports/product/{id}": {
+    "/api/v1/reports/product/{id}": {
       "delete": {
         "summary": "Delete product by ID",
         "description": "Deletes all component analysis reports and product metadata associated with a specific product ID",
@@ -1561,7 +1614,7 @@
         ]
       }
     },
-    "/api/reports/{id}": {
+    "/api/v1/reports/{id}": {
       "delete": {
         "summary": "Delete analysis report",
         "description": "Deletes a specific analysis report by ID",
@@ -1638,7 +1691,7 @@
         ]
       }
     },
-    "/api/reports/{id}/failed": {
+    "/api/v1/reports/{id}/failed": {
       "post": {
         "summary": "Mark analysis request as failed",
         "description": "Marks an analysis request as failed with error details",
@@ -1690,7 +1743,7 @@
         ]
       }
     },
-    "/api/reports/{id}/retry": {
+    "/api/v1/reports/{id}/retry": {
       "post": {
         "summary": "Retry analysis request",
         "description": "Retries an existing analysis request by ID",
@@ -1746,7 +1799,7 @@
         ]
       }
     },
-    "/api/reports/{id}/submit": {
+    "/api/v1/reports/{id}/submit": {
       "post": {
         "summary": "Submit to ExploitIQ for analysis",
         "description": "Submits analysis request to ExploitIQ for analysis",
@@ -1798,7 +1851,7 @@
         ]
       }
     },
-    "/api/vulnerabilities": {
+    "/api/v1/vulnerabilities": {
       "get": {
         "summary": "List vulnerabilities",
         "description": "Retrieves a paginated list of vulnerabilities with optional sorting",
@@ -1864,7 +1917,7 @@
         ]
       }
     },
-    "/api/vulnerabilities/generate-comments-template": {
+    "/api/v1/vulnerabilities/generate-comments-template": {
       "get": {
         "summary": "Generate user comments template",
         "description": "Generates a template structure for user comments on vulnerabilities",
@@ -1893,7 +1946,7 @@
         ]
       }
     },
-    "/api/vulnerabilities/{vuln_id}": {
+    "/api/v1/vulnerabilities/{vuln_id}": {
       "put": {
         "summary": "Update vulnerability",
         "description": "Updates vulnerability information by ID",
@@ -2022,7 +2075,7 @@
         ]
       }
     },
-    "/api/vulnerabilities/{vuln_id}/comments": {
+    "/api/v1/vulnerabilities/{vuln_id}/comments": {
       "get": {
         "summary": "Get vulnerability comments",
         "description": "Retrieves user comments for a specific vulnerability by ID",

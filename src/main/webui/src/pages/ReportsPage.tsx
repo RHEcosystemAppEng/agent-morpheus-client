@@ -17,7 +17,7 @@ const ReportsPage: React.FC = () => {
   });
 
   const { data: productSummaries } = useApi<Array<ProductSummary>>(() =>
-    Reports.getApiReportsProduct()
+    Reports.getApiV1ReportsProduct()
   );
 
   const analysisStateOptions = useMemo(() => {

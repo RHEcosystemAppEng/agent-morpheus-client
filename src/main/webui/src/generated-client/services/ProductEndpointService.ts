@@ -13,7 +13,7 @@ export class ProductEndpointService {
      * @returns any Save product metadata request accepted
      * @throws ApiError
      */
-    public static postApiProduct({
+    public static postApiV1Product({
         requestBody,
     }: {
         /**
@@ -23,7 +23,7 @@ export class ProductEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/product',
+            url: '/api/v1/product',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -37,7 +37,7 @@ export class ProductEndpointService {
      * @returns any Product deletion request accepted
      * @throws ApiError
      */
-    public static deleteApiProduct({
+    public static deleteApiV1Product({
         id,
     }: {
         /**
@@ -47,7 +47,7 @@ export class ProductEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/product/{id}',
+            url: '/api/v1/product/{id}',
             path: {
                 'id': id,
             },
@@ -62,7 +62,7 @@ export class ProductEndpointService {
      * @returns Product Product found in database
      * @throws ApiError
      */
-    public static getApiProduct({
+    public static getApiV1Product({
         id,
     }: {
         /**
@@ -72,7 +72,7 @@ export class ProductEndpointService {
     }): CancelablePromise<Product> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/product/{id}',
+            url: '/api/v1/product/{id}',
             path: {
                 'id': id,
             },

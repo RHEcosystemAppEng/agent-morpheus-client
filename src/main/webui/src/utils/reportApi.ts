@@ -14,6 +14,6 @@ import { ReportEndpointService } from '../generated-client/services/ReportEndpoi
  * @returns Promise resolving to FullReport
  */
 export function getRepositoryReport(id: string): CancelablePromise<FullReport> {
-  return ReportEndpointService.getApiReports1({ id }) as any as CancelablePromise<FullReport>;
+  return ReportEndpointService.getApiV1Reports1({ id }) as any as CancelablePromise<FullReport>;
 }
 

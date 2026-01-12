@@ -17,7 +17,7 @@ export interface UseReportResult {
  */
 export function useReport(productId: string): UseReportResult {
   const { data, loading, error } = useApi<ProductSummary>(
-    () => ReportEndpointService.getApiReportsProduct1({ id: productId }),
+    () => ReportEndpointService.getApiV1ReportsProduct1({ id: productId }),
     { deps: [productId] }
   );
 

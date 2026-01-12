@@ -29,7 +29,7 @@ const getConfig = () => {
       server: {
         port: 3000,
         proxy: {
-          '/api': {
+          '/api/v1': {
             target: apiBaseUrl,
             changeOrigin: true,
             secure: false, // Set to false if backend uses self-signed certificates
@@ -37,7 +37,7 @@ const getConfig = () => {
               'Authorization': `Bearer ${apiToken}`,
             },
             rewrite: (path) => {
-              const rewritten = path.replace(/^\/api/, '');
+              const rewritten = path.replace(/^\/api\/v1/, '');
               const fullUrl = `${apiBaseUrl}${rewritten}`;
               console.log('[Proxy] Rewriting path:', path, '->', rewritten);
               console.log('[Proxy] Full target URL:', fullUrl);

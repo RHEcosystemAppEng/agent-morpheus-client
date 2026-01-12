@@ -19,7 +19,7 @@ export class ReportEndpointService {
      * @returns any Reports deletion request accepted
      * @throws ApiError
      */
-    public static deleteApiReports({
+    public static deleteApiV1Reports({
         reportIds,
     }: {
         /**
@@ -29,7 +29,7 @@ export class ReportEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/reports',
+            url: '/api/v1/reports',
             query: {
                 'reportIds': reportIds,
             },
@@ -44,14 +44,14 @@ export class ReportEndpointService {
      * @returns ReportRequestId Report received
      * @throws ApiError
      */
-    public static postApiReports({
+    public static postApiV1Reports({
         requestBody,
     }: {
         requestBody: string,
     }): CancelablePromise<ReportRequestId> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/reports',
+            url: '/api/v1/reports',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -65,7 +65,8 @@ export class ReportEndpointService {
      * @returns Report Reports retrieved successfully
      * @throws ApiError
      */
-    public static getApiReports({
+    public static getApiV1Reports({
+        exploitIqStatus,
         imageName,
         imageTag,
         page = 0,
@@ -76,6 +77,10 @@ export class ReportEndpointService {
         status,
         vulnId,
     }: {
+        /**
+         * Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN
+         */
+        exploitIqStatus?: string,
         /**
          * Filter by image name
          */
@@ -115,8 +120,9 @@ export class ReportEndpointService {
     }): CancelablePromise<Array<Report>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/reports',
+            url: '/api/v1/reports',
             query: {
+                'exploitIqStatus': exploitIqStatus,
                 'imageName': imageName,
                 'imageTag': imageTag,
                 'page': page,
@@ -138,7 +144,7 @@ export class ReportEndpointService {
      * @returns ReportData Analysis request accepted
      * @throws ApiError
      */
-    public static postApiReportsNew({
+    public static postApiV1ReportsNew({
         requestBody,
         submit = true,
     }: {
@@ -153,7 +159,7 @@ export class ReportEndpointService {
     }): CancelablePromise<ReportData> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/reports/new',
+            url: '/api/v1/reports/new',
             query: {
                 'submit': submit,
             },
@@ -172,7 +178,7 @@ export class ReportEndpointService {
      * @returns any Product deletion request accepted
      * @throws ApiError
      */
-    public static deleteApiReportsProduct({
+    public static deleteApiV1ReportsProduct({
         productIds,
     }: {
         /**
@@ -182,7 +188,7 @@ export class ReportEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/reports/product',
+            url: '/api/v1/reports/product',
             query: {
                 'productIds': productIds,
             },
@@ -198,10 +204,10 @@ export class ReportEndpointService {
      * @returns ProductSummary Product data retrieved successfully
      * @throws ApiError
      */
-    public static getApiReportsProduct(): CancelablePromise<Array<ProductSummary>> {
+    public static getApiV1ReportsProduct(): CancelablePromise<Array<ProductSummary>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/reports/product',
+            url: '/api/v1/reports/product',
             errors: {
                 500: `Internal server error`,
             },
@@ -213,7 +219,7 @@ export class ReportEndpointService {
      * @returns any Product deletion request accepted
      * @throws ApiError
      */
-    public static deleteApiReportsProduct1({
+    public static deleteApiV1ReportsProduct1({
         id,
     }: {
         /**
@@ -223,7 +229,7 @@ export class ReportEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/reports/product/{id}',
+            url: '/api/v1/reports/product/{id}',
             path: {
                 'id': id,
             },
@@ -238,7 +244,7 @@ export class ReportEndpointService {
      * @returns any Product data retrieved successfully
      * @throws ApiError
      */
-    public static getApiReportsProduct1({
+    public static getApiV1ReportsProduct1({
         id,
     }: {
         /**
@@ -307,7 +313,7 @@ export class ReportEndpointService {
     }> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/reports/product/{id}',
+            url: '/api/v1/reports/product/{id}',
             path: {
                 'id': id,
             },
@@ -322,7 +328,7 @@ export class ReportEndpointService {
      * @returns any Report deletion request accepted
      * @throws ApiError
      */
-    public static deleteApiReports1({
+    public static deleteApiV1Reports1({
         id,
     }: {
         /**
@@ -332,7 +338,7 @@ export class ReportEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/reports/{id}',
+            url: '/api/v1/reports/{id}',
             path: {
                 'id': id,
             },
@@ -347,7 +353,7 @@ export class ReportEndpointService {
      * @returns string Report retrieved successfully
      * @throws ApiError
      */
-    public static getApiReports1({
+    public static getApiV1Reports1({
         id,
     }: {
         /**
@@ -357,7 +363,7 @@ export class ReportEndpointService {
     }): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/reports/{id}',
+            url: '/api/v1/reports/{id}',
             path: {
                 'id': id,
             },
@@ -373,7 +379,7 @@ export class ReportEndpointService {
      * @returns string Failure status record accepted
      * @throws ApiError
      */
-    public static postApiReportsFailed({
+    public static postApiV1ReportsFailed({
         id,
         errorMessage,
     }: {
@@ -388,7 +394,7 @@ export class ReportEndpointService {
     }): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/reports/{id}/failed',
+            url: '/api/v1/reports/{id}/failed',
             path: {
                 'id': id,
             },
@@ -406,7 +412,7 @@ export class ReportEndpointService {
      * @returns string Retry request accepted
      * @throws ApiError
      */
-    public static postApiReportsRetry({
+    public static postApiV1ReportsRetry({
         id,
     }: {
         /**
@@ -416,7 +422,7 @@ export class ReportEndpointService {
     }): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/reports/{id}/retry',
+            url: '/api/v1/reports/{id}/retry',
             path: {
                 'id': id,
             },
@@ -432,7 +438,7 @@ export class ReportEndpointService {
      * @returns string Request submitted successfully
      * @throws ApiError
      */
-    public static postApiReportsSubmit({
+    public static postApiV1ReportsSubmit({
         id,
     }: {
         /**
@@ -442,7 +448,7 @@ export class ReportEndpointService {
     }): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/reports/{id}/submit',
+            url: '/api/v1/reports/{id}/submit',
             path: {
                 'id': id,
             },

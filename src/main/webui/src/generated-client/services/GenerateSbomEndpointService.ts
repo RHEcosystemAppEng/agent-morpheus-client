@@ -12,7 +12,7 @@ export class GenerateSbomEndpointService {
      * @returns any SBOM generated successfully
      * @throws ApiError
      */
-    public static postApiGenerateSbom({
+    public static postApiV1GenerateSbom({
         requestBody,
     }: {
         /**
@@ -22,7 +22,7 @@ export class GenerateSbomEndpointService {
     }): CancelablePromise<Record<string, any>> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/generate-sbom',
+            url: '/api/v1/generate-sbom',
             body: requestBody,
             mediaType: 'text/plain',
             errors: {

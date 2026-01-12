@@ -24,7 +24,7 @@ export interface UseSummaryResult {
 export function useSummary(): UseSummaryResult {
   // Fetch all reports
   const { data: reports, loading, error } = useApi<Array<Report>>(() => 
-    Reports.getApiReports({ pageSize: PAGE_SIZE })
+    Reports.getApiV1Reports({ pageSize: PAGE_SIZE })
   );
 
   // Calculate summary statistics from reports

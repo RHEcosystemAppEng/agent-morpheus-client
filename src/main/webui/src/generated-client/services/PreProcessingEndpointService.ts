@@ -13,7 +13,7 @@ export class PreProcessingEndpointService {
      * @returns any Pre-processing request accepted by the Component Syncer
      * @throws ApiError
      */
-    public static postApiPreProcessing({
+    public static postApiV1PreProcessing({
         requestBody,
     }: {
         /**
@@ -23,7 +23,7 @@ export class PreProcessingEndpointService {
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/pre-processing',
+            url: '/api/v1/pre-processing',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
