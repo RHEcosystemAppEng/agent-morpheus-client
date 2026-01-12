@@ -1,0 +1,422 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-12-15T02:21:05Z",
+    "creators": [
+      "Organization: Red Hat Product Security (secalert@redhat.com)"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "openshift-4.19-filtered",
+  "spdxVersion": "SPDX-2.3",
+  "documentNamespace": "https://security.access.redhat.com/data/sbom/v1/spdx/openshift-4.19",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-7e5cffa917cc63026a101f3e6298bd0510802a8b4985084e6d47072d0e506153-SPDXRef-component-ose-4-19-golang-github-prometheus-prometheus",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19.0-202511260712.p2.g396601b.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=latest",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:26e8327cb010c0c76dacb990a067c716443e60fccd6eb13d513b1db7e5a7ed76?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=golang-github-prometheus-prometheus-container-v4.19.0-202511260712.p2.g396601b.assembly.stream.el9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "ose-4-19-golang-github-prometheus-prometheus",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-740a531fca6aa89336a02fe4b021086cc1c47225594b26f466d4f6527a229ec9-SPDXRef-image-art-images-f7bd506a638488eb218b5a782f5be8daf9df37ca6930e96350f9c92a94918771",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:cad54683afc5ff26ac63a8a4c1f32c645bed049a552d1f7c1b1917b0cf661aaf?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:cad54683afc5ff26ac63a8a4c1f32c645bed049a552d1f7c1b1917b0cf661aaf?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:cad54683afc5ff26ac63a8a4c1f32c645bed049a552d1f7c1b1917b0cf661aaf?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=golang-github-prometheus-prometheus-container-v4.19.0-202508130123.p2.g7935bae.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:cad54683afc5ff26ac63a8a4c1f32c645bed049a552d1f7c1b1917b0cf661aaf?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=46c2c396ca651699738c3f26b79b10af2922123dd27c2e32382d2a31a87e92c7",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-prometheus-rhel9@sha256:cad54683afc5ff26ac63a8a4c1f32c645bed049a552d1f7c1b1917b0cf661aaf?repository_url=registry.redhat.io/openshift4/ose-prometheus-rhel9&tag=v4.19.0-202508130123.p2.g7935bae.assembly.stream.el9",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "art-images_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "ose-prometheus-rhel9-v4.19.0-20250813.014327"
+    },
+    {
+      "SPDXID": "SPDXRef-1e3b87ca8ecf7969752adf8e6f747e846a4af0011f80ed198a24bc14a68438a7-SPDXRef-component-ose-4-19-csi-attacher",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=csi-attacher-container-v4.19.0-202511260712.p2.ga8175e3.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=latest",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19.0-202511260712.p2.ga8175e3.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:33c42e88b72c0ea9d58fed8db8cb2175e56399c3d2e988bcbb669bec3de291de?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "ose-4-19-csi-attacher",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-6672b019ad3d749a01d050887123f644ce159b2a2e984a7ac7295e0594ee0d91-SPDXRef-image-art-images-1d4c3e9eb61e390f9c5d0561b699a8ab2ea7612b6e5397dadaf3c4739576c03e",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:5b89396c3bed57975eba5788baa035233d388aa1c6862dd8ef650bc360d79baa?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=csi-attacher-container-v4.19.0-202508120121.p2.ga8175e3.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:5b89396c3bed57975eba5788baa035233d388aa1c6862dd8ef650bc360d79baa?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19.0-202508120121.p2.ga8175e3.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:5b89396c3bed57975eba5788baa035233d388aa1c6862dd8ef650bc360d79baa?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:5b89396c3bed57975eba5788baa035233d388aa1c6862dd8ef650bc360d79baa?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-csi-external-attacher-rhel9@sha256:5b89396c3bed57975eba5788baa035233d388aa1c6862dd8ef650bc360d79baa?repository_url=registry.redhat.io/openshift4/ose-csi-external-attacher-rhel9&tag=cb18c7394a6b6ed695c26e50cd766726d352cd23afb38eef3204b6e4cc5ff6e7",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "art-images_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "ose-csi-external-attacher-rhel9-v4.19.0-20250812.015521"
+    },
+    {
+      "SPDXID": "SPDXRef-e5a31b2b5860fff232f4af3aec52ae88243bb3b83acbd440bf88d6c4da903d2d-SPDXRef-component-ose-4-19-cluster-version-operator",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=cluster-version-operator-container-v4.19.0-202511260712.p2.gf75d9d5.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19.0-202511260712.p2.gf75d9d5.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:495d1a9b65603bf2d3645008a852e2c87b62a54d58ddc1e770096bdae6109fa1?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=latest",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "ose-4-19-cluster-version-operator",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-a378d2021af7eb399eb4a5453d94356d2e81e68efa28685a9ea00a56f50f3e89-SPDXRef-image-art-images-760fe8a547d59071ba7f16e1c330a952f4288332051408682c70b5a5760a6a51",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:98358108171f95a1399c0fb0d5dd1ae290ff97828442d128e4f104bf247ab16d?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19.0-202508130123.p2.gf165654.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:98358108171f95a1399c0fb0d5dd1ae290ff97828442d128e4f104bf247ab16d?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=b940a1c4269722275e37b764b87ac85140ca150c48587e9c35dcf4be7a085466",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:98358108171f95a1399c0fb0d5dd1ae290ff97828442d128e4f104bf247ab16d?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:98358108171f95a1399c0fb0d5dd1ae290ff97828442d128e4f104bf247ab16d?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=cluster-version-operator-container-v4.19.0-202508130123.p2.gf165654.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-version-rhel9-operator@sha256:98358108171f95a1399c0fb0d5dd1ae290ff97828442d128e4f104bf247ab16d?repository_url=registry.redhat.io/openshift4/ose-cluster-version-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "art-images_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "ose-cluster-version-rhel9-operator-v4.19.0-20250813.014327"
+    },
+    {
+      "SPDXID": "SPDXRef-4a7e0451b7ec2bbbe0cf77061a121bd29675ca79f313858bb2c57fd168fbb7b3-SPDXRef-component-ose-4-19-cluster-node-tuning-operator",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19.0-202512031317.p2.g1928af1.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=cluster-node-tuning-operator-container-v4.19.0-202512031317.p2.g1928af1.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:2d6ca5a0ed404e18a79745d4c6e70b1f0242530c96f55500b8ec45b6f5ac3a31?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=latest",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "ose-4-19-cluster-node-tuning-operator",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-a8f209d41fd6f6ced12c9422710b734b83cad8e9bf4dffaa26bbd9bb3f771953-SPDXRef-image-art-images-8d594b5a9084a2266d362644d7ff7544a7141cbac39d9110a9700d916dfc05b9",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:4f175ee49f51dc4379e9993fecd1657c7a9c4c3dc096772cb198d0212b9eea47?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19.0-202508120121.p2.g61b6637.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:4f175ee49f51dc4379e9993fecd1657c7a9c4c3dc096772cb198d0212b9eea47?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=c130d9ed2555ee901ae165b105445ce7550bb90c7d91f1430c6c36d960ce04ea",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:4f175ee49f51dc4379e9993fecd1657c7a9c4c3dc096772cb198d0212b9eea47?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:4f175ee49f51dc4379e9993fecd1657c7a9c4c3dc096772cb198d0212b9eea47?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=cluster-node-tuning-operator-container-v4.19.0-202508120121.p2.g61b6637.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-node-tuning-rhel9-operator@sha256:4f175ee49f51dc4379e9993fecd1657c7a9c4c3dc096772cb198d0212b9eea47?repository_url=registry.redhat.io/openshift4/ose-cluster-node-tuning-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "art-images_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "ose-cluster-node-tuning-rhel9-operator-v4.19.0-20250812.015521"
+    },
+    {
+      "SPDXID": "SPDXRef-015a3976da7dbc76a2786df49aafa2a74f66cae68a7623586d4383bc0cc6dc5c-SPDXRef-component-ose-4-19-cluster-monitoring-operator",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=cluster-monitoring-operator-container-v4.19.0-202512030717.p2.g3e2d6cd.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19.0-202512030717.p2.g3e2d6cd.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=latest",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:c5086fd5aea914c2172bfb6dd747325f5925ec9c5e373323645999d9865594ee?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "ose-4-19-cluster-monitoring-operator",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-73f640347b96924bd0d9f3453d9538463fbfdec7f778934fdc1203c038c41a86-SPDXRef-image-art-images-f00bd286a8c5015b34d94ff28c7d6620da992ec186915887ad9987b1e3fdbc99",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:e5d2f6a49cfad66dfbff997d0b689707cef03745e6a0206e9b9342b1ad5b6fda?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19.0-202508120121.p2.gb9fd02f.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:e5d2f6a49cfad66dfbff997d0b689707cef03745e6a0206e9b9342b1ad5b6fda?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=cluster-monitoring-operator-container-v4.19.0-202508120121.p2.gb9fd02f.assembly.stream.el9",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:e5d2f6a49cfad66dfbff997d0b689707cef03745e6a0206e9b9342b1ad5b6fda?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:e5d2f6a49cfad66dfbff997d0b689707cef03745e6a0206e9b9342b1ad5b6fda?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=v4.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/ose-cluster-monitoring-rhel9-operator@sha256:e5d2f6a49cfad66dfbff997d0b689707cef03745e6a0206e9b9342b1ad5b6fda?repository_url=registry.redhat.io/openshift4/ose-cluster-monitoring-rhel9-operator&tag=752be69b2262be713df12c47f4bac8c2dafed272c401e9a89f8060f053d68054",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "art-images_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "ose-cluster-monitoring-rhel9-operator-v4.19.0-20250812.015521"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-740a531fca6aa89336a02fe4b021086cc1c47225594b26f466d4f6527a229ec9-SPDXRef-image-art-images-f7bd506a638488eb218b5a782f5be8daf9df37ca6930e96350f9c92a94918771",
+      "relatedSpdxElement": "SPDXRef-7e5cffa917cc63026a101f3e6298bd0510802a8b4985084e6d47072d0e506153-SPDXRef-component-ose-4-19-golang-github-prometheus-prometheus",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-6672b019ad3d749a01d050887123f644ce159b2a2e984a7ac7295e0594ee0d91-SPDXRef-image-art-images-1d4c3e9eb61e390f9c5d0561b699a8ab2ea7612b6e5397dadaf3c4739576c03e",
+      "relatedSpdxElement": "SPDXRef-1e3b87ca8ecf7969752adf8e6f747e846a4af0011f80ed198a24bc14a68438a7-SPDXRef-component-ose-4-19-csi-attacher",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-a378d2021af7eb399eb4a5453d94356d2e81e68efa28685a9ea00a56f50f3e89-SPDXRef-image-art-images-760fe8a547d59071ba7f16e1c330a952f4288332051408682c70b5a5760a6a51",
+      "relatedSpdxElement": "SPDXRef-e5a31b2b5860fff232f4af3aec52ae88243bb3b83acbd440bf88d6c4da903d2d-SPDXRef-component-ose-4-19-cluster-version-operator",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-a8f209d41fd6f6ced12c9422710b734b83cad8e9bf4dffaa26bbd9bb3f771953-SPDXRef-image-art-images-8d594b5a9084a2266d362644d7ff7544a7141cbac39d9110a9700d916dfc05b9",
+      "relatedSpdxElement": "SPDXRef-4a7e0451b7ec2bbbe0cf77061a121bd29675ca79f313858bb2c57fd168fbb7b3-SPDXRef-component-ose-4-19-cluster-node-tuning-operator",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-73f640347b96924bd0d9f3453d9538463fbfdec7f778934fdc1203c038c41a86-SPDXRef-image-art-images-f00bd286a8c5015b34d94ff28c7d6620da992ec186915887ad9987b1e3fdbc99",
+      "relatedSpdxElement": "SPDXRef-015a3976da7dbc76a2786df49aafa2a74f66cae68a7623586d4383bc0cc6dc5c-SPDXRef-component-ose-4-19-cluster-monitoring-operator",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-b1a1c5afdb1d9c70fa1db48fd17815d928f0bb1f507fe8a294d6d86d45de44fa-openshift-4.19",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}
