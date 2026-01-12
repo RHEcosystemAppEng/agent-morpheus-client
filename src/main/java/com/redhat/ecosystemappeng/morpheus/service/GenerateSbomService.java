@@ -26,45 +26,49 @@ public class GenerateSbomService {
     @Inject
     ObjectMapper objectMapper;
 
-    public JsonNode generate(String image) throws IOException, InterruptedException {
-        
-        LOGGER.info("Generating SBOM for image: " + image);
-        String[] command = new String[] {
-            "syft",
-            image,
-            "-o",
-            "cyclonedx-json",
-        };
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().put(SYFT_CACHE_DIR_ENV, syftCacheDir);
-        Process process = pb.start();
+    public JsonNode generate(String image) throws SyftExecutionException, InterruptedException {
+        try {
+            LOGGER.info("Generating SBOM for image: " + image);
+            String[] command = new String[] {
+                "syft",
+                image,
+                "-o",
+                "cyclonedx-json",
+            };
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.environment().put(SYFT_CACHE_DIR_ENV, syftCacheDir);
+            Process process = pb.start();
 
-        StringBuilder output = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append(System.lineSeparator());
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append(System.lineSeparator());
+                }
             }
-        }
 
-        StringBuilder errorOutput = new StringBuilder();
-        try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-            String errorLine;
-            while ((errorLine = errorReader.readLine()) != null) {
-                errorOutput.append(errorLine).append(System.lineSeparator());
+            StringBuilder errorOutput = new StringBuilder();
+            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    errorOutput.append(errorLine).append(System.lineSeparator());
+                }
             }
-        }
 
-        int exitCode = process.waitFor();
-        if (exitCode != EXIT_CODE_SUCCESS) {
-            String rawError = errorOutput.toString();
-            String cleanError = rawError.replaceAll("\u001B\\[[;\\d]*m", "");
-            throw new IOException(cleanError.trim());
-        }
+            int exitCode = process.waitFor();
+            if (exitCode != EXIT_CODE_SUCCESS) {
+                String rawError = errorOutput.toString();
+                String cleanError = rawError.replaceAll("\u001B\\[[;\\d]*m", "");
+                throw new SyftExecutionException(image, "Syft execution failed: " + cleanError.trim());
+            }
 
-        LOGGER.info("Successfully generated SBOM for image: " + image);
-        LOGGER.debug("SBOM: " + output.toString());
-        return objectMapper.readTree(output.toString());
+            LOGGER.info("Successfully generated SBOM for image: " + image);
+            return objectMapper.readTree(output.toString());
+        } catch (IOException e) {
+            // Wrap IOExceptions from stream operations or JSON parsing as SyftExecutionException
+            // since they occur during syft execution
+            throw new SyftExecutionException(image, "Failed to read syft output: " + e.getMessage(), e);
+        }
     }
     
 }
