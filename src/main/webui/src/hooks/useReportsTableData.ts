@@ -298,7 +298,7 @@ export function useReportsTableData(
     data: productSummaries,
     loading,
     error,
-  } = useApi<Array<ProductSummary>>(() => Reports.getApiReportsProduct());
+  } = useApi<Array<ProductSummary>>(() => Reports.getApiV1ReportsProduct());
 
   // Transform and process the data
   const rows = useMemo(() => {

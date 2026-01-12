@@ -8,7 +8,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { FailedComponent } from './models/FailedComponent';
-export type { FeedbackDto } from './models/FeedbackDto';
+export type { Feedback } from './models/Feedback';
 export type { Image } from './models/Image';
 export type { Justification } from './models/Justification';
 export type { Product } from './models/Product';

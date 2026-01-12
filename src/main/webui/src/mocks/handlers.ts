@@ -465,13 +465,13 @@ const generateMockReportsSummary = (): ReportsSummary => {
  * Each handler intercepts a specific API endpoint and returns mock data
  */
 export const handlers = [
-  // GET /api/reports/product - List all product data
-  http.get("/api/reports/product", () => {
+  // GET /api/v1/reports/product - List all product data
+  http.get("/api/v1/reports/product", () => {
     return HttpResponse.json(mockProducts);
   }),
 
-  // GET /api/reports/product/:id - Get product data by ID
-  http.get("/api/reports/product/:id", ({ params }) => {
+  // GET /api/v1/reports/product/:id - Get product data by ID
+  http.get("/api/v1/reports/product/:id", ({ params }) => {
     const { id } = params;
     const product = mockProducts.find((p) => p.data.id === id);
 
@@ -482,8 +482,8 @@ export const handlers = [
     return HttpResponse.json(product);
   }),
 
-  // GET /api/reports - List analysis reports
-  http.get("/api/reports", ({ request }) => {
+  // GET /api/v1/reports - List analysis reports
+  http.get("/api/v1/reports", ({ request }) => {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
@@ -528,8 +528,8 @@ export const handlers = [
     });
   }),
 
-  // GET /api/reports/:id - Get analysis report by ID (FullReport)
-  http.get("/api/reports/:id", ({ params }) => {
+  // GET /api/v1/reports/:id - Get analysis report by ID (FullReport)
+  http.get("/api/v1/reports/:id", ({ params }) => {
     const { id } = params as { id: string };
     
     // First check if we have a FullReport mock
@@ -554,13 +554,13 @@ export const handlers = [
     });
   }),
 
-  // GET /api/reports/summary - Get reports summary
-  http.get("/api/reports/summary", () => {
+  // GET /api/v1/reports/summary - Get reports summary
+  http.get("/api/v1/reports/summary", () => {
     return HttpResponse.json(generateMockReportsSummary());
   }),
 
-  // POST /api/reports/new - Create new analysis request
-  http.post("/api/reports/new", async ({ request }) => {
+  // POST /api/v1/reports/new - Create new analysis request
+  http.post("/api/v1/reports/new", async ({ request }) => {
     const body = (await request.json()) as any;
 
     // Generate a new report ID
@@ -593,8 +593,8 @@ export const handlers = [
     });
   }),
 
-  // DELETE /api/reports/:id - Delete analysis report
-  http.delete("/api/reports/:id", ({ params }) => {
+  // DELETE /api/v1/reports/:id - Delete analysis report
+  http.delete("/api/v1/reports/:id", ({ params }) => {
     const { id } = params;
     const index = mockReports.findIndex((r) => r.id === id);
 
@@ -606,8 +606,8 @@ export const handlers = [
     return HttpResponse.json({ message: "Report deleted successfully" });
   }),
 
-  // DELETE /api/reports/product/:id - Delete product by ID
-  http.delete("/api/reports/product/:id", ({ params }) => {
+  // DELETE /api/v1/reports/product/:id - Delete product by ID
+  http.delete("/api/v1/reports/product/:id", ({ params }) => {
     const { id } = params;
     const productIndex = mockProducts.findIndex((p) => p.data.id === id);
 
@@ -630,8 +630,8 @@ export const handlers = [
     return HttpResponse.json({ message: "Product deleted successfully" });
   }),
 
-  // POST /api/reports/:id/submit - Submit to ExploitIQ
-  http.post("/api/reports/:id/submit", ({ params }) => {
+  // POST /api/v1/reports/:id/submit - Submit to ExploitIQ
+  http.post("/api/v1/reports/:id/submit", ({ params }) => {
     const { id } = params;
     const report = mockReports.find((r) => r.id === id);
 
