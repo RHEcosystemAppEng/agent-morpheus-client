@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd79943901c"
+  },
   "input": {
     "scan": {
       "id": "f329e389-c9d0-44bf-8d3e-123cb0ab05e2",
@@ -27,8 +30,7 @@
       "tag": "v4.15.0-202409180905.p0.gf6f61ca.assembly.stream.el8",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/console",
           "ref": "f6f61ca06f008ead018f37668f9fa391e668e703",
           "include": [
@@ -78,7 +80,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "excludes": [
+          "exclude": [
             "node_modules/**/*",
             "dist/**/*",
             "build/**/*",
@@ -106,15 +108,14 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "git_repo": "https://github.com/openshift/console",
           "ref": "f6f61ca06f008ead018f37668f9fa391e668e703",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "excludes": []
+          "exclude": []
         }
       ],
       "sbom_info": {

@@ -12,7 +12,6 @@ import org.bson.Document;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 
 import io.quarkus.arc.profile.IfBuildProfile;
@@ -32,9 +31,6 @@ public class DatabaseInit {
   @ConfigProperty(name = "quarkus.mongodb.database")
   String dbName;
 
-  @Inject
-  ObjectMapper mapper;
-
   @ConfigProperty(name = "morpheus.repository.reports-path", defaultValue = "src/test/resources/devservices/reports")
   String reportsPath;
 
@@ -42,7 +38,7 @@ public class DatabaseInit {
   @Startup
   void init() {
     var count = mongoClient.getDatabase(dbName).getCollection("reports").countDocuments();
-    if(count != 0) {
+    if (count != 0) {
       return;
     }
     try {
@@ -63,12 +59,12 @@ public class DatabaseInit {
       List<Document> docs = new ArrayList<>();
       Files.walk(folder.toPath()).filter(Files::isRegularFile).forEach(f -> {
         try {
-          var doc = mapper.readValue(f.toFile(), Document.class);
-          var metadata = doc.get("metadata", java.util.LinkedHashMap.class);
-          metadata.put("submitted_at", Instant.parse((String)metadata.get("submitted_at")));
-          metadata.put("sent_at", Instant.parse((String)metadata.get("sent_at")));
+          var doc = Document.parse(Files.readString(f));
+          var metadata = doc.get("metadata", Document.class);
+          metadata.put("submitted_at", Instant.parse((String) metadata.get("submitted_at")));
+          metadata.put("sent_at", Instant.parse((String) metadata.get("sent_at")));
           docs.add(doc);
-        } catch (IOException e) {
+        } catch (Exception e) {
           LOGGER.errorf("Ignoring invalid document: %s", f, e);
         }
       });

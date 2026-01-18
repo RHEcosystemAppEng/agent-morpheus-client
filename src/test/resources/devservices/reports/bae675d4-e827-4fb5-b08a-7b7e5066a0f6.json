@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439014"
+  },
   "input": {
     "scan": {
       "id": "bae675d4-e827-4fb5-b08a-7b7e5066a0f6",
@@ -27,8 +30,7 @@
       "tag": "sha256:94a0d7feec34600a858c8e383ee0e8d5f4a077f6bbc327dcad8762acfcf40679",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/console",
           "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
           "include": [
@@ -78,7 +80,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "excludes": [
+          "exclude": [
             "node_modules/**/*",
             "dist/**/*",
             "build/**/*",
@@ -106,15 +108,14 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "git_repo": "https://github.com/openshift/console",
           "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "excludes": []
+          "exclude": []
         }
       ],
       "sbom_info": {

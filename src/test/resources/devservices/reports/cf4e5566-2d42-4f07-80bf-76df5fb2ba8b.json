@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439018"
+  },
   "input": {
     "scan": {
       "id": "cf4e5566-2d42-4f07-80bf-76df5fb2ba8b",
@@ -27,8 +30,7 @@
       "tag": "v4.12.0-202410010030.p0.g15aade4.assembly.stream.el8",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/azure-file-csi-driver",
           "ref": "15aade4d58785b54ac732a660f1359132d27f9b9",
           "include": [
@@ -51,7 +53,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "excludes": [
+          "exclude": [
             "test/**/*",
             "**/vendor/**/*",
             "go.mod",
@@ -75,15 +77,14 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "git_repo": "https://github.com/openshift/azure-file-csi-driver",
           "ref": "15aade4d58785b54ac732a660f1359132d27f9b9",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "excludes": []
+          "exclude": []
         }
       ],
       "sbom_info": {

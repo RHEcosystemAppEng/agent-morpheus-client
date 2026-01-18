@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439017"
+  },
   "input": {
     "scan": {
       "id": "cbeda699-2fd1-4909-bd98-c6827cec9f9e",
@@ -30,8 +33,7 @@
       "feed_group": null,
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "include": [
             "**/*.go",
             "**/*.py",
@@ -78,8 +80,7 @@
           "ref": "4e8d6894744986c8765f1856137103f5ef6b903d"
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "include": [
             "**/*.md",
             "docs/**/*.rst"

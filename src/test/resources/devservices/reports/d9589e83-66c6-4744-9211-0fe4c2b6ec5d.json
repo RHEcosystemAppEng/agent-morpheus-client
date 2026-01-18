@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439019"
+  },
   "metadata": {
     "user": "vbelouso@redhat.com",
     "source": "morpheus-parser",
@@ -37,8 +40,7 @@
       "feed_group": null,
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "include": [
             "**/*.go",
             "**/*.py",
@@ -85,8 +87,7 @@
           "ref": "13385034ec9a843a6b40f8b3aec9966ada785115"
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "include": [
             "**/*.md",
             "docs/**/*.rst"

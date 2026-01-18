@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439011"
+  },
   "input": {
     "scan": {
       "id": "1cd6c5da-60c9-4f61-83d0-6260d755b0c4",
@@ -27,8 +30,7 @@
       "tag": "v4.15.0-202408260908.p0.gbcbf241.assembly.stream.el8",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/kubernetes-metrics-server",
           "ref": "bcbf241cece8ef455be32a910f1570bae827b4a1",
           "include": [
@@ -47,7 +49,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "excludes": [
+          "exclude": [
             "test/**/*",
             "**/vendor/**/*",
             "go.mod",
@@ -55,15 +57,14 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "git_repo": "https://github.com/openshift/kubernetes-metrics-server",
           "ref": "bcbf241cece8ef455be32a910f1570bae827b4a1",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "excludes": []
+          "exclude": []
         }
       ],
       "sbom_info": {

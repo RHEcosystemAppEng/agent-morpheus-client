@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd79943901d"
+  },
   "input": {
     "scan": {
       "id": "f4093fbd-1030-4ff0-ba5b-a9289fe113cc",
@@ -27,8 +30,7 @@
       "tag": "sha256:ee166a7a362c2144f088413cc8cccaded88913e80c2db11ab5e291a69485f91a",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/oc-mirror",
           "ref": "a0733c17322f96d14f9158604fe74f1bfecc4a53",
           "include": [
@@ -51,7 +53,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "excludes": [
+          "exclude": [
             "test/**/*",
             "**/vendor/**/*",
             "go.mod",
@@ -75,15 +77,14 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "doc",
           "git_repo": "https://github.com/openshift/oc-mirror",
           "ref": "a0733c17322f96d14f9158604fe74f1bfecc4a53",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "excludes": []
+          "exclude": []
         }
       ],
       "sbom_info": {
