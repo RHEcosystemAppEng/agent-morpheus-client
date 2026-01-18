@@ -267,7 +267,7 @@ public class ReportRepositoryService {
   private static final Map<String, String> SORT_MAPPINGS = Map.of(
       "completedAt", "input.scan.completed_at",
       "submittedAt", "metadata.submitted_at",
-      "vuln_id", "output.vuln_id",
+      "vuln_id", "output.analysis.vuln_id",
       "ref", "input.image.source_info.ref",
       "gitRepo", "input.image.source_info.git_repo");
 
@@ -278,18 +278,15 @@ public class ReportRepositoryService {
 
     List<Bson> sorts = new ArrayList<>();
     sortFields.forEach(sf -> {
-      if ("state".equals(sf.field())) {
-        sorts.add(Sorts.descending("input.scan.completed_at"));
-        sorts.add(Sorts.ascending("error.type"));
-      } else {
-        var fieldName = SORT_MAPPINGS.get(sf.field());
-        if (fieldName != null) {
-          if (SortType.ASC.equals(sf.type())) {
-            sorts.add(Sorts.ascending(fieldName));
-          } else {
-            sorts.add(Sorts.descending(fieldName));
+       {
+          var fieldName = SORT_MAPPINGS.get(sf.field());
+          if (fieldName != null) {
+            if (SortType.ASC.equals(sf.type())) {
+              sorts.add(Sorts.ascending(fieldName));
+            } else {
+              sorts.add(Sorts.descending(fieldName));
+            }
           }
-        }
       }
     });
     
@@ -660,55 +657,5 @@ public class ReportRepositoryService {
       filter = Filters.and(filters);
     }
     return filter;
-  }
-
-  /**
-   * Count reports with at least one vulnerable CVE (justification.status = "TRUE")
-   */
-  public long countVulnerableReports() {
-    // Reports with at least one output justification status = "TRUE"
-    Bson filter = Filters.elemMatch("output", Filters.eq("justification.status", "TRUE"));
-    return getCollection().countDocuments(filter);
-  }
-
-  /**
-   * Count reports with only non-vulnerable CVEs (all justifications are "FALSE" or no vulns)
-   * This includes reports with no vulnerabilities
-   */
-  public long countNonVulnerableReports() {
-    // Reports that are completed (have output) but don't have any "TRUE" justifications
-    Bson hasOutput = Filters.and(
-        Filters.ne("output", null),
-        Filters.exists("output", true)
-    );
-    Bson noVulnerable = Filters.not(Filters.elemMatch("output", Filters.eq("justification.status", "TRUE")));
-    Bson filter = Filters.and(hasOutput, noVulnerable);
-    return getCollection().countDocuments(filter);
-  }
-
-  /**
-   * Count pending requests (state = "pending")
-   */
-  public long countPendingRequests() {
-    Bson filter = STATUS_FILTERS.get("pending");
-    return getCollection().countDocuments(filter);
-  }
-
-  /**
-   * Count new reports submitted today (using server timezone, calendar day 00:00:00 to 23:59:59)
-   */
-  public long countNewReportsToday() {
-    java.time.ZonedDateTime now = java.time.ZonedDateTime.now();
-    java.time.ZonedDateTime startOfDay = now.toLocalDate().atStartOfDay(now.getZone());
-    java.time.ZonedDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
-    
-    Instant startInstant = startOfDay.toInstant();
-    Instant endInstant = endOfDay.toInstant();
-    
-    Bson filter = Filters.and(
-        Filters.gte("metadata." + SUBMITTED_AT, startInstant),
-        Filters.lte("metadata." + SUBMITTED_AT, endInstant)
-    );
-    return getCollection().countDocuments(filter);
   }
 }

@@ -340,16 +340,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Completed
             </Th>
-            <Th
-              sort={{
-                sortBy: {
-                  index: activeSortIndex,
-                  direction: activeSortDirection,
-                },
-                onSort: () => handleSortToggle("state"),
-                columnIndex: 4,
-              }}
-            >
+            <Th>
               Analysis state
             </Th>
             <Th>CVE Repository Report</Th>

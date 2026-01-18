@@ -149,27 +149,6 @@ public class ReportService {
     return summaries;
   }
 
-  /**
-   * Get summary of reports statistics
-   * - Vulnerable reports: reports with at least one CVE with justification.status = "TRUE"
-   * - Non-vulnerable reports: reports with only CVEs with justification.status = "FALSE" or no vulns
-   * - Pending requests: reports with state = "pending"
-   * - New reports today: reports submitted today (server timezone, calendar day)
-   */
-  public ReportsSummary getReportsSummary() {
-    long vulnerableReportsCount = repository.countVulnerableReports();
-    long nonVulnerableReportsCount = repository.countNonVulnerableReports();
-    long pendingRequestsCount = repository.countPendingRequests();
-    long newReportsTodayCount = repository.countNewReportsToday();
-    
-    return new ReportsSummary(
-        vulnerableReportsCount,
-        nonVulnerableReportsCount,
-        pendingRequestsCount,
-        newReportsTodayCount
-    );
-  }
-
   public ProductSummary getProductSummary(String productId) {
     Product product = productService.get(productId);
 
