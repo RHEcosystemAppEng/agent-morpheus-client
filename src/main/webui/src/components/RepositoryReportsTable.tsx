@@ -103,8 +103,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     pagination,
   } = usePaginatedApi<Array<Report>>(
     () => ({
-      method: "GET",
-      url: "/api/reports",
+      method: "GET" as const,
+      url: "/api/v1/reports",
       query: {
         page: page - 1,
         pageSize: perPage,
