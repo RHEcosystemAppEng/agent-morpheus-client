@@ -85,8 +85,7 @@ public class ProductRepositoryService {
       }
     }
 
-    @SuppressWarnings("unchecked")
-    Map<String, String> metadata = (Map<String, String>) doc.get(METADATA, Map.class);
+    Map<String, String> metadata = doc.get(METADATA, Map.class);
 
     return new Product(
         doc.getString(RepositoryConstants.ID_KEY),
@@ -114,8 +113,7 @@ public class ProductRepositoryService {
     Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     if (Objects.isNull(doc)) return null;
     
-    @SuppressWarnings("unchecked")
-    Map<String, String> metadata = (Map<String, String>) doc.get(METADATA, Map.class);
+    Map<String, String> metadata = doc.get(METADATA, Map.class);
     if (Objects.nonNull(metadata)) {
       return metadata.get("user");
     }

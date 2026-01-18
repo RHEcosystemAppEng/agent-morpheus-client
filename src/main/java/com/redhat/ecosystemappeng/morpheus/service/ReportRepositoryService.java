@@ -248,14 +248,6 @@ public class ReportRepositoryService {
             Updates.unset("error")));
   }
 
-  public void updateReportInput(String id, JsonNode input) throws JsonProcessingException {
-    var objId = new ObjectId(id);
-    var inputDoc = Document.parse(input.toPrettyString());
-    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
-        Updates.set("input", inputDoc));
-    LOGGER.debugf("Updated input for report %s", id);
-  }
-
   private Report get(ObjectId id) {
     var doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     return toReport(doc);
