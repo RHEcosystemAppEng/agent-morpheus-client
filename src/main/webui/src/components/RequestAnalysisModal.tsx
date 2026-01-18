@@ -14,13 +14,8 @@ import {
   MultipleFileUploadStatusItem,
   DropEvent,
   Button,
-  Alert,
-  AlertVariant,
 } from "@patternfly/react-core";
 import { UploadIcon } from "@patternfly/react-icons";
-import { useApi } from "../hooks/useApi";
-import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
-import { getErrorMessage } from "../utils/errorHandling";
 
 interface RequestAnalysisModalProps {
   isOpen: boolean;
@@ -37,42 +32,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const [cveId, setCveId] = useState("");
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
   const [showStatus, setShowStatus] = useState(false);
-
-  // API call using useApi with immediate: false to only execute on submit
-  const { data, loading, error, refetch } = useApi(
-    () => {
-      if (!cveId.trim() || currentFiles.length === 0) {
-        throw new Error("CVE ID and file are required");
-      }
-      const file = currentFiles[0];
-      return ProductEndpointService.postApiV1ProductNew({
-        vulnerabilityId: cveId.trim(),
-        formData: { file },
-      });
-    },
-    { immediate: false }
-  );
-
-  // Handle successful submission
-  useEffect(() => {
-    if (data && !loading && !error) {
-      // Close modal on successful submission
-      onClose();
-      // Reset form state
-      setCveId("");
-      setCurrentFiles([]);
-      setShowStatus(false);
-    }
-  }, [data, loading, error, onClose]);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setCveId("");
-      setCurrentFiles([]);
-      setShowStatus(false);
-    }
-  }, [isOpen]);
 
   const handleCveIdChange = (
     _event: React.FormEvent<HTMLInputElement>,
@@ -92,9 +51,8 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const isFormValid = cveId.trim() !== "" && currentFiles.length > 0;
 
   const handleSubmit = () => {
-    if (isFormValid && !loading) {
-      refetch();
-    }
+    // TODO: Implement submit logic
+    console.log("Submitting analysis request:", { cveId, files: currentFiles });
   };
 
   const removeFiles = (namesOfFilesToRemove: string[]) => {
@@ -124,7 +82,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     <Modal
       variant={ModalVariant.medium}
       isOpen={isOpen}
-      onClose={loading ? undefined : onClose}
+      onClose={onClose}
       aria-labelledby="request-analysis-modal-title"
       aria-describedby="request-analysis-modal-description"
     >
@@ -134,15 +92,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       />
       <br />
       <ModalBody>
-        {error && (
-          <Alert
-            variant={AlertVariant.danger}
-            title="Error submitting analysis request"
-            isInline
-          >
-            {getErrorMessage(error)}
-          </Alert>
-        )}
         <Form>
           <FormGroup label="CVE ID" isRequired fieldId="cve-id">
             <TextInput
@@ -211,12 +160,11 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           key="submit"
           variant="primary"
           onClick={handleSubmit}
-          isDisabled={!isFormValid || loading}
-          isLoading={loading}
+          isDisabled={!isFormValid}
         >
-          {loading ? "Submitting..." : "Submit Analysis Request"}
+          Submit Analysis Request
         </Button>
-        <Button key="cancel" variant="link" onClick={onClose} isDisabled={loading}>
+        <Button key="cancel" variant="link" onClick={onClose}>
           Cancel
         </Button>
       </ModalFooter>

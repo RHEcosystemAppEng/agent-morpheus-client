@@ -1045,65 +1045,6 @@
         ]
       }
     },
-    "/api/v1/product/new": {
-      "post": {
-        "summary": "Create new product from SPDX SBOM",
-        "description": "Uploads an SPDX SBOM file, parses it, creates a product, and starts async processing. Requires a vulnerability ID to include in all component reports.",
-        "parameters": [
-          {
-            "description": "Vulnerability ID (e.g., CVE-2024-12345) to include in all component reports",
-            "required": true,
-            "name": "vulnerabilityId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "description": "Product creation request accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid SPDX file, missing required data, or missing vulnerability ID"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Product Endpoint"
-        ]
-      }
-    },
     "/api/v1/product/{id}": {
       "delete": {
         "parameters": [

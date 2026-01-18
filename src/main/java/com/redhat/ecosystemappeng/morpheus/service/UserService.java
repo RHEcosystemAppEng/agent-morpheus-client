@@ -2,7 +2,6 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import io.quarkus.oidc.UserInfo;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import java.util.Objects;
 
@@ -10,13 +9,12 @@ import java.util.Objects;
 public class UserService {
   
   @Inject
-  Instance<UserInfo> userInfoInstance;
+  UserInfo userInfo;
 
   private static final String DEFAULT_USERNAME = "anonymous";
 
   public String getUserName() {
-    if(userInfoInstance.isResolvable()) {
-      var userInfo = userInfoInstance.get();
+    if(Objects.nonNull(userInfo)) {
       var name = userInfo.getString("upn");
       if(Objects.nonNull(name)) {
         return name;

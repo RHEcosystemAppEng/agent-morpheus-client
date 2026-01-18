@@ -44,16 +44,19 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
         </Title>
       </CardTitle>
       <CardBody>
+        {vuln && (
           <DescriptionList>
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    {cveId}
+                    <Link to={`/Reports?vulnId=${vuln.vuln_id}`}>
+                      {vuln.vuln_id}
+                    </Link>
                   </FlexItem>
                   <FlexItem>
-                    <CveStatus vuln={vuln ?? {}} />
+                    <CveStatus vuln={vuln} />
                   </FlexItem>
                 </Flex>
               </DescriptionListDescription>
@@ -97,7 +100,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
             <DescriptionListGroup>
               <DescriptionListTerm>CVSS Score</DescriptionListTerm>
               <DescriptionListDescription>
-                <CvssBanner cvss={vuln?.cvss ?? null} />
+                <CvssBanner cvss={vuln.cvss ?? null} />
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
@@ -109,17 +112,17 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
             <DescriptionListGroup>
               <DescriptionListTerm>Reason</DescriptionListTerm>
               <DescriptionListDescription>
-                {vuln?.justification?.reason || <NotAvailable />}
+                {vuln.justification?.reason || <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Summary</DescriptionListTerm>
               <DescriptionListDescription>
-                {vuln?.summary || <NotAvailable />}
+                {vuln.summary || <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
           </DescriptionList>
-        
+        )}
       </CardBody>
     </Card>
   );
