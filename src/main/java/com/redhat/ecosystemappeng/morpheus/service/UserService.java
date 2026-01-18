@@ -15,15 +15,10 @@ public class UserService {
   private static final String DEFAULT_USERNAME = "anonymous";
 
   public String getUserName() {
-<<<<<<< HEAD
-    if(Objects.nonNull(userInfo)) {
-      // Try email first
-      var name = userInfo.getString("email");
-=======
     if(userInfoInstance.isResolvable()) {
       var userInfo = userInfoInstance.get();
-      var name = userInfo.getString("upn");
->>>>>>> cb7d20cdf (analysis request)
+      // Try email first
+      var name = userInfo.getString("email");
       if(Objects.nonNull(name)) {
         return name;
       }

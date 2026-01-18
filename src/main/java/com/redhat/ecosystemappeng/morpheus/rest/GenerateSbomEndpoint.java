@@ -15,7 +15,6 @@ import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.service.GenerateSbomService;
-import com.redhat.ecosystemappeng.morpheus.service.SyftExecutionException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -107,12 +106,6 @@ public class GenerateSbomEndpoint {
         try {
             JsonNode sbom = generateSbomService.generate(image);
             return Response.ok(sbom).build();
-        } catch (SyftExecutionException e) {
-            LOGGER.errorf("Syft execution failed for image %s: %s", image, e.getMessage());
-            return Response.status(Status.INTERNAL_SERVER_ERROR)
-                .entity(objectMapper.createObjectNode()
-                .put("error", e.getMessage()))
-                .build();
         } catch (Exception e) {
             LOGGER.error("GenerateSbomService Failed", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR)
