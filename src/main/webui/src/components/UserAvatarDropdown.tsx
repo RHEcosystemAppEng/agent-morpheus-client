@@ -4,7 +4,7 @@
  * Integrates with Quarkus OIDC backend authentication
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Icon,
   Dropdown,
@@ -84,17 +84,13 @@ const UserAvatarDropdown: React.FC = () => {
       isOpen={isOpen}
       onSelect={onSelect}
       onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}
-      popperProps={{ position: "right" }}
+      popperProps={{ position: 'right' }}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
           isExpanded={isOpen}
           onClick={onToggle}
-          icon={
-            <Icon>
-              <UserIcon />
-            </Icon>
-          }
+          icon={<Icon ><UserIcon/></Icon>}
           isFullHeight
         >
           {userName}
