@@ -1,0 +1,54 @@
+{
+  "input": {
+    "scan": {
+      "id": "test-product-2-report-1",
+      "type": null,
+      "started_at": "2025-01-16T10:00:00.000000",
+      "completed_at": "2025-01-16T10:05:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-67890",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "test-image-2",
+      "tag": "v2.0.0",
+      "source_info": []
+    },
+    "metadata": {
+      "sbom_name": "test-sbom-product-2"
+    }
+  },
+  "output": {
+    "analysis": [
+      {
+        "vuln_id": "CVE-2024-67890",
+        "justification": {
+          "status": "FALSE",
+          "label": "test_label"
+        }
+      }
+    ],
+    "vex": null
+  },
+  "metadata": {
+    "product_id": "product-2",
+    "sbom_name": "test-sbom-product-2",
+    "submitted_at": "2025-01-16T09:00:00.000000Z",
+    "user": "test@example.com"
+  },
+  "info": {}
+}
+

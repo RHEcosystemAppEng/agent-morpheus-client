@@ -34,6 +34,10 @@ import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
+import com.redhat.ecosystemappeng.morpheus.model.GroupedReportRow;
+import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.SortType;
+import com.redhat.ecosystemappeng.morpheus.service.GroupedReportsService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -79,6 +83,9 @@ public class ReportEndpoint {
 
   @Inject
   ProductService productService;
+
+  @Inject
+  GroupedReportsService groupedReportsService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -319,6 +326,57 @@ public class ReportEndpoint {
         .header("X-Total-Pages", result.totalPages)
         .header("X-Total-Elements", result.totalElements)
         .build();
+  }
+
+  @GET
+  @Path("/grouped")
+  @Operation(
+    summary = "List grouped reports by product_id", 
+    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "200", 
+      description = "Grouped reports retrieved successfully",
+      content = @Content(
+        schema = @Schema(type = SchemaType.ARRAY, implementation = GroupedReportRow.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response listGrouped(
+      @Parameter(
+        description = "Sort field: 'completedAt' or 'sbomName'"
+      )
+      @QueryParam("sortField") @DefaultValue("completedAt") String sortField,
+      @Parameter(
+        description = "Sort direction: 'ASC' or 'DESC'"
+      )
+      @QueryParam("sortDirection") @DefaultValue("DESC") String sortDirection,
+      @Parameter(
+        description = "Page number (0-based)"
+      )
+      @QueryParam(PAGE) @DefaultValue("0") Integer page,
+      @Parameter(
+        description = "Number of items per page"
+      )
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
+    try {
+      SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
+      var result = groupedReportsService.getGroupedReports(sortField, sortType, new Pagination(page, pageSize));
+      return Response.ok(result.results)
+          .header("X-Total-Pages", result.totalPages)
+          .header("X-Total-Elements", result.totalElements)
+          .build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to retrieve grouped reports", e);
+      return Response.serverError()
+          .entity(objectMapper.createObjectNode()
+          .put("error", e.getMessage()))
+          .build();
+    }
   }
 
   @GET

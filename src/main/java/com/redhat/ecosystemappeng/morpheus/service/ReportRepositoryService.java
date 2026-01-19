@@ -82,7 +82,7 @@ public class ReportRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  private Map<String, String> extractMetadata(Document doc) {
+  Map<String, String> extractMetadata(Document doc) {
     var metadata = new HashMap<String, String>();
     var metadataField = doc.get("metadata", Document.class);
     if (metadataField != null) {
@@ -153,7 +153,7 @@ public class ReportRepositoryService {
         ref);
   }
 
-  private String getStatus(Document doc, Map<String, String> metadata) {
+  String getStatus(Document doc, Map<String, String> metadata) {
     if (doc.containsKey("error")) {
       var error = doc.get("error", Document.class);
       if (error.getString("type").equals("expired")) {
