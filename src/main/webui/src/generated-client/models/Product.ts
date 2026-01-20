@@ -2,42 +2,41 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FailedComponent } from './FailedComponent';
 /**
- * Product metadata
+ * Product data grouped by product_id
  */
 export type Product = {
     /**
-     * Product ID
+     * SBOM name from first report's metadata.sbom_name
      */
-    id: string;
+    sbomName?: string;
     /**
-     * Product name
+     * Product ID from first report's metadata.product_id
      */
-    name: string;
+    productId: string;
     /**
-     * Product version
+     * CVE ID from first report's input.scan.vulns[0].vuln_id
      */
-    version: string;
+    cveId?: string;
     /**
-     * Timestamp of product scan request submission
+     * Map of CVE status to count of reports with that status
      */
-    submittedAt: string;
+    cveStatusCounts: Record<string, number>;
     /**
-     * Number of components submitted for scanning
+     * Map of report status to count of reports with that status
      */
-    submittedCount: number;
+    statusCounts: Record<string, number>;
     /**
-     * Product user provided metadata
-     */
-    metadata: Record<string, string>;
-    /**
-     * List of submitted components failed to be processed for scanning
-     */
-    submissionFailures: Array<FailedComponent>;
-    /**
-     * Timestamp of product scan request completion
+     * Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value
      */
     completedAt?: string;
+    /**
+     * Number of reports in this product group
+     */
+    numReports: number;
+    /**
+     * Report ID from the first report in the group, always populated for navigation purposes
+     */
+    firstReportId?: string;
 };
 

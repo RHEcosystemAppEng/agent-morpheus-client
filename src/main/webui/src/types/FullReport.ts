@@ -112,6 +112,16 @@ export interface FullReportInput {
 }
 
 /**
+ * Report output structure containing analysis results and VEX data
+ */
+export interface FullReportOutput {
+  /** Array of vulnerability analysis results */
+  analysis?: ReportOutput[];
+  /** VEX (Vulnerability Exploitability eXchange) data */
+  vex?: unknown | null;
+}
+
+/**
  * Complete analysis report with all fields from MongoDB
  * This type provides full type safety and autocomplete for report data
  */
@@ -120,8 +130,8 @@ export interface FullReport {
   _id?: string;
   /** Report input data containing scan and image information */
   input?: FullReportInput;
-  /** Report output data containing vulnerability analysis results */
-  output?: ReportOutput[];
+  /** Report output data containing vulnerability analysis results and VEX */
+  output?: FullReportOutput;
   /** Report information including VDB, intel, and SBOM data */
   info?: Record<string, unknown>;
   /** User provided metadata for the report */

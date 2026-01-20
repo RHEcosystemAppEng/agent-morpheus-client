@@ -90,7 +90,7 @@ const GetStartedCard: FunctionComponent = () => {
         </Content>
       </CardBody>
       <CardFooter>
-        <Button variant="link" isInline onClick={() => navigate("/Reports")}>
+        <Button variant="link" isInline onClick={() => navigate("/reports")}>
           View Reports →
         </Button>
       </CardFooter>

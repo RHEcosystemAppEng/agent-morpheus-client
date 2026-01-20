@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import {
   Label,
   Flex,
@@ -48,36 +48,45 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   onFiltersChange,
   analysisStateOptions,
 }) => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
-  // Use the custom hook for data fetching and processing (Rule VI)
+  // Use the custom hook for data fetching with server-side pagination and sorting
   const {
-    rows: filteredRows,
+    rows,
     loading,
     error,
+    pagination,
   } = useReportsTableData({
-    searchValue,
-    cveSearchValue,
-    filters,
+    page,
+    perPage: PER_PAGE,
     sortColumn,
     sortDirection,
   });
 
-  // Paginate the filtered rows
-  const paginatedRows = filteredRows.slice(
-    (page - 1) * PER_PAGE,
-    page * PER_PAGE
-  );
-
   const columnNames = {
-    reportId: "Report ID",
+    productId: "Product ID",
     sbomName: "SBOM name",
     cveId: "CVE ID",
     repositoriesAnalyzed: "Repositories Analyzed",
     exploitIqStatus: "ExploitIQ Status",
     completedAt: "Completion Date",
+  };
+
+  // Handle Product ID link navigation based on numReports
+  const handleProductIdClick = (row: typeof rows[0]) => {
+    // Use firstReportId which is always populated from the Product API
+    const reportId = row.firstReportId;
+    
+    if (row.numReports === 1 && reportId && row.cveId) {
+      // Single report: navigate to component report page
+      navigate(`/reports/component/${row.cveId}/${reportId}`);
+    } else if (row.cveId) {
+      // Multiple reports: navigate to product report page
+      navigate(`/reports/product/${row.productId}/${row.cveId}`);
+    }
   };
 
   const handleSortToggle = (column: SortColumn) => {
@@ -93,14 +102,12 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
-      case "reportId":
-        return 0;
       case "sbomName":
         return 1;
       case "completedAt":
         return 5;
       default:
-        return 0;
+        return 5;
     }
   };
 
@@ -108,21 +115,12 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   const activeSortIndex = getColumnIndex(sortColumn);
   const activeSortDirection = sortDirection;
 
-  useEffect(() => {
-    setPage(1);
-  }, [
-    searchValue,
-    cveSearchValue,
-    filters.exploitIqStatus,
-    filters.analysisState,
-  ]);
-
   if (loading) {
     return (
       <SkeletonTable
         rowsCount={10}
         columns={[
-          "Report ID",
+          "Product ID",
           "SBOM name",
           "CVE ID",
           "Repositories Analyzed",
@@ -145,7 +143,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     );
   }
 
-  if (paginatedRows.length === 0) {
+  const totalItems = pagination?.totalElements ?? 0;
+
+  if (rows.length === 0 && !loading) {
     return (
       <>
         <ReportsToolbar
@@ -157,7 +157,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           onFiltersChange={onFiltersChange}
           analysisStateOptions={analysisStateOptions}
           pagination={{
-            itemCount: filteredRows.length,
+            itemCount: totalItems,
             page,
             perPage: PER_PAGE,
             onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
@@ -179,7 +179,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         onFiltersChange={onFiltersChange}
         analysisStateOptions={analysisStateOptions}
         pagination={{
-          itemCount: filteredRows.length,
+          itemCount: totalItems,
           page,
           perPage: PER_PAGE,
           onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
@@ -188,18 +188,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       <Table aria-label="Reports table">
           <Thead>
             <Tr>
-              <Th
-                sort={{
-                  sortBy: {
-                    index: activeSortIndex,
-                    direction: activeSortDirection,
-                  },
-                  onSort: () => handleSortToggle("reportId"),
-                  columnIndex: 0,
-                }}
-              >
-                {columnNames.reportId}
-              </Th>
+              <Th>{columnNames.productId}</Th>
               <Th
                 sort={{
                   sortBy: {
@@ -264,17 +253,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             </Tr>
           </Thead>
           <Tbody>
-            {paginatedRows.length === 0 ? (
+            {rows.length === 0 ? (
               <Tr>
                 <Td colSpan={6}>No reports found</Td>
               </Tr>
             ) : (
-              paginatedRows.map((row, index) => {
+              rows.map((row, index) => {
                 const isCompleted = isAnalysisCompleted(row.analysisState);
                 return (
-                  <Tr key={`${row.reportId}-${row.cveId}-${index}`}>
+                  <Tr key={`${row.productId}-${row.cveId}-${index}`}>
                     <Td
-                      dataLabel={columnNames.reportId}
+                      dataLabel={columnNames.productId}
                       style={{
                         maxWidth: "10rem",
                         overflow: "hidden",
@@ -283,15 +272,20 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       }}
                     >
                       <Link
-                        to={`/Reports/${row.reportId}/${row.cveId}`}
+                        to="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleProductIdClick(row);
+                        }}
                         style={{
                           display: "block",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
+                          cursor: "pointer",
                         }}
                       >
-                        {row.reportId}
+                        {row.productId}
                       </Link>
                     </Td>
                     <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>

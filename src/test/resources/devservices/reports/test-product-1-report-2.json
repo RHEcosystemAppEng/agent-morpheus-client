@@ -1,7 +1,7 @@
 {
   "input": {
     "scan": {
-      "id": "test-product-1-report-2",
+      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
       "type": null,
       "started_at": "2025-01-15T11:00:00.000000",
       "completed_at": "2025-01-15T11:05:00.000000",
@@ -25,7 +25,13 @@
     "image": {
       "name": "test-image-1",
       "tag": "v1.0.1",
-      "source_info": []
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/test-product-1",
+          "ref": "main"
+        }
+      ]
     },
     "metadata": {
       "sbom_name": "test-sbom-product-1"
@@ -37,7 +43,7 @@
         "vuln_id": "CVE-2024-12345",
         "justification": {
           "status": "TRUE",
-          "label": "test_label"
+          "label": "Vulnerable"
         }
       }
     ],

@@ -30,14 +30,8 @@ import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
-import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
-import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
-import com.redhat.ecosystemappeng.morpheus.model.GroupedReportRow;
-import com.redhat.ecosystemappeng.morpheus.model.Pagination;
-import com.redhat.ecosystemappeng.morpheus.model.SortType;
-import com.redhat.ecosystemappeng.morpheus.service.GroupedReportsService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -80,12 +74,6 @@ public class ReportEndpoint {
 
   @Inject
   PreProcessingService preProcessingService;
-
-  @Inject
-  ProductService productService;
-
-  @Inject
-  GroupedReportsService groupedReportsService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -328,56 +316,6 @@ public class ReportEndpoint {
         .build();
   }
 
-  @GET
-  @Path("/grouped")
-  @Operation(
-    summary = "List grouped reports by product_id", 
-    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "200", 
-      description = "Grouped reports retrieved successfully",
-      content = @Content(
-        schema = @Schema(type = SchemaType.ARRAY, implementation = GroupedReportRow.class)
-      )
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response listGrouped(
-      @Parameter(
-        description = "Sort field: 'completedAt' or 'sbomName'"
-      )
-      @QueryParam("sortField") @DefaultValue("completedAt") String sortField,
-      @Parameter(
-        description = "Sort direction: 'ASC' or 'DESC'"
-      )
-      @QueryParam("sortDirection") @DefaultValue("DESC") String sortDirection,
-      @Parameter(
-        description = "Page number (0-based)"
-      )
-      @QueryParam(PAGE) @DefaultValue("0") Integer page,
-      @Parameter(
-        description = "Number of items per page"
-      )
-      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
-    try {
-      SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
-      var result = groupedReportsService.getGroupedReports(sortField, sortType, new Pagination(page, pageSize));
-      return Response.ok(result.results)
-          .header("X-Total-Pages", result.totalPages)
-          .header("X-Total-Elements", result.totalElements)
-          .build();
-    } catch (Exception e) {
-      LOGGER.error("Unable to retrieve grouped reports", e);
-      return Response.serverError()
-          .entity(objectMapper.createObjectNode()
-          .put("error", e.getMessage()))
-          .build();
-    }
-  }
 
   @GET
   @Path("/{id}")
@@ -433,56 +371,6 @@ public class ReportEndpoint {
     return report;
   }
 
-  @GET
-  @Path("/product/{id}")
-  @Operation(
-    summary = "Get product data by ID", 
-    description = "Retrieves product data for a specific product ID")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "200", 
-      description = "Product data retrieved successfully",
-      content = @Content(
-        schema = @Schema(type = SchemaType.OBJECT, implementation = ProductSummary.class)
-      )
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response listProduct(
-    @Parameter(
-      description = "Product ID", 
-      required = true
-    )
-    @PathParam("id") String id) throws InterruptedException {
-    var result = reportService.getProductSummary(id);
-    return Response.ok(result).build();
-  }
-
-  @GET
-  @Path("/product")
-  @Operation(
-    summary = "List all product data", 
-    description = "Retrieves product data for all products")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "200", 
-      description = "Product data retrieved successfully",
-      content = @Content(
-        schema = @Schema(type = SchemaType.ARRAY, implementation = ProductSummary.class)
-      )
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response listProducts() {
-    var result = reportService.listProductSummaries();
-    return Response.ok(result).build();
-  }
 
   @POST
   @Path("/{id}/submit")
@@ -660,73 +548,4 @@ public class ReportEndpoint {
     return Response.accepted().build();
   }
 
-  @DELETE
-  @Path("/product")
-  @Operation(
-    summary = "Delete product by IDs", 
-    description = "Deletes all component analysis reports and product metadata associated with specified product IDs")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "202", 
-      description = "Product deletion request accepted"
-    ),
-    @APIResponse(
-      responseCode = "400", 
-      description = "Invalid request - no product IDs provided"
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response removeManyByProductId(
-    @Parameter(
-      description = "List of product IDs to delete", 
-      required = true
-    )
-    @QueryParam("productIds") List<String> productIds) {
-    if (Objects.isNull(productIds) || productIds.isEmpty()) {
-      return Response.status(Status.BAD_REQUEST)
-        .entity(objectMapper.createObjectNode()
-        .put("error", "No productIds provided"))
-        .build();
-    }
-    List<String> reportIds = reportService.getReportIds(productIds);
-    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
-      return Response.accepted().build();
-    }
-    reportService.remove(reportIds);
-    productService.remove(productIds);
-    return Response.accepted().build();
-  }
-
-  @DELETE
-  @Path("/product/{id}")
-  @Operation(
-    summary = "Delete product by ID", 
-    description = "Deletes all component analysis reports and product metadata associated with a specific product ID")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "202", 
-      description = "Product deletion request accepted"
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response removeByProductId(
-    @Parameter(
-      description = "Product ID to delete", 
-      required = true
-    )
-    @PathParam("id") String id) {
-    List<String> reportIds = reportService.getReportIds(List.of(id));
-    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
-      return Response.accepted().build();
-    }
-    reportService.remove(reportIds);
-    productService.remove(id);
-    return Response.accepted().build();
-  }
 }

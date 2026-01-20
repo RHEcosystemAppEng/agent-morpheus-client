@@ -10,29 +10,19 @@ import {
   GridItem,
   Title,
 } from "@patternfly/react-core";
-import { ProductSummary } from "../generated-client";
-import {
-  calculateRepositoriesAnalyzed,
-  formatRepositoriesAnalyzed,
-} from "../utils/repositoriesAnalyzed";
+import type { Product } from "../generated-client/models/Product";
 
 interface ReportDetailsProps {
-  productSummary: ProductSummary;
+  product: Product;
   cveId: string;
 }
 
 const ReportDetails: React.FC<ReportDetailsProps> = ({
-  productSummary,
+  product,
   cveId,
 }) => {
-  const name = productSummary.data.name || "";
-  const submittedCount = productSummary.data.submittedCount || 0;
-  const componentStates = productSummary.summary.componentStates || {};
-  const analyzedCount = calculateRepositoriesAnalyzed(componentStates);
-  const repositoriesAnalyzed = formatRepositoriesAnalyzed(
-    analyzedCount,
-    submittedCount
-  );
+  const name = product.sbomName || "";
+  const repositoriesAnalyzed = product.statusCounts["completed"]?.toString() || "0";
 
   return (
     <Card>

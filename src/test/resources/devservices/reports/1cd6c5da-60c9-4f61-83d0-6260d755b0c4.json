@@ -27,8 +27,7 @@
       "tag": "v4.15.0-202408260908.p0.gbcbf241.assembly.stream.el8",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/kubernetes-metrics-server",
           "ref": "bcbf241cece8ef455be32a910f1570bae827b4a1",
           "include": [
@@ -55,8 +54,7 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/kubernetes-metrics-server",
           "ref": "bcbf241cece8ef455be32a910f1570bae827b4a1",
           "include": [
@@ -2180,6 +2178,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-3",
     "submitted_at": "2025-02-20T15:46:58.335583Z",
     "user": "rromerom@redhat.com",
     "sent_at": "2025-02-20T15:47:00.245249Z"

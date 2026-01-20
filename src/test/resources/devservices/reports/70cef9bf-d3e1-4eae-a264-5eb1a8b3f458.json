@@ -27,8 +27,7 @@
       "tag": "sha256:4fe3b83616617915c53da7bd17845e0ea043537eacbe85d2c73463c190db8a07",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/openshift-controller-manager",
           "ref": "5dcfc990b109d9ae1d8b900655a928c6d859b584",
           "include": [
@@ -42,8 +41,7 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "code",
           "git_repo": "https://github.com/openshift/openshift-controller-manager",
           "ref": "5dcfc990b109d9ae1d8b900655a928c6d859b584",
           "include": [
@@ -2461,6 +2459,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-4",
     "user": "zgrinber@redhat.com",
     "submitted_at": "2025-02-20T15:46:58.335583Z",
     "sent_at": "2025-02-20T15:47:00.245249Z"

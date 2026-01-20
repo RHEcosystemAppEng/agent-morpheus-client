@@ -52,9 +52,9 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  const sbomName = data.data.name || "";
+  const sbomName = data.sbomName || "";
   const breadcrumbText = `${sbomName}/${cveId}`;
-  const productState = data.summary.productState || "";
+  const productState = data.statusCounts["completed"] ? "completed" : "";
 
   const renderStatusLabel = () => {
     if (!productState) return null;
@@ -111,7 +111,7 @@ const ReportPage: React.FC = () => {
           <GridItem>
             <Breadcrumb>
               <BreadcrumbItem>
-                <Link to="/Reports">Reports</Link>
+                <Link to="/reports">Reports</Link>
               </BreadcrumbItem>
               <BreadcrumbItem isActive>{breadcrumbText}</BreadcrumbItem>
             </Breadcrumb>
@@ -134,25 +134,25 @@ const ReportPage: React.FC = () => {
       <PageSection>
         <Grid hasGutter>
           <GridItem span={6}>
-            <ReportDetails productSummary={data} cveId={cveId} />
+            <ReportDetails product={data} cveId={cveId} />
           </GridItem>
           <GridItem span={6}>
-            <ReportAdditionalDetails productSummary={data} />
+            <ReportAdditionalDetails product={data} />
           </GridItem>
         </Grid>
       </PageSection>
       <PageSection>
         <Grid hasGutter>
           <GridItem span={6}>
-            <ReportComponentStatesPieChart productSummary={data} />
+            <ReportComponentStatesPieChart product={data} />
           </GridItem>
           <GridItem span={6}>
-            <ReportCveStatusPieChart productSummary={data} cveId={cveId} />
+            <ReportCveStatusPieChart product={data} cveId={cveId} />
           </GridItem>
         </Grid>
       </PageSection>
       <PageSection>
-        <RepositoryReportsTable productId={productId} cveId={cveId} productSummary={data} />
+        <RepositoryReportsTable productId={productId} cveId={cveId} product={data} />
       </PageSection>
     </>
   );

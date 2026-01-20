@@ -22,7 +22,8 @@ import {
 } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { usePaginatedApi } from "../hooks/usePaginatedApi";
-import { Report, ProductSummary } from "../generated-client";
+import { Report } from "../generated-client";
+import type { Product } from "../generated-client/models/Product";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
@@ -45,13 +46,13 @@ const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
 interface RepositoryReportsTableProps {
   productId: string;
   cveId: string;
-  productSummary: ProductSummary;
+  product: Product;
 }
 
 const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   productId,
   cveId,
-  productSummary,
+  product,
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
@@ -75,9 +76,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   }, [exploitIqStatusFilter]);
 
   const scanStateOptions = useMemo(() => {
-    const componentStates = productSummary.summary.componentStates || {};
-    return Object.keys(componentStates).sort();
-  }, [productSummary.summary.componentStates]);
+    const statusCounts = product.statusCounts || {};
+    return Object.keys(statusCounts).sort();
+  }, [product.statusCounts]);
 
   const getVulnerabilityStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
@@ -103,8 +104,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     pagination,
   } = usePaginatedApi<Array<Report>>(
     () => ({
-      method: "GET",
-      url: "/api/reports",
+      method: "GET" as const,
+      url: "/api/v1/reports",
       query: {
         page: page - 1,
         pageSize: perPage,
@@ -428,7 +429,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
                   <Button
                     variant="primary"
                     onClick={() =>
-                      navigate(`/Reports/${productId}/${cveId}/${report.id}`)
+                      navigate(`/reports/component/${cveId}/${report.id}`)
                     }
                   >
                     View

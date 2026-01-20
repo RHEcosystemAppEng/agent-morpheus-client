@@ -75,8 +75,6 @@ public class ReportRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
-  @Inject
-  ProductRepositoryService productRepositoryService;
 
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
@@ -127,20 +125,28 @@ public class ReportRepositoryService {
     var id = doc.get(RepositoryConstants.ID_KEY, ObjectId.class).toHexString();
 
     // Extract git_repo and ref from source_info with type "code" if available
+    // If there's only one repository, return it even without type "code"
     String gitRepo = null;
     String ref = null;
     var sourceInfo = image.getList("source_info", Document.class);
     if (Objects.nonNull(sourceInfo) && !sourceInfo.isEmpty()) {
-      var codeSourceInfo = sourceInfo.stream()
-          .filter(si -> "code".equals(si.getString("type")))
-          .findFirst()
-          .orElse(null);
-      if (Objects.nonNull(codeSourceInfo)) {
-        gitRepo = codeSourceInfo.getString("git_repo");
-        ref = codeSourceInfo.getString("ref");
+      Document selectedSourceInfo = null;
+      // If there's only one repository, use it regardless of type
+      if (sourceInfo.size() == 1) {
+        selectedSourceInfo = sourceInfo.get(0);
+      } else {
+        // Otherwise, filter for type "code"
+        selectedSourceInfo = sourceInfo.stream()
+            .filter(si -> "code".equals(si.getString("type")))
+            .findFirst()
+            .orElse(null);
+      }
+      if (Objects.nonNull(selectedSourceInfo)) {
+        gitRepo = selectedSourceInfo.getString("git_repo");
+        ref = selectedSourceInfo.getString("ref");
       }
     }
-
+    LOGGER.infof("gitRepo: %s, ref: %s", gitRepo, ref);
     return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
         scan.getString("started_at"),
         scan.getString("completed_at"),
@@ -410,42 +416,8 @@ public class ReportRepositoryService {
   }
 
   private void checkAndStoreProductCompletion(String productId) {
-    // Check if this product just became completed
-    Bson productFilter = Filters.eq("metadata.product_id", productId);
-    boolean hasCompletionTimeStored = false;
-    boolean hasPendingReports = false;
-    String latestCompletionTime = null;
-
-    try (var cursor = getCollection().find(productFilter).cursor()) {
-      while (cursor.hasNext()) {
-        Document doc = cursor.next();
-        Map<String, String> metadata = extractMetadata(doc);
-        
-        if (Objects.nonNull(metadata.get("product_completed_at"))) {
-          hasCompletionTimeStored = true;
-          break;
-        }
-        
-        String reportStatus = getStatus(doc, metadata);
-        
-        if ("pending".equals(reportStatus) || "queued".equals(reportStatus) || "sent".equals(reportStatus)) {
-          hasPendingReports = true;
-          break;
-        }
-        
-        if ("completed".equals(reportStatus) || "failed".equals(reportStatus) || "expired".equals(reportStatus)) {
-          String completedAt = getReportCompletionTime(doc);
-          if (Objects.nonNull(completedAt) && (Objects.isNull(latestCompletionTime) || completedAt.compareTo(latestCompletionTime) > 0)) {
-            latestCompletionTime = completedAt;
-          }
-        }
-      }
-    }
-
-    if (!hasCompletionTimeStored && !hasPendingReports && Objects.nonNull(latestCompletionTime)) {
-      productRepositoryService.updateCompletedAt(productId, latestCompletionTime);
-      LOGGER.infof("Product %s completed at %s", productId, latestCompletionTime);
-    }
+    // Product table update removed - product table is no longer used
+    // This method is kept for compatibility but no longer performs any operations
   }
 
   private String getReportCompletionTime(Document doc) {

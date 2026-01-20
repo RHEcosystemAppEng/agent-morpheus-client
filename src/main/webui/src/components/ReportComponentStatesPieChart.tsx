@@ -7,11 +7,11 @@ import {
   EmptyState,
   EmptyStateBody,
 } from "@patternfly/react-core";
-import { ProductSummary } from "../generated-client";
+import type { Product } from "../generated-client/models/Product";
 import DonutChartWrapper from "./DonutChartWrapper";
 
 interface ReportComponentStatesPieChartProps {
-  productSummary: ProductSummary;
+  product: Product;
 }
 
 // State ordering: states appear in this order when present in data
@@ -38,15 +38,15 @@ const STATE_COLORS: Record<string, string> = {
 
 const ReportComponentStatesPieChart: React.FC<
   ReportComponentStatesPieChartProps
-> = ({ productSummary }) => {
+> = ({ product }) => {
   const chartData = useMemo(() => {
-    const componentStates = productSummary.summary.componentStates || {};
-    const baseData = Object.entries(componentStates).map(([x, y]) => ({ x, y }));
+    const statusCounts = product.statusCounts || {};
+    const baseData = Object.entries(statusCounts).map(([x, y]) => ({ x, y }));
     
     // Calculate "Preprocessing failed" count
     const scannedTotal = baseData.reduce((sum, d) => sum + d.y, 0);
-    const submittedCount = productSummary.data.submittedCount || 0;
-    const preprocessingFailedCount = submittedCount - scannedTotal;
+    const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+    const preprocessingFailedCount = totalCount - scannedTotal;
     
     // Add "Preprocessing failed" slice if count > 0
     if (preprocessingFailedCount > 0) {
@@ -72,7 +72,7 @@ const ReportComponentStatesPieChart: React.FC<
     });
     
     return sortedData;
-  }, [productSummary]);
+  }, [product]);
 
   const colors = useMemo(() => {
     // Map each data point to its corresponding color based on state name
@@ -92,8 +92,9 @@ const ReportComponentStatesPieChart: React.FC<
 
   const total = useMemo(() => {
     // Total should include all submitted components
-    return productSummary.data.submittedCount || chartData.reduce((sum, d) => sum + d.y, 0);
-  }, [chartData, productSummary.data.submittedCount]);
+    const statusCounts = product.statusCounts || {};
+    return Object.values(statusCounts).reduce((sum, count) => sum + count, 0) || chartData.reduce((sum, d) => sum + d.y, 0);
+  }, [chartData, product.statusCounts]);
   
   const legendData = useMemo(
     () => chartData.map((d) => ({ name: `${d.x}: ${d.y}` })),

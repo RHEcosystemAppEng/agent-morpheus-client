@@ -7,13 +7,14 @@ import java.util.Map;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import com.redhat.ecosystemappeng.morpheus.model.GroupedReportRow;
+import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
@@ -22,17 +23,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class GroupedReportsService {
+public class ProductsService {
 
-  private static final Logger LOGGER = Logger.getLogger(GroupedReportsService.class);
+  private static final Logger LOGGER = Logger.getLogger(ProductsService.class);
   private static final String PRODUCT_ID = "product_id";
   private static final String SBOM_NAME = "sbom_name";
 
   @Inject
   ReportRepositoryService reportRepositoryService;
 
-  public PaginatedResult<GroupedReportRow> getGroupedReports(String sortField, SortType sortType, Pagination pagination) {
-    List<GroupedReportRow> groupedRows = new ArrayList<>();
+  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination) {
+    List<Product> products = new ArrayList<>();
     
     // Build filter for reports with product_id
     Bson filter = Filters.exists("metadata." + PRODUCT_ID, true);
@@ -58,9 +59,9 @@ public class GroupedReportsService {
     reportRepositoryService.getCollection()
         .aggregate(pipeline)
         .forEach(groupDoc -> {
-          GroupedReportRow row = processGroup(groupDoc);
-          if (row != null) {
-            groupedRows.add(row);
+          Product product = processGroup(groupDoc);
+          if (product != null) {
+            products.add(product);
           }
         });
     
@@ -68,7 +69,27 @@ public class GroupedReportsService {
     long totalGroups = getTotalGroupCount(filter);
     int totalPages = (int) Math.ceil((double) totalGroups / pagination.size());
     
-    return new PaginatedResult<>(totalGroups, totalPages, groupedRows.stream());
+    return new PaginatedResult<>(totalGroups, totalPages, products.stream());
+  }
+
+  public Product getProductById(String productId) {
+    // Build filter for reports with specific product_id
+    LOGGER.infof("Getting product by ID: %s", productId);
+    Bson filter = Filters.eq("metadata." + PRODUCT_ID, productId);
+    
+    // Collect all reports for this product_id
+    List<Document> reports = new ArrayList<>();
+    reportRepositoryService.getCollection()
+        .find(filter)
+        .forEach(reports::add);
+    
+    // If no reports found, return null
+    if (reports.isEmpty()) {
+      return null;
+    }
+    
+    // Process reports directly (no need for aggregation since all have same product_id)
+    return processReports(productId, reports);
   }
 
   private String getSortFieldPath(String sortField) {
@@ -91,7 +112,7 @@ public class GroupedReportsService {
     return count;
   }
 
-  private GroupedReportRow processGroup(Document groupDoc) {
+  private Product processGroup(Document groupDoc) {
     try {
       String productId = groupDoc.getString("_id");
       if (productId == null || productId.isEmpty()) {
@@ -104,7 +125,23 @@ public class GroupedReportsService {
         return null;
       }
       
+      return processReports(productId, reports);
+    } catch (Exception e) {
+      LOGGER.errorf("Error processing group: %s", e.getMessage(), e);
+      return null;
+    }
+  }
+
+  private Product processReports(String productId, List<Document> reports) {
+    try {
+      if (reports == null || reports.isEmpty()) {
+        return null;
+      }
+      
       Document firstReport = reports.get(0);
+      
+      // Extract firstReportId from first report
+      String firstReportId = extractReportId(firstReport);
       
       // Extract sbomName from first report
       String sbomName = extractSbomName(firstReport);
@@ -124,19 +161,29 @@ public class GroupedReportsService {
       // Get numReports
       int numReports = reports.size();
       
-      return new GroupedReportRow(
+      return new Product(
           sbomName,
           productId,
           cveId,
           cveStatusCounts,
           statusCounts,
           completedAt,
-          numReports
+          numReports,
+          firstReportId
       );
     } catch (Exception e) {
-      LOGGER.errorf("Error processing group: %s", e.getMessage(), e);
+      LOGGER.errorf("Error processing reports: %s", e.getMessage(), e);
       return null;
     }
+  }
+
+  private String extractReportId(Document report) {
+    // Extract MongoDB document _id instead of scan ID
+    ObjectId id = report.get(RepositoryConstants.ID_KEY, ObjectId.class);
+    if (id != null) {
+      return id.toHexString();
+    }
+    return null;
   }
 
   private String extractSbomName(Document report) {

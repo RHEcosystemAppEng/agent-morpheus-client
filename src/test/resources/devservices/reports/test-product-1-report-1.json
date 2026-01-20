@@ -1,7 +1,7 @@
 {
   "input": {
     "scan": {
-      "id": "test-product-1-report-1",
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
       "type": null,
       "started_at": "2025-01-15T10:00:00.000000",
       "completed_at": "2025-01-15T10:05:00.000000",
@@ -25,7 +25,13 @@
     "image": {
       "name": "test-image-1",
       "tag": "v1.0.0",
-      "source_info": []
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/test-product-1",
+          "ref": "main"
+        }
+      ]
     },
     "metadata": {
       "sbom_name": "test-sbom-product-1"

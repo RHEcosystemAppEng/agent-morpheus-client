@@ -2,89 +2,128 @@ import { useParams, Link } from "react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  EmptyState,
-  EmptyStateBody,
   PageSection,
   Title,
   Grid,
   GridItem,
+  EmptyState,
+  EmptyStateBody,
 } from "@patternfly/react-core";
-import { CubesIcon } from "@patternfly/react-icons";
 import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
-import { getErrorMessage } from "../utils/errorHandling";
 import { getRepositoryReport } from "../utils/reportApi";
+import { getErrorMessage } from "../utils/errorHandling";
 import DetailsCard from "../components/DetailsCard";
 import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
 import type { FullReport } from "../types/FullReport";
 import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkeleton";
 
+interface RepositoryReportPageErrorProps {
+  title: string;
+  message: string | React.ReactNode;
+}
+
+const RepositoryReportPageError: React.FC<RepositoryReportPageErrorProps> = ({
+  title,
+  message,
+}) => {
+  return (
+    <PageSection>
+      <EmptyState headingLevel="h4" icon={ExclamationCircleIcon} titleText={title}>
+        <EmptyStateBody>{message}</EmptyStateBody>
+      </EmptyState>
+    </PageSection>
+  );
+};
+
+interface RepositoryReportPageApiErrorProps {
+  error: Error;
+  reportId: string;
+}
+
+const RepositoryReportPageApiError: React.FC<RepositoryReportPageApiErrorProps> = ({
+  error,
+  reportId,
+}) => {
+  const errorStatus = (error as { status?: number })?.status;
+  const title =
+    errorStatus === 404
+      ? "Report not found"
+      : "Could not retrieve the selected report";
+  const message =
+    errorStatus === 404 ? (
+      `The selected report with id: ${reportId} has not been found.`
+    ) : (
+      <>
+        <p>
+          {errorStatus || "Error"}: {getErrorMessage(error)}
+        </p>
+        The selected report with id: {reportId} could not be retrieved.
+      </>
+    );
+
+  return <RepositoryReportPageError title={title} message={message} />;
+};
+
 
 const RepositoryReportPage: React.FC = () => {
-  const { productId, cveId, reportId } = useParams<{
-    productId: string;
+  // Support both new routes: /reports/product/:productId/:cveId/:reportId and /reports/component/:cveId/:reportId
+  // Also support legacy route: /reports/:productId/:cveId/:reportId
+  const params = useParams<{
+    productId?: string;
     cveId: string;
     reportId: string;
   }>();
   
+  const { productId, cveId, reportId } = params;
+  const isComponentRoute = !productId; // Component route doesn't have productId
 
   const { data: report, loading, error } = useApi<FullReport>(
     () => getRepositoryReport(reportId || ""),
     { deps: [reportId] }
   );
 
-  const image = report?.input?.image;
-  const output = report?.output || [];
-  // Find the vulnerability that matches the CVE ID from the route
-  const vuln =
-    output.find((v) => v.vuln_id === cveId) || output[0];
-  const reportIdDisplay = vuln?.vuln_id
-    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
-    : reportId || "";
 
+
+  if (loading) {
+    return <RepositoryReportPageSkeleton />;
+  }
+
+  if (error) {
+    return <RepositoryReportPageApiError error={error} reportId={reportId || ""} />;
+  }
+
+  if (!report) {
+    return (
+      <RepositoryReportPageError
+        title="Report not found"
+        message={`The selected report with id: ${reportId} has not been found.`}
+      />
+    );
+  }
+
+  const image = report.input?.image;
+  const output = report.output?.analysis || [];
+  // Find the vulnerability that matches the CVE ID from the route
+  const vuln = output.find((v) => v.vuln_id === cveId);
+
+  if (!vuln) {
+    return (
+      <RepositoryReportPageError
+        title="Vulnerability not found"
+        message={`The vulnerability ${cveId} was not found in the report with id: ${reportId}.`}
+      />
+    );
+  }
+
+  const reportIdDisplay = vuln.vuln_id
+    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}` : ""
   // Extract product name from metadata, fallback to productId
-  const productName = report?.metadata?.product_name || productId || "";
+  const productName = report?.metadata?.product_id;
   const productCveBreadcrumbText = `${productName}/${cveId || ""}`;
 
   const showReport = () => {
-    if (error) {
-      const errorStatus = (error as { status?: number })?.status;
-      if (errorStatus === 404) {
-        return (
-          <EmptyState
-            headingLevel="h4"
-            icon={CubesIcon}
-            titleText="Report not found"
-          >
-            <EmptyStateBody>
-              The selected report with id: {reportId} has not been found. 
-            </EmptyStateBody>
-          </EmptyState>
-        );
-      } else {
-        return (
-          <EmptyState
-            headingLevel="h4"
-            icon={ExclamationCircleIcon}
-            titleText="Could not retrieve the selected report"
-          >
-            <EmptyStateBody>
-              <p>
-                {errorStatus || "Error"}: {getErrorMessage(error)}
-              </p>
-              The selected report with id: {reportId} could not be retrieved.
-            </EmptyStateBody>
-          </EmptyState>
-        );
-      }
-    }
-
-
-    if (loading || !report) {
-      return <RepositoryReportPageSkeleton />;
-    }
-
     return (
       <Grid hasGutter>
         <GridItem>
@@ -116,11 +155,11 @@ const RepositoryReportPage: React.FC = () => {
     <PageSection>
       <Breadcrumb>
         <BreadcrumbItem>
-          <Link to="/Reports">Reports</Link>
+          <Link to="/reports">Reports</Link>
         </BreadcrumbItem>
-        {productId && cveId && (
+        {!isComponentRoute && productId && cveId && (
           <BreadcrumbItem>
-            <Link to={`/Reports/${productId}/${cveId}`}>
+            <Link to={`/reports/product/${productId}/${cveId}`}>
               {productCveBreadcrumbText}
             </Link>
           </BreadcrumbItem>

@@ -30,8 +30,7 @@
       "feed_group": null,
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "include": [
             "**/*.go",
             "**/*.py",
@@ -78,8 +77,7 @@
           "ref": "4e8d6894744986c8765f1856137103f5ef6b903d"
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "docs",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
@@ -6009,6 +6007,7 @@
     ]
   },
   "metadata": {
+    "product_id": "product-5",
     "submitted_at": "2025-01-20T13:32:50.276090Z",
     "user": "rromerom@redhat.com",
     "sent_at": "2025-01-20T13:32:52.045894Z"
