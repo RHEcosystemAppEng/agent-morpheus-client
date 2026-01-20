@@ -27,19 +27,19 @@ const Brand: React.FC = () => {
   return (
     <div style={{ display: "flex", gap: "10px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-        <img src="/redhat.svg" alt="Red Hat" style={{ height: 38 }} />
+        <img src="/redhat.svg" alt="Red Hat" style={{ height: 26 }} />
         <div
           style={{borderLeft: "0.3px solid #737679",height: 38,}}
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Title headingLevel="h2" size="md">
+        <Title headingLevel="h2" size="sm">
           Red Hat
         </Title>
-        <Title headingLevel="h6" size="md" >
+        <Title headingLevel="h6" size="sm" >
           <strong>Trusted Profile Analyzer</strong>
         </Title>
-        <Title headingLevel="h6" size="md">
+        <Title headingLevel="h6" size="sm">
           <strong>ExploitIQ</strong>
         </Title>
       </div>
