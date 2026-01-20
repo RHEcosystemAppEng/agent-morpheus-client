@@ -1,6 +1,7 @@
 /**
  * User avatar dropdown component for the page header
- * Based on reference implementation pattern
+ * Displays authenticated user information and provides logout functionality
+ * Integrates with Quarkus OIDC backend authentication
  */
 
 import React, { useState, useEffect } from 'react';
@@ -11,17 +12,14 @@ import {
   DropdownList,
   MenuToggle,
   MenuToggleElement,
-} from '@patternfly/react-core';
-import {UserIcon} from '@patternfly/react-icons'
+  Spinner,
+} from "@patternfly/react-core";
+import { UserIcon } from "@patternfly/react-icons";
+import { useAuth, logout } from "../hooks/useAuth";
 
 const UserAvatarDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    setUserName("dummy user");
-    console.log("dummy login")
-  }, []);
+  const { userName, loading, error } = useAuth();
 
   const onToggle = () => {
     setIsOpen(!isOpen);
@@ -31,9 +29,49 @@ const UserAvatarDropdown: React.FC = () => {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    console.log("dummy logout")
+  const handleLogout = async () => {
+    setIsOpen(false);
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Even if logout fails, try to redirect to logout endpoint
+      window.location.href = "/api/v1/user/logout";
+    }
   };
+
+  // Show spinner while loading user info
+  if (loading) {
+    return (
+      <MenuToggle
+        icon={
+          <Icon>
+            <UserIcon />
+          </Icon>
+        }
+        isFullHeight
+        isDisabled
+      >
+        <Spinner size="sm" />
+      </MenuToggle>
+    );
+  }
+
+  // Show error state (user might need to login)
+  if (error) {
+    return (
+      <MenuToggle
+        icon={
+          <Icon>
+            <UserIcon />
+          </Icon>
+        }
+        isFullHeight
+      >
+        Login
+      </MenuToggle>
+    );
+  }
 
   const userDropdownItems = (
     <DropdownItem key="logout" onClick={handleLogout}>
@@ -65,4 +103,3 @@ const UserAvatarDropdown: React.FC = () => {
 };
 
 export default UserAvatarDropdown;
-
