@@ -29,6 +29,7 @@ interface MetricsStatItemProps {
   icon: React.ReactNode;
   iconStatus: "custom" | "danger" | "success" | "warning";
   loading?: boolean;
+  iconColor?: string;
 }
 
 const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
@@ -37,6 +38,7 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
   icon,
   iconStatus,
   loading = false,
+  iconColor,
 }) => {
   return (
     <GridItem span={4}>
@@ -44,7 +46,11 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
         <CardBody>
           <Stack style={{ textAlign: "center" }}>
             <FlexItem>
-              <Icon status={iconStatus} size="xl">
+              <Icon
+                status={iconStatus}
+                size="xl"
+                style={iconColor ? { color: iconColor } : undefined}
+              >
                 {icon}
               </Icon>
             </FlexItem>
@@ -117,7 +123,8 @@ const MetricsCard: React.FC = () => {
               label="Average Intel Reliability Score (Last Week)"
               value={loading ? "" : formatScore(averageReliabilityScore)}
               icon={<OptimizeIcon />}
-              iconStatus="success"
+              iconStatus="custom"
+              iconColor="var(--pf-t--global--color--brand--default)"
               loading={loading}
             />
             <MetricsStatItem
