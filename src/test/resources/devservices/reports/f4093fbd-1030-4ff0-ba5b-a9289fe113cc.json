@@ -27,8 +27,7 @@
       "tag": "sha256:ee166a7a362c2144f088413cc8cccaded88913e80c2db11ab5e291a69485f91a",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/oc-mirror",
           "ref": "a0733c17322f96d14f9158604fe74f1bfecc4a53",
           "include": [
@@ -75,8 +74,7 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/oc-mirror",
           "ref": "a0733c17322f96d14f9158604fe74f1bfecc4a53",
           "include": [
@@ -3040,6 +3038,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-9",
     "user": "vbelouso@redhat.com",
     "source": "morpheus-parser",
     "batch_id": "mp-dnxbrn",

@@ -30,7 +30,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
     : undefined;
   const codeRepository = codeSource?.git_repo;
   const codeTag = codeSource?.ref;
-  const output = report.output || [];
+  const output = report.output?.analysis || [];
   const vuln = cveId
     ? output.find((v) => v.vuln_id === cveId) || output[0]
     : output[0];
@@ -51,7 +51,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    <Link to={`/Reports?vulnId=${vuln.vuln_id}`}>
+                    <Link to={`/reports?vulnId=${vuln.vuln_id}`}>
                       {vuln.vuln_id}
                     </Link>
                   </FlexItem>

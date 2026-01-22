@@ -1,20 +1,19 @@
 import { useMemo } from "react";
 import { Card, CardTitle, CardBody, Title } from "@patternfly/react-core";
-import { ProductSummary } from "../generated-client";
+import type { Product } from "../generated-client/models/Product";
 import DonutChartWrapper from "./DonutChartWrapper";
 
 interface ReportCveStatusPieChartProps {
-  productSummary: ProductSummary;
+  product: Product;
   cveId: string;
 }
 
 const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
-  productSummary,
+  product,
   cveId,
 }) => {
   const chartData = useMemo(() => {
-    const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
-    const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
+    const statusCounts = product.cveStatusCounts || {};
 
     let vulnerableCount = 0;
     let notVulnerableCount = 0;
@@ -37,7 +36,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
       { x: "not_vulnerable", y: notVulnerableCount },
       { x: "uncertain", y: unknownCount },
     ];
-  }, [productSummary, cveId]);
+  }, [product, cveId]);
 
   const computeColors = (slices: Array<{ x: string; y: number }>) => {
     const red = "#C9190B";

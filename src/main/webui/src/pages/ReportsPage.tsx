@@ -1,10 +1,7 @@
 import { useState, useMemo } from "react";
 import { PageSection, Title } from "@patternfly/react-core";
-import { useApi } from "../hooks/useApi";
-import {
-  ReportEndpointService as Reports,
-  ProductSummary,
-} from "../generated-client";
+import { usePaginatedApi } from "../hooks/usePaginatedApi";
+import type { Product } from "../generated-client/models/Product";
 import ReportsTable from "../components/ReportsTable";
 import { ReportsToolbarFilters } from "../components/ReportsToolbar";
 
@@ -16,21 +13,34 @@ const ReportsPage: React.FC = () => {
     analysisState: [],
   });
 
-  const { data: productSummaries } = useApi<Array<ProductSummary>>(() =>
-    Reports.getApiV1ReportsProduct()
+  // Fetch products to get analysis state options
+  const { data: products } = usePaginatedApi<Array<Product>>(
+    () => ({
+      method: "GET",
+      url: "/api/v1/products",
+      query: {
+        page: 0,
+        pageSize: 1000, // Get all products for state options
+      },
+    }),
+    {
+      deps: [],
+    }
   );
 
   const analysisStateOptions = useMemo(() => {
-    if (!productSummaries) return [];
+    if (!products) return [];
     const states = new Set<string>();
-    productSummaries.forEach((productSummary) => {
-      const productState = productSummary.summary.productState;
-      if (productState && productState !== "-") {
-        states.add(productState);
-      }
+    products.forEach((product) => {
+      const statusCounts = product.statusCounts || {};
+      Object.keys(statusCounts).forEach((state) => {
+        if (state && state !== "-") {
+          states.add(state);
+        }
+      });
     });
     return Array.from(states).sort();
-  }, [productSummaries]);
+  }, [products]);
 
   return (
     <>

@@ -5,7 +5,6 @@ import HomePage from "./pages/HomePage";
 import ReportsPage from "./pages/ReportsPage";
 import ReportPage from "./pages/ReportPage";
 import RepositoryReportPage from "./pages/RepositoryReportPage";
-import ProductRedirect from "./components/ProductRedirect";
 
 /**
  * App component - provides router context and defines all application routes
@@ -16,13 +15,16 @@ const App: React.FC = () => {
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/Reports" element={<ReportsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route
-            path="/Reports/:productId/:cveId/:reportId"
+            path="/reports/product/:productId/:cveId/:reportId"
             element={<RepositoryReportPage />}
           />
-          <Route path="/Reports/:productId/:cveId" element={<ReportPage />} />
-          <Route path="/Reports/:productId" element={<ProductRedirect />} />
+          <Route path="/reports/product/:productId/:cveId" element={<ReportPage />} />
+          <Route
+            path="/reports/component/:cveId/:reportId"
+            element={<RepositoryReportPage />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

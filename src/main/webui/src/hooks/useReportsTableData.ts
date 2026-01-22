@@ -1,14 +1,7 @@
 import { useMemo } from "react";
-import { useApi } from "./useApi";
-import {
-  ReportEndpointService as Reports,
-  ProductSummary,
-} from "../generated-client";
-import { ReportsToolbarFilters } from "../components/ReportsToolbar";
-import {
-  calculateRepositoriesAnalyzed,
-  formatRepositoriesAnalyzed,
-} from "../utils/repositoriesAnalyzed";
+import { usePaginatedApi } from "./usePaginatedApi";
+import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
+import type { Product } from "../generated-client/models/Product";
 
 export type ProductStatus = {
   vulnerableCount: number;
@@ -17,24 +10,23 @@ export type ProductStatus = {
 };
 
 export interface ReportRow {
-  reportId: string;
+  productId: string;
   sbomName: string;
   cveId: string;
   repositoriesAnalyzed: string;
-  exploitIqStatus: string;
-  exploitIqLabel: string;
   completedAt: string;
   analysisState: string;
   productStatus: ProductStatus;
+  numReports: number;
+  firstReportId?: string; // Always populated with first report's ID from group for navigation
 }
 
 export type SortDirection = "asc" | "desc";
-export type SortColumn = "reportId" | "sbomName" | "completedAt";
+export type SortColumn = "sbomName" | "completedAt";
 
 export interface UseReportsTableOptions {
-  searchValue: string;
-  cveSearchValue: string;
-  filters: ReportsToolbarFilters;
+  page: number;
+  perPage: number;
   sortColumn: SortColumn;
   sortDirection: SortDirection;
 }
@@ -43,32 +35,12 @@ export interface UseReportsTableResult {
   rows: ReportRow[];
   loading: boolean;
   error: Error | null;
+  pagination: {
+    totalElements: number;
+    totalPages: number;
+  } | null;
 }
 
-/**
- * Pure function to calculate CVE-level repository status counts from a product summary
- * Returns status counts for a specific CVE based on repository-level justifications
- */
-export function calculateCveStatus(
-  productSummary: ProductSummary,
-  cveId: string
-): ProductStatus {
-  const cveStatusCounts = productSummary.summary.cveStatusCounts || {};
-  const statusCounts = (cveStatusCounts[cveId] || {}) as Record<string, number>;
-
-  // Take values directly from cveStatusCounts
-  const vulnerableCount = statusCounts["TRUE"] || statusCounts["true"] || 0;
-  const notVulnerableCount =
-    statusCounts["FALSE"] || statusCounts["false"] || 0;
-  const uncertainCount =
-    statusCounts["UNKNOWN"] || statusCounts["unknown"] || 0;
-
-  return {
-    vulnerableCount,
-    notVulnerableCount,
-    uncertainCount,
-  };
-}
 
 /**
  * Pure function to check if analysis is completed
@@ -123,77 +95,81 @@ export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
 
 
 /**
- * Pure function to transform product summaries into report rows
+ * Pure function to determine analysis state from statusCounts
+ * Returns "completed" if all reports are completed, "analysing" otherwise
  */
-export function transformProductSummariesToRows(
-  productSummaries: ProductSummary[]
-): ReportRow[] {
-  const rows: ReportRow[] = [];
+export function getAnalysisStateFromStatusCounts(
+  statusCounts: Record<string, number>
+): string {
+  const completedCount = statusCounts["completed"] || 0;
+  const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+  
+  // If all reports are completed, state is "completed"
+  if (completedCount === totalCount && totalCount > 0) {
+    return "completed";
+  }
+  
+  // Check for analysing states
+  const analysingStates = ["pending", "queued", "sent", "analysing"];
+  const hasAnalysing = analysingStates.some(state => (statusCounts[state] || 0) > 0);
+  
+  return hasAnalysing ? "analysing" : "completed";
+}
 
-  productSummaries.forEach((productSummary) => {
-    const reportId = productSummary.data.id;
-    const sbomName = productSummary.data.name || "-";
-    const completedAt = productSummary.data.completedAt || "";
-    const analysisState = productSummary.summary.productState || "-";
-    const cves = productSummary.summary.cves || {};
-    const componentStates = productSummary.summary.componentStates || {};
-    const submittedCount = productSummary.data.submittedCount || 0;
+/**
+ * Pure function to calculate repositories analyzed from statusCounts
+ * Uses the "completed" count from statusCounts as analyzedCount
+ * and total count as submittedCount
+ */
+export function calculateRepositoriesFromStatusCounts(
+  statusCounts: Record<string, number>
+): { analyzedCount: number; submittedCount: number } {
+  const analyzedCount = statusCounts["completed"] || 0;
+  const submittedCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+  return { analyzedCount, submittedCount };
+}
 
-    // Calculate repositories analyzed
-    const analyzedCount = calculateRepositoriesAnalyzed(componentStates);
-    const repositoriesAnalyzed = formatRepositoriesAnalyzed(
-      analyzedCount,
-      submittedCount
-    );
-
-    // Create a row for each CVE
-    const cveIds = Object.keys(cves);
-    if (cveIds.length > 0) {
-      cveIds.forEach((cveId) => {
-        // Calculate CVE-level status with repository counts
-        const productStatus = calculateCveStatus(productSummary, cveId);
-
-        const justifications = cves[cveId] || [];
-        // Use the first justification if multiple exist
-        const justification = justifications[0] || {
-          status: "unknown",
-          label: "uncertain",
-        };
-        rows.push({
-          reportId,
-          sbomName,
-          cveId,
-          repositoriesAnalyzed,
-          exploitIqStatus: justification.status || "unknown",
-          exploitIqLabel: justification.label || "uncertain",
-          completedAt,
-          analysisState,
-          productStatus,
-        });
-      });
-    } else {
-      // If no CVEs, create a single row with empty CVE
-      // Use default status with zero counts
-      const productStatus: ProductStatus = {
-        vulnerableCount: 0,
-        notVulnerableCount: 0,
-        uncertainCount: 0,
-      };
-      rows.push({
-        reportId,
-        sbomName,
-        cveId: "-",
-        repositoriesAnalyzed,
-        exploitIqStatus: "unknown",
-        exploitIqLabel: "uncertain",
-        completedAt,
-        analysisState,
-        productStatus,
-      });
-    }
-  });
-
-  return rows;
+/**
+ * Pure function to transform Product to ReportRow
+ */
+export function transformGroupedReportRowToRow(
+  groupedRow: Product
+): ReportRow {
+  const sbomName = groupedRow.sbomName || "-";
+  const cveId = groupedRow.cveId || "-";
+  const completedAt = groupedRow.completedAt || "";
+  
+  // Calculate analysis state from statusCounts
+  const analysisState = getAnalysisStateFromStatusCounts(groupedRow.statusCounts);
+  
+  // Calculate repositories analyzed from statusCounts
+  const { analyzedCount, submittedCount } = calculateRepositoriesFromStatusCounts(
+    groupedRow.statusCounts
+  );
+  const repositoriesAnalyzed = formatRepositoriesAnalyzed(
+    analyzedCount,
+    submittedCount
+  );
+  
+  // Calculate product status from cveStatusCounts
+  const cveStatusCounts = groupedRow.cveStatusCounts || {};
+  const productStatus: ProductStatus = {
+    vulnerableCount: cveStatusCounts["TRUE"] || cveStatusCounts["true"] || 0,
+    notVulnerableCount: cveStatusCounts["FALSE"] || cveStatusCounts["false"] || 0,
+    uncertainCount: cveStatusCounts["UNKNOWN"] || cveStatusCounts["unknown"] || 0,
+  };
+  
+  return {
+    productId: groupedRow.productId,
+    sbomName,
+    cveId,
+    repositoriesAnalyzed,
+    completedAt,
+    analysisState,
+    productStatus,
+    numReports: groupedRow.numReports,
+    firstReportId: groupedRow.firstReportId,
+  };
 }
 
 /**
@@ -214,122 +190,76 @@ export function compareStrings(
 }
 
 /**
- * Pure function to filter and sort report rows
+ * Pure function to map frontend sort column to API sort field
  */
-export function filterAndSortReportRows(
-  rows: ReportRow[],
-  searchValue: string,
-  cveSearchValue: string,
-  filters: ReportsToolbarFilters,
-  sortColumn: SortColumn,
-  sortDirection: SortDirection
-): ReportRow[] {
-  let filtered = rows;
-
-  // Apply SBOM name search filter
-  if (searchValue.trim()) {
-    const searchLower = searchValue.toLowerCase().trim();
-    filtered = filtered.filter((row) =>
-      row.sbomName.toLowerCase().includes(searchLower)
-    );
+export function mapSortColumnToApiField(sortColumn: SortColumn): string {
+  switch (sortColumn) {
+    case "sbomName":
+      return "sbomName";
+    case "completedAt":
+      return "completedAt";
+    default:
+      return "completedAt";
   }
+}
 
-  // Apply CVE ID search filter
-  if (cveSearchValue.trim()) {
-    const searchLower = cveSearchValue.toLowerCase().trim();
-    filtered = filtered.filter((row) =>
-      row.cveId.toLowerCase().includes(searchLower)
-    );
-  }
-
-  // ExploitIQ status filtering is now handled server-side via /api/reports endpoint
-  // This client-side filter is kept for backward compatibility with product summaries endpoint but should be removed once ReportsTable switches to using /api/reports with exploitIqStatus filter
-  if (filters.exploitIqStatus.length > 0) {
-    filtered = filtered.filter((row) => {
-      const statusItems = getStatusItems(row.productStatus);
-      // Check if any of the selected filter options match the row's status items
-      return statusItems.some((item) =>
-        filters.exploitIqStatus.includes(item.label)
-      );
-    });
-  }
-
-  // Apply Analysis state filter
-  if (filters.analysisState.length > 0) {
-    filtered = filtered.filter((row) =>
-      filters.analysisState.includes(row.analysisState)
-    );
-  }
-
-  // Apply sorting
-  filtered = [...filtered].sort((a, b) => {
-    if (sortColumn === "reportId") {
-      return compareStrings(a.reportId, b.reportId, sortDirection);
-    } else if (sortColumn === "sbomName") {
-      return compareStrings(a.sbomName, b.sbomName, sortDirection);
-    } else {
-      // Sort by completedAt date
-      const dateA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-      const dateB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-      if (sortDirection === "desc") {
-        return dateB - dateA; // Newest first
-      } else {
-        return dateA - dateB; // Oldest first
-      }
-    }
-  });
-
-  return filtered;
+/**
+ * Pure function to map frontend sort direction to API sort direction
+ */
+export function mapSortDirectionToApi(sortDirection: SortDirection): string {
+  return sortDirection.toUpperCase();
 }
 
 /**
  * Hook to fetch reports and process them for the reports table
  * Follows Rule VI: Complex data processing logic is encapsulated in a custom hook
  * with separate pure functions for data transformation
+ * Uses server-side pagination, filtering, and sorting via /api/v1/reports/grouped endpoint
  */
 export function useReportsTableData(
   options: UseReportsTableOptions
 ): UseReportsTableResult {
-  const { searchValue, cveSearchValue, filters, sortColumn, sortDirection } =
-    options;
+  const { page, perPage, sortColumn, sortDirection } = options;
 
-  // Fetch product summaries using the generated API client
+  // Map frontend sort parameters to API parameters
+  const sortField = mapSortColumnToApiField(sortColumn);
+  const sortDirectionApi = mapSortDirectionToApi(sortDirection);
+
+  // Fetch products using usePaginatedApi
   const {
-    data: productSummaries,
+    data: groupedRows,
     loading,
     error,
-  } = useApi<Array<ProductSummary>>(() => Reports.getApiV1ReportsProduct());
+    pagination,
+  } = usePaginatedApi<Array<Product>>(
+    () => ({
+      method: "GET",
+      url: "/api/v1/products",
+      query: {
+        page: page - 1, // API uses 0-based pagination
+        pageSize: perPage,
+        sortField,
+        sortDirection: sortDirectionApi,
+      },
+    }),
+    {
+      deps: [page, perPage, sortField, sortDirectionApi],
+    }
+  );
 
-  // Transform and process the data
+  // Transform grouped rows to report rows
   const rows = useMemo(() => {
-    if (!productSummaries) {
+    if (!groupedRows) {
       return [];
     }
 
-    // Transform product summaries to rows
-    const transformedRows = transformProductSummariesToRows(productSummaries);
-
-    // Filter and sort the rows
-    return filterAndSortReportRows(
-      transformedRows,
-      searchValue,
-      cveSearchValue,
-      filters,
-      sortColumn,
-      sortDirection
-    );
-  }, [
-    productSummaries,
-    searchValue,
-    cveSearchValue,
-    filters,
-    sortColumn,
-    sortDirection,
-  ]);
+    return groupedRows.map(transformGroupedReportRowToRow);
+  }, [groupedRows]);
 
   return {
     rows,
     loading,
     error,
+    pagination,
   };
 }

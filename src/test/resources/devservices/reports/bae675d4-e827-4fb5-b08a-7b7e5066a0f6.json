@@ -27,8 +27,7 @@
       "tag": "sha256:94a0d7feec34600a858c8e383ee0e8d5f4a077f6bbc327dcad8762acfcf40679",
       "source_info": [
         {
-          "type": "git",
-          "source_type": "code",
+          "type": "code",
           "git_repo": "https://github.com/openshift/console",
           "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
           "include": [
@@ -106,8 +105,7 @@
           ]
         },
         {
-          "type": "git",
-          "source_type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/console",
           "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
           "include": [
@@ -2717,6 +2715,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-4",
     "submitted_at": "2025-02-24T07:11:41.123398Z",
     "user": "zgrinber@redhat.com",
     "sent_at": "2025-02-24T07:11:43.437450Z"

@@ -6,32 +6,19 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Label,
-  LabelGroup,
   Title,
 } from "@patternfly/react-core";
-import { ProductSummary } from "../generated-client";
+import type { Product } from "../generated-client/models/Product";
 import FormattedTimestamp from "./FormattedTimestamp";
 
 interface ReportAdditionalDetailsProps {
-  productSummary: ProductSummary;
+  product: Product;
 }
 
 const ReportAdditionalDetails: React.FC<ReportAdditionalDetailsProps> = ({
-  productSummary,
+  product,
 }) => {
-  const completedAt = productSummary.data.completedAt;
-  const metadata = productSummary.data.metadata || {};
-
-  // Filter out internal metadata fields
-  const filteredMetadata = Object.fromEntries(
-    Object.entries(metadata).filter(
-      ([key]) =>
-        key !== "product_id" &&
-        key !== "product_name" &&
-        key !== "product_submitted_count"
-    )
-  );
+  const completedAt = product.completedAt;
 
   return (
     <Card>
@@ -52,20 +39,6 @@ const ReportAdditionalDetails: React.FC<ReportAdditionalDetailsProps> = ({
               )}
             </DescriptionListDescription>
           </DescriptionListGroup>
-          {Object.keys(filteredMetadata).length > 0 && (
-            <DescriptionListGroup>
-              <DescriptionListTerm>Metadata</DescriptionListTerm>
-              <DescriptionListDescription>
-                <LabelGroup>
-                  {Object.entries(filteredMetadata).map(([key, value]) => (
-                    <Label key={key} color="orange">
-                      {key}: {String(value)}
-                    </Label>
-                  ))}
-                </LabelGroup>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          )}
         </DescriptionList>
       </CardBody>
     </Card>

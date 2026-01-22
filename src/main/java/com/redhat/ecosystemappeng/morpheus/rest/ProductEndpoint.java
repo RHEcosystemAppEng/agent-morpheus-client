@@ -1,130 +1,143 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.jboss.logging.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
-import com.redhat.ecosystemappeng.morpheus.service.ProductService;
-import java.util.Objects;
+import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.SortType;
+import com.redhat.ecosystemappeng.morpheus.service.ProductsService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.PathParam;
 
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
-import org.jboss.logging.Logger;
-
+@SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
-@Path("/product")
+@Path("/products")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProductEndpoint {
-  
+
   private static final Logger LOGGER = Logger.getLogger(ProductEndpoint.class);
 
+  private static final String PAGE = "page";
+  private static final String PAGE_SIZE = "pageSize";
+
   @Inject
-  ProductService productService;
+  ProductsService productsService;
 
   @Inject
   ObjectMapper objectMapper;
 
-  @POST
+  @GET
   @Operation(
-    summary = "Save product", 
-    description = "Saves product metadata to database")
+    summary = "List products", 
+    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName")
   @APIResponses({
     @APIResponse(
-      responseCode = "202", 
-      description = "Save product metadata request accepted"
+      responseCode = "200", 
+      description = "Products retrieved successfully",
+      content = @Content(
+        schema = @Schema(type = SchemaType.ARRAY, implementation = Product.class)
+      )
     ),
     @APIResponse(
       responseCode = "500", 
       description = "Internal server error"
     )
   })
-  public Response save(
-    @RequestBody(
-      description = "Product metadata to save",
-      required = true,
-      content = @Content(schema = @Schema(implementation = Product.class))
-    )
-    Product product) {
+  public Response listProducts(
+      @Parameter(
+        description = "Sort field: 'completedAt' or 'sbomName'"
+      )
+      @QueryParam("sortField") @DefaultValue("completedAt") String sortField,
+      @Parameter(
+        description = "Sort direction: 'ASC' or 'DESC'"
+      )
+      @QueryParam("sortDirection") @DefaultValue("DESC") String sortDirection,
+      @Parameter(
+        description = "Page number (0-based)"
+      )
+      @QueryParam(PAGE) @DefaultValue("0") Integer page,
+      @Parameter(
+        description = "Number of items per page"
+      )
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
     try {
-      productService.save(product);
-      return Response.accepted().build();
+      SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
+      var result = productsService.getProducts(sortField, sortType, new Pagination(page, pageSize));
+      return Response.ok(result.results)
+          .header("X-Total-Pages", result.totalPages)
+          .header("X-Total-Elements", result.totalElements)
+          .build();
     } catch (Exception e) {
-      LOGGER.error("Failed to save product to database", e);
-      return Response.serverError().entity(objectMapper.createObjectNode().put("error", e.getMessage())).build();
+      LOGGER.error("Unable to retrieve products", e);
+      return Response.serverError()
+          .entity(objectMapper.createObjectNode()
+          .put("error", e.getMessage()))
+          .build();
     }
   }
 
   @GET
-  @Path("/{id}")
+  @Path("/{productId}")
   @Operation(
-    summary = "Get product", 
-    description = "Gets product by ID from database")
+    summary = "Get product by ID", 
+    description = "Retrieves product data for a specific product ID")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
-      description = "Product found in database",
-      content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                        schema = @Schema(implementation = Product.class))
+      description = "Product retrieved successfully",
+      content = @Content(
+        schema = @Schema(type = SchemaType.OBJECT, implementation = Product.class)
+      )
     ),
     @APIResponse(
       responseCode = "404", 
-      description = "Product not found in database"
+      description = "Product not found"
     ),
     @APIResponse(
       responseCode = "500", 
       description = "Internal server error"
     )
   })
-  public Response get(
-    @Parameter(
-      description = "Product ID", 
-      required = true
-    )
-    @PathParam("id") String id) {
-    Product product = productService.get(id);
-    if (Objects.isNull(product)) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+  public Response getProduct(
+      @Parameter(
+        description = "Product ID", 
+        required = true
+      )
+      @PathParam("productId") String productId) {
+    try {
+      Product product = productsService.getProductById(productId);
+      if (product == null) {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+      return Response.ok(product).build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to retrieve product", e);
+      return Response.serverError()
+          .entity(objectMapper.createObjectNode()
+          .put("error", e.getMessage()))
+          .build();
     }
-    return Response.ok(product).build();
   }
+}
 
-  @DELETE
-  @Path("/{id}")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "202", 
-      description = "Product deletion request accepted"
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response remove(
-    @Parameter(
-      description = "Product ID", 
-      required = true
-    )
-    @PathParam("id") String id) {
-    productService.remove(id);
-    return Response.accepted().build();
-  }
-} 

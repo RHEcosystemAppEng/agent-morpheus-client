@@ -44,7 +44,7 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
   report,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const firstVuln = report?.output?.[0] || {};
+  const firstVuln = report?.output?.analysis?.[0] || {};
   const firstVulnId = firstVuln?.vuln_id;
   const { comments: userComments, loading: commentsLoading, error: commentsError } =
     useVulnComments(firstVulnId);

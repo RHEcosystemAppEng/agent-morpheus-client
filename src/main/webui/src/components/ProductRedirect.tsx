@@ -7,9 +7,9 @@ const ProductRedirect: React.FC = () => {
 
   useEffect(() => {
     if (productId) {
-      navigate(`/Reports?productId=${productId}`, { replace: true });
+      navigate(`/reports?productId=${productId}`, { replace: true });
     } else {
-      navigate("/Reports", { replace: true });
+      navigate("/reports", { replace: true });
     }
   }, [productId, navigate]);
 

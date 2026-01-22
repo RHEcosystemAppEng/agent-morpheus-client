@@ -13,7 +13,6 @@ export type { Image } from './models/Image';
 export type { Justification } from './models/Justification';
 export type { Product } from './models/Product';
 export type { ProductReportsSummary } from './models/ProductReportsSummary';
-export type { ProductSummary } from './models/ProductSummary';
 export type { Report } from './models/Report';
 export type { ReportData } from './models/ReportData';
 export type { ReportRequest } from './models/ReportRequest';
