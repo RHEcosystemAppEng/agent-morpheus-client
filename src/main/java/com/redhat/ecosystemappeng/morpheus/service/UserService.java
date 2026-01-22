@@ -1,53 +1,41 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
-import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.oidc.UserInfo;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import java.util.Objects;
 
 @ApplicationScoped
 public class UserService {
-
+  
   @Inject
-  UserInfo userInfo;
+  Instance<UserInfo> userInfoInstance;
 
   private static final String DEFAULT_USERNAME = "anonymous";
 
-  @IfBuildProperty(name = "quarkus.oidc.enabled", stringValue = "false")
-  @ApplicationScoped
-  @Produces
-  public UserInfo getAnonymousUserInfo() {
-    JsonObject json = Json.createObjectBuilder()
-        .add("email", "anonymous")
-        .build();
-    return new UserInfo(json);
-  }
-
   public String getUserName() {
-    if (Objects.nonNull(userInfo)) {
+    if(userInfoInstance.isResolvable()) {
+      var userInfo = userInfoInstance.get();
       // Try email first
       var name = userInfo.getString("email");
-      if (Objects.nonNull(name)) {
+      if(Objects.nonNull(name)) {
         return name;
       }
       // Fallback to upn
       name = userInfo.getString("upn");
-      if (Objects.nonNull(name)) {
+      if(Objects.nonNull(name)) {
         return name;
       }
       // Fallback to metadata.name
       var metadata = userInfo.getObject("metadata");
-      if (Objects.nonNull(metadata)) {
+      if(Objects.nonNull(metadata)) {
         name = metadata.getString("name");
-        if (Objects.nonNull(name)) {
+        if(Objects.nonNull(name)) {
           return name;
         }
       }
-    }
+    } 
     return DEFAULT_USERNAME;
   }
 }

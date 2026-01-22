@@ -1,7 +1,4 @@
 {
-  "_id": {
-    "$oid": "507f1f77bcf86cd799439016"
-  },
   "input": {
     "scan": {
       "id": "c60aa511-eb28-48d6-a591-08a5c5ec020f",
@@ -49,7 +46,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "exclude": [
+          "excludes": [
             "test/**/*",
             "**/vendor/**/*",
             "go.mod",
@@ -57,14 +54,14 @@
           ]
         },
         {
-          "type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/kubernetes-metrics-server",
           "ref": "8c2920c24c3705e43cefd6c6e65409b7da341ddc",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "exclude": []
+          "excludes": []
         }
       ],
       "sbom_info": {
@@ -2025,6 +2022,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-6",
     "submitted_at": "2025-02-20T13:32:50.276090Z",
     "user": "rromerom@redhat.com",
     "sent_at": "2025-02-20T13:32:52.045894Z"

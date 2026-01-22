@@ -1,7 +1,4 @@
 {
-  "_id": {
-    "$oid": "507f1f77bcf86cd799439014"
-  },
   "input": {
     "scan": {
       "id": "bae675d4-e827-4fb5-b08a-7b7e5066a0f6",
@@ -80,7 +77,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "exclude": [
+          "excludes": [
             "node_modules/**/*",
             "dist/**/*",
             "build/**/*",
@@ -108,14 +105,14 @@
           ]
         },
         {
-          "type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/console",
           "ref": "350e1eabfd7b20f7ad56032b5a080d0cad4bd835",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "exclude": []
+          "excludes": []
         }
       ],
       "sbom_info": {
@@ -2718,6 +2715,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-4",
     "submitted_at": "2025-02-24T07:11:41.123398Z",
     "user": "zgrinber@redhat.com",
     "sent_at": "2025-02-24T07:11:43.437450Z"

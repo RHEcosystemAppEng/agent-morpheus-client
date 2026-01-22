@@ -30,10 +30,8 @@ import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
-import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
-import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -76,9 +74,6 @@ public class ReportEndpoint {
 
   @Inject
   PreProcessingService preProcessingService;
-
-  @Inject
-  ProductService productService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -245,6 +240,7 @@ public class ReportEndpoint {
     return Response.accepted(reqId).build();
   }
 
+
   @GET
   @Operation(
     summary = "List analysis reports", 
@@ -275,16 +271,51 @@ public class ReportEndpoint {
       @Parameter(
         description = "Number of items per page"
       )
-      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize,
+      @Parameter(
+        description = "Filter by report ID (input.scan.id)"
+      )
+      @QueryParam("reportId") String reportId,
+      @Parameter(
+        description = "Filter by vulnerability ID (CVE ID)"
+      )
+      @QueryParam("vulnId") String vulnId,
+      @Parameter(
+        description = "Filter by status. Valid values: completed, sent, failed, queued, expired, pending"
+      )
+      @QueryParam("status") String status,
+      @Parameter(
+        description = "Filter by image name"
+      )
+      @QueryParam("imageName") String imageName,
+      @Parameter(
+        description = "Filter by image tag"
+      )
+      @QueryParam("imageTag") String imageTag,
+      @Parameter(
+        description = "Filter by product ID (metadata.product_id)"
+      )
+      @QueryParam("productId") String productId,
+      @Parameter(
+        description = "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN"
+      )
+      @QueryParam("exploitIqStatus") String exploitIqStatus) {
 
-    var filter = uriInfo.getQueryParameters().entrySet().stream().filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
-        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getFirst()));
+    var filter = uriInfo.getQueryParameters().entrySet().stream()
+        .filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            e -> e.getValue().size() > 1 
+              ? String.join(",", e.getValue()) 
+              : e.getValue().getFirst()
+        ));
     var result = reportService.list(filter, SortField.fromSortBy(sortBy), page, pageSize);
     return Response.ok(result.results)
         .header("X-Total-Pages", result.totalPages)
         .header("X-Total-Elements", result.totalElements)
         .build();
   }
+
 
   @GET
   @Path("/{id}")
@@ -340,56 +371,6 @@ public class ReportEndpoint {
     return report;
   }
 
-  @GET
-  @Path("/product/{id}")
-  @Operation(
-    summary = "Get product data by ID", 
-    description = "Retrieves product data for a specific product ID")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "200", 
-      description = "Product data retrieved successfully",
-      content = @Content(
-        schema = @Schema(type = SchemaType.OBJECT, implementation = ProductSummary.class)
-      )
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response listProduct(
-    @Parameter(
-      description = "Product ID", 
-      required = true
-    )
-    @PathParam("id") String id) throws InterruptedException {
-    var result = reportService.getProductSummary(id);
-    return Response.ok(result).build();
-  }
-
-  @GET
-  @Path("/product")
-  @Operation(
-    summary = "List all product data", 
-    description = "Retrieves product data for all products")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "200", 
-      description = "Product data retrieved successfully",
-      content = @Content(
-        schema = @Schema(type = SchemaType.ARRAY, implementation = ProductSummary.class)
-      )
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response listProducts() {
-    var result = reportService.listProductSummaries();
-    return Response.ok(result).build();
-  }
 
   @POST
   @Path("/{id}/submit")
@@ -567,73 +548,4 @@ public class ReportEndpoint {
     return Response.accepted().build();
   }
 
-  @DELETE
-  @Path("/product")
-  @Operation(
-    summary = "Delete product by IDs", 
-    description = "Deletes all component analysis reports and product metadata associated with specified product IDs")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "202", 
-      description = "Product deletion request accepted"
-    ),
-    @APIResponse(
-      responseCode = "400", 
-      description = "Invalid request - no product IDs provided"
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response removeManyByProductId(
-    @Parameter(
-      description = "List of product IDs to delete", 
-      required = true
-    )
-    @QueryParam("productIds") List<String> productIds) {
-    if (Objects.isNull(productIds) || productIds.isEmpty()) {
-      return Response.status(Status.BAD_REQUEST)
-        .entity(objectMapper.createObjectNode()
-        .put("error", "No productIds provided"))
-        .build();
-    }
-    List<String> reportIds = reportService.getReportIds(productIds);
-    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
-      return Response.accepted().build();
-    }
-    reportService.remove(reportIds);
-    productService.remove(productIds);
-    return Response.accepted().build();
-  }
-
-  @DELETE
-  @Path("/product/{id}")
-  @Operation(
-    summary = "Delete product by ID", 
-    description = "Deletes all component analysis reports and product metadata associated with a specific product ID")
-  @APIResponses({
-    @APIResponse(
-      responseCode = "202", 
-      description = "Product deletion request accepted"
-    ),
-    @APIResponse(
-      responseCode = "500", 
-      description = "Internal server error"
-    )
-  })
-  public Response removeByProductId(
-    @Parameter(
-      description = "Product ID to delete", 
-      required = true
-    )
-    @PathParam("id") String id) {
-    List<String> reportIds = reportService.getReportIds(List.of(id));
-    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
-      return Response.accepted().build();
-    }
-    reportService.remove(reportIds);
-    productService.remove(id);
-    return Response.accepted().build();
-  }
 }

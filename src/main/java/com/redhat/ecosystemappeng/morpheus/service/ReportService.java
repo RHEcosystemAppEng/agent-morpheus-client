@@ -42,9 +42,6 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
-import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
-import com.redhat.ecosystemappeng.morpheus.model.Product;
-import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 
 
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
@@ -74,9 +71,6 @@ public class ReportService {
 
   @Inject
   ReportRepositoryService repository;
-
-  @Inject
-  ProductService productService;
 
   @Inject
   RequestQueueService queueService;
@@ -139,25 +133,6 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
-  public List<ProductSummary> listProductSummaries() {
-    List<ProductSummary> summaries = new ArrayList<>();
-    List<String> productIds = repository.getProductIds();
-    for (String productId : productIds) {
-      summaries.add(getProductSummary(productId));
-    }
-    return summaries;
-  }
-
-  public ProductSummary getProductSummary(String productId) {
-    Product product = productService.get(productId);
-
-    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId);
-    
-    return new ProductSummary(
-      product, 
-      productReportsSummary
-    );
-  }
 
   public List<String> getReportIds(List<String> productIds) {
     if (Objects.isNull(productIds) || productIds.isEmpty()) {
@@ -273,14 +248,7 @@ public class ReportService {
   }
 
   private String determineUser(JsonNode report) {
-    JsonNode metadata = report.get("metadata");
-    if (metadata != null && metadata.has("product_id")) {
-      String productId = metadata.get("product_id").asText();
-      String productUser = productService.getUserName(productId);
-      if (productUser != null && !productUser.isEmpty()) {
-        return productUser;
-      }
-    }
+    // User determination from product table removed - product table is no longer used
     
     return userService.getUserName();
   }

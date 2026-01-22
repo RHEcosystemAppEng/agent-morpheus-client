@@ -1,0 +1,61 @@
+{
+  "input": {
+    "scan": {
+      "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "type": null,
+      "started_at": "2025-01-15T10:00:00.000000",
+      "completed_at": "2025-01-15T10:05:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-12345",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "test-image-1",
+      "tag": "v1.0.0",
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/test-product-1",
+          "ref": "main"
+        }
+      ]
+    },
+    "metadata": {
+      "sbom_name": "test-sbom-product-1"
+    }
+  },
+  "output": {
+    "analysis": [
+      {
+        "vuln_id": "CVE-2024-12345",
+        "justification": {
+          "status": "FALSE",
+          "label": "test_label"
+        }
+      }
+    ],
+    "vex": null
+  },
+  "metadata": {
+    "product_id": "product-1",
+    "sbom_name": "test-sbom-product-1",
+    "submitted_at": "2025-01-15T09:00:00.000000Z",
+    "sent_at": "2025-01-15T09:00:00.000000Z",
+    "user": "test@example.com"
+  },
+  "info": {}
+}
+
