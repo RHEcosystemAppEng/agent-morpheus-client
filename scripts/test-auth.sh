@@ -608,6 +608,7 @@ scenario_external_keycloak() {
       "-Dquarkus.oidc.credentials.secret=${APP_CLIENT_SECRET}" \
       -Dquarkus.keycloak.devservices.enabled=false \
       -Dquarkus.oidc.tls.verification=none \
+      "-Dquarkus.rest-client.component-syncer.url=http://localhost:8088/exploit-iq/component-syncer" \
       -Dmorpheus.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
   fi
 }

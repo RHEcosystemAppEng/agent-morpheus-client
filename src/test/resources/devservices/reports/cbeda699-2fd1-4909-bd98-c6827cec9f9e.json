@@ -1,7 +1,4 @@
 {
-  "_id": {
-    "$oid": "507f1f77bcf86cd799439017"
-  },
   "input": {
     "scan": {
       "id": "cbeda699-2fd1-4909-bd98-c6827cec9f9e",
@@ -80,7 +77,7 @@
           "ref": "4e8d6894744986c8765f1856137103f5ef6b903d"
         },
         {
-          "type": "doc",
+          "type": "docs",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
@@ -6010,6 +6007,7 @@
     ]
   },
   "metadata": {
+    "product_id": "product-5",
     "submitted_at": "2025-01-20T13:32:50.276090Z",
     "user": "rromerom@redhat.com",
     "sent_at": "2025-01-20T13:32:52.045894Z"

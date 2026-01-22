@@ -1,7 +1,4 @@
 {
-  "_id": {
-    "$oid": "507f1f77bcf86cd79943901c"
-  },
   "input": {
     "scan": {
       "id": "f329e389-c9d0-44bf-8d3e-123cb0ab05e2",
@@ -80,7 +77,7 @@
             "config/**/*",
             "conf.d/**/*"
           ],
-          "exclude": [
+          "excludes": [
             "node_modules/**/*",
             "dist/**/*",
             "build/**/*",
@@ -108,14 +105,14 @@
           ]
         },
         {
-          "type": "doc",
+          "type": "docs",
           "git_repo": "https://github.com/openshift/console",
           "ref": "f6f61ca06f008ead018f37668f9fa391e668e703",
           "include": [
             "**/*.md",
             "docs/**/*.rst"
           ],
-          "exclude": []
+          "excludes": []
         }
       ],
       "sbom_info": {
@@ -2898,6 +2895,7 @@
     }
   },
   "metadata": {
+    "product_id": "product-8",
     "user": "vbelouso@redhat.com",
     "source": "morpheus-parser",
     "batch_id": "mp-i3mtoj",

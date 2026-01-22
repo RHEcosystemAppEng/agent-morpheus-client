@@ -47,3 +47,26 @@ nb-configuration.xml
 node_modules/
 .quinoa
 data
+
+# TypeScript/JavaScript build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Frontend build outputs
+src/main/webui/dist/
+src/main/webui/build/
+src/main/webui/.vite/
+openspec/changes/
+# Logs
+*.log
+*.log.*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

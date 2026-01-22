@@ -1,33 +1,27 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import io.quarkus.runtime.annotations.RegisterForReflection;
-
-import java.util.List;
 import java.util.Map;
 
-@Schema(name = "Product", description = "Product metadata")
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+@Schema(name = "Product", description = "Product data grouped by product_id")
 @RegisterForReflection
 public record Product(
-    @Schema(required = true, description = "Product ID")
-    String id,
-    @Schema(required = true, description = "Product name")
-    String name,
-    @Schema(required = true, description = "Product version")
-    String version,
-    @Schema(required = true, description = "Timestamp of product scan request submission")
-    String submittedAt,
-    @Schema(required = true, description = "Number of components submitted for scanning")
-    int submittedCount,
-    @Schema(required = true, description = "Product user provided metadata")
-    Map<String, String> metadata,
-    @Schema(type = SchemaType.ARRAY, implementation = FailedComponent.class, required = true, description = "List of submitted components failed to be processed for scanning")
-    List<FailedComponent> submissionFailures,
-    @Schema(description = "Timestamp of product scan request completion")
-    String completedAt
-) {
-    public Product(String id, String name, String version, String submittedAt, int submittedCount, Map<String, String> metadata, List<FailedComponent> submissionFailures) {
-        this(id, name, version, submittedAt, submittedCount, metadata, submissionFailures, null);
-    }
-} 
+    @Schema(description = "SBOM name from first report's metadata.sbom_name")
+    String sbomName,
+    @Schema(required = true, description = "Product ID from first report's metadata.product_id")
+    String productId,
+    @Schema(description = "CVE ID from first report's input.scan.vulns[0].vuln_id")
+    String cveId,
+    @Schema(required = true, description = "Map of CVE status to count of reports with that status")
+    Map<String, Integer> cveStatusCounts,
+    @Schema(required = true, description = "Map of report status to count of reports with that status")
+    Map<String, Integer> statusCounts,
+    @Schema(description = "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value")
+    String completedAt,
+    @Schema(required = true, description = "Number of reports in this product group")
+    Integer numReports,
+    @Schema(description = "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes")
+    String firstReportId) {
+}
