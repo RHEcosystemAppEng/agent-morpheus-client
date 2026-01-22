@@ -11,6 +11,7 @@ export type { FailedComponent } from './models/FailedComponent';
 export type { Feedback } from './models/Feedback';
 export type { Image } from './models/Image';
 export type { Justification } from './models/Justification';
+export type { OverviewMetrics } from './models/OverviewMetrics';
 export type { Product } from './models/Product';
 export type { ProductReportsSummary } from './models/ProductReportsSummary';
 export type { Report } from './models/Report';
@@ -26,6 +27,7 @@ export type { VulnResult } from './models/VulnResult';
 
 export { FeedbackResourceService } from './services/FeedbackResourceService';
 export { GenerateSbomEndpointService } from './services/GenerateSbomEndpointService';
+export { OverviewMetricsService } from './services/OverviewMetricsService';
 export { PreProcessingEndpointService } from './services/PreProcessingEndpointService';
 export { ProductEndpointService } from './services/ProductEndpointService';
 export { ReportEndpointService } from './services/ReportEndpointService';

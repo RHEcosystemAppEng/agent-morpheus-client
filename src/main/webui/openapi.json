@@ -547,12 +547,36 @@
           }
         }
       },
+      "OverviewMetrics": {
+        "description": "Metrics for the home page calculated from data in the last week",
+        "type": "object",
+        "required": [
+          "successfullyAnalyzed",
+          "averageReliabilityScore",
+          "falsePositiveRate"
+        ],
+        "properties": {
+          "successfullyAnalyzed": {
+            "type": "number",
+            "format": "double",
+            "description": "The percentage of repositories successfully analyzed in the last week"
+          },
+          "averageReliabilityScore": {
+            "type": "number",
+            "format": "double",
+            "description": "The average reliability score of the intelligence data from completed reports in the last week"
+          },
+          "falsePositiveRate": {
+            "type": "number",
+            "format": "double",
+            "description": "The percentage of false positives identified from completed reports in the last week"
+          }
+        }
+      },
       "UserComments": {
         "description": "User provided comments on a vulnerability",
         "type": "object",
-        "required": [
-          "cve_id"
-        ],
+        "required": ["cve_id"],
         "properties": {
           "cve_id": {
             "type": "string",
@@ -1815,6 +1839,28 @@
         "tags": [
           "Vulnerability Endpoint"
         ]
+      }
+    },
+    "/api/v1/overview-metrics": {
+      "get": {
+        "summary": "Get overview metrics",
+        "description": "Retrieves metrics for the home page calculated from data in the last week, including successfully analyzed percentage, average reliability score, and false positive rate",
+        "responses": {
+          "200": {
+            "description": "Overview metrics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewMetrics"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "tags": ["Overview Metrics"]
       }
     }
   },
