@@ -127,10 +127,11 @@ const GetStartedCard: FunctionComponent = () => {
   return (
     <>
       <MultiContentCard cards={cards} />
-      <RequestAnalysisModal
-        isOpen={isRequestAnalysisModalOpen}
-        onClose={() => setIsRequestAnalysisModalOpen(false)}
-      />
+      {isRequestAnalysisModalOpen && (
+        <RequestAnalysisModal
+          onClose={() => setIsRequestAnalysisModalOpen(false)}
+        />
+      )}
     </>
   );
 };

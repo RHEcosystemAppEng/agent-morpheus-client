@@ -17,7 +17,6 @@ interface ChecklistCardProps {
 
 const ChecklistCard: React.FC<ChecklistCardProps> = ({ vuln }) => {
   const [expandedByKey, setExpandedByKey] = useState<Record<string, boolean>>({});
-
   // Expand all items by default and whenever `vuln` changes
   useEffect(() => {
     if (!vuln || !Array.isArray(vuln.checklist)) {

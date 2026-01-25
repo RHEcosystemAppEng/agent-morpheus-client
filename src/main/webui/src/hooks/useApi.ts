@@ -13,20 +13,38 @@ export interface UseApiResult<T> {
   error: Error | null;
 }
 
-export interface UseApiOptions {
-  /**
-   * Whether to fetch immediately on mount
-   * @default true
-   */
-  immediate?: boolean;
+export interface UseApiOptions<T = unknown> {
   /**
    * Dependencies array - when these change, the API will be called again
    */
   deps?: unknown[];
+  /**
+   * Polling interval in milliseconds. If set, the API will be called repeatedly at this interval.
+   * @default undefined (no polling)
+   */
+  pollInterval?: number;
+  /**
+   * Function to determine if polling should continue based on the current data.
+   * If not provided, polling will continue indefinitely (when pollInterval is set).
+   * @param data - The current data from the API call
+   * @returns true if polling should continue, false to stop
+   */
+  shouldPoll?: (data: T | null) => boolean;
+  /**
+   * Function to compare previous and current data to determine if state should be updated.
+   * If provided, state will only be updated if this function returns true.
+   * This prevents unnecessary rerenders when data hasn't meaningfully changed.
+   * @param previousData - The previous data (null on first call)
+   * @param currentData - The current data from the API call
+   * @returns true if state should be updated, false to skip the update
+   */
+  shouldUpdate?: (previousData: T | null, currentData: T) => boolean;
 }
 
 /**
- * Generic hook for API calls that returns { data, loading, error }
+ * Hook for immediate API calls with optional polling support.
+ * Always fetches immediately on mount and when dependencies change.
+ * For manual/triggered API calls (e.g., POST requests), use usePostApi instead.
  * 
  * @param apiCall - Function that returns a promise (or CancelablePromise)
  * @param options - Configuration options
@@ -45,26 +63,33 @@ export interface UseApiOptions {
  *   { deps: [reportId] }
  * );
  * 
- * // Manual trigger (immediate: false)
- * const { data, loading, error, refetch } = useApi(
- *   () => Reports.postApiReportsNew({ requestBody: report }),
- *   { immediate: false }
+ * // With polling
+ * const { data, loading, error } = useApi(
+ *   () => Reports.getApiReports1({ id: reportId }),
+ *   { 
+ *     deps: [reportId],
+ *     pollInterval: 5000,
+ *     shouldPoll: (data) => data?.status !== 'completed'
+ *   }
  * );
  * ```
  */
 export function useApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>,
-  options: UseApiOptions = {}
+  options: UseApiOptions<T> = {}
 ): UseApiResult<T> & { refetch: () => void } {
-  const { immediate = true, deps = [] } = options;
+  const { deps = [], pollInterval, shouldPoll, shouldUpdate } = options;
   
   const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState<boolean>(immediate);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   
   // Keep track of the current promise to cancel it if needed
   const promiseRef = useRef<CancelablePromise<T> | Promise<T> | null>(null);
   const cancelledRef = useRef<boolean>(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const initialFetchCompleteRef = useRef<boolean>(false);
+  const previousDataRef = useRef<T | null>(null);
 
   const execute = () => {
     // Cancel previous request if it's a CancelablePromise
@@ -83,9 +108,22 @@ export function useApi<T>(
       promise
         .then((result) => {
           if (!cancelledRef.current) {
-            setData(result);
+            // Check if we should update based on comparison function
+            const shouldUpdateState = shouldUpdate
+              ? shouldUpdate(previousDataRef.current, result)
+              : true;
+            
+            if (shouldUpdateState) {
+              setData(result);
+            }
+            
+            // Always update previous data ref for future comparisons
+            previousDataRef.current = result;
+            
+            // Always update loading state, even if data didn't change
             setLoading(false);
             promiseRef.current = null;
+            initialFetchCompleteRef.current = true;
           }
         })
         .catch((err) => {
@@ -98,20 +136,26 @@ export function useApi<T>(
             setError(err instanceof Error ? err : new Error(String(err)));
             setLoading(false);
             promiseRef.current = null;
+            initialFetchCompleteRef.current = true;
           }
         });
     } catch (err) {
       if (!cancelledRef.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
         setLoading(false);
+        initialFetchCompleteRef.current = true;
       }
     }
   };
 
   useEffect(() => {
-    if (immediate) {
-      execute();
-    }
+    // Reset initial fetch flag when deps change
+    initialFetchCompleteRef.current = false;
+    // Reset previous data ref when deps change (new query = fresh comparison)
+    previousDataRef.current = null;
+    
+    // Always execute immediately (this is useApi, not usePostApi)
+    execute();
 
     return () => {
       cancelledRef.current = true;
@@ -119,9 +163,56 @@ export function useApi<T>(
       if (promiseRef.current && 'cancel' in promiseRef.current) {
         (promiseRef.current as CancelablePromise<T>).cancel();
       }
+      // Clear polling interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [immediate, ...deps]);
+  }, [...deps]);
+
+  // Set up polling if pollInterval is provided
+  // Wait for initial fetch to complete before starting polling to prevent duplicate calls
+  useEffect(() => {
+    if (!pollInterval) {
+      return;
+    }
+
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Wait for initial fetch to complete before starting polling
+    // This prevents duplicate API calls on mount
+    if (initialFetchCompleteRef.current) {
+      // Set up polling interval
+      intervalRef.current = setInterval(() => {
+        // Check if we should continue polling
+        if (shouldPoll && !shouldPoll(data)) {
+          // Stop polling if shouldPoll returns false
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          return;
+        }
+
+        // Execute the API call
+        execute();
+      }, pollInterval);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pollInterval, shouldPoll, data]);
 
   const refetch = () => {
     execute();

@@ -15,6 +15,10 @@ The application SHALL display a table of vulnerability analysis reports with col
 
 The reports table SHALL use the `/api/v1/products` API endpoint to fetch data, which provides server-side grouping and aggregation for improved performance.
 
+The reports table SHALL automatically refresh data every 15 seconds by re-fetching from the `/api/v1/products` API endpoint.
+
+The reports table SHALL compare the entire Product objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any Product object has changed (including analysis states, completion dates, status counts, CVE status counts, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+
 #### Scenario: Reports table displays product and CVE information
 - **WHEN** a user views the reports page
 - **THEN** the table displays one row per CVE per product with columns that map to `Product` fields
@@ -154,3 +158,17 @@ The reports table SHALL support filtering by SBOM Name and CVE ID. All filtering
 - **THEN** the active filter attribute remains set to the selected attribute (e.g., "SBOM Name")
 - **AND** the same filter input remains displayed even after the filter is applied
 - **AND** the active attribute only changes when the user manually selects a different attribute from the attribute selector
+
+#### Scenario: Auto-refresh every 15 seconds
+- **WHEN** a user views the reports table
+- **THEN** the table automatically refreshes data every 15 seconds by re-fetching from the `/api/v1/products` API endpoint
+- **AND** the auto-refresh continues while the page is visible
+- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+- **AND** the auto-refresh preserves current pagination, sorting, and filter settings
+
+#### Scenario: Auto-refresh prevents unnecessary rerenders
+- **WHEN** the reports table auto-refreshes AND the Product data for all visible rows has not changed
+- **THEN** the table SHALL compare the entire Product objects between the previous and current data using deep comparison
+- **AND** the table SHALL skip the state update (prevent rerender) if all Product objects are unchanged (all fields match)
+- **AND** the table SHALL trigger a rerender if any field in any Product object has changed
+- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged

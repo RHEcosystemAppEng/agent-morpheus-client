@@ -10,13 +10,11 @@ import {
   EmptyStateBody,
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon } from "@patternfly/react-icons";
-import { useApi } from "../hooks/useApi";
-import { getRepositoryReport } from "../utils/reportApi";
+import { useRepositoryReport } from "../hooks/useRepositoryReport";
 import { getErrorMessage } from "../utils/errorHandling";
 import DetailsCard from "../components/DetailsCard";
 import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
-import type { FullReport } from "../types/FullReport";
 import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkeleton";
 
 interface RepositoryReportPageErrorProps {
@@ -79,12 +77,14 @@ const RepositoryReportPage: React.FC = () => {
   const { productId, cveId, reportId } = params;
   const isComponentRoute = !productId; // Component route doesn't have productId
 
-  const { data: report, loading, error } = useApi<FullReport>(
-    () => getRepositoryReport(reportId || ""),
-    { deps: [reportId] }
-  );
+  const { data: report, loading, error } = useRepositoryReport(reportId || "");
 
-
+  if (!cveId) {
+    return <RepositoryReportPageError
+      title="Invalid report"
+      message={`URL is invalid. Please use the format /reports/product/:productId/:cveId/:reportId or /reports/component/:cveId/:reportId.`}
+    />;
+  }
 
   if (loading) {
     return <RepositoryReportPageSkeleton />;
@@ -104,9 +104,8 @@ const RepositoryReportPage: React.FC = () => {
   }
 
   const image = report.input?.image;
-  const output = report.output?.analysis || [];
   // Find the vulnerability that matches the CVE ID from the route
-  const vuln = output.find((v) => v.vuln_id === cveId);
+  const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
 
   if (!vuln) {
     return (
@@ -122,7 +121,9 @@ const RepositoryReportPage: React.FC = () => {
   // Extract product name from metadata, fallback to productId
   const productName = report?.metadata?.product_id;
   const productCveBreadcrumbText = `${productName}/${cveId || ""}`;
-
+  const output = report.output?.analysis || [];
+  const outputVuln = output.find((v) => v.vuln_id === cveId);
+  
   const showReport = () => {
     return (
       <Grid hasGutter>
@@ -139,10 +140,14 @@ const RepositoryReportPage: React.FC = () => {
           </Title>
         </GridItem>
         <GridItem>
-          <DetailsCard report={report} cveId={cveId} />
+          <DetailsCard
+            report={report}
+            cveId={cveId}
+            analysisState={report.state}
+          />
         </GridItem>
         <GridItem>
-          <ChecklistCard vuln={vuln} />
+          <ChecklistCard vuln={outputVuln} />
         </GridItem>
         <GridItem>
           <RepositoryAdditionalDetailsCard report={report} />
@@ -152,22 +157,24 @@ const RepositoryReportPage: React.FC = () => {
   };
 
   return (
-    <PageSection>
-      <Breadcrumb>
-        <BreadcrumbItem>
-          <Link to="/reports">Reports</Link>
-        </BreadcrumbItem>
-        {!isComponentRoute && productId && cveId && (
+    <>
+      <PageSection>
+        <Breadcrumb>
           <BreadcrumbItem>
-            <Link to={`/reports/product/${productId}/${cveId}`}>
-              {productCveBreadcrumbText}
-            </Link>
+            <Link to="/reports">Reports</Link>
           </BreadcrumbItem>
-        )}
-        <BreadcrumbItem isActive>{reportIdDisplay}</BreadcrumbItem>
-      </Breadcrumb>
-      {showReport()}
-    </PageSection>
+          {!isComponentRoute && productId && cveId && (
+            <BreadcrumbItem>
+              <Link to={`/reports/product/${productId}/${cveId}`}>
+                {productCveBreadcrumbText}
+              </Link>
+            </BreadcrumbItem>
+          )}
+          <BreadcrumbItem isActive>{reportIdDisplay}</BreadcrumbItem>
+        </Breadcrumb>
+      </PageSection>
+      <PageSection>{showReport()}</PageSection>
+    </>
   );
 };
 

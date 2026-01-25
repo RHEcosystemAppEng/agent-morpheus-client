@@ -33,13 +33,13 @@ const Brand: React.FC = () => {
         />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Title headingLevel="h2" size="sm">
+        <Title headingLevel="h6" >
           Red Hat
         </Title>
-        <Title headingLevel="h6" size="sm" >
+        <Title headingLevel="h6">
           <strong>Trusted Profile Analyzer</strong>
         </Title>
-        <Title headingLevel="h6" size="sm">
+        <Title headingLevel="h6">
           <strong>ExploitIQ</strong>
         </Title>
       </div>

@@ -1,5 +1,5 @@
 const NotAvailable: React.FC = () => {
-  return <span>-</span>;
+  return <span>---</span>;
 };
 
 export default NotAvailable;

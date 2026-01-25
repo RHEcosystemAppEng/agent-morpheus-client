@@ -21,14 +21,13 @@ import {
   ExclamationTriangleIcon,
 } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
-import { usePaginatedApi } from "../hooks/usePaginatedApi";
 import { Report } from "../generated-client";
 import type { Product } from "../generated-client/models/Product";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
-import { mapDisplayLabelToApiValue } from "./Filtering";
 import TableEmptyState from "./TableEmptyState";
+import { useRepositoryReports } from "../hooks/useRepositoryReports";
 
 const PER_PAGE = 10;
 
@@ -66,15 +65,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const [repositorySearchValue, setRepositorySearchValue] =
     useState<string>("");
 
-  // Convert filter array to comma-separated API values (all selected values)
-  const exploitIqStatusApiValue = useMemo(() => {
-    if (exploitIqStatusFilter.length === 0) return undefined;
-    // Map all selected display labels to API values and join with comma
-    return exploitIqStatusFilter
-      .map((label) => mapDisplayLabelToApiValue(label))
-      .join(",");
-  }, [exploitIqStatusFilter]);
-
   const scanStateOptions = useMemo(() => {
     const statusCounts = product.statusCounts || {};
     return Object.keys(statusCounts).sort();
@@ -86,52 +76,24 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return vuln?.justification?.status;
   };
 
-  // Build sortBy parameter for API
-  const sortByParam = useMemo(() => {
-    return [`${sortColumn}:${sortDirection.toUpperCase()}`];
-  }, [sortColumn, sortDirection]);
-
-  // Build status filter - send all selected status values as comma-separated string
-  const statusFilterValue = useMemo(() => {
-    if (scanStateFilter.length === 0) return undefined;
-    return scanStateFilter.join(",");
-  }, [scanStateFilter]);
-
+  // Use the dedicated hook for repository reports with auto-refresh
   const {
     data: reports,
     loading,
     error,
     pagination,
-  } = usePaginatedApi<Array<Report>>(
-    () => ({
-      method: "GET" as const,
-      url: "/api/v1/reports",
-      query: {
-        page: page - 1,
-        pageSize: perPage,
-        productId: productId,
-        vulnId: cveId,
-        sortBy: sortByParam,
-        ...(statusFilterValue && { status: statusFilterValue }),
-        ...(exploitIqStatusApiValue && {
-          exploitIqStatus: exploitIqStatusApiValue,
-        }),
-        ...(repositorySearchValue && { gitRepo: repositorySearchValue }),
-      },
-    }),
-    {
-      deps: [
-        page,
-        perPage,
-        productId,
-        cveId,
-        sortByParam,
-        statusFilterValue,
-        exploitIqStatusApiValue,
-        repositorySearchValue,
-      ],
-    }
-  );
+  } = useRepositoryReports({
+    productId,
+    cveId,
+    page,
+    perPage,
+    sortColumn,
+    sortDirection,
+    scanStateFilter,
+    exploitIqStatusFilter,
+    repositorySearchValue,
+    product,
+  });
 
   const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;

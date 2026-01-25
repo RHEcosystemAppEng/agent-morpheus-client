@@ -9,7 +9,7 @@ import { request as __request } from '../core/request';
 export class OverviewMetricsService {
     /**
      * Get overview metrics
-     * Retrieves metrics for the home page including successfully analyzed percentage, average reliability score, and false positive rate
+     * Retrieves metrics for the home page calculated from data in the last week, including count of successfully analyzed reports, average reliability score, and false positive rate
      * @returns OverviewMetrics Overview metrics retrieved successfully
      * @throws ApiError
      */
@@ -17,9 +17,6 @@ export class OverviewMetricsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/overview-metrics',
-            errors: {
-                500: `Internal server error`,
-            },
         });
     }
 }

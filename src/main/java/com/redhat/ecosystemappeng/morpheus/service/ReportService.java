@@ -289,7 +289,10 @@ public class ReportService {
       name = getProperty(component, "name");
       tag = getProperty(component, "version");
       var properties = new HashMap<String, String>();
-      metadata.get("properties").forEach(p -> properties.put(getProperty(p, "name"), getProperty(p, "value")));
+      var metadataProperties = metadata.get("properties");
+      if (Objects.nonNull(metadataProperties) && metadataProperties.isArray()) {
+        metadataProperties.forEach(p -> properties.put(getProperty(p, "name"), getProperty(p, "value")));
+      }
       if(Objects.nonNull(request.metadata())) {
         properties.putAll(request.metadata());
       }
@@ -337,8 +340,8 @@ public class ReportService {
         .map(properties::get)
         .filter(Objects::nonNull)
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException(
-            "SBOM is missing required field. Checked keys: " + appConfig.image().source().locationKeys()));
+        .orElseThrow(() -> new ValidationException(
+            Map.of("file", "SBOM is missing required field. Checked keys: " + appConfig.image().source().locationKeys())));
   }
 
 
@@ -348,8 +351,8 @@ public class ReportService {
         .map(properties::get)
         .filter(Objects::nonNull)
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException(
-            "SBOM is missing required field. Checked keys: " + appConfig.image().source().commitIdKeys()));
+        .orElseThrow(() -> new ValidationException(
+            Map.of("file", "SBOM is missing required field. Checked keys: " + appConfig.image().source().commitIdKeys())));
   }
 
   private JsonNode buildSbomInfo(ReportRequest request) {
