@@ -15,6 +15,10 @@ The application SHALL provide navigation from the reports table to a report page
 ### Requirement: Report Details Display
 The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
+The report page SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/products/${productId}` endpoint, but only when some analysis states in `product.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop.
+
+The report page SHALL compare the entire Product object between the previous and current data during auto-refresh using deep comparison. The page SHALL only trigger a rerender if any field in the Product object has changed (including statusCounts, completion dates, CVE status counts, SBOM name, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** the page displays two cards side by side using a `Grid` layout at the top of the page
@@ -97,6 +101,10 @@ The report page SHALL display a donut chart summarizing component scan states fr
 ### Requirement: Repository Reports Table
 The report page SHALL display an embedded table listing all repository reports (CVE + component combinations) for the components in the SBOM, filtered by both the report's product ID and the CVE ID from the route parameters. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST").
 
+The repository reports table SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/reports` endpoint, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `product.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `product.statusCounts` data from the parent report page to determine whether to continue auto-refreshing.
+
+The repository reports table SHALL compare the entire Report objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any Report object has changed (including state, completion dates, ExploitIQ status, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+
 #### Scenario: Repository reports table displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** a table displays with columns: Repository, Commit ID, ExploitIQ Status, Completed (displaying dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ"), and Scan state
@@ -120,6 +128,37 @@ The report page SHALL display an embedded table listing all repository reports (
 #### Scenario: Repository reports table empty state
 - **WHEN** no repository reports are found for the product and CVE combination
 - **THEN** the table displays an empty state message
+
+#### Scenario: Repository reports table auto-refresh
+- **WHEN** a user views the report page with a repository reports table
+- **AND** some analysis states in `product.statusCounts` (from the parent report page) are not "failed" or "completed"
+- **THEN** the repository reports table automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/reports` endpoint
+- **AND** the repository reports table uses the same `product.statusCounts` condition as the parent report page to determine whether to continue auto-refreshing
+- **AND** the auto-refresh preserves current pagination, sorting, and filter settings
+- **AND** when all analysis states in `product.statusCounts` are either "failed" or "completed", auto-refresh stops (same condition as the parent report page)
+- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+
+#### Scenario: Repository reports table auto-refresh prevents unnecessary rerenders
+- **WHEN** the repository reports table auto-refreshes AND the Report data for all visible rows has not changed
+- **THEN** the table SHALL compare the entire Report objects between the previous and current data using deep comparison
+- **AND** the table SHALL skip the state update (prevent rerender) if all Report objects are unchanged (all fields match)
+- **AND** the table SHALL trigger a rerender if any field in any Report object has changed
+- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
+
+#### Scenario: Report page auto-refresh
+- **WHEN** a user views the report page
+- **AND** some analysis states in `product.statusCounts` are not "failed" or "completed"
+- **THEN** the report page automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/products/${productId}` endpoint
+- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops
+- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+- **AND** the auto-refresh preserves the current view state (no disruption to user interactions)
+
+#### Scenario: Report page auto-refresh prevents unnecessary rerenders
+- **WHEN** the report page auto-refreshes AND the Product data has not changed
+- **THEN** the page SHALL compare the entire Product object between the previous and current data using deep comparison
+- **AND** the page SHALL skip the state update (prevent rerender) if the Product object is unchanged (all fields match)
+- **AND** the page SHALL trigger a rerender if any field in the Product object has changed
+- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
 
 ### Requirement: Report Page Layout
 The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation and page title at the top of the page.
@@ -160,4 +199,12 @@ The report page SHALL use API calls for data fetching, using the `useApi` and `u
 - **WHEN** the repository reports table loads with product ID and CVE ID in route parameters
 - **THEN** reports data is fetched using `/api/v1/reports` endpoint with `productId` and `vulnId` query parameters via the `usePaginatedApi` hook
 - **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `exploitIqStatus`, `gitRepo`)
+
+#### Scenario: Report page auto-refresh
+- **WHEN** a user views the report page
+- **AND** some analysis states in `product.statusCounts` are not "failed" or "completed"
+- **THEN** the report page automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/products/${productId}` endpoint
+- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops
+- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+- **AND** the auto-refresh preserves the current view state (no disruption to user interactions)
 

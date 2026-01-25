@@ -10,19 +10,25 @@ import {
   Flex,
   FlexItem,
 } from "@patternfly/react-core";
-import { Link } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import CveStatus from "./CveStatus";
 import IntelReliabilityScore from "./IntelReliabilityScore";
 import NotAvailable from "./NotAvailable";
+import ReportStatusLabel from "./ReportStatusLabel";
 
 interface DetailsCardProps {
   report: FullReport;
-  cveId?: string;
+  cveId: string;
+  analysisState?: string;
+  analysisStateLoading?: boolean;
 }
 
-const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
+const DetailsCard: React.FC<DetailsCardProps> = ({
+  report,
+  cveId,
+  analysisState
+}) => {
   const image = report.input?.image;
   const sourceInfo = image?.source_info || [];
   const codeSource = Array.isArray(sourceInfo)
@@ -31,10 +37,8 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
   const codeRepository = codeSource?.git_repo;
   const codeTag = codeSource?.ref;
   const output = report.output?.analysis || [];
-  const vuln = cveId
-    ? output.find((v) => v.vuln_id === cveId) || output[0]
-    : output[0];
-  const intelScore = vuln?.intel_score;
+  const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
+  const outputVuln = output.find((v) => v.vuln_id === cveId);``
 
   return (
     <Card>
@@ -47,16 +51,20 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
         {vuln && (
           <DescriptionList>
             <DescriptionListGroup>
+              <DescriptionListTerm>Analysis State</DescriptionListTerm>
+              <DescriptionListDescription>
+                <ReportStatusLabel state={analysisState} />
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+            <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    <Link to={`/reports?vulnId=${vuln.vuln_id}`}>
-                      {vuln.vuln_id}
-                    </Link>
+                    {vuln.vuln_id}
                   </FlexItem>
                   <FlexItem>
-                    <CveStatus vuln={vuln} />
+                    {outputVuln ? <CveStatus vuln={outputVuln} /> : <NotAvailable />}
                   </FlexItem>
                 </Flex>
               </DescriptionListDescription>
@@ -100,25 +108,25 @@ const DetailsCard: React.FC<DetailsCardProps> = ({ report, cveId }) => {
             <DescriptionListGroup>
               <DescriptionListTerm>CVSS Score</DescriptionListTerm>
               <DescriptionListDescription>
-                <CvssBanner cvss={vuln.cvss ?? null} />
+                <CvssBanner cvss={outputVuln?.cvss ?? null} />
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Intel Reliability Score</DescriptionListTerm>
               <DescriptionListDescription>
-                <IntelReliabilityScore score={intelScore} />
+                <IntelReliabilityScore score={outputVuln?.intel_score} />
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Reason</DescriptionListTerm>
               <DescriptionListDescription>
-                {vuln.justification?.reason || <NotAvailable />}
+                {outputVuln?.justification?.reason || <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Summary</DescriptionListTerm>
               <DescriptionListDescription>
-                {vuln.summary || <NotAvailable />}
+                {outputVuln?.summary || <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
           </DescriptionList>

@@ -131,6 +131,27 @@
           }
         }
       },
+      "OverviewMetrics": {
+        "description": "Metrics for the home page calculated from data in the last week",
+        "type": "object",
+        "properties": {
+          "successfullyAnalyzed": {
+            "type": "number",
+            "format": "double",
+            "description": "The count of reports that were completed in the last week (reports with completed_at not null and date within last 7 days)"
+          },
+          "averageReliabilityScore": {
+            "type": "number",
+            "format": "double",
+            "description": "The average reliability score (intel_score) calculated as sum of all intel_score values divided by the count of completed reports from the last week"
+          },
+          "falsePositiveRate": {
+            "type": "number",
+            "format": "double",
+            "description": "The percentage of false positives identified from completed reports in the last week, calculated as (reports with output.analysis.0.justification.status='FALSE' / total completed reports) * 100"
+          }
+        }
+      },
       "Product": {
         "description": "Product data grouped by product_id",
         "type": "object",
@@ -174,7 +195,7 @@
           },
           "firstReportId": {
             "type": "string",
-            "description": "Report ID from the first report in the group, always populated for navigation purposes"
+            "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
           }
         },
         "required": [
@@ -547,36 +568,12 @@
           }
         }
       },
-      "OverviewMetrics": {
-        "description": "Metrics for the home page calculated from data in the last week",
-        "type": "object",
-        "required": [
-          "successfullyAnalyzed",
-          "averageReliabilityScore",
-          "falsePositiveRate"
-        ],
-        "properties": {
-          "successfullyAnalyzed": {
-            "type": "number",
-            "format": "double",
-            "description": "The percentage of repositories successfully analyzed in the last week"
-          },
-          "averageReliabilityScore": {
-            "type": "number",
-            "format": "double",
-            "description": "The average reliability score of the intelligence data from completed reports in the last week"
-          },
-          "falsePositiveRate": {
-            "type": "number",
-            "format": "double",
-            "description": "The percentage of false positives identified from completed reports in the last week"
-          }
-        }
-      },
       "UserComments": {
         "description": "User provided comments on a vulnerability",
         "type": "object",
-        "required": ["cve_id"],
+        "required": [
+          "cve_id"
+        ],
         "properties": {
           "cve_id": {
             "type": "string",
@@ -657,6 +654,19 @@
           "vulnerable_dependencies": {
             "type": "string",
             "description": "Identified Vulnerable Dependencies"
+          }
+        }
+      },
+      "ValidationErrorResponse": {
+        "description": "Validation error response mapping field names to error messages",
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Map of field names to error messages"
           }
         }
       },
@@ -878,6 +888,27 @@
         ]
       }
     },
+    "/api/v1/overview-metrics": {
+      "get": {
+        "summary": "Get overview metrics",
+        "description": "Retrieves metrics for the home page calculated from data in the last week, including count of successfully analyzed reports, average reliability score, and false positive rate",
+        "tags": [
+          "Overview Metrics"
+        ],
+        "responses": {
+          "200": {
+            "description": "Overview metrics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewMetrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/pre-processing": {
       "post": {
         "summary": "Submit report requests for pre-processing",
@@ -925,7 +956,7 @@
     "/api/v1/products": {
       "get": {
         "summary": "List products",
-        "description": "Retrieves a paginated list of products grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName",
+        "description": "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName",
         "parameters": [
           {
             "description": "Page number (0-based)",
@@ -979,6 +1010,67 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
+      }
+    },
+    "/api/v1/products/upload-cyclonedx": {
+      "post": {
+        "summary": "Upload CycloneDX file for analysis",
+        "description": "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with product ID, and queues it for analysis",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cveId": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "File uploaded and analysis request queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data (invalid CVE format, invalid JSON, missing required fields)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request queue exceeded"
           },
           "500": {
             "description": "Internal server error"
@@ -1057,7 +1149,7 @@
                     },
                     "firstReportId": {
                       "type": "string",
-                      "description": "Report ID from the first report in the group, always populated for navigation purposes"
+                      "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
                     }
                   },
                   "required": [
@@ -1840,30 +1932,13 @@
           "Vulnerability Endpoint"
         ]
       }
-    },
-    "/api/v1/overview-metrics": {
-      "get": {
-        "summary": "Get overview metrics",
-        "description": "Retrieves metrics for the home page calculated from data in the last week, including successfully analyzed percentage, average reliability score, and false positive rate",
-        "responses": {
-          "200": {
-            "description": "Overview metrics retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OverviewMetrics"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "tags": ["Overview Metrics"]
-      }
     }
   },
+  "tags": [
+    {
+      "name": "Overview Metrics"
+    }
+  ],
   "info": {
     "title": "exploit-iq-client API",
     "version": "1.0.0-SNAPSHOT"

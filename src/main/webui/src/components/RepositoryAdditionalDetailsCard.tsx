@@ -108,39 +108,37 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
                 )}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            {cvssVector && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
-                <DescriptionListDescription>
-                  {cvssVector}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
+            <DescriptionListGroup>
+              <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
+              <DescriptionListDescription>
+                {cvssVector || <NotAvailable />}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Submitted</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={submittedAt} />
+                {submittedAt ? <FormattedTimestamp date={submittedAt} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Sent</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={sentAt} />
+                {sentAt ? <FormattedTimestamp date={sentAt} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Started</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={started} />
+                {started ? <FormattedTimestamp date={started} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Completed</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={completed} />
+                {completed ? <FormattedTimestamp date={completed} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            {otherMetadata.length > 0 && (
+            {otherMetadata.length > 0 ? (
               <DescriptionListGroup>
                 <DescriptionListTerm>Metadata</DescriptionListTerm>
                 <DescriptionListDescription>
@@ -153,7 +151,7 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
                   </LabelGroup>
                 </DescriptionListDescription>
               </DescriptionListGroup>
-            )}
+            ) : <NotAvailable />}
           </DescriptionList>
         </CardBody>
       </CardExpandableContent>

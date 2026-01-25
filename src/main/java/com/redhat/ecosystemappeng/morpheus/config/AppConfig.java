@@ -18,7 +18,6 @@ public interface AppConfig {
 
     interface Image {
         Source source();
-
         interface Source {
             @WithName("location-keys")
             @WithDefault("image.source-location,org.opencontainers.image.source,syft:image:labels:io.openshift.build.source-location")

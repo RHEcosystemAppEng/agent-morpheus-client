@@ -4,10 +4,19 @@
 View individual repository report details for a specific CVE, image, and tag combination within a product report or as a standalone component report.
 ## Requirements
 ### Requirement: Repository Report Page Routes
-The repository report page SHALL support multiple route patterns:
-- `/reports/product/:productId/:cveId/:reportId` - Product route (shows product breadcrumb)
-- `/reports/component/:cveId/:reportId` - Component route (no product breadcrumb)
-- `/reports/:productId/:cveId/:reportId` - Legacy route (supported for backward compatibility)
+The repository report page SHALL support multiple route patterns.
+
+#### Scenario: Product route pattern
+- **WHEN** a user navigates to `/reports/product/:productId/:cveId/:reportId`
+- **THEN** the repository report page displays with a product breadcrumb showing the product ID and CVE ID
+
+#### Scenario: Component route pattern
+- **WHEN** a user navigates to `/reports/component/:cveId/:reportId`
+- **THEN** the repository report page displays without a product breadcrumb
+
+#### Scenario: Legacy route pattern
+- **WHEN** a user navigates to `/reports/:productId/:cveId/:reportId`
+- **THEN** the repository report page displays (supported for backward compatibility)
 
 ### Requirement: Repository Report Page Breadcrumb Navigation
 The repository report page SHALL display a hierarchical breadcrumb navigation at the top of the page showing the navigation path from the reports list through the product/CVE report (if applicable) to the individual repository report.
@@ -51,33 +60,46 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 - **THEN** the application navigates to `/reports/product/:productId/:cveId` where `:productId` and `:cveId` are extracted from the route parameters
 
 ### Requirement: Repository Report Page Content
-The repository report page SHALL display report details in a structured layout with cards showing different aspects of the repository report.
+The repository report page SHALL display report details in a structured layout with cards showing different aspects of the repository report, including the analysis state of the report.
 
-#### Scenario: Page title displays
+The repository report page SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/reports/{id}` endpoint, but only when the report `state` is not "completed" or "failed". When the report `state` is "completed" or "failed", auto-refresh SHALL stop.
+
+The repository report page SHALL compare the report `state` field between the previous and current data during auto-refresh. The page SHALL only trigger a rerender if the report `state` field has changed. This optimization SHALL prevent unnecessary rerenders and UI jumps when the report state remains unchanged. Note: Only the `state` field is compared, not the entire report object.
+
+#### Scenario: Analysis state displayed in DetailsCard
 - **WHEN** a user views the repository report page with report data loaded
-- **THEN** a page title is displayed with the format "CVE Repository Report: <CVE ID> | <image name> | <image tag>"
-- **AND** the report identifier portion is displayed in a smaller font size
+- **THEN** the DetailsCard displays an "Analysis State" field showing the current state of the report (e.g., "Completed", "Queued", "Expired")
+- **AND** the Analysis State field appears as the first field in the DetailsCard description list, immediately after the card title and before all other fields (CVE, Repository, Commit ID, CVSS Score, Intel Reliability Score, Reason, Summary)
+- **AND** the analysis state is retrieved from the `state` field in the FullReport object returned by the `/api/v1/reports/{id}` endpoint
+- **AND** the state is displayed using a shared `ReportStatusLabel` React component that renders a PatternFly Label component with appropriate color and icon:
+  - "Completed" state: green label with CheckCircleIcon
+  - "Queued" state: gray label with InProgressIcon (or SyncIcon)
+  - "Sent" state: gray label with InProgressIcon (or SyncIcon)
+  - "Expired" state: orange label with ExclamationTriangleIcon
+  - "Failed" state: red label with ExclamationTriangleIcon
+  - Other states: gray label with default styling
+- **AND** the state text is formatted in title case (first letter uppercase, rest lowercase)
 
-#### Scenario: Report details cards display
-- **WHEN** a user views the repository report page with report data loaded
-- **THEN** the page displays three cards in a Grid layout:
-  - DetailsCard: Shows report details for the specific CVE
-  - ChecklistCard: Shows vulnerability checklist information
-  - RepositoryAdditionalDetailsCard: Shows additional repository report details
-
-#### Scenario: Report data validation
+#### Scenario: Analysis state loading state
 - **WHEN** a user views the repository report page
-- **THEN** the page validates that the report exists and contains the specified CVE ID
-- **AND** if the report is not found, an error message is displayed: "Report not found - The selected report with id: {reportId} has not been found."
-- **AND** if the CVE ID is not found in the report, an error message is displayed: "Vulnerability not found - The vulnerability {cveId} was not found in the report with id: {reportId}."
+- **AND** the report data is being fetched from the API
+- **THEN** the DetailsCard displays the "Analysis State" field with a PatternFly Skeleton component in the description area
+- **AND** the Analysis State field appears as the first field in the DetailsCard description list
+- **AND** the Skeleton component indicates that the analysis state is loading
+- **AND** once the report is loaded, the Skeleton is replaced with the `ReportStatusLabel` component showing the actual state from the report's `state` field
 
-#### Scenario: Report page loading state
-- **WHEN** report data is being fetched
-- **THEN** the page displays a loading skeleton
+#### Scenario: Analysis state fetch error handling
+- **WHEN** a user views the repository report page
+- **AND** the API call to fetch the report fails
+- **THEN** the page displays an appropriate error message based on the error status
+- **AND** if the report fetch succeeds but the `state` field is not present in the response, the DetailsCard displays "Not Available" for the Analysis State field
+- **AND** the Analysis State field appears as the first field in the DetailsCard description list even when displaying "Not Available"
 
-#### Scenario: Report page error state
-- **WHEN** report data fetch fails
-- **THEN** the page displays an appropriate error message based on the error status:
-  - 404: "Report not found - The selected report with id: {reportId} has not been found."
-  - Other errors: "Could not retrieve the selected report - {error status}: {error message} - The selected report with id: {reportId} could not be retrieved."
+#### Scenario: Auto-refresh prevents unnecessary rerenders
+- **WHEN** the repository report page auto-refreshes AND the report `state` has not changed
+- **THEN** the page SHALL compare only the report `state` field between the previous and current data
+- **AND** the page SHALL skip the state update (prevent rerender) if the report `state` field is unchanged
+- **AND** the page SHALL trigger a rerender if the report `state` field has changed
+- **AND** this optimization SHALL prevent UI jumps and visual disruption when the report state remains unchanged
+- **AND** note that only the `state` field is compared, not the entire report object
 

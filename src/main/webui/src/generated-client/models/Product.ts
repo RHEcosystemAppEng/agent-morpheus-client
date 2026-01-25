@@ -35,7 +35,7 @@ export type Product = {
      */
     numReports: number;
     /**
-     * Report ID from the first report in the group, always populated for navigation purposes
+     * MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes
      */
     firstReportId?: string;
 };

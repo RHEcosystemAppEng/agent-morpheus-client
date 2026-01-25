@@ -22,6 +22,7 @@ export type { ReportsSummary } from './models/ReportsSummary';
 export type { SbomInfoType } from './models/SbomInfoType';
 export type { SourceInfo } from './models/SourceInfo';
 export type { UserComments } from './models/UserComments';
+export type { ValidationErrorResponse } from './models/ValidationErrorResponse';
 export type { Vulnerability } from './models/Vulnerability';
 export type { VulnResult } from './models/VulnResult';
 

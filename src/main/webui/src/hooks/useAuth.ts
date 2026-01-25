@@ -43,8 +43,7 @@ export function useAuth() {
       }
 
       return response.json();
-    },
-    { immediate: true }
+    }
   );
 
   return {

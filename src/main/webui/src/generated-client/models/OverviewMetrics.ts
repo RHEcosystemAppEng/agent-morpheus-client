@@ -3,20 +3,20 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * metrics for the home page
+ * Metrics for the home page calculated from data in the last week
  */
 export type OverviewMetrics = {
     /**
-     * The percentage of repositories successfully analyzed in the last week
+     * The count of reports that were completed in the last week (reports with completed_at not null and date within last 7 days)
      */
-    successfullyAnalyzed: number;
+    successfullyAnalyzed?: number;
     /**
-     * The average reliability score of the intelligence data
+     * The average reliability score (intel_score) calculated as sum of all intel_score values divided by the count of completed reports from the last week
      */
-    averageReliabilityScore: number;
+    averageReliabilityScore?: number;
     /**
-     * The percentage of false positives identified
+     * The percentage of false positives identified from completed reports in the last week, calculated as (reports with output.analysis.0.justification.status='FALSE' / total completed reports) * 100
      */
-    falsePositiveRate: number;
+    falsePositiveRate?: number;
 };
 
