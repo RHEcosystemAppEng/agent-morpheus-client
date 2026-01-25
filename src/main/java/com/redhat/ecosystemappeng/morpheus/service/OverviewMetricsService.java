@@ -59,37 +59,39 @@ public class OverviewMetricsService {
             )
         );
         
-        // If no data in last week, use all available data (for dev/test scenarios)
-        boolean useAllData = (docsWithSentAtLastWeek == 0);
+        // If no data in last week, return zeros (frontend will show empty state)
+        if (docsWithSentAtLastWeek == 0) {
+            return new OverviewMetricsDTO(0.0, 0.0, 0.0);
+        }
 
         // Metric 1: successfullyAnalyzed
-        // Calculation: Percentage of completed vs sent reports in the last week (or all time if no recent data)
+        // Calculation: Percentage of completed vs sent reports in the last week
         // Fields used:
         //   - metadata.sent_at: Timestamp when report was sent to the agent (denominator)
         //   - input.scan.completed_at: Timestamp when report analysis was completed (numerator)
-        // Logic: Count reports with completed_at / Count reports with sent_at (both within last week or all time)
+        // Logic: Count reports with completed_at / Count reports with sent_at (both within last week)
         // Result: Percentage (0-100) of reports that were successfully analyzed
-        double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString, useAllData);
+        double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString);
 
         // Metric 2: averageReliabilityScore
-        // Calculation: Average intel_score from all vulnerability analyses in completed reports from the last week (or all time)
+        // Calculation: Average intel_score from all vulnerability analyses in completed reports from the last week
         // Fields used:
-        //   - input.scan.completed_at: Must be non-null and within last week (or all time if no recent data)
+        //   - input.scan.completed_at: Must be non-null and within last week
         //   - output.analysis[].intel_score: Intel score for each vulnerability analysis
         // Logic: Average all intel_score values from output.analysis array in completed reports
         //        Only includes reports with non-empty intel_score values
         // Result: Average intel score (0-100) representing reliability of vulnerability intelligence
-        double averageReliabilityScore = calculateAverageReliabilityScore(collection, oneWeekAgoIsoString, useAllData);
+        double averageReliabilityScore = calculateAverageReliabilityScore(collection, oneWeekAgoIsoString);
 
         // Metric 3: falsePositiveRate
-        // Calculation: Percentage of vulnerability analyses determined as false positives from the last week (or all time)
+        // Calculation: Percentage of vulnerability analyses determined as false positives from the last week
         // Fields used:
-        //   - input.scan.completed_at: Must be non-null and within last week (or all time if no recent data)
+        //   - input.scan.completed_at: Must be non-null and within last week
         //   - output.analysis[].justification.status: Status of each vulnerability analysis
         // Logic: Count analysis items with status="FALSE" / Total analysis items in completed reports
         //        A status of "FALSE" means the agent determined the component is NOT vulnerable
         // Result: Percentage (0-100) of analyses that were false positives
-        double falsePositiveRate = calculateFalsePositiveRate(collection, oneWeekAgoIsoString, useAllData);
+        double falsePositiveRate = calculateFalsePositiveRate(collection, oneWeekAgoIsoString);
 
         return new OverviewMetricsDTO(
             successfullyAnalyzed, 
@@ -100,65 +102,48 @@ public class OverviewMetricsService {
 
     /**
      * Calculates the percentage of successfully analyzed reports.
-     * Numerator: Reports with completed_at that were sent in the last week (or all time)
-     * Denominator: Reports with sent_at in the last week (or all time)
+     * Numerator: Reports with completed_at that were sent in the last week
+     * Denominator: Reports with sent_at in the last week
      */
-    private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString, boolean useAllData) {
-        // Count reports sent (denominator)
+    private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString) {
+        // Count reports sent in the last week (denominator)
         // metadata.sent_at is stored as Date object
-        Bson sentFilter;
-        if (useAllData) {
-            sentFilter = Filters.ne("metadata.sent_at", null);
-        } else {
-            sentFilter = Filters.and(
-                Filters.ne("metadata.sent_at", null),
-                Filters.gte("metadata.sent_at", oneWeekAgoDate)
-            );
-        }
+        Bson sentFilter = Filters.and(
+            Filters.ne("metadata.sent_at", null),
+            Filters.gte("metadata.sent_at", oneWeekAgoDate)
+        );
         long totalSent = collection.countDocuments(sentFilter);
 
         if (totalSent == 0) {
             return 0.0;
         }
 
-        // Count reports that were sent AND completed (numerator)
+        // Count reports that were sent in the last week AND completed (numerator)
         // input.scan.completed_at is stored as ISO string, so we compare as string
-        Bson completedFilter;
-        if (useAllData) {
-            completedFilter = Filters.and(
-                Filters.ne("metadata.sent_at", null),
-                Filters.ne("input.scan.completed_at", null)
-            );
-        } else {
-            completedFilter = Filters.and(
-                Filters.ne("metadata.sent_at", null),
-                Filters.gte("metadata.sent_at", oneWeekAgoDate),
-                Filters.ne("input.scan.completed_at", null),
-                Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-            );
-        }
+        Bson completedFilter = Filters.and(
+            Filters.ne("metadata.sent_at", null),
+            Filters.gte("metadata.sent_at", oneWeekAgoDate),
+            Filters.ne("input.scan.completed_at", null),
+            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+        );
         long totalCompleted = collection.countDocuments(completedFilter);
 
         return (totalCompleted * 100.0) / totalSent;
     }
 
     /**
-     * Calculates the average intel_score from all vulnerability analyses in completed reports from the last week (or all time).
-     * Only includes reports that have completed_at within the last week (or all time) and non-empty intel_score values.
+     * Calculates the average intel_score from all vulnerability analyses in completed reports from the last week.
+     * Only includes reports that have completed_at within the last week and non-empty intel_score values.
      */
-    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, String oneWeekAgoIsoString, boolean useAllData) {
+    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
         List<Bson> pipeline = new ArrayList<>();
         
-        // Match completed reports (from last week or all time)
+        // Match only completed reports from the last week
         // input.scan.completed_at is stored as ISO string, so we compare as string
-        if (useAllData) {
-            pipeline.add(Aggregates.match(Filters.ne("input.scan.completed_at", null)));
-        } else {
-            pipeline.add(Aggregates.match(Filters.and(
-                Filters.ne("input.scan.completed_at", null),
-                Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-            )));
-        }
+        pipeline.add(Aggregates.match(Filters.and(
+            Filters.ne("input.scan.completed_at", null),
+            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+        )));
         
         // Unwind the analysis array to process each vulnerability analysis separately
         pipeline.add(Aggregates.unwind("$output.analysis"));
@@ -184,23 +169,19 @@ public class OverviewMetricsService {
     }
 
     /**
-     * Calculates the percentage of false positives (status="FALSE") in completed reports from the last week (or all time).
+     * Calculates the percentage of false positives (status="FALSE") in completed reports from the last week.
      * Numerator: Count of analysis items with justification.status="FALSE"
-     * Denominator: Total count of analysis items in completed reports from the last week (or all time)
+     * Denominator: Total count of analysis items in completed reports from the last week
      */
-    private double calculateFalsePositiveRate(MongoCollection<Document> collection, String oneWeekAgoIsoString, boolean useAllData) {
+    private double calculateFalsePositiveRate(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
         List<Bson> pipeline = new ArrayList<>();
         
-        // Match completed reports (from last week or all time)
+        // Match only completed reports from the last week
         // input.scan.completed_at is stored as ISO string, so we compare as string
-        if (useAllData) {
-            pipeline.add(Aggregates.match(Filters.ne("input.scan.completed_at", null)));
-        } else {
-            pipeline.add(Aggregates.match(Filters.and(
-                Filters.ne("input.scan.completed_at", null),
-                Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-            )));
-        }
+        pipeline.add(Aggregates.match(Filters.and(
+            Filters.ne("input.scan.completed_at", null),
+            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+        )));
         
         // Unwind the analysis array to process each vulnerability analysis separately
         pipeline.add(Aggregates.unwind("$output.analysis"));
