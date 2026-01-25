@@ -14,11 +14,16 @@ import {
   Skeleton,
   Alert,
   AlertVariant,
+  Bullseye,
+  EmptyState,
+  EmptyStateVariant,
+  EmptyStateBody,
 } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
   OptimizeIcon,
   SecurityIcon,
+  SearchIcon,
 } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
 import { OverviewMetricsService, OverviewMetrics } from "../generated-client";
@@ -98,6 +103,13 @@ const MetricsCard: React.FC = () => {
   const averageReliabilityScore = metrics?.averageReliabilityScore ?? 0;
   const falsePositiveRate = metrics?.falsePositiveRate ?? 0;
 
+  // Check if there's no data (all metrics are 0)
+  const hasNoData =
+    !loading &&
+    successfullyAnalyzed === 0 &&
+    averageReliabilityScore === 0 &&
+    falsePositiveRate === 0;
+
   return (
     <Card>
       <CardTitle>
@@ -110,6 +122,19 @@ const MetricsCard: React.FC = () => {
           <Alert variant={AlertVariant.danger} title="Error loading metrics">
             {error.message || "Failed to load metrics. Please try again later."}
           </Alert>
+        ) : hasNoData ? (
+          <Bullseye>
+            <EmptyState
+              titleText="No data available"
+              icon={SearchIcon}
+              headingLevel="h2"
+              variant={EmptyStateVariant.sm}
+            >
+              <EmptyStateBody>
+                No metrics data available for the last 7 days.
+              </EmptyStateBody>
+            </EmptyState>
+          </Bullseye>
         ) : (
           <Grid hasGutter>
             <MetricsStatItem
