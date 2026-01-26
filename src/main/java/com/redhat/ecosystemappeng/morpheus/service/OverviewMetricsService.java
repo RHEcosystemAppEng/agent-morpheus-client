@@ -65,9 +65,12 @@ public class OverviewMetricsService {
             return new OverviewMetricsDTO(0.0, 0.0, 0.0);
         }
 
+        Bson completedReportsFilter = getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString);
+        long completedReportsCount = collection.countDocuments(completedReportsFilter);
+
         double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString, docsWithSentAtLastWeek);
-        double averageReliabilityScore = calculateAverageReliabilityScore(collection, oneWeekAgoIsoString);
-        double falsePositiveRate = calculateFalsePositiveRate(collection, oneWeekAgoIsoString);
+        double averageReliabilityScore = calculateAverageReliabilityScore(collection, completedReportsFilter);
+        double falsePositiveRate = calculateFalsePositiveRate(collection, completedReportsFilter, completedReportsCount);
 
         return new OverviewMetricsDTO(
             successfullyAnalyzed, 
@@ -100,9 +103,9 @@ public class OverviewMetricsService {
      * Calculates the average intel_score from all vulnerability analyses in completed reports from the last week.
      * Only includes analysis items with non-null intel_score values.
      */
-    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
+    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, Bson completedReportsFilter) {
         List<Bson> pipeline = new ArrayList<>();
-        pipeline.add(Aggregates.match(getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString)));
+        pipeline.add(Aggregates.match(completedReportsFilter));
         pipeline.add(Aggregates.unwind("$output.analysis"));
         pipeline.add(Aggregates.match(Filters.and(
             Filters.exists("output.analysis.intel_score", true),
@@ -127,16 +130,13 @@ public class OverviewMetricsService {
      * Note: Only one analysis item per report is supported, so we access the first element
      * of the output.analysis array using dot notation (output.analysis.0.justification.status).
      */
-    private double calculateFalsePositiveRate(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
-        Bson completedFilter = getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString);
-        long total = collection.countDocuments(completedFilter);
-
+    private double calculateFalsePositiveRate(MongoCollection<Document> collection, Bson completedReportsFilter, long total) {
         if (total == 0) {
             return 0.0;
         }
 
         Bson falsePositiveFilter = Filters.and(
-            completedFilter,
+            completedReportsFilter,
             Filters.eq("output.analysis.0.justification.status", "FALSE")
         );
         long falsePositives = collection.countDocuments(falsePositiveFilter);
