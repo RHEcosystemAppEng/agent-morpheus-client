@@ -70,16 +70,31 @@ public class OverviewMetricsService {
     }
 
     /**
-     * Calculates the percentage of successfully analyzed reports.
-     * Formula: (Reports with completed_at not null / Total reports) * 100
+     * Calculates the percentage of successfully analyzed reports from the last week.
+     * Formula: (Reports with completed_at from last week / Reports with sent_at from last week) * 100
      */
     private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString) {
-        long totalReports = collection.countDocuments(new Document());
-        if (totalReports == 0) {
+        // Count reports sent in the last week (denominator)
+        Bson sentFilter = Filters.and(
+            Filters.ne("metadata.sent_at", null),
+            Filters.gte("metadata.sent_at", oneWeekAgoDate)
+        );
+        long totalSent = collection.countDocuments(sentFilter);
+
+        if (totalSent == 0) {
             return 0.0;
         }
-        long totalCompleted = collection.countDocuments(Filters.ne("input.scan.completed_at", null));
-        return (totalCompleted * 100.0) / totalReports;
+
+        // Count reports that were sent in the last week AND completed in the last week (numerator)
+        Bson completedFilter = Filters.and(
+            Filters.ne("metadata.sent_at", null),
+            Filters.gte("metadata.sent_at", oneWeekAgoDate),
+            Filters.ne("input.scan.completed_at", null),
+            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+        );
+        long totalCompleted = collection.countDocuments(completedFilter);
+
+        return (totalCompleted * 100.0) / totalSent;
     }
 
     /**
@@ -111,29 +126,28 @@ public class OverviewMetricsService {
 
     /**
      * Calculates the percentage of false positives in completed reports from the last week.
-     * Formula: (Analysis items with status="FALSE" / Total analysis items) * 100
+     * Formula: (Reports with status="FALSE" / Total completed reports) * 100
+     * 
+     * Note: Only one analysis item per report is supported, so we access the first element
+     * of the output.analysis array using dot notation (output.analysis.0.justification.status).
      */
     private double calculateFalsePositiveRate(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
-        List<Bson> pipeline = new ArrayList<>();
-        pipeline.add(Aggregates.match(Filters.and(
+        Bson completedFilter = Filters.and(
             Filters.ne("input.scan.completed_at", null),
             Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-        )));
-        pipeline.add(Aggregates.unwind("$output.analysis"));
-        pipeline.add(Aggregates.group(
-            null,
-            Accumulators.sum("total", 1),
-            Accumulators.sum("falsePositives", new Document("$cond", 
-                new Document("if", new Document("$eq", 
-                    List.of("$output.analysis.justification.status", "FALSE")))
-                .append("then", 1)
-                .append("else", 0)))
-        ));
+        );
+        long total = collection.countDocuments(completedFilter);
 
-        Document result = collection.aggregate(pipeline).first();
-        if (result == null || result.getInteger("total") == null || result.getInteger("total") == 0) {
+        if (total == 0) {
             return 0.0;
         }
-        return (result.getInteger("falsePositives", 0) * 100.0) / result.getInteger("total");
+
+        Bson falsePositiveFilter = Filters.and(
+            completedFilter,
+            Filters.eq("output.analysis.0.justification.status", "FALSE")
+        );
+        long falsePositives = collection.countDocuments(falsePositiveFilter);
+
+        return (falsePositives * 100.0) / total;
     }
 }
