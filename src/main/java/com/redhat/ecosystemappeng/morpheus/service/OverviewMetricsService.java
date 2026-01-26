@@ -40,6 +40,13 @@ public class OverviewMetricsService {
         return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
     }
 
+    private Bson getCompletedReportsFromLastWeekFilter(String oneWeekAgoIsoString) {
+        return Filters.and(
+            Filters.ne("input.scan.completed_at", null),
+            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+        );
+    }
+
     public OverviewMetricsDTO getMetrics() {
         Instant oneWeekAgo = Instant.now().minus(7, ChronoUnit.DAYS);
         Date oneWeekAgoDate = Date.from(oneWeekAgo);
@@ -58,7 +65,7 @@ public class OverviewMetricsService {
             return new OverviewMetricsDTO(0.0, 0.0, 0.0);
         }
 
-        double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString);
+        double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString, docsWithSentAtLastWeek);
         double averageReliabilityScore = calculateAverageReliabilityScore(collection, oneWeekAgoIsoString);
         double falsePositiveRate = calculateFalsePositiveRate(collection, oneWeekAgoIsoString);
 
@@ -73,14 +80,7 @@ public class OverviewMetricsService {
      * Calculates the percentage of successfully analyzed reports from the last week.
      * Formula: (Reports with completed_at from last week / Reports with sent_at from last week) * 100
      */
-    private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString) {
-        // Count reports sent in the last week (denominator)
-        Bson sentFilter = Filters.and(
-            Filters.ne("metadata.sent_at", null),
-            Filters.gte("metadata.sent_at", oneWeekAgoDate)
-        );
-        long totalSent = collection.countDocuments(sentFilter);
-
+    private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString, long totalSent) {
         if (totalSent == 0) {
             return 0.0;
         }
@@ -89,8 +89,7 @@ public class OverviewMetricsService {
         Bson completedFilter = Filters.and(
             Filters.ne("metadata.sent_at", null),
             Filters.gte("metadata.sent_at", oneWeekAgoDate),
-            Filters.ne("input.scan.completed_at", null),
-            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
+            Filters.ne("input.scan.completed_at", null)
         );
         long totalCompleted = collection.countDocuments(completedFilter);
 
@@ -103,10 +102,7 @@ public class OverviewMetricsService {
      */
     private double calculateAverageReliabilityScore(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
         List<Bson> pipeline = new ArrayList<>();
-        pipeline.add(Aggregates.match(Filters.and(
-            Filters.ne("input.scan.completed_at", null),
-            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-        )));
+        pipeline.add(Aggregates.match(getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString)));
         pipeline.add(Aggregates.unwind("$output.analysis"));
         pipeline.add(Aggregates.match(Filters.and(
             Filters.exists("output.analysis.intel_score", true),
@@ -132,10 +128,7 @@ public class OverviewMetricsService {
      * of the output.analysis array using dot notation (output.analysis.0.justification.status).
      */
     private double calculateFalsePositiveRate(MongoCollection<Document> collection, String oneWeekAgoIsoString) {
-        Bson completedFilter = Filters.and(
-            Filters.ne("input.scan.completed_at", null),
-            Filters.gte("input.scan.completed_at", oneWeekAgoIsoString)
-        );
+        Bson completedFilter = getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString);
         long total = collection.countDocuments(completedFilter);
 
         if (total == 0) {
