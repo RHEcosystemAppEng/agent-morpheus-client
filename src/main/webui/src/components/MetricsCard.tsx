@@ -103,13 +103,9 @@ const MetricsCard: React.FC = () => {
   const averageReliabilityScore = metrics?.averageReliabilityScore ?? 0;
   const falsePositiveRate = metrics?.falsePositiveRate ?? 0;
 
-  // Check if there's no data (all metrics are 0)
+  // Check if there's no data
   const hasNoData =
-    !loading &&
-    successfullyAnalyzed === 0 &&
-    averageReliabilityScore === 0 &&
-    falsePositiveRate === 0;
-
+    successfullyAnalyzed === 0 ;
   return (
     <Card>
       <CardTitle>
