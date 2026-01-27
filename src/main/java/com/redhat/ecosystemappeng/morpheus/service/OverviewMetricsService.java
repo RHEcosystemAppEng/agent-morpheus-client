@@ -14,6 +14,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.jboss.logging.Logger;
+
+
 
 /**
  * Service for calculating overview metrics for the home page.
@@ -22,12 +25,12 @@ import java.util.List;
  * Calculation approach:
  * 1. First calculates the count of completed reports from the last week (reused for all metrics)
  * 2. Returns the count of completed reports as the first metric
- * 3. Calculates average reliability score using manual sum/division (not aggregation)
+ * 3. Calculates average reliability score using manual sum/division (not aggregation), using only the first analysis item (index 0)
  * 4. Calculates false positive rate as percentage using only the first analysis item (index 0)
  */
 @ApplicationScoped
 public class OverviewMetricsService {
-
+    private static final Logger LOGGER = Logger.getLogger(OverviewMetricsService.class);
     private static final String COLLECTION = "reports";
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
             .withZone(ZoneOffset.UTC);
@@ -85,7 +88,6 @@ public class OverviewMetricsService {
             return 0.0;
         }
 
-        // Sum all intel_score values from all analysis items in completed reports
         double sum = 0.0;
         int count = 0;
         
@@ -93,19 +95,16 @@ public class OverviewMetricsService {
             Document output = report.get("output", Document.class);
             if (output != null) {
                 List<?> analysisList = output.getList("analysis", Document.class);
-                if (analysisList != null) {
-                    for (Object item : analysisList) {
-                        if (item instanceof Document) {
-                            Document analysisItem = (Document) item;
-                            Object intelScoreObj = analysisItem.get("intel_score");
-                            if (intelScoreObj != null) {
-                                try {
-                                    double intelScore = getDoubleValue(intelScoreObj);
-                                    sum += intelScore;
-                                    count++;
-                                } catch (Exception e) {
-                                }
-                            }
+                if (analysisList != null && analysisList.size() > 0) {
+                    // Only use the first analysis item (index 0)
+                    Object firstItem = analysisList.get(0);
+                    if (firstItem instanceof Document) {
+                        Document analysisItem = (Document) firstItem;
+                        Object intelScoreObj = analysisItem.get("intel_score");
+                        if (intelScoreObj != null) {
+                                double intelScore = getDoubleValue(intelScoreObj);
+                                sum += intelScore;
+                                count++;
                         }
                     }
                 }

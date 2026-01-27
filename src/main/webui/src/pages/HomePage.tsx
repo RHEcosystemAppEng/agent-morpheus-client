@@ -1,5 +1,4 @@
 import React from "react";
-import ReportsSummaryCard from "../components/ReportsSummaryCard";
 import { PageSection, Title } from "@patternfly/react-core";
 import GetStartedCard from "../components/GetStartedCard";
 import MetricsCard from "../components/MetricsCard";
@@ -20,8 +19,6 @@ const HomePage: React.FC = () => {
         <GetStartedCard />
         <br />
         <MetricsCard />
-        <br />
-        <ReportsSummaryCard />
       </PageSection>
     </>
   );
