@@ -25,7 +25,7 @@ public class OverviewMetricsResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Get overview metrics",
-        description = "Retrieves metrics for the home page calculated from data in the last week, including successfully analyzed percentage, average reliability score, and false positive rate"
+        description = "Retrieves metrics for the home page calculated from data in the last week, including count of successfully analyzed reports, average reliability score, and false positive rate"
     )
     @APIResponse(
         responseCode = "200",
