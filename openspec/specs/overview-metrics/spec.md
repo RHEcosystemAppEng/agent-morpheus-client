@@ -22,12 +22,12 @@ The system SHALL return the count (not percentage) of reports that were complete
 
 ### Requirement: Average Reliability Score Metric
 
-The system SHALL calculate the average intel_score from all vulnerability analyses in completed reports from the last week. The calculation SHALL use manual sum and division (not MongoDB aggregation). Only analysis items with non-null intel_score values SHALL be included.
+The system SHALL calculate the average intel_score from the first analysis item (index 0) in completed reports from the last week. The calculation SHALL use manual sum and division (not MongoDB aggregation). Only reports with non-null intel_score values in the first analysis item SHALL be included.
 
 #### Scenario: Calculate average using sum and division
 
 - **WHEN** calculating the average reliability score
-- **THEN** the system sums all `output.analysis[].intel_score` values from completed reports in the last week (excluding null values)
+- **THEN** the system sums all `output.analysis.0.intel_score` values from completed reports in the last week (excluding null values)
 - **AND** divides the sum by the count of completed reports (from requirement 1)
 - **AND** returns the result as a number (not percentage)
 
