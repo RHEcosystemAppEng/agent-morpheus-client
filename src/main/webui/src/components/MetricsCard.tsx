@@ -21,7 +21,6 @@ import {
 } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
-  OptimizeIcon,
   SecurityIcon,
   SearchIcon,
 } from "@patternfly/react-icons";
@@ -94,6 +93,11 @@ const MetricsCard: React.FC = () => {
     return `${value.toFixed(1)}%`;
   };
 
+  // Format count as whole number
+  const formatCount = (value: number): string => {
+    return Math.round(value).toString();
+  };
+
   // Format average score with 1 decimal place
   const formatScore = (value: number): string => {
     return value.toFixed(1);
@@ -104,8 +108,7 @@ const MetricsCard: React.FC = () => {
   const falsePositiveRate = metrics?.falsePositiveRate ?? 0;
 
   // Check if there's no data
-  const hasNoData =
-    successfullyAnalyzed === 0 ;
+  const hasNoData = successfullyAnalyzed === 0;
   return (
     <Card>
       <CardTitle>
@@ -134,22 +137,27 @@ const MetricsCard: React.FC = () => {
         ) : (
           <Grid hasGutter>
             <MetricsStatItem
-              label="Successfully Analyzed (Last Week)"
-              value={loading ? "" : formatPercentage(successfullyAnalyzed)}
+              label="Successfully Analyzed"
+              value={loading ? "" : formatCount(successfullyAnalyzed)}
               icon={<CheckCircleIcon />}
               iconStatus="success"
               loading={loading}
             />
             <MetricsStatItem
-              label="Average Intel Reliability Score (Last Week)"
+              label="Average Intel Reliability Score"
               value={loading ? "" : formatScore(averageReliabilityScore)}
-              icon={<OptimizeIcon />}
+              icon={
+                <img
+                  src="/AI Icon.svg"
+                  style={{ height: "1.5rem", width: "1.5rem" }}
+                />
+              }
               iconStatus="custom"
               iconColor="var(--pf-t--global--color--brand--default)"
               loading={loading}
             />
             <MetricsStatItem
-              label="False Positive Rate (Last Week)"
+              label="False Positive Rate"
               value={loading ? "" : formatPercentage(falsePositiveRate)}
               icon={<SecurityIcon />}
               iconStatus="success"

@@ -3,9 +3,7 @@ package com.redhat.ecosystemappeng.morpheus.service;
 import com.redhat.ecosystemappeng.morpheus.model.OverviewMetricsDTO;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Accumulators;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -15,13 +13,17 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Service for calculating overview metrics for the home page.
  * All metrics are calculated from data in the last 7 days (last week).
+ * 
+ * Calculation approach:
+ * 1. First calculates the count of completed reports from the last week (reused for all metrics)
+ * 2. Returns the count of completed reports as the first metric
+ * 3. Calculates average reliability score using manual sum/division (not aggregation)
+ * 4. Calculates false positive rate as percentage using only the first analysis item (index 0)
  */
 @ApplicationScoped
 public class OverviewMetricsService {
@@ -47,29 +49,27 @@ public class OverviewMetricsService {
         );
     }
 
+    /**
+     * @return OverviewMetricsDTO containing the three metrics
+     */
     public OverviewMetricsDTO getMetrics() {
         Instant oneWeekAgo = Instant.now().minus(7, ChronoUnit.DAYS);
-        Date oneWeekAgoDate = Date.from(oneWeekAgo);
         String oneWeekAgoIsoString = ISO_FORMATTER.format(oneWeekAgo);
-
         MongoCollection<Document> collection = getCollection();
-
-        long docsWithSentAtLastWeek = collection.countDocuments(
-            Filters.and(
-                Filters.ne("metadata.sent_at", null),
-                Filters.gte("metadata.sent_at", oneWeekAgoDate)
-            )
-        );
-        
-        if (docsWithSentAtLastWeek == 0) {
-            return new OverviewMetricsDTO(0.0, 0.0, 0.0);
-        }
-
+        // Calculate completed reports count from last week (used by all metrics)
         Bson completedReportsFilter = getCompletedReportsFromLastWeekFilter(oneWeekAgoIsoString);
         long completedReportsCount = collection.countDocuments(completedReportsFilter);
 
-        double successfullyAnalyzed = calculateSuccessfullyAnalyzed(collection, oneWeekAgoDate, oneWeekAgoIsoString, docsWithSentAtLastWeek);
-        double averageReliabilityScore = calculateAverageReliabilityScore(collection, completedReportsFilter);
+        // If no completed reports, return zeros
+        if (completedReportsCount == 0) {
+            return new OverviewMetricsDTO(0.0, 0.0, 0.0);
+        }
+
+        // First metric - count of completed reports (same as completedReportsCount)
+        double successfullyAnalyzed = (double) completedReportsCount;
+        // Second metric - average reliability score using manual sum/division
+        double averageReliabilityScore = calculateAverageReliabilityScore(collection, completedReportsFilter, completedReportsCount);
+        // Third metric - false positive rate as percentage
         double falsePositiveRate = calculateFalsePositiveRate(collection, completedReportsFilter, completedReportsCount);
 
         return new OverviewMetricsDTO(
@@ -79,68 +79,70 @@ public class OverviewMetricsService {
         );
     }
 
-    /**
-     * Calculates the percentage of successfully analyzed reports from the last week.
-     * Formula: (Reports with completed_at from last week / Reports with sent_at from last week) * 100
-     */
-    private double calculateSuccessfullyAnalyzed(MongoCollection<Document> collection, Date oneWeekAgoDate, String oneWeekAgoIsoString, long totalSent) {
-        if (totalSent == 0) {
+
+    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, Bson completedReportsFilter, long completedReportsCount) {
+        if (completedReportsCount == 0) {
             return 0.0;
         }
 
-        // Count reports that were sent in the last week AND completed in the last week (numerator)
-        Bson completedFilter = Filters.and(
-            Filters.ne("metadata.sent_at", null),
-            Filters.gte("metadata.sent_at", oneWeekAgoDate),
-            Filters.ne("input.scan.completed_at", null)
-        );
-        long totalCompleted = collection.countDocuments(completedFilter);
+        // Sum all intel_score values from all analysis items in completed reports
+        double sum = 0.0;
+        int count = 0;
+        
+        for (Document report : collection.find(completedReportsFilter)) {
+            Document output = report.get("output", Document.class);
+            if (output != null) {
+                List<?> analysisList = output.getList("analysis", Document.class);
+                if (analysisList != null) {
+                    for (Object item : analysisList) {
+                        if (item instanceof Document) {
+                            Document analysisItem = (Document) item;
+                            Object intelScoreObj = analysisItem.get("intel_score");
+                            if (intelScoreObj != null) {
+                                try {
+                                    double intelScore = getDoubleValue(intelScoreObj);
+                                    sum += intelScore;
+                                    count++;
+                                } catch (Exception e) {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-        return (totalCompleted * 100.0) / totalSent;
+        if (count == 0) {
+            return 0.0;
+        }
+
+        // Calculate average: sum / count of completed reports
+        return sum / completedReportsCount;
     }
 
     /**
-     * Calculates the average intel_score from all vulnerability analyses in completed reports from the last week.
-     * Only includes analysis items with non-null intel_score values.
+     * Helper method to extract double value from various numeric types.
      */
-    private double calculateAverageReliabilityScore(MongoCollection<Document> collection, Bson completedReportsFilter) {
-        List<Bson> pipeline = new ArrayList<>();
-        pipeline.add(Aggregates.match(completedReportsFilter));
-        pipeline.add(Aggregates.unwind("$output.analysis"));
-        pipeline.add(Aggregates.match(Filters.and(
-            Filters.exists("output.analysis.intel_score", true),
-            Filters.ne("output.analysis.intel_score", null)
-        )));
-        pipeline.add(Aggregates.group(
-            null,
-            Accumulators.avg("avgScore", "$output.analysis.intel_score")
-        ));
-
-        Document result = collection.aggregate(pipeline).first();
-        if (result == null || result.get("avgScore") == null) {
-            return 0.0;
+    private double getDoubleValue(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
         }
-        return result.getDouble("avgScore");
+        throw new IllegalArgumentException("Cannot convert to double: " + value);
     }
 
-    /**
-     * Calculates the percentage of false positives in completed reports from the last week.
-     * Formula: (Reports with status="FALSE" / Total completed reports) * 100
-     * 
-     * Note: Only one analysis item per report is supported, so we access the first element
-     * of the output.analysis array using dot notation (output.analysis.0.justification.status).
-     */
-    private double calculateFalsePositiveRate(MongoCollection<Document> collection, Bson completedReportsFilter, long total) {
-        if (total == 0) {
+    
+    private double calculateFalsePositiveRate(MongoCollection<Document> collection, Bson completedReportsFilter, long completedReportsCount) {
+        if (completedReportsCount == 0) {
             return 0.0;
         }
 
+        // Count reports where the first analysis item (index 0) has status = "FALSE"
         Bson falsePositiveFilter = Filters.and(
             completedReportsFilter,
             Filters.eq("output.analysis.0.justification.status", "FALSE")
         );
         long falsePositives = collection.countDocuments(falsePositiveFilter);
 
-        return (falsePositives * 100.0) / total;
+        return (falsePositives * 100.0) / completedReportsCount;
     }
 }
