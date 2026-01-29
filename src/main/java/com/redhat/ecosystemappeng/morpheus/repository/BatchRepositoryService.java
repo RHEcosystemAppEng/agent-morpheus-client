@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
+import com.redhat.ecosystemappeng.morpheus.model.audit.BatchType;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 @Singleton
 @RegisterForReflection(targets = { Document.class })
 public class BatchRepositoryService extends AuditRepository {
+
 
     @Inject
     MongoClient mongoClient;
@@ -106,14 +108,14 @@ public class BatchRepositoryService extends AuditRepository {
 
     }
 
-    public String findLatestExecutedBatch(boolean languageSpecific, String language)
+    public String findLatestExecutedBatch(boolean languageSpecific, String language, BatchType batchType)
     {   Document doc;
         Bson language_criteria;
         if (languageSpecific) {
             language_criteria =  Filters.eq(LANGUAGE_FIELD_NAME, language);
         }
         else {
-            language_criteria =  Filters.eq(LANGUAGE_FIELD_NAME, ALL_LANGUAGES_BATCH_LANGUAGE_ID);
+            language_criteria =  Filters.and(Filters.eq(LANGUAGE_FIELD_NAME, ALL_LANGUAGES_BATCH_LANGUAGE_ID),Filters.eq(BATCH_TYPE_FIELD_NAME, batchType.name()));
         }
         doc =  this.getBatchesCollection().find(language_criteria).sort(Sorts.descending(EXECUTION_START_TIMESTAMP)).first();
         if(Objects.nonNull(doc)) {
@@ -141,6 +143,7 @@ public class BatchRepositoryService extends AuditRepository {
         batchCollection.createIndex(Indexes.descending(EXECUTION_START_TIMESTAMP));
         batchCollection.createIndex(Indexes.ascending(BATCH_ID_FIELD_NAME));
         batchCollection.createIndex(Indexes.ascending(LANGUAGE_FIELD_NAME));
+        batchCollection.createIndex(Indexes.ascending(LANGUAGE_FIELD_NAME, BATCH_TYPE_FIELD_NAME));
     }
 
     private MongoCollection<Document> getBatchesCollection() {

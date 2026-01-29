@@ -1,6 +1,7 @@
 package com.redhat.ecosystemappeng.morpheus.rest.audit;
 
 import com.redhat.ecosystemappeng.morpheus.model.audit.Batch;
+import com.redhat.ecosystemappeng.morpheus.model.audit.BatchType;
 import com.redhat.ecosystemappeng.morpheus.model.audit.Job;
 import com.redhat.ecosystemappeng.morpheus.service.audit.BatchService;
 import jakarta.inject.Inject;
@@ -178,12 +179,12 @@ public class BatchEndpoint extends BaseAuditEndpoint {
     )
   })
   public Batch getRecentBatchId(
-    @Parameter(
+          @Parameter(
       description = "the language of the batch run, for returning the recent batch run of mixed languages batches, pass 'all'",
       required = true
     )
-    @Valid @Pattern (regexp = REGEX_ALLOWED_LANGUAGES) @QueryParam("language") String language)  {
-      return batchService.routeLatestToServiceMethod(language);
+    @Valid @Pattern (regexp = REGEX_ALLOWED_LANGUAGES) @QueryParam("language") String language, @QueryParam("batch_type") BatchType batchType)  {
+      return batchService.routeLatestToServiceMethod(language, batchType);
   }
 
 

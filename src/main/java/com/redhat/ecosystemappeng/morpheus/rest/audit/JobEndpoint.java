@@ -224,6 +224,7 @@ public class JobEndpoint extends BaseAuditEndpoint {
       required = true
     )
     @QueryParam("jobId") String jobId)  {
+
       return jobService.getByJobId(jobId);
   }
 

@@ -3,7 +3,9 @@ package com.redhat.ecosystemappeng.morpheus.service.audit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.audit.Batch;
+import com.redhat.ecosystemappeng.morpheus.model.audit.BatchType;
 import com.redhat.ecosystemappeng.morpheus.repository.BatchRepositoryService;
+import io.smallrye.common.annotation.NonBlocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 import static com.redhat.ecosystemappeng.morpheus.repository.AuditRepository.ALL_LANGUAGES_BATCH_LANGUAGE_ID;
 
 @ApplicationScoped
+@NonBlocking
 public class BatchService extends AuditService {
 
   private static final Logger LOGGER = Logger.getLogger(BatchService.class);
@@ -92,14 +95,14 @@ public class BatchService extends AuditService {
 
   }
 
-  public Batch getLatestBatch(boolean languageSpecific, String language) {
-    LOGGER.debugf("Getting latest %s batch", languageSpecific ? language : "Mixed Languages");
-      String latestExecutedBatch = repository.findLatestExecutedBatch(languageSpecific, language);
+  public Batch getLatestBatch(boolean languageSpecific, String language, BatchType batchType) {
+    LOGGER.debugf("Getting latest %s batch of type %s", languageSpecific ? language : "Mixed Languages",batchType);
+      String latestExecutedBatch = repository.findLatestExecutedBatch(languageSpecific, language, batchType);
       if(Objects.nonNull(latestExecutedBatch)) {
         return deserializeOneBatch(latestExecutedBatch);
       }
       else {
-          throw new NotFoundException("There are no batches found for" + getExceptionMessageBasedOnCriteria(languageSpecific, language));
+          throw new NotFoundException("There are no batches found for batch type=" + batchType.name() + ", and" + getExceptionMessageBasedOnCriteria(languageSpecific, language));
       }
   }
 
@@ -172,15 +175,15 @@ public class BatchService extends AuditService {
       }
     }
 
-    public Batch routeLatestToServiceMethod(String language) {
+    public Batch routeLatestToServiceMethod(String language, BatchType batchType) {
         if (language.trim().isBlank()) {
             throw new IllegalArgumentException("Language parameter cannot be blank for retrieving latest batch, must be a specific allowed language or 'all'");
         }
         if(language.trim().equalsIgnoreCase(ALL_LANGUAGES_BATCH_LANGUAGE_ID)) {
-            return this.getLatestBatch(false, language);
+            return this.getLatestBatch(false, language , batchType);
         }
         else {
-            return this.getLatestBatch(true, language);
+            return this.getLatestBatch(true, language, batchType);
         }
     }
 }
