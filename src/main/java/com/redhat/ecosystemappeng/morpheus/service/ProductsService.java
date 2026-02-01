@@ -163,6 +163,7 @@ public class ProductsService {
     return switch (sortField) {
       case "completedAt" -> "input.scan.completed_at";
       case "sbomName" -> "metadata." + SBOM_NAME;
+      case "productId" -> "metadata." + PRODUCT_ID;
       default -> "input.scan.completed_at";
     };
   }

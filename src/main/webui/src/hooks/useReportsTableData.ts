@@ -22,7 +22,7 @@ export interface ReportRow {
 }
 
 export type SortDirection = "asc" | "desc";
-export type SortColumn = "sbomName" | "completedAt";
+export type SortColumn = "productId" | "sbomName" | "completedAt";
 
 export interface UseReportsTableOptions {
   page: number;
@@ -205,6 +205,8 @@ export function compareStrings(
  */
 export function mapSortColumnToApiField(sortColumn: SortColumn): string {
   switch (sortColumn) {
+    case "productId":
+      return "productId";
     case "sbomName":
       return "sbomName";
     case "completedAt":
