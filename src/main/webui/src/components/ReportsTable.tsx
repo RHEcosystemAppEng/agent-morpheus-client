@@ -51,6 +51,9 @@ interface ReportsTableProps {
   ) => void;
   onClearFilters?: () => void;
   analysisStateOptions?: string[];
+  sortColumn?: SortColumn;
+  sortDirection?: SortDirection;
+  onSortChange?: (column: SortColumn, direction: SortDirection) => void;
 }
 
 const ReportsTable: React.FC<ReportsTableProps> = ({
@@ -64,11 +67,31 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   onActiveAttributeChange = () => {},
   onClearFilters = () => {},
   analysisStateOptions = [],
+  sortColumn: propSortColumn,
+  sortDirection: propSortDirection,
+  onSortChange,
 }) => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortColumn, setSortColumn] = useState<SortColumn>(
+    propSortColumn || "completedAt"
+  );
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    propSortDirection || "desc"
+  );
+
+  // Sync with props when they change (from URL)
+  useEffect(() => {
+    if (propSortColumn !== undefined) {
+      setSortColumn(propSortColumn);
+    }
+  }, [propSortColumn]);
+
+  useEffect(() => {
+    if (propSortDirection !== undefined) {
+      setSortDirection(propSortDirection);
+    }
+  }, [propSortDirection]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -116,18 +139,26 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   };
 
   const handleSortToggle = (column: SortColumn) => {
+    let newDirection: SortDirection;
     if (sortColumn === column) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      newDirection = sortDirection === "asc" ? "desc" : "asc";
     } else {
-      setSortColumn(column);
-      setSortDirection("asc");
+      newDirection = "asc";
     }
+    setSortColumn(column);
+    setSortDirection(newDirection);
     setPage(1);
+    // Notify parent component to update URL
+    if (onSortChange) {
+      onSortChange(column, newDirection);
+    }
   };
 
   // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
+      case "productId":
+        return 0;
       case "sbomName":
         return 1;
       case "completedAt":
@@ -220,7 +251,18 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       <Table aria-label="Reports table">
         <Thead>
           <Tr>
-            <Th>{columnNames.productId}</Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("productId"),
+                columnIndex: 0,
+              }}
+            >
+              {columnNames.productId}
+            </Th>
             <Th
               sort={{
                 sortBy: {

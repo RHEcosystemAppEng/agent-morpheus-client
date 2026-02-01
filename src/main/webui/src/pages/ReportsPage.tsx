@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { PageSection, Title } from "@patternfly/react-core";
 import ReportsTable from "../components/ReportsTable";
 import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
+import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";
 
 const ALL_ANALYSIS_STATE_OPTIONS = [
   "completed",
@@ -24,6 +25,8 @@ const ReportsPage: React.FC = () => {
   const [activeAttribute, setActiveAttribute] = useState<
     "SBOM Name" | "CVE ID" | "ExploitIQ Status" | "Analysis State"
   >("SBOM Name");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   // Restore filter state from URL on mount
   useEffect(() => {
@@ -32,27 +35,43 @@ const ReportsPage: React.FC = () => {
     // TODO: exploitIqStatus filter not yet implemented - parameter is ignored
     // const exploitIqStatus = searchParams.get("exploitIqStatus") || "";
     const analysisState = searchParams.get("analysisState") || "";
+    const sortField = searchParams.get("sortField");
+    const sortDir = searchParams.get("sortDirection");
 
     setSearchValue(sbomName);
     setCveSearchValue(cveId);
 
     // Parse comma-separated values
     // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
-    // The filter appears in the UI but is disabled and has no backend implementation.
     setFilters({
       exploitIqStatus: [],
       analysisState: analysisState
         ? analysisState.split(",").map((v) => v.trim())
         : [],
     });
-  }, []); // Only on mount
 
-  // Update URL when filters change
+    // Restore sort state from URL
+    if (
+      sortField &&
+      (sortField === "productId" ||
+        sortField === "sbomName" ||
+        sortField === "completedAt")
+    ) {
+      setSortColumn(sortField);
+    }
+    if (sortDir && (sortDir === "asc" || sortDir === "desc")) {
+      setSortDirection(sortDir);
+    }
+  }, []);
+
+  // Update URL when filters or sort change
   const updateUrlParams = (
     sbomName: string,
     cveId: string,
     exploitIqStatus: string[], // TODO: Not yet implemented - parameter is ignored
-    analysisState: string[]
+    analysisState: string[],
+    sortCol?: SortColumn,
+    sortDir?: SortDirection
   ) => {
     const newParams = new URLSearchParams();
     if (sbomName) newParams.set("sbomName", sbomName);
@@ -60,6 +79,14 @@ const ReportsPage: React.FC = () => {
     // TODO: ExploitIQ Status filter
     if (analysisState.length > 0) {
       newParams.set("analysisState", analysisState.join(","));
+    }
+    // Add sort parameters (use current state if not provided)
+    const currentSortCol = sortCol !== undefined ? sortCol : sortColumn;
+    const currentSortDir = sortDir !== undefined ? sortDir : sortDirection;
+    // Only add sort params if not default (completedAt DESC)
+    if (currentSortCol !== "completedAt" || currentSortDir !== "desc") {
+      newParams.set("sortField", currentSortCol);
+      newParams.set("sortDirection", currentSortDir);
     }
     setSearchParams(newParams, { replace: true });
   };
@@ -94,10 +121,26 @@ const ReportsPage: React.FC = () => {
     );
   };
 
+  const handleSortChange = (column: SortColumn, direction: SortDirection) => {
+    setSortColumn(column);
+    setSortDirection(direction);
+    updateUrlParams(
+      searchValue,
+      cveSearchValue,
+      filters.exploitIqStatus,
+      filters.analysisState,
+      column,
+      direction
+    );
+  };
+
   const handleClearFilters = () => {
     setSearchValue("");
     setCveSearchValue("");
     setFilters({ exploitIqStatus: [], analysisState: [] });
+    // Reset sort to default
+    setSortColumn("completedAt");
+    setSortDirection("desc");
     setSearchParams({}, { replace: true });
   };
 
@@ -125,6 +168,9 @@ const ReportsPage: React.FC = () => {
           onActiveAttributeChange={setActiveAttribute}
           onClearFilters={handleClearFilters}
           analysisStateOptions={ALL_ANALYSIS_STATE_OPTIONS}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
         />
       </PageSection>
     </>
