@@ -69,3 +69,62 @@ The reports table SHALL use the `/api/v1/products` API endpoint to fetch data, w
 - **AND** the server performs filtering and pagination, returning only the requested page of filtered results
 - **AND** the table displays the paginated results with correct total count from API response headers (`X-Total-Pages` and `X-Total-Elements`)
 
+### Requirement: Reports Table Filtering
+The reports table SHALL support filtering by SBOM Name, CVE ID, and Analysis State. All filtering SHALL be performed server-side via the `/api/v1/products` API endpoint. Filter state SHALL be persisted in the browser URL as query parameters to enable shareable links. The active filter attribute (which search/filter input is displayed) SHALL remain unchanged until the user manually changes it.
+
+#### Scenario: SBOM Name text search filter
+- **WHEN** a user enters text in the SBOM Name search field
+- **THEN** the filter value is sent to `/api/v1/products` as `sbomName` query parameter
+- **AND** the API performs case-insensitive partial text matching on `metadata.sbom_name` field
+- **AND** products matching the search text are displayed in the table
+- **AND** partial matches are supported (e.g., searching "test" matches "test-product" and "my-test-sbom")
+
+#### Scenario: CVE ID text search filter
+- **WHEN** a user enters text in the CVE ID search field
+- **THEN** the filter value is sent to `/api/v1/products` as `cveId` query parameter
+- **AND** the API performs case-insensitive partial text matching on `input.scan.vulns[0].vuln_id` field
+- **AND** products with matching CVE IDs are displayed in the table
+- **AND** partial matches are supported (e.g., searching "2024" matches "CVE-2024-1234" and "CVE-2024-5678")
+
+#### Scenario: Analysis State multi-select filter
+- **WHEN** a user selects one or more Analysis State values (completed, expired, failed, queued, sent, pending, preprocessing failed)
+- **THEN** the selected values are sent to `/api/v1/products` as comma-separated string (e.g., `analysisState=completed,failed`)
+- **AND** the API uses existing `STATUS_FILTERS` logic from `ReportRepositoryService` to filter reports
+- **AND** multiple values use OR logic (products matching any selected state are displayed)
+- **AND** the filter is applied before grouping in the aggregation pipeline
+
+#### Scenario: Filter combination
+- **WHEN** a user applies multiple filters simultaneously
+- **THEN** all active filters are combined with AND logic
+- **AND** products matching all filter criteria are displayed
+- **AND** filter parameters are sent together in a single API request
+
+#### Scenario: Clear filters
+- **WHEN** a user clicks "Clear all filters"
+- **THEN** all filter values are reset to empty/default
+- **AND** the URL query parameters are removed
+- **AND** the table displays all products (unfiltered)
+
+#### Scenario: Filter state in URL
+- **WHEN** a user applies filters to the reports table
+- **THEN** the filter values are stored as query parameters in the browser URL (e.g., `/reports?sbomName=test&cveId=CVE-2024&analysisState=completed`)
+- **AND** the URL can be shared with others to view the same filtered results
+- **AND** when navigating back to the reports page, the filter state is restored from URL parameters
+
+#### Scenario: Filter persistence across navigation
+- **WHEN** a user applies filters and then navigates away from the reports page
+- **AND** the user navigates back to the reports page
+- **THEN** the filter state is restored from URL query parameters
+- **AND** the table displays the filtered results matching the restored filter state
+
+#### Scenario: Pagination reset on filter change
+- **WHEN** a user changes any filter value
+- **THEN** the pagination is reset to page 1
+- **AND** the filtered results are displayed starting from the first page
+
+#### Scenario: Active filter attribute persistence
+- **WHEN** a user selects a filter attribute (e.g., "Analysis State") from the attribute selector
+- **AND** the user applies a filter value
+- **THEN** the active filter attribute remains set to the selected attribute (e.g., "Analysis State")
+- **AND** the same filter input remains displayed even after the filter is applied
+- **AND** the active attribute only changes when the user manually selects a different attribute from the attribute selector
