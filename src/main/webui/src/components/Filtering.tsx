@@ -249,7 +249,7 @@ export function CheckboxFilter({
   );
 
   const menu = (
-    <Menu ref={menuRef} id={id} onSelect={handleSelect} selected={selected}>
+    <Menu ref={menuRef} id={id} onSelect={handleSelect}>
       <MenuContent>
         <MenuList>
           {options.map((option) => (
