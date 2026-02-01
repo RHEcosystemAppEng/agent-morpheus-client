@@ -41,7 +41,10 @@ interface RepositoryTableToolbarProps {
   };
 }
 
-type ActiveAttribute = "Repository" | "Analysis State" | "ExploitIQ Status";
+type ActiveAttribute =
+  | "Repository Name"
+  | "Analysis State"
+  | "ExploitIQ Status";
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   repositorySearchValue,
@@ -55,7 +58,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   pagination,
 }) => {
   const [activeAttribute, setActiveAttribute] =
-    useState<ActiveAttribute>("Repository");
+    useState<ActiveAttribute>("Repository Name");
 
   const handleScanStateFilterDelete = (
     _category: string | unknown,
@@ -111,7 +114,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               <AttributeSelector
                 activeAttribute={activeAttribute}
                 attributes={[
-                  "Repository",
+                  "Repository Name",
                   "Analysis State",
                   "ExploitIQ Status",
                 ]}
@@ -126,8 +129,8 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               }
               deleteLabel={() => onRepositorySearchChange("")}
               deleteLabelGroup={() => onRepositorySearchChange("")}
-              categoryName="Repository"
-              showToolbarItem={activeAttribute === "Repository"}
+              categoryName="Repository Name"
+              showToolbarItem={activeAttribute === "Repository Name"}
             >
               {repositorySearchInput}
             </ToolbarFilter>
