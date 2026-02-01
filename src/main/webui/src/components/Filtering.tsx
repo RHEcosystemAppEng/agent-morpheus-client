@@ -177,6 +177,7 @@ export interface CheckboxFilterProps {
   onSelect: (selected: string[]) => void;
   loading?: boolean;
   singleSelect?: boolean;
+  isDisabled?: boolean;
 }
 
 export function CheckboxFilter({
@@ -187,6 +188,7 @@ export function CheckboxFilter({
   onSelect,
   loading = false,
   singleSelect = false,
+  isDisabled = false,
 }: CheckboxFilterProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -240,7 +242,7 @@ export function CheckboxFilter({
           badge: <Badge isRead>{selected.length}</Badge>,
         })}
       style={{ width: "200px" } as React.CSSProperties}
-      isDisabled={loading}
+      isDisabled={loading || isDisabled}
     >
       {singleSelect && selected.length > 0 ? `${label}: ${selected[0]}` : label}
     </MenuToggle>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -28,15 +29,81 @@ public class ProductsService {
   private static final Logger LOGGER = Logger.getLogger(ProductsService.class);
   private static final String PRODUCT_ID = "product_id";
   private static final String SBOM_NAME = "sbom_name";
+  private static final String SENT_AT = "sent_at";
+  private static final String SUBMITTED_AT = "submitted_at";
+
+  // Reuse STATUS_FILTERS logic from ReportRepositoryService
+  private static final Map<String, Bson> STATUS_FILTERS = Map.of(
+      "completed", Filters.ne("input.scan.completed_at", null),
+      "sent",
+      Filters.and(Filters.ne("metadata." + SENT_AT, null), Filters.eq("error", null),
+          Filters.eq("input.scan.completed_at", null)),
+      "failed", Filters.ne("error", null),
+      "queued", Filters.and(Filters.ne("metadata." + SUBMITTED_AT, null), Filters.eq("metadata." + SENT_AT, null),
+          Filters.eq("error", null), Filters.eq("input.scan.completed_at", null)),
+      "expired", Filters.and(Filters.ne("error", null), Filters.eq("error.type", "expired")),
+      "pending", Filters.and(
+          Filters.eq("metadata." + SENT_AT, null),
+          Filters.eq("metadata." + SUBMITTED_AT, null),
+          Filters.ne("metadata." + PRODUCT_ID, null)));
 
   @Inject
   ReportRepositoryService reportRepositoryService;
 
-  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination) {
+  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination,
+      String sbomName, String cveId, String exploitIqStatus, String analysisState) {
     List<Product> products = new ArrayList<>();
     
-    // Build filter for reports with product_id
-    Bson filter = Filters.exists("metadata." + PRODUCT_ID, true);
+    List<Bson> filterConditions = new ArrayList<>();
+    filterConditions.add(Filters.exists("metadata." + PRODUCT_ID, true));
+    
+    List<Bson> filterOptions = new ArrayList<>();
+    
+    if (sbomName != null && !sbomName.trim().isEmpty()) {
+      // Escape special regex characters to prevent regex injection and allow literal text search.
+      // The pattern matches special regex characters: \ + * ? [ ] ( ) { } ^ $ | .
+      // Each matched character is escaped with a backslash (e.g., "test-product" -> "test\-product")
+      // This allows users to search for literal text containing special characters while still
+      // supporting partial matching (e.g., searching "test" matches "test-product" and "my-test-sbom")
+      String escaped = sbomName.trim().replaceAll("([\\\\+*?\\[\\](){}^$|.])", "\\\\$1");
+      filterOptions.add(Filters.regex("metadata." + SBOM_NAME, 
+          Pattern.compile(escaped, Pattern.CASE_INSENSITIVE)));
+    }
+    
+    if (cveId != null && !cveId.trim().isEmpty()) {
+      String escaped = cveId.trim().replaceAll("([\\\\+*?\\[\\](){}^$|.])", "\\\\$1");
+      filterOptions.add(Filters.elemMatch("input.scan.vulns", 
+          Filters.regex("vuln_id", Pattern.compile(escaped, Pattern.CASE_INSENSITIVE))));
+    }
+    
+    // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
+    
+    if (analysisState != null && !analysisState.trim().isEmpty()) {
+      String[] stateValues = analysisState.split(",");
+      List<Bson> stateFilters = new ArrayList<>();
+      for (String stateValue : stateValues) {
+        Bson stateFilter = STATUS_FILTERS.get(stateValue.trim());
+        if (stateFilter != null) {
+          stateFilters.add(stateFilter);
+        }
+      }
+      if (!stateFilters.isEmpty()) {
+        filterOptions.add(stateFilters.size() == 1 
+            ? stateFilters.get(0) 
+            : Filters.or(stateFilters));
+      }
+    }
+    
+    // Combine all filters: all filter options with AND logic, Multiple values within the same filter type use OR logic
+    if (!filterOptions.isEmpty()) {
+      filterConditions.add(filterOptions.size() == 1 
+          ? filterOptions.get(0) 
+          : Filters.and(filterOptions));
+    }
+    
+    Bson filter = filterConditions.size() == 1 
+        ? filterConditions.get(0) 
+        : Filters.and(filterConditions);
     
     // Build sort
     String sortFieldPath = getSortFieldPath(sortField);
@@ -270,4 +337,3 @@ public class ProductsService {
     return hasEmpty ? "" : (latestCompletedAt != null ? latestCompletedAt : "");
   }
 }
-
