@@ -60,9 +60,6 @@ public class ProductsService {
     List<Bson> filterOptions = new ArrayList<>();
     
     if (sbomName != null && !sbomName.trim().isEmpty()) {
-      // Escape special regex characters to prevent regex injection and allow literal text search.
-      // The pattern matches special regex characters: \ + * ? [ ] ( ) { } ^ $ | .
-      // Each matched character is escaped with a backslash (e.g., "test-product" -> "test\-product")
       // This allows users to search for literal text containing special characters while still
       // supporting partial matching (e.g., searching "test" matches "test-product" and "my-test-sbom")
       String escaped = sbomName.trim().replaceAll("([\\\\+*?\\[\\](){}^$|.])", "\\\\$1");
