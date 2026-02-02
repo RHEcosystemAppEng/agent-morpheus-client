@@ -88,19 +88,11 @@ public class ProductEndpoint {
       @Parameter(
         description = "Filter by CVE ID (case-insensitive partial match)"
       )
-      @QueryParam("cveId") String cveId,
-      @Parameter(
-        description = "Filter by ExploitIQ status. TODO: NOT YET IMPLEMENTED - This parameter is accepted but ignored. The filter appears in the UI but is disabled and has no backend implementation."
-      )
-      @QueryParam("exploitIqStatus") String exploitIqStatus,
-      @Parameter(
-        description = "Filter by analysis state. Valid values: completed, expired, failed, queued, sent, pending (comma-separated for multiple values)"
-      )
-      @QueryParam("analysisState") String analysisState) {
+      @QueryParam("cveId") String cveId) {
     try {
       SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
       var result = productsService.getProducts(sortField, sortType, new Pagination(page, pageSize), 
-          sbomName, cveId, exploitIqStatus, analysisState);
+          sbomName, cveId);
       return Response.ok(result.results)
           .header("X-Total-Pages", result.totalPages)
           .header("X-Total-Elements", result.totalElements)

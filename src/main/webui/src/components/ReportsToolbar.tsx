@@ -18,26 +18,20 @@ import {
 
 export interface ReportsToolbarFilters {
   exploitIqStatus: string[];
-  analysisState: string[];
 }
 
 interface ReportsToolbarProps {
   searchValue?: string;
   cveSearchValue?: string;
   filters?: ReportsToolbarFilters;
-  activeAttribute?:
-    | "SBOM Name"
-    | "CVE ID"
-    | "ExploitIQ Status"
-    | "Analysis State";
+  activeAttribute?: "SBOM Name" | "CVE ID" | "ExploitIQ Status";
   onSearchChange?: (value: string) => void;
   onCveSearchChange?: (value: string) => void;
   onFiltersChange?: (filters: ReportsToolbarFilters) => void;
   onActiveAttributeChange?: (
-    attr: "SBOM Name" | "CVE ID" | "ExploitIQ Status" | "Analysis State"
+    attr: "SBOM Name" | "CVE ID" | "ExploitIQ Status"
   ) => void;
   onClearFilters?: () => void;
-  analysisStateOptions?: string[];
   pagination?: {
     itemCount: number;
     page: number;
@@ -46,23 +40,18 @@ interface ReportsToolbarProps {
   };
 }
 
-type ActiveAttribute =
-  | "SBOM Name"
-  | "CVE ID"
-  | "ExploitIQ Status"
-  | "Analysis State";
+type ActiveAttribute = "SBOM Name" | "CVE ID" | "ExploitIQ Status";
 
 const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
   searchValue = "",
   cveSearchValue = "",
-  filters = { exploitIqStatus: [], analysisState: [] },
+  filters = { exploitIqStatus: [] },
   activeAttribute = "SBOM Name",
   onSearchChange = () => {},
   onCveSearchChange = () => {},
   onFiltersChange = () => {},
   onActiveAttributeChange = () => {},
   onClearFilters = () => {},
-  analysisStateOptions = [],
   pagination,
 }) => {
   const sbomSearchInput = (
@@ -89,10 +78,6 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
     onFiltersChange({ ...filters, exploitIqStatus: selected });
   };
 
-  const handleAnalysisStateChange = (selected: string[]) => {
-    onFiltersChange({ ...filters, analysisState: selected });
-  };
-
   const handleExploitIqStatusDelete = (
     _category: string | unknown,
     label: string | unknown
@@ -104,22 +89,10 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
     }
   };
 
-  const handleAnalysisStateDelete = (
-    _category: string | unknown,
-    label: string | unknown
-  ) => {
-    if (typeof label === "string") {
-      handleAnalysisStateChange(
-        filters.analysisState.filter((f) => f !== label)
-      );
-    }
-  };
-
   const hasActiveFilters =
     searchValue !== "" ||
     cveSearchValue !== "" ||
-    filters.exploitIqStatus.length > 0 ||
-    filters.analysisState.length > 0;
+    filters.exploitIqStatus.length > 0;
 
   return (
     <Toolbar
@@ -132,12 +105,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={[
-                  "SBOM Name",
-                  "CVE ID",
-                  "ExploitIQ Status",
-                  "Analysis State",
-                ]}
+                attributes={["SBOM Name", "CVE ID", "ExploitIQ Status"]}
                 onAttributeChange={(attr) =>
                   onActiveAttributeChange(attr as ActiveAttribute)
                 }
@@ -175,21 +143,6 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
                 selected={filters.exploitIqStatus}
                 onSelect={handleExploitIqStatusChange}
                 isDisabled={true}
-              />
-            </ToolbarFilter>
-            <ToolbarFilter
-              labels={filters.analysisState}
-              deleteLabel={handleAnalysisStateDelete}
-              deleteLabelGroup={() => handleAnalysisStateChange([])}
-              categoryName="Analysis State"
-              showToolbarItem={activeAttribute === "Analysis State"}
-            >
-              <CheckboxFilter
-                id="analysis-state-menu"
-                label="Filter by Analysis State"
-                options={analysisStateOptions}
-                selected={filters.analysisState}
-                onSelect={handleAnalysisStateChange}
               />
             </ToolbarFilter>
           </ToolbarGroup>
