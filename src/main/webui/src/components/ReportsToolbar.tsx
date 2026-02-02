@@ -10,27 +10,19 @@ import {
   Pagination,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
-import {
-  AttributeSelector,
-  CheckboxFilter,
-  ALL_EXPLOIT_IQ_STATUS_OPTIONS,
-} from "./Filtering";
+import { AttributeSelector } from "./Filtering";
 
-export interface ReportsToolbarFilters {
-  exploitIqStatus: string[];
-}
+export interface ReportsToolbarFilters {}
 
 interface ReportsToolbarProps {
   searchValue?: string;
   cveSearchValue?: string;
   filters?: ReportsToolbarFilters;
-  activeAttribute?: "SBOM Name" | "CVE ID" | "ExploitIQ Status";
+  activeAttribute?: "SBOM Name" | "CVE ID";
   onSearchChange?: (value: string) => void;
   onCveSearchChange?: (value: string) => void;
   onFiltersChange?: (filters: ReportsToolbarFilters) => void;
-  onActiveAttributeChange?: (
-    attr: "SBOM Name" | "CVE ID" | "ExploitIQ Status"
-  ) => void;
+  onActiveAttributeChange?: (attr: "SBOM Name" | "CVE ID") => void;
   onClearFilters?: () => void;
   pagination?: {
     itemCount: number;
@@ -40,12 +32,12 @@ interface ReportsToolbarProps {
   };
 }
 
-type ActiveAttribute = "SBOM Name" | "CVE ID" | "ExploitIQ Status";
+type ActiveAttribute = "SBOM Name" | "CVE ID";
 
 const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
   searchValue = "",
   cveSearchValue = "",
-  filters = { exploitIqStatus: [] },
+  filters = {},
   activeAttribute = "SBOM Name",
   onSearchChange = () => {},
   onCveSearchChange = () => {},
@@ -74,25 +66,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
     />
   );
 
-  const handleExploitIqStatusChange = (selected: string[]) => {
-    onFiltersChange({ ...filters, exploitIqStatus: selected });
-  };
-
-  const handleExploitIqStatusDelete = (
-    _category: string | unknown,
-    label: string | unknown
-  ) => {
-    if (typeof label === "string") {
-      handleExploitIqStatusChange(
-        filters.exploitIqStatus.filter((f) => f !== label)
-      );
-    }
-  };
-
-  const hasActiveFilters =
-    searchValue !== "" ||
-    cveSearchValue !== "" ||
-    filters.exploitIqStatus.length > 0;
+  const hasActiveFilters = searchValue !== "" || cveSearchValue !== "";
 
   return (
     <Toolbar
@@ -105,7 +79,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={["SBOM Name", "CVE ID", "ExploitIQ Status"]}
+                attributes={["SBOM Name", "CVE ID"]}
                 onAttributeChange={(attr) =>
                   onActiveAttributeChange(attr as ActiveAttribute)
                 }
@@ -128,22 +102,6 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
               showToolbarItem={activeAttribute === "CVE ID"}
             >
               {cveSearchInput}
-            </ToolbarFilter>
-            <ToolbarFilter
-              labels={filters.exploitIqStatus}
-              deleteLabel={handleExploitIqStatusDelete}
-              deleteLabelGroup={() => handleExploitIqStatusChange([])}
-              categoryName="ExploitIQ Status"
-              showToolbarItem={activeAttribute === "ExploitIQ Status"}
-            >
-              <CheckboxFilter
-                id="exploit-iq-status-menu"
-                label="Filter by ExploitIQ Status"
-                options={ALL_EXPLOIT_IQ_STATUS_OPTIONS}
-                selected={filters.exploitIqStatus}
-                onSelect={handleExploitIqStatusChange}
-                isDisabled={true}
-              />
             </ToolbarFilter>
           </ToolbarGroup>
         </ToolbarToggleGroup>

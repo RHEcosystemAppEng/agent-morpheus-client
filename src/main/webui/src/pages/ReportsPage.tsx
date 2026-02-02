@@ -9,11 +9,9 @@ const ReportsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchValue, setSearchValue] = useState<string>("");
   const [cveSearchValue, setCveSearchValue] = useState<string>("");
-  const [filters, setFilters] = useState<ReportsToolbarFilters>({
-    exploitIqStatus: [],
-  });
+  const [filters, setFilters] = useState<ReportsToolbarFilters>({});
   const [activeAttribute, setActiveAttribute] = useState<
-    "SBOM Name" | "CVE ID" | "ExploitIQ Status"
+    "SBOM Name" | "CVE ID"
   >("SBOM Name");
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -22,18 +20,13 @@ const ReportsPage: React.FC = () => {
   useEffect(() => {
     const sbomName = searchParams.get("sbomName") || "";
     const cveId = searchParams.get("cveId") || "";
-    // TODO: exploitIqStatus filter not yet implemented - parameter is ignored
-    // const exploitIqStatus = searchParams.get("exploitIqStatus") || "";
     const sortField = searchParams.get("sortField");
     const sortDir = searchParams.get("sortDirection");
 
     setSearchValue(sbomName);
     setCveSearchValue(cveId);
 
-    // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
-    setFilters({
-      exploitIqStatus: [],
-    });
+    setFilters({});
 
     // Restore sort state from URL
     if (
@@ -53,14 +46,12 @@ const ReportsPage: React.FC = () => {
   const updateUrlParams = (
     sbomName: string,
     cveId: string,
-    exploitIqStatus: string[], // TODO: Not yet implemented - parameter is ignored
     sortCol?: SortColumn,
     sortDir?: SortDirection
   ) => {
     const newParams = new URLSearchParams();
     if (sbomName) newParams.set("sbomName", sbomName);
     if (cveId) newParams.set("cveId", cveId);
-    // TODO: ExploitIQ Status filter
     // Add sort parameters (use current state if not provided)
     const currentSortCol = sortCol !== undefined ? sortCol : sortColumn;
     const currentSortDir = sortDir !== undefined ? sortDir : sortDirection;
@@ -74,35 +65,29 @@ const ReportsPage: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
-    updateUrlParams(value, cveSearchValue, filters.exploitIqStatus);
+    updateUrlParams(value, cveSearchValue);
   };
 
   const handleCveSearchChange = (value: string) => {
     setCveSearchValue(value);
-    updateUrlParams(searchValue, value, filters.exploitIqStatus);
+    updateUrlParams(searchValue, value);
   };
 
   const handleFiltersChange = (newFilters: ReportsToolbarFilters) => {
     setFilters(newFilters);
-    updateUrlParams(searchValue, cveSearchValue, newFilters.exploitIqStatus);
+    updateUrlParams(searchValue, cveSearchValue);
   };
 
   const handleSortChange = (column: SortColumn, direction: SortDirection) => {
     setSortColumn(column);
     setSortDirection(direction);
-    updateUrlParams(
-      searchValue,
-      cveSearchValue,
-      filters.exploitIqStatus,
-      column,
-      direction
-    );
+    updateUrlParams(searchValue, cveSearchValue, column, direction);
   };
 
   const handleClearFilters = () => {
     setSearchValue("");
     setCveSearchValue("");
-    setFilters({ exploitIqStatus: [] });
+    setFilters({});
     // Reset sort to default
     setSortColumn("completedAt");
     setSortDirection("desc");
