@@ -605,14 +605,14 @@ public class ReportRepositoryService {
       for (String statusValue : exploitIqStatusValues) {
         String trimmedStatus = statusValue.trim();
         if (vulnId != null && !vulnId.isEmpty()) {
-          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+          exploitIqStatusFilters.add(Filters.elemMatch("output.analysis", 
             Filters.and(
               Filters.eq("vuln_id", vulnId),
               Filters.eq("justification.status", trimmedStatus)
             )
           ));
         } else {
-          exploitIqStatusFilters.add(Filters.elemMatch("output", 
+          exploitIqStatusFilters.add(Filters.elemMatch("output.analysis", 
             Filters.eq("justification.status", trimmedStatus)
           ));
         }

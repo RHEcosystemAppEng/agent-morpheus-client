@@ -50,7 +50,7 @@ public class ProductEndpoint {
   @GET
   @Operation(
     summary = "List products", 
-    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName")
+    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt, sbomName, or productId")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
@@ -66,7 +66,7 @@ public class ProductEndpoint {
   })
   public Response listProducts(
       @Parameter(
-        description = "Sort field: 'completedAt' or 'sbomName'"
+        description = "Sort field: 'completedAt', 'sbomName', or 'productId'"
       )
       @QueryParam("sortField") @DefaultValue("completedAt") String sortField,
       @Parameter(
@@ -80,10 +80,19 @@ public class ProductEndpoint {
       @Parameter(
         description = "Number of items per page"
       )
-      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize) {
+      @QueryParam(PAGE_SIZE) @DefaultValue("100") Integer pageSize,
+      @Parameter(
+        description = "Filter by SBOM name (case-insensitive partial match)"
+      )
+      @QueryParam("sbomName") String sbomName,
+      @Parameter(
+        description = "Filter by CVE ID (case-insensitive partial match)"
+      )
+      @QueryParam("cveId") String cveId) {
     try {
       SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
-      var result = productsService.getProducts(sortField, sortType, new Pagination(page, pageSize));
+      var result = productsService.getProducts(sortField, sortType, new Pagination(page, pageSize), 
+          sbomName, cveId);
       return Response.ok(result.results)
           .header("X-Total-Pages", result.totalPages)
           .header("X-Total-Elements", result.totalElements)

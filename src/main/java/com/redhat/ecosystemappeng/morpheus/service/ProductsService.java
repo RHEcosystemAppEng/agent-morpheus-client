@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -28,15 +29,45 @@ public class ProductsService {
   private static final Logger LOGGER = Logger.getLogger(ProductsService.class);
   private static final String PRODUCT_ID = "product_id";
   private static final String SBOM_NAME = "sbom_name";
+  private static final String SENT_AT = "sent_at";
+  private static final String SUBMITTED_AT = "submitted_at";
 
   @Inject
   ReportRepositoryService reportRepositoryService;
 
-  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination) {
+  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination,
+      String sbomName, String cveId) {
     List<Product> products = new ArrayList<>();
     
-    // Build filter for reports with product_id
-    Bson filter = Filters.exists("metadata." + PRODUCT_ID, true);
+    List<Bson> filterConditions = new ArrayList<>();
+    filterConditions.add(Filters.exists("metadata." + PRODUCT_ID, true));
+    
+    List<Bson> filterOptions = new ArrayList<>();
+    
+    if (sbomName != null && !sbomName.trim().isEmpty()) {
+      // This allows users to search for literal text containing special characters while still
+      // supporting partial matching (e.g., searching "test" matches "test-product" and "my-test-sbom")
+      String escaped = sbomName.trim().replaceAll("([\\\\+*?\\[\\](){}^$|.])", "\\\\$1");
+      filterOptions.add(Filters.regex("metadata." + SBOM_NAME, 
+          Pattern.compile(escaped, Pattern.CASE_INSENSITIVE)));
+    }
+    
+    if (cveId != null && !cveId.trim().isEmpty()) {
+      String escaped = cveId.trim().replaceAll("([\\\\+*?\\[\\](){}^$|.])", "\\\\$1");
+      filterOptions.add(Filters.elemMatch("input.scan.vulns", 
+          Filters.regex("vuln_id", Pattern.compile(escaped, Pattern.CASE_INSENSITIVE))));
+    }
+    
+    // Combine all filters: all filter options with AND logic, Multiple values within the same filter type use OR logic
+    if (!filterOptions.isEmpty()) {
+      filterConditions.add(filterOptions.size() == 1 
+          ? filterOptions.get(0) 
+          : Filters.and(filterOptions));
+    }
+    
+    Bson filter = filterConditions.size() == 1 
+        ? filterConditions.get(0) 
+        : Filters.and(filterConditions);
     
     // Build sort
     String sortFieldPath = getSortFieldPath(sortField);
@@ -96,6 +127,7 @@ public class ProductsService {
     return switch (sortField) {
       case "completedAt" -> "input.scan.completed_at";
       case "sbomName" -> "metadata." + SBOM_NAME;
+      case "productId" -> "metadata." + PRODUCT_ID;
       default -> "input.scan.completed_at";
     };
   }
@@ -270,4 +302,3 @@ public class ProductsService {
     return hasEmpty ? "" : (latestCompletedAt != null ? latestCompletedAt : "");
   }
 }
-

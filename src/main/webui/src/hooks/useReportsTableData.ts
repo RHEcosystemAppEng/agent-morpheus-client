@@ -22,13 +22,15 @@ export interface ReportRow {
 }
 
 export type SortDirection = "asc" | "desc";
-export type SortColumn = "sbomName" | "completedAt";
+export type SortColumn = "productId" | "sbomName" | "completedAt";
 
 export interface UseReportsTableOptions {
   page: number;
   perPage: number;
   sortColumn: SortColumn;
   sortDirection: SortDirection;
+  sbomName?: string;
+  cveId?: string;
 }
 
 export interface UseReportsTableResult {
@@ -40,7 +42,6 @@ export interface UseReportsTableResult {
     totalPages: number;
   } | null;
 }
-
 
 /**
  * Pure function to check if analysis is completed
@@ -93,7 +94,6 @@ export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
   return items;
 }
 
-
 /**
  * Pure function to determine analysis state from statusCounts
  * Returns "completed" if all reports are completed, "analysing" otherwise
@@ -102,17 +102,22 @@ export function getAnalysisStateFromStatusCounts(
   statusCounts: Record<string, number>
 ): string {
   const completedCount = statusCounts["completed"] || 0;
-  const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
-  
+  const totalCount = Object.values(statusCounts).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+
   // If all reports are completed, state is "completed"
   if (completedCount === totalCount && totalCount > 0) {
     return "completed";
   }
-  
+
   // Check for analysing states
   const analysingStates = ["pending", "queued", "sent", "analysing"];
-  const hasAnalysing = analysingStates.some(state => (statusCounts[state] || 0) > 0);
-  
+  const hasAnalysing = analysingStates.some(
+    (state) => (statusCounts[state] || 0) > 0
+  );
+
   return hasAnalysing ? "analysing" : "completed";
 }
 
@@ -125,40 +130,44 @@ export function calculateRepositoriesFromStatusCounts(
   statusCounts: Record<string, number>
 ): { analyzedCount: number; submittedCount: number } {
   const analyzedCount = statusCounts["completed"] || 0;
-  const submittedCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+  const submittedCount = Object.values(statusCounts).reduce(
+    (sum, count) => sum + count,
+    0
+  );
   return { analyzedCount, submittedCount };
 }
 
 /**
  * Pure function to transform Product to ReportRow
  */
-export function transformGroupedReportRowToRow(
-  groupedRow: Product
-): ReportRow {
+export function transformGroupedReportRowToRow(groupedRow: Product): ReportRow {
   const sbomName = groupedRow.sbomName || "-";
   const cveId = groupedRow.cveId || "-";
   const completedAt = groupedRow.completedAt || "";
-  
+
   // Calculate analysis state from statusCounts
-  const analysisState = getAnalysisStateFromStatusCounts(groupedRow.statusCounts);
-  
-  // Calculate repositories analyzed from statusCounts
-  const { analyzedCount, submittedCount } = calculateRepositoriesFromStatusCounts(
+  const analysisState = getAnalysisStateFromStatusCounts(
     groupedRow.statusCounts
   );
+
+  // Calculate repositories analyzed from statusCounts
+  const { analyzedCount, submittedCount } =
+    calculateRepositoriesFromStatusCounts(groupedRow.statusCounts);
   const repositoriesAnalyzed = formatRepositoriesAnalyzed(
     analyzedCount,
     submittedCount
   );
-  
+
   // Calculate product status from cveStatusCounts
   const cveStatusCounts = groupedRow.cveStatusCounts || {};
   const productStatus: ProductStatus = {
     vulnerableCount: cveStatusCounts["TRUE"] || cveStatusCounts["true"] || 0,
-    notVulnerableCount: cveStatusCounts["FALSE"] || cveStatusCounts["false"] || 0,
-    uncertainCount: cveStatusCounts["UNKNOWN"] || cveStatusCounts["unknown"] || 0,
+    notVulnerableCount:
+      cveStatusCounts["FALSE"] || cveStatusCounts["false"] || 0,
+    uncertainCount:
+      cveStatusCounts["UNKNOWN"] || cveStatusCounts["unknown"] || 0,
   };
-  
+
   return {
     productId: groupedRow.productId,
     sbomName,
@@ -194,6 +203,8 @@ export function compareStrings(
  */
 export function mapSortColumnToApiField(sortColumn: SortColumn): string {
   switch (sortColumn) {
+    case "productId":
+      return "productId";
     case "sbomName":
       return "sbomName";
     case "completedAt":
@@ -219,11 +230,22 @@ export function mapSortDirectionToApi(sortDirection: SortDirection): string {
 export function useReportsTableData(
   options: UseReportsTableOptions
 ): UseReportsTableResult {
-  const { page, perPage, sortColumn, sortDirection } = options;
+  const { page, perPage, sortColumn, sortDirection, sbomName, cveId } = options;
 
   // Map frontend sort parameters to API parameters
   const sortField = mapSortColumnToApiField(sortColumn);
   const sortDirectionApi = mapSortDirectionToApi(sortDirection);
+
+  // Build query parameters
+  const queryParams: Record<string, any> = {
+    page: page - 1, // API uses 0-based pagination
+    pageSize: perPage,
+    sortField,
+    sortDirection: sortDirectionApi,
+  };
+
+  if (sbomName) queryParams.sbomName = sbomName;
+  if (cveId) queryParams.cveId = cveId;
 
   // Fetch products using usePaginatedApi
   const {
@@ -235,15 +257,10 @@ export function useReportsTableData(
     () => ({
       method: "GET",
       url: "/api/v1/products",
-      query: {
-        page: page - 1, // API uses 0-based pagination
-        pageSize: perPage,
-        sortField,
-        sortDirection: sortDirectionApi,
-      },
+      query: queryParams,
     }),
     {
-      deps: [page, perPage, sortField, sortDirectionApi],
+      deps: [page, perPage, sortField, sortDirectionApi, sbomName, cveId],
     }
   );
 

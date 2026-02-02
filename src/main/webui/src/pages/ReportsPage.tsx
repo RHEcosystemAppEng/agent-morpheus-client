@@ -1,46 +1,98 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router";
 import { PageSection, Title } from "@patternfly/react-core";
-import { usePaginatedApi } from "../hooks/usePaginatedApi";
-import type { Product } from "../generated-client/models/Product";
 import ReportsTable from "../components/ReportsTable";
-import { ReportsToolbarFilters } from "../components/ReportsToolbar";
+import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
+import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";
 
 const ReportsPage: React.FC = () => {
-  const [searchValue, setSearchValue] = useState("");
-  const [cveSearchValue, setCveSearchValue] = useState("");
-  const [filters, setFilters] = useState<ReportsToolbarFilters>({
-    exploitIqStatus: [],
-    analysisState: [],
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchValue, setSearchValue] = useState<string>("");
+  const [cveSearchValue, setCveSearchValue] = useState<string>("");
+  const [filters, setFilters] = useState<ReportsToolbarFilters>({});
+  const [activeAttribute, setActiveAttribute] = useState<
+    "SBOM Name" | "CVE ID"
+  >("SBOM Name");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
-  // Fetch products to get analysis state options
-  const { data: products } = usePaginatedApi<Array<Product>>(
-    () => ({
-      method: "GET",
-      url: "/api/v1/products",
-      query: {
-        page: 0,
-        pageSize: 1000, // Get all products for state options
-      },
-    }),
-    {
-      deps: [],
+  // Restore filter state from URL on mount
+  useEffect(() => {
+    const sbomName = searchParams.get("sbomName") || "";
+    const cveId = searchParams.get("cveId") || "";
+    const sortField = searchParams.get("sortField");
+    const sortDir = searchParams.get("sortDirection");
+
+    setSearchValue(sbomName);
+    setCveSearchValue(cveId);
+
+    setFilters({});
+
+    // Restore sort state from URL
+    if (
+      sortField &&
+      (sortField === "productId" ||
+        sortField === "sbomName" ||
+        sortField === "completedAt")
+    ) {
+      setSortColumn(sortField);
     }
-  );
+    if (sortDir && (sortDir === "asc" || sortDir === "desc")) {
+      setSortDirection(sortDir);
+    }
+  }, []);
 
-  const analysisStateOptions = useMemo(() => {
-    if (!products) return [];
-    const states = new Set<string>();
-    products.forEach((product) => {
-      const statusCounts = product.statusCounts || {};
-      Object.keys(statusCounts).forEach((state) => {
-        if (state && state !== "-") {
-          states.add(state);
-        }
-      });
-    });
-    return Array.from(states).sort();
-  }, [products]);
+  // Update URL when filters or sort change
+  const updateUrlParams = (
+    sbomName: string,
+    cveId: string,
+    sortCol?: SortColumn,
+    sortDir?: SortDirection
+  ) => {
+    const newParams = new URLSearchParams();
+    if (sbomName) newParams.set("sbomName", sbomName);
+    if (cveId) newParams.set("cveId", cveId);
+    // Add sort parameters (use current state if not provided)
+    const currentSortCol = sortCol !== undefined ? sortCol : sortColumn;
+    const currentSortDir = sortDir !== undefined ? sortDir : sortDirection;
+    // Only add sort params if not default (completedAt DESC)
+    if (currentSortCol !== "completedAt" || currentSortDir !== "desc") {
+      newParams.set("sortField", currentSortCol);
+      newParams.set("sortDirection", currentSortDir);
+    }
+    setSearchParams(newParams, { replace: true });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    updateUrlParams(value, cveSearchValue);
+  };
+
+  const handleCveSearchChange = (value: string) => {
+    setCveSearchValue(value);
+    updateUrlParams(searchValue, value);
+  };
+
+  const handleFiltersChange = (newFilters: ReportsToolbarFilters) => {
+    setFilters(newFilters);
+    updateUrlParams(searchValue, cveSearchValue);
+  };
+
+  const handleSortChange = (column: SortColumn, direction: SortDirection) => {
+    setSortColumn(column);
+    setSortDirection(direction);
+    updateUrlParams(searchValue, cveSearchValue, column, direction);
+  };
+
+  const handleClearFilters = () => {
+    setSearchValue("");
+    setCveSearchValue("");
+    setFilters({});
+    // Reset sort to default
+    setSortColumn("completedAt");
+    setSortDirection("desc");
+    setSearchParams({}, { replace: true });
+  };
 
   return (
     <>
@@ -57,12 +109,17 @@ const ReportsPage: React.FC = () => {
       <PageSection>
         <ReportsTable
           searchValue={searchValue}
-          onSearchChange={setSearchValue}
           cveSearchValue={cveSearchValue}
-          onCveSearchChange={setCveSearchValue}
           filters={filters}
-          onFiltersChange={setFilters}
-          analysisStateOptions={analysisStateOptions}
+          activeAttribute={activeAttribute}
+          onSearchChange={handleSearchChange}
+          onCveSearchChange={handleCveSearchChange}
+          onFiltersChange={handleFiltersChange}
+          onActiveAttributeChange={setActiveAttribute}
+          onClearFilters={handleClearFilters}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
         />
       </PageSection>
     </>
