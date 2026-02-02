@@ -31,7 +31,6 @@ export interface UseReportsTableOptions {
   sortDirection: SortDirection;
   sbomName?: string;
   cveId?: string;
-  exploitIqStatus?: string[];
 }
 
 export interface UseReportsTableResult {
@@ -231,22 +230,11 @@ export function mapSortDirectionToApi(sortDirection: SortDirection): string {
 export function useReportsTableData(
   options: UseReportsTableOptions
 ): UseReportsTableResult {
-  const {
-    page,
-    perPage,
-    sortColumn,
-    sortDirection,
-    sbomName,
-    cveId,
-    exploitIqStatus,
-  } = options;
+  const { page, perPage, sortColumn, sortDirection, sbomName, cveId } = options;
 
   // Map frontend sort parameters to API parameters
   const sortField = mapSortColumnToApiField(sortColumn);
   const sortDirectionApi = mapSortDirectionToApi(sortDirection);
-
-  // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
-  // The filter appears in the UI but is disabled and has no backend implementation.
 
   // Build query parameters
   const queryParams: Record<string, any> = {
@@ -258,7 +246,6 @@ export function useReportsTableData(
 
   if (sbomName) queryParams.sbomName = sbomName;
   if (cveId) queryParams.cveId = cveId;
-  // TODO: exploitIqStatus filter not implemented - parameter is not sent to API
 
   // Fetch products using usePaginatedApi
   const {

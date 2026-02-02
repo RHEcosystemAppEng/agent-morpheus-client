@@ -58,8 +58,6 @@ public class ProductsService {
           Filters.regex("vuln_id", Pattern.compile(escaped, Pattern.CASE_INSENSITIVE))));
     }
     
-    // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
-    
     // Combine all filters: all filter options with AND logic, Multiple values within the same filter type use OR logic
     if (!filterOptions.isEmpty()) {
       filterConditions.add(filterOptions.size() == 1 

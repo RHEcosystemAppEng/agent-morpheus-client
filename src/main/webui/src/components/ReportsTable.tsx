@@ -31,16 +31,12 @@ const PER_PAGE = 10;
 interface ReportsTableProps {
   searchValue?: string;
   cveSearchValue?: string;
-  filters?: {
-    exploitIqStatus: string[];
-  };
-  activeAttribute?: "SBOM Name" | "CVE ID" | "ExploitIQ Status";
+  filters?: {};
+  activeAttribute?: "SBOM Name" | "CVE ID";
   onSearchChange?: (value: string) => void;
   onCveSearchChange?: (value: string) => void;
-  onFiltersChange?: (filters: { exploitIqStatus: string[] }) => void;
-  onActiveAttributeChange?: (
-    attr: "SBOM Name" | "CVE ID" | "ExploitIQ Status"
-  ) => void;
+  onFiltersChange?: (filters: {}) => void;
+  onActiveAttributeChange?: (attr: "SBOM Name" | "CVE ID") => void;
   onClearFilters?: () => void;
   sortColumn?: SortColumn;
   sortDirection?: SortDirection;
@@ -50,7 +46,7 @@ interface ReportsTableProps {
 const ReportsTable: React.FC<ReportsTableProps> = ({
   searchValue = "",
   cveSearchValue = "",
-  filters = { exploitIqStatus: [] },
+  filters = {},
   activeAttribute = "SBOM Name",
   onSearchChange = () => {},
   onCveSearchChange = () => {},
@@ -86,7 +82,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchValue, cveSearchValue, filters.exploitIqStatus]);
+  }, [searchValue, cveSearchValue]);
 
   // Use the custom hook for data fetching with server-side pagination and sorting
   const { rows, loading, error, pagination } = useReportsTableData({
@@ -96,7 +92,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     sortDirection,
     sbomName: searchValue,
     cveId: cveSearchValue,
-    exploitIqStatus: filters.exploitIqStatus,
   });
 
   const columnNames = {
