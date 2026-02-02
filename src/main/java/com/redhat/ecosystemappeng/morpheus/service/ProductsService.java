@@ -32,26 +32,11 @@ public class ProductsService {
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
 
-  // Reuse STATUS_FILTERS logic from ReportRepositoryService
-  private static final Map<String, Bson> STATUS_FILTERS = Map.of(
-      "completed", Filters.ne("input.scan.completed_at", null),
-      "sent",
-      Filters.and(Filters.ne("metadata." + SENT_AT, null), Filters.eq("error", null),
-          Filters.eq("input.scan.completed_at", null)),
-      "failed", Filters.ne("error", null),
-      "queued", Filters.and(Filters.ne("metadata." + SUBMITTED_AT, null), Filters.eq("metadata." + SENT_AT, null),
-          Filters.eq("error", null), Filters.eq("input.scan.completed_at", null)),
-      "expired", Filters.and(Filters.ne("error", null), Filters.eq("error.type", "expired")),
-      "pending", Filters.and(
-          Filters.eq("metadata." + SENT_AT, null),
-          Filters.eq("metadata." + SUBMITTED_AT, null),
-          Filters.ne("metadata." + PRODUCT_ID, null)));
-
   @Inject
   ReportRepositoryService reportRepositoryService;
 
   public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination,
-      String sbomName, String cveId, String exploitIqStatus, String analysisState) {
+      String sbomName, String cveId) {
     List<Product> products = new ArrayList<>();
     
     List<Bson> filterConditions = new ArrayList<>();
@@ -74,22 +59,6 @@ public class ProductsService {
     }
     
     // TODO: ExploitIQ Status filter - NOT YET IMPLEMENTED
-    
-    if (analysisState != null && !analysisState.trim().isEmpty()) {
-      String[] stateValues = analysisState.split(",");
-      List<Bson> stateFilters = new ArrayList<>();
-      for (String stateValue : stateValues) {
-        Bson stateFilter = STATUS_FILTERS.get(stateValue.trim());
-        if (stateFilter != null) {
-          stateFilters.add(stateFilter);
-        }
-      }
-      if (!stateFilters.isEmpty()) {
-        filterOptions.add(stateFilters.size() == 1 
-            ? stateFilters.get(0) 
-            : Filters.or(stateFilters));
-      }
-    }
     
     // Combine all filters: all filter options with AND logic, Multiple values within the same filter type use OR logic
     if (!filterOptions.isEmpty()) {

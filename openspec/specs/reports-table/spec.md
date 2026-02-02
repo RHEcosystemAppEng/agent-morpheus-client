@@ -44,7 +44,7 @@ The reports table SHALL use the `/api/v1/products` API endpoint to fetch data, w
 #### Scenario: ExploitIQ status column shows blank during analysis
 - **WHEN** a user views the reports table AND the analysis is not completed (not all reports have "completed" state)
 - **THEN** the ExploitIQ status column displays nothing (blank/empty) to indicate the analysis is in progress
-- **AND** this occurs when the analysis state is not "completed" (determined by checking if all reports in `Product.statusCounts` have "completed" state)
+- **AND** this occurs when the analysis is not completed (determined by checking if all reports in `Product.statusCounts` have "completed" state)
 
 #### Scenario: Product ID link navigation
 - **WHEN** a user clicks the "Product ID" link in a table row
@@ -103,7 +103,7 @@ The reports table SHALL use the `/api/v1/products` API endpoint to fetch data, w
 
 ### Requirement: Reports Table Filtering
 
-The reports table SHALL support filtering by SBOM Name, CVE ID, and Analysis State. All filtering SHALL be performed server-side via the `/api/v1/products` API endpoint. Filter state SHALL be persisted in the browser URL as query parameters to enable shareable links. The active filter attribute (which search/filter input is displayed) SHALL remain unchanged until the user manually changes it.
+The reports table SHALL support filtering by SBOM Name and CVE ID. All filtering SHALL be performed server-side via the `/api/v1/products` API endpoint. Filter state SHALL be persisted in the browser URL as query parameters to enable shareable links. The active filter attribute (which search/filter input is displayed) SHALL remain unchanged until the user manually changes it.
 
 #### Scenario: SBOM Name text search filter
 - **WHEN** a user enters text in the SBOM Name search field
@@ -119,13 +119,6 @@ The reports table SHALL support filtering by SBOM Name, CVE ID, and Analysis Sta
 - **AND** products with matching CVE IDs are displayed in the table
 - **AND** partial matches are supported (e.g., searching "2024" matches "CVE-2024-1234" and "CVE-2024-5678")
 
-#### Scenario: Analysis State multi-select filter
-- **WHEN** a user selects one or more Analysis State values (completed, expired, failed, queued, sent, pending, preprocessing failed)
-- **THEN** the selected values are sent to `/api/v1/products` as comma-separated string (e.g., `analysisState=completed,failed`)
-- **AND** the API uses existing `STATUS_FILTERS` logic from `ReportRepositoryService` to filter reports
-- **AND** multiple values use OR logic (products matching any selected state are displayed)
-- **AND** the filter is applied before grouping in the aggregation pipeline
-
 #### Scenario: Filter combination
 - **WHEN** a user applies multiple filters simultaneously
 - **THEN** all active filters are combined with AND logic
@@ -140,7 +133,7 @@ The reports table SHALL support filtering by SBOM Name, CVE ID, and Analysis Sta
 
 #### Scenario: Filter state in URL
 - **WHEN** a user applies filters to the reports table
-- **THEN** the filter values are stored as query parameters in the browser URL (e.g., `/reports?sbomName=test&cveId=CVE-2024&analysisState=completed`)
+- **THEN** the filter values are stored as query parameters in the browser URL (e.g., `/reports?sbomName=test&cveId=CVE-2024`)
 - **AND** the URL can be shared with others to view the same filtered results
 - **AND** when navigating back to the reports page, the filter state is restored from URL parameters
 
@@ -156,8 +149,8 @@ The reports table SHALL support filtering by SBOM Name, CVE ID, and Analysis Sta
 - **AND** the filtered results are displayed starting from the first page
 
 #### Scenario: Active filter attribute persistence
-- **WHEN** a user selects a filter attribute (e.g., "Analysis State") from the attribute selector
+- **WHEN** a user selects a filter attribute (e.g., "SBOM Name") from the attribute selector
 - **AND** the user applies a filter value
-- **THEN** the active filter attribute remains set to the selected attribute (e.g., "Analysis State")
+- **THEN** the active filter attribute remains set to the selected attribute (e.g., "SBOM Name")
 - **AND** the same filter input remains displayed even after the filter is applied
 - **AND** the active attribute only changes when the user manually selects a different attribute from the attribute selector

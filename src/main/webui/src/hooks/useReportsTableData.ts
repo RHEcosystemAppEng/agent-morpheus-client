@@ -32,7 +32,6 @@ export interface UseReportsTableOptions {
   sbomName?: string;
   cveId?: string;
   exploitIqStatus?: string[];
-  analysisState?: string[];
 }
 
 export interface UseReportsTableResult {
@@ -240,7 +239,6 @@ export function useReportsTableData(
     sbomName,
     cveId,
     exploitIqStatus,
-    analysisState,
   } = options;
 
   // Map frontend sort parameters to API parameters
@@ -261,8 +259,6 @@ export function useReportsTableData(
   if (sbomName) queryParams.sbomName = sbomName;
   if (cveId) queryParams.cveId = cveId;
   // TODO: exploitIqStatus filter not implemented - parameter is not sent to API
-  if (analysisState && analysisState.length > 0)
-    queryParams.analysisState = analysisState.join(",");
 
   // Fetch products using usePaginatedApi
   const {
@@ -277,15 +273,7 @@ export function useReportsTableData(
       query: queryParams,
     }),
     {
-      deps: [
-        page,
-        perPage,
-        sortField,
-        sortDirectionApi,
-        sbomName,
-        cveId,
-        analysisState?.join(","),
-      ],
+      deps: [page, perPage, sortField, sortDirectionApi, sbomName, cveId],
     }
   );
 
