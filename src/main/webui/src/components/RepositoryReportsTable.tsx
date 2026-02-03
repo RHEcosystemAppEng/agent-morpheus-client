@@ -22,7 +22,7 @@ import {
 } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { Report } from "../generated-client";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
@@ -43,13 +43,13 @@ const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
 });
 
 interface RepositoryReportsTableProps {
-  productId: string;
+  sbomReportId: string;
   cveId: string;
-  product: Product;
+  product: SbomReport;
 }
 
 const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
-  productId,
+  sbomReportId,
   cveId,
   product,
 }) => {
@@ -83,7 +83,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     error,
     pagination,
   } = useRepositoryReports({
-    productId,
+    sbomReportId,
     cveId,
     page,
     perPage,

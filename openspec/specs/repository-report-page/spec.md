@@ -1,31 +1,31 @@
 # repository-report-page Specification
 
 ## Purpose
-View individual repository report details for a specific CVE, image, and tag combination within a product report or as a standalone component report.
+View individual repository report details for a specific CVE, image, and tag combination within an SBOM report or as a standalone component report.
 ## Requirements
 ### Requirement: Repository Report Page Routes
 The repository report page SHALL support multiple route patterns.
 
-#### Scenario: Product route pattern
-- **WHEN** a user navigates to `/reports/product/:productId/:cveId/:reportId`
-- **THEN** the repository report page displays with a product breadcrumb showing the product ID and CVE ID
+#### Scenario: SBOM report route pattern
+- **WHEN** a user navigates to `/reports/sbom-report/:sbomReportId/:cveId/:reportId`
+- **THEN** the repository report page displays with a SBOM report breadcrumb showing the SBOM report ID and CVE ID
 
 #### Scenario: Component route pattern
 - **WHEN** a user navigates to `/reports/component/:cveId/:reportId`
-- **THEN** the repository report page displays without a product breadcrumb
+- **THEN** the repository report page displays without an SBOM report breadcrumb
 
 #### Scenario: Legacy route pattern
-- **WHEN** a user navigates to `/reports/:productId/:cveId/:reportId`
+- **WHEN** a user navigates to `/reports/:sbomReportId/:cveId/:reportId`
 - **THEN** the repository report page displays (supported for backward compatibility)
 
 ### Requirement: Repository Report Page Breadcrumb Navigation
-The repository report page SHALL display a hierarchical breadcrumb navigation at the top of the page showing the navigation path from the reports list through the product/CVE report (if applicable) to the individual repository report.
+The repository report page SHALL display a hierarchical breadcrumb navigation at the top of the page showing the navigation path from the reports list through the SBOM report/CVE report (if applicable) to the individual repository report.
 
-#### Scenario: Breadcrumb for product route
-- **WHEN** a user views the repository report page at `/reports/product/:productId/:cveId/:reportId`
+#### Scenario: Breadcrumb for SBOM report route
+- **WHEN** a user views the repository report page at `/reports/sbom-report/:sbomReportId/:cveId/:reportId`
 - **THEN** a breadcrumb navigation is displayed at the top of the page with three items:
   - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
-  - Second item: Product ID and CVE ID (format: `<product_id>/<CVE ID>`) displayed as a clickable link that navigates to `/reports/product/:productId/:cveId` (product/CVE report page)
+  - Second item: SBOM Report ID and CVE ID (format: `<sbom_report_id>/<CVE ID>`) displayed as a clickable link that navigates to `/reports/sbom-report/:sbomReportId/:cveId` (SBOM report/CVE report page)
   - Third item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
 
 #### Scenario: Breadcrumb for component route
@@ -33,16 +33,16 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 - **THEN** a breadcrumb navigation is displayed at the top of the page with two items:
   - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
   - Second item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
-- **AND** no product/CVE breadcrumb item is displayed
+- **AND** no SBOM report/CVE breadcrumb item is displayed
 
-#### Scenario: Breadcrumb product ID from report metadata
-- **WHEN** a user views the repository report page with a product route
-- **THEN** the product ID in the second breadcrumb item is extracted from `report.metadata.product_id`
-- **AND** if `product_id` is not available in metadata, the product ID from route parameters is used
+#### Scenario: Breadcrumb SBOM report ID from report metadata
+- **WHEN** a user views the repository report page with a SBOM report route
+- **THEN** the SBOM report ID in the second breadcrumb item is extracted from `report.metadata.sbom_report_id`
+- **AND** if `sbom_report_id` is not available in metadata, the SBOM report ID from route parameters is used
 
 #### Scenario: Breadcrumb CVE ID from route
 - **WHEN** a user views the repository report page
-- **THEN** the CVE ID in the second breadcrumb item (for product routes) is extracted from the `cveId` route parameter
+- **THEN** the CVE ID in the second breadcrumb item (for SBOM report routes) is extracted from the `cveId` route parameter
 
 #### Scenario: Breadcrumb report identifier from report data
 - **WHEN** a user views the repository report page with report data loaded
@@ -55,9 +55,9 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 - **WHEN** a user clicks the "Reports" breadcrumb item on the repository report page
 - **THEN** the application navigates to `/reports` (reports list page)
 
-#### Scenario: Breadcrumb navigation to product/CVE report
-- **WHEN** a user clicks the product ID/CVE ID breadcrumb item on the repository report page (product route only)
-- **THEN** the application navigates to `/reports/product/:productId/:cveId` where `:productId` and `:cveId` are extracted from the route parameters
+#### Scenario: Breadcrumb navigation to SBOM report/CVE report
+- **WHEN** a user clicks the SBOM report ID/CVE ID breadcrumb item on the repository report page (SBOM report route only)
+- **THEN** the application navigates to `/reports/sbom-report/:sbomReportId/:cveId` where `:sbomReportId` and `:cveId` are extracted from the route parameters
 
 ### Requirement: Repository Report Page Content
 The repository report page SHALL display report details in a structured layout with cards showing different aspects of the repository report, including the analysis state of the report.

@@ -3,7 +3,7 @@ import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
 import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 
 export type ProductStatus = {
   vulnerableCount: number;
@@ -12,7 +12,7 @@ export type ProductStatus = {
 };
 
 export interface ReportRow {
-  productId: string;
+  sbomReportId: string;
   sbomName: string;
   cveId: string;
   repositoriesAnalyzed: string;
@@ -25,7 +25,7 @@ export interface ReportRow {
 }
 
 export type SortDirection = "asc" | "desc";
-export type SortColumn = "productId" | "sbomName" | "submittedAt";
+export type SortColumn = "sbomReportId" | "sbomName" | "submittedAt";
 
 export interface UseReportsTableOptions {
   page: number;
@@ -141,9 +141,9 @@ export function calculateRepositoriesFromStatusCounts(
 }
 
 /**
- * Pure function to transform Product to ReportRow
+ * Pure function to transform SbomReport to ReportRow
  */
-export function transformGroupedReportRowToRow(groupedRow: Product): ReportRow {
+export function transformGroupedReportRowToRow(groupedRow: SbomReport): ReportRow {
   const sbomName = groupedRow.sbomName || "-";
   const cveId = groupedRow.cveId || "-";
   const submittedAt = groupedRow.submittedAt || "";
@@ -173,7 +173,7 @@ export function transformGroupedReportRowToRow(groupedRow: Product): ReportRow {
   };
 
   return {
-    productId: groupedRow.productId,
+    sbomReportId: groupedRow.sbomReportId,
     sbomName,
     cveId,
     repositoriesAnalyzed,
@@ -208,8 +208,8 @@ export function compareStrings(
  */
 export function mapSortColumnToApiField(sortColumn: SortColumn): string {
   switch (sortColumn) {
-    case "productId":
-      return "productId";
+    case "sbomReportId":
+      return "sbomReportId";
     case "sbomName":
       return "sbomName";
     case "submittedAt":
@@ -227,13 +227,13 @@ export function mapSortDirectionToApi(sortDirection: SortDirection): string {
 }
 
 /**
- * Pure function to compare Product objects between two arrays
- * Compares all fields of each product using deep comparison
- * Since the array contains maximum 100 products, and the number of fields is limited, the performance impact is negligible
+ * Pure function to compare SbomReport objects between two arrays
+ * Compares all fields of each SBOM report using deep comparison
+ * Since the array contains maximum 100 SBOM reports, and the number of fields is limited, the performance impact is negligible
  */
 export function haveReportStatesChanged(
-  previousProducts: Product[] | null,
-  currentProducts: Product[]
+  previousProducts: SbomReport[] | null,
+  currentProducts: SbomReport[]
 ): boolean {
   // If no previous data, always update (initial load)
   if (!previousProducts || previousProducts.length === 0) {
@@ -245,7 +245,7 @@ export function haveReportStatesChanged(
     return true;
   }
 
-  // Deep comparison of full Product objects using lodash isEqual
+  // Deep comparison of full SbomReport objects using lodash isEqual
   return !isEqual(previousProducts, currentProducts);
 }
 
@@ -275,16 +275,16 @@ export function useReportsTableData(
   if (sbomName) queryParams.sbomName = sbomName;
   if (cveId) queryParams.cveId = cveId;
 
-  // Fetch products using usePaginatedApi with auto-refresh
+  // Fetch SBOM reports using usePaginatedApi with auto-refresh
   const {
     data: groupedRows,
     loading,
     error,
     pagination,
-  } = usePaginatedApi<Array<Product>>(
+  } = usePaginatedApi<Array<SbomReport>>(
     () => ({
       method: "GET",
-      url: "/api/v1/products",
+      url: "/api/v1/sbom-reports",
       query: queryParams,
     }),
     {

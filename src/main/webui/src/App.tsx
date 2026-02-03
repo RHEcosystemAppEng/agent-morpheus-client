@@ -17,10 +17,10 @@ const App: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route
-            path="/reports/product/:productId/:cveId/:reportId"
+            path="/reports/sbom-report/:sbomReportId/:cveId/:reportId"
             element={<RepositoryReportPage />}
           />
-          <Route path="/reports/product/:productId/:cveId" element={<ReportPage />} />
+          <Route path="/reports/sbom-report/:sbomReportId/:cveId" element={<ReportPage />} />
           <Route
             path="/reports/component/:cveId/:reportId"
             element={<RepositoryReportPage />}

@@ -77,12 +77,12 @@ public class CycloneDxUploadService {
     JsonNode sbomJson = parsedCycloneDx.sbomJson();
     String sbomName = parsedCycloneDx.sbomName();
 
-    // Generate product ID from SBOM name and timestamp
-    String productId = generateProductId(sbomName);
+    // Generate SBOM report ID from SBOM name and timestamp
+    String sbomReportId = generateSbomReportId(sbomName);
 
-    // Create metadata with product_id and sbom_name
+    // Create metadata with sbom_report_id and sbom_name
     Map<String, String> metadata = new HashMap<>();
-    metadata.put("product_id", productId);
+    metadata.put("sbom_report_id", sbomReportId);
     metadata.put("sbom_name", sbomName);
 
     // Create and return ReportRequest
@@ -90,13 +90,13 @@ public class CycloneDxUploadService {
   }
 
   /**
-   * Generates a product ID by combining the SBOM name with a timestamp
+   * Generates an SBOM report ID by combining the SBOM name with a timestamp
    * @param sbomName SBOM name from metadata.component.name
-   * @return Generated product ID
+   * @return Generated SBOM report ID
    */
-  private String generateProductId(String sbomName) {
+  private String generateSbomReportId(String sbomName) {
     String timestamp = String.valueOf(Instant.now().toEpochMilli());
-    // Sanitize sbomName to make it safe for use in product ID (remove special chars, spaces)
+    // Sanitize sbomName to make it safe for use in SBOM report ID (remove special chars, spaces)
     String sanitizedSbomName = sbomName.replaceAll("[^a-zA-Z0-9_-]", "_");
     return sanitizedSbomName + "-" + timestamp;
   }
@@ -105,7 +105,7 @@ public class CycloneDxUploadService {
    * Creates a ReportRequest from CVE ID and parsed CycloneDX JSON
    * @param cveId Validated CVE ID
    * @param sbomJson Parsed and validated CycloneDX JSON
-   * @param metadata Metadata map containing product_id and sbom_name
+   * @param metadata Metadata map containing sbom_report_id and sbom_name
    * @return ReportRequest ready for processing
    */
   private ReportRequest createReportRequest(String cveId, JsonNode sbomJson, Map<String, String> metadata) {

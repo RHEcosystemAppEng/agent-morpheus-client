@@ -3,17 +3,17 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Product data grouped by product_id
+ * SBOM report data grouped by sbom_report_id
  */
-export type Product = {
+export type SbomReport = {
     /**
      * SBOM name from first report's metadata.sbom_name
      */
     sbomName?: string;
     /**
-     * Product ID from first report's metadata.product_id
+     * SBOM report ID from first report's metadata.sbom_report_id
      */
-    productId: string;
+    sbomReportId: string;
     /**
      * CVE ID from first report's input.scan.vulns[0].vuln_id
      */
@@ -35,7 +35,7 @@ export type Product = {
      */
     submittedAt?: string;
     /**
-     * Number of reports in this product group
+     * Number of reports in this SBOM report group
      */
     numReports: number;
     /**

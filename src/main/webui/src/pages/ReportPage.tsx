@@ -22,9 +22,9 @@ import { getErrorMessage } from "../utils/errorHandling";
 import ReportStatusLabel from "../components/ReportStatusLabel";
 
 const ReportPage: React.FC = () => {
-  const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
+  const { sbomReportId, cveId } = useParams<{ sbomReportId: string; cveId: string }>();
 
-  const { data, loading, error } = useReport(productId || "");
+  const { data, loading, error } = useReport(sbomReportId || "");
 
   if (loading) {
     return <ReportPageSkeleton />;
@@ -40,7 +40,7 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  if (!data || !productId || !cveId) {
+  if (!data || !sbomReportId || !cveId) {
     return (
       <PageSection>
         <Alert variant={AlertVariant.warning} title="Invalid report">
@@ -104,7 +104,7 @@ const ReportPage: React.FC = () => {
         </Grid>
       </PageSection>
       <PageSection>
-        <RepositoryReportsTable productId={productId} cveId={cveId} product={data} />
+        <RepositoryReportsTable sbomReportId={sbomReportId} cveId={cveId} product={data} />
       </PageSection>
     </>
   );

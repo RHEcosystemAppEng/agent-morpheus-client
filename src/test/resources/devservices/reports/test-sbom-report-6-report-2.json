@@ -2666,7 +2666,7 @@
     }
   },
   "metadata": {
-    "product_id": "product-6",
+    "sbom_report_id": "product-6",
     "user": "vbelouso@redhat.com",
     "source": "morpheus-parser",
     "batch_id": "mp-10i7ly",

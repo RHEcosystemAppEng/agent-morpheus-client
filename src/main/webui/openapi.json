@@ -152,109 +152,6 @@
           }
         }
       },
-      "Product": {
-        "description": "Product data grouped by product_id",
-        "type": "object",
-        "properties": {
-          "sbomName": {
-            "type": "string",
-            "description": "SBOM name from first report's metadata.sbom_name"
-          },
-          "productId": {
-            "type": "string",
-            "description": "Product ID from first report's metadata.product_id"
-          },
-          "cveId": {
-            "type": "string",
-            "description": "CVE ID from first report's input.scan.vulns[0].vuln_id"
-          },
-          "cveStatusCounts": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "description": "Map of CVE status to count of reports with that status"
-          },
-          "statusCounts": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "description": "Map of report status to count of reports with that status"
-          },
-          "completedAt": {
-            "type": "string",
-            "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
-          },
-          "submittedAt": {
-            "type": "string",
-            "description": "Submitted at timestamp from first report's metadata.submitted_at"
-          },
-          "numReports": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Number of reports in this product group"
-          },
-          "firstReportId": {
-            "type": "string",
-            "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
-          }
-        },
-        "required": [
-          "productId",
-          "cveStatusCounts",
-          "statusCounts",
-          "numReports"
-        ]
-      },
-      "ProductReportsSummary": {
-        "description": "Product reports data",
-        "type": "object",
-        "required": [
-          "productState",
-          "componentStates",
-          "cves",
-          "cveStatusCounts"
-        ],
-        "properties": {
-          "productState": {
-            "type": "string",
-            "description": "Product state of analysis"
-          },
-          "componentStates": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "description": "Map of component analysis states to their counts"
-          },
-          "cves": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "uniqueItems": true,
-              "items": {
-                "$ref": "#/components/schemas/Justification"
-              }
-            },
-            "description": "Map of CVE vulnerabilities and their justifications"
-          },
-          "cveStatusCounts": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "integer",
-                "format": "int32"
-              }
-            },
-            "description": "Map of each CVE to its status counts (status -> count)"
-          }
-        }
-      },
       "Report": {
         "description": "Report metadata",
         "type": "object",
@@ -531,6 +428,63 @@
         "enum": [
           "MANUAL",
           "CYCLONEDX_JSON"
+        ]
+      },
+      "SbomReport": {
+        "description": "SBOM report data grouped by sbom_report_id",
+        "type": "object",
+        "properties": {
+          "sbomName": {
+            "type": "string",
+            "description": "SBOM name from first report's metadata.sbom_name"
+          },
+          "sbomReportId": {
+            "type": "string",
+            "description": "SBOM report ID from first report's metadata.sbom_report_id"
+          },
+          "cveId": {
+            "type": "string",
+            "description": "CVE ID from first report's input.scan.vulns[0].vuln_id"
+          },
+          "cveStatusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "Map of CVE status to count of reports with that status"
+          },
+          "statusCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "description": "Map of report status to count of reports with that status"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
+          },
+          "submittedAt": {
+            "type": "string",
+            "description": "Submitted at timestamp from first report's metadata.submitted_at"
+          },
+          "numReports": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of reports in this SBOM report group"
+          },
+          "firstReportId": {
+            "type": "string",
+            "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
+          }
+        },
+        "required": [
+          "sbomReportId",
+          "cveStatusCounts",
+          "statusCounts",
+          "numReports"
         ]
       },
       "SourceInfo": {
@@ -957,252 +911,6 @@
         ]
       }
     },
-    "/api/v1/products": {
-      "get": {
-        "summary": "List products",
-        "description": "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by submittedAt, sbomName, or productId",
-        "parameters": [
-          {
-            "description": "Filter by CVE ID (case-insensitive partial match)",
-            "name": "cveId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Page number (0-based)",
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": "0"
-            }
-          },
-          {
-            "description": "Number of items per page",
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": "100"
-            }
-          },
-          {
-            "description": "Filter by SBOM name (case-insensitive partial match)",
-            "name": "sbomName",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Sort direction: 'ASC' or 'DESC'",
-            "name": "sortDirection",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "DESC"
-            }
-          },
-          {
-            "description": "Sort field: 'submittedAt', 'sbomName', or 'productId'",
-            "name": "sortField",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "submittedAt"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Products retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Product Endpoint"
-        ]
-      }
-    },
-    "/api/v1/products/upload-cyclonedx": {
-      "post": {
-        "summary": "Upload CycloneDX file for analysis",
-        "description": "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with product ID, and queues it for analysis",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "cveId": {
-                    "type": "string"
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "description": "File uploaded and analysis request queued",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReportData"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request data (invalid CVE format, invalid JSON, missing required fields)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Request queue exceeded"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Product Endpoint"
-        ]
-      }
-    },
-    "/api/v1/products/{productId}": {
-      "get": {
-        "summary": "Get product by ID",
-        "description": "Retrieves product data for a specific product ID",
-        "parameters": [
-          {
-            "description": "Product ID",
-            "required": true,
-            "name": "productId",
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Product retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "description": "Product data grouped by product_id",
-                  "type": "object",
-                  "properties": {
-                    "sbomName": {
-                      "type": "string",
-                      "description": "SBOM name from first report's metadata.sbom_name"
-                    },
-                    "productId": {
-                      "type": "string",
-                      "description": "Product ID from first report's metadata.product_id"
-                    },
-                    "cveId": {
-                      "type": "string",
-                      "description": "CVE ID from first report's input.scan.vulns[0].vuln_id"
-                    },
-                    "cveStatusCounts": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "type": "integer",
-                        "format": "int32"
-                      },
-                      "description": "Map of CVE status to count of reports with that status"
-                    },
-                    "statusCounts": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "type": "integer",
-                        "format": "int32"
-                      },
-                      "description": "Map of report status to count of reports with that status"
-                    },
-                    "completedAt": {
-                      "type": "string",
-                      "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
-                    },
-                    "submittedAt": {
-                      "type": "string",
-                      "description": "Submitted at timestamp from first report's metadata.submitted_at"
-                    },
-                    "numReports": {
-                      "type": "integer",
-                      "format": "int32",
-                      "description": "Number of reports in this product group"
-                    },
-                    "firstReportId": {
-                      "type": "string",
-                      "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
-                    }
-                  },
-                  "required": [
-                    "productId",
-                    "cveStatusCounts",
-                    "statusCounts",
-                    "numReports"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Product not found"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Product Endpoint"
-        ]
-      }
-    },
     "/api/v1/reports": {
       "delete": {
         "summary": "Delete multiple analysis reports",
@@ -1323,16 +1031,16 @@
             }
           },
           {
-            "description": "Filter by product ID (metadata.product_id)",
-            "name": "productId",
+            "description": "Filter by report ID (input.scan.id)",
+            "name": "reportId",
             "in": "query",
             "schema": {
               "type": "string"
             }
           },
           {
-            "description": "Filter by report ID (input.scan.id)",
-            "name": "reportId",
+            "description": "Filter by SBOM report ID (metadata.sbom_report_id)",
+            "name": "sbomReportId",
             "in": "query",
             "schema": {
               "type": "string"
@@ -1689,6 +1397,252 @@
         ]
       }
     },
+    "/api/v1/sbom-reports": {
+      "get": {
+        "summary": "List SBOM reports",
+        "description": "Retrieves a paginated list of reports grouped by sbom_report_id, filtered to only include reports with metadata.sbom_report_id, sorted by submittedAt, sbomName, or sbomReportId",
+        "parameters": [
+          {
+            "description": "Filter by CVE ID (case-insensitive partial match)",
+            "name": "cveId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page number (0-based)",
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "0"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "100"
+            }
+          },
+          {
+            "description": "Filter by SBOM name (case-insensitive partial match)",
+            "name": "sbomName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Sort direction: 'ASC' or 'DESC'",
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "DESC"
+            }
+          },
+          {
+            "description": "Sort field: 'submittedAt', 'sbomName', or 'sbomReportId'",
+            "name": "sortField",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "submittedAt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SBOM reports retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SbomReport"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Sbom Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/sbom-reports/upload-cyclonedx": {
+      "post": {
+        "summary": "Upload CycloneDX file for analysis",
+        "description": "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with SBOM report ID, and queues it for analysis",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cveId": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "File uploaded and analysis request queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data (invalid CVE format, invalid JSON, missing required fields)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request queue exceeded"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Sbom Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/sbom-reports/{sbomReportId}": {
+      "get": {
+        "summary": "Get SBOM report by ID",
+        "description": "Retrieves SBOM report data for a specific SBOM report ID",
+        "parameters": [
+          {
+            "description": "SBOM report ID",
+            "required": true,
+            "name": "sbomReportId",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SBOM report retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "SBOM report data grouped by sbom_report_id",
+                  "type": "object",
+                  "properties": {
+                    "sbomName": {
+                      "type": "string",
+                      "description": "SBOM name from first report's metadata.sbom_name"
+                    },
+                    "sbomReportId": {
+                      "type": "string",
+                      "description": "SBOM report ID from first report's metadata.sbom_report_id"
+                    },
+                    "cveId": {
+                      "type": "string",
+                      "description": "CVE ID from first report's input.scan.vulns[0].vuln_id"
+                    },
+                    "cveStatusCounts": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": "Map of CVE status to count of reports with that status"
+                    },
+                    "statusCounts": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "description": "Map of report status to count of reports with that status"
+                    },
+                    "completedAt": {
+                      "type": "string",
+                      "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
+                    },
+                    "submittedAt": {
+                      "type": "string",
+                      "description": "Submitted at timestamp from first report's metadata.submitted_at"
+                    },
+                    "numReports": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "Number of reports in this SBOM report group"
+                    },
+                    "firstReportId": {
+                      "type": "string",
+                      "description": "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes"
+                    }
+                  },
+                  "required": [
+                    "sbomReportId",
+                    "cveStatusCounts",
+                    "statusCounts",
+                    "numReports"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SBOM report not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Sbom Report Endpoint"
+        ]
+      }
+    },
     "/api/v1/vulnerabilities": {
       "get": {
         "summary": "List vulnerabilities",
@@ -1963,9 +1917,9 @@
       "name": "Overview Metrics"
     }
   ],
+  "servers": [],
   "info": {
     "title": "exploit-iq-client API",
     "version": "1.0.0-SNAPSHOT"
-  },
-  "servers": []
+  }
 }
