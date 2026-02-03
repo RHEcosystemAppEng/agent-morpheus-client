@@ -13,6 +13,7 @@ import org.jboss.logging.Logger;
 
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
@@ -69,20 +70,66 @@ public class ProductsService {
         ? filterConditions.get(0) 
         : Filters.and(filterConditions);
     
-    // Build sort
-    String sortFieldPath = getSortFieldPath(sortField);
-    Bson sort = sortType == SortType.ASC 
-        ? Sorts.ascending(sortFieldPath)
-        : Sorts.descending(sortFieldPath);
-    
     // Build aggregation pipeline
     List<Bson> pipeline = new ArrayList<>();
     pipeline.add(Aggregates.match(filter));
-    pipeline.add(Aggregates.sort(sort));
+    
+    // For completedAt sorting, normalize empty strings to null so max() ignores them
+    if ("completedAt".equals(sortField)) {
+      Document condExpr = new Document("$cond",
+          new Document("if",
+              new Document("$or", java.util.Arrays.asList(
+                  new Document("$eq", java.util.Arrays.asList("$input.scan.completed_at", null)),
+                  new Document("$eq", java.util.Arrays.asList("$input.scan.completed_at", ""))
+              )))
+              .append("then", null)
+              .append("else", "$input.scan.completed_at"));
+      Document addFieldsStage = new Document("$addFields",
+          new Document("normalizedCompletedAt", condExpr));
+      pipeline.add(addFieldsStage);
+    }
+    
+    String sortFieldPath = getSortFieldPath(sortField);
+    Bson preSort = sortType == SortType.ASC 
+        ? Sorts.ascending(sortFieldPath)
+        : Sorts.descending(sortFieldPath);
+    pipeline.add(Aggregates.sort(preSort));
+    
+    List<BsonField> groupAccumulators = new ArrayList<>();
+    groupAccumulators.add(Accumulators.push("reports", "$$ROOT"));
+    
+    boolean sortByProductId = "productId".equals(sortField);
+    if (!sortByProductId) {
+      switch (sortField) {
+        case "completedAt":
+          groupAccumulators.add(Accumulators.max("sortValue", "$normalizedCompletedAt"));
+          break;
+        case "sbomName":
+          groupAccumulators.add(Accumulators.first("sortValue", "$metadata." + SBOM_NAME));
+          break;
+        default:
+          groupAccumulators.add(Accumulators.max("sortValue", "$input.scan.completed_at"));
+      }
+    }
+    
     pipeline.add(Aggregates.group(
         "$metadata." + PRODUCT_ID,
-        Accumulators.push("reports", "$$ROOT")
+        groupAccumulators.toArray(new BsonField[0])
     ));
+    
+    Bson groupSort;
+    if (sortByProductId) {
+      groupSort = sortType == SortType.ASC 
+          ? Sorts.ascending("_id")
+          : Sorts.descending("_id");
+    } else {
+      groupSort = sortType == SortType.ASC 
+          ? Sorts.ascending("sortValue")
+          : Sorts.descending("sortValue");
+    }
+    pipeline.add(Aggregates.sort(groupSort));
+    
+    // Apply pagination after sorting groups
     pipeline.add(Aggregates.skip(pagination.page() * pagination.size()));
     pipeline.add(Aggregates.limit(pagination.size()));
     
