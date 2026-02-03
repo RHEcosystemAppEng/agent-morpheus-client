@@ -16,7 +16,7 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.model.SbomReport;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
@@ -25,10 +25,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class ProductsService {
+public class SbomReportsService {
 
-  private static final Logger LOGGER = Logger.getLogger(ProductsService.class);
-  private static final String PRODUCT_ID = "product_id";
+  private static final Logger LOGGER = Logger.getLogger(SbomReportsService.class);
+  private static final String SBOM_REPORT_ID = "sbom_report_id";
   private static final String SBOM_NAME = "sbom_name";
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
@@ -36,12 +36,12 @@ public class ProductsService {
   @Inject
   ReportRepositoryService reportRepositoryService;
 
-  public PaginatedResult<Product> getProducts(String sortField, SortType sortType, Pagination pagination,
+  public PaginatedResult<SbomReport> getSbomReports(String sortField, SortType sortType, Pagination pagination,
       String sbomName, String cveId) {
-    List<Product> products = new ArrayList<>();
+    List<SbomReport> sbomReports = new ArrayList<>();
     
     List<Bson> filterConditions = new ArrayList<>();
-    filterConditions.add(Filters.exists("metadata." + PRODUCT_ID, true));
+    filterConditions.add(Filters.exists("metadata." + SBOM_REPORT_ID, true));
     
     List<Bson> filterOptions = new ArrayList<>();
     
@@ -81,12 +81,12 @@ public class ProductsService {
     pipeline.add(Aggregates.match(filter));
     pipeline.add(Aggregates.sort(sort));
     
-    // Group by product_id, capturing first sort value for post-group sorting
+    // Group by sbom_report_id, capturing first sort value for post-group sorting
     List<BsonField> groupAccumulators = new ArrayList<>();
     groupAccumulators.add(Accumulators.push("reports", "$$ROOT"));
     groupAccumulators.add(Accumulators.first("sortValue", "$" + sortFieldPath));
     pipeline.add(Aggregates.group(
-        "$metadata." + PRODUCT_ID,
+        "$metadata." + SBOM_REPORT_ID,
         groupAccumulators.toArray(new BsonField[0])
     ));
     
@@ -103,9 +103,9 @@ public class ProductsService {
     reportRepositoryService.getCollection()
         .aggregate(pipeline)
         .forEach(groupDoc -> {
-          Product product = processGroup(groupDoc);
-          if (product != null) {
-            products.add(product);
+          SbomReport sbomReport = processGroup(groupDoc);
+          if (sbomReport != null) {
+            sbomReports.add(sbomReport);
           }
         });
     
@@ -113,15 +113,15 @@ public class ProductsService {
     long totalGroups = getTotalGroupCount(filter);
     int totalPages = (int) Math.ceil((double) totalGroups / pagination.size());
     
-    return new PaginatedResult<>(totalGroups, totalPages, products.stream());
+    return new PaginatedResult<>(totalGroups, totalPages, sbomReports.stream());
   }
 
-  public Product getProductById(String productId) {
-    // Build filter for reports with specific product_id
-    LOGGER.infof("Getting product by ID: %s", productId);
-    Bson filter = Filters.eq("metadata." + PRODUCT_ID, productId);
+  public SbomReport getSbomReportById(String sbomReportId) {
+    // Build filter for reports with specific sbom_report_id
+    LOGGER.infof("Getting SBOM report by ID: %s", sbomReportId);
+    Bson filter = Filters.eq("metadata." + SBOM_REPORT_ID, sbomReportId);
     
-    // Collect all reports for this product_id
+    // Collect all reports for this sbom_report_id
     List<Document> reports = new ArrayList<>();
     reportRepositoryService.getCollection()
         .find(filter)
@@ -132,15 +132,15 @@ public class ProductsService {
       return null;
     }
     
-    // Process reports directly (no need for aggregation since all have same product_id)
-    return processReports(productId, reports);
+    // Process reports directly (no need for aggregation since all have same sbom_report_id)
+    return processReports(sbomReportId, reports);
   }
 
   private String getSortFieldPath(String sortField) {
     return switch (sortField) {
       case "submittedAt" -> "metadata.submitted_at";
       case "sbomName" -> "metadata." + SBOM_NAME;
-      case "productId" -> "metadata." + PRODUCT_ID;
+      case "sbomReportId" -> "metadata." + SBOM_REPORT_ID;
       default -> "metadata.submitted_at";
     };
   }
@@ -148,7 +148,7 @@ public class ProductsService {
   private long getTotalGroupCount(Bson filter) {
     List<Bson> countPipeline = new ArrayList<>();
     countPipeline.add(Aggregates.match(filter));
-    countPipeline.add(Aggregates.group("$metadata." + PRODUCT_ID));
+    countPipeline.add(Aggregates.group("$metadata." + SBOM_REPORT_ID));
     
     long count = 0;
     for (@SuppressWarnings("unused") Document doc : reportRepositoryService.getCollection().aggregate(countPipeline)) {
@@ -157,27 +157,26 @@ public class ProductsService {
     return count;
   }
 
-  private Product processGroup(Document groupDoc) {
+  private SbomReport processGroup(Document groupDoc) {
     try {
-      String productId = groupDoc.getString("_id");
-      if (productId == null || productId.isEmpty()) {
+      String sbomReportId = groupDoc.getString("_id");
+      if (sbomReportId == null || sbomReportId.isEmpty()) {
         return null;
       }
       
-      @SuppressWarnings("unchecked")
       List<Document> reports = groupDoc.getList("reports", Document.class);
       if (reports == null || reports.isEmpty()) {
         return null;
       }
       
-      return processReports(productId, reports);
+      return processReports(sbomReportId, reports);
     } catch (Exception e) {
       LOGGER.errorf("Error processing group: %s", e.getMessage(), e);
       return null;
     }
   }
 
-  private Product processReports(String productId, List<Document> reports) {
+  private SbomReport processReports(String sbomReportId, List<Document> reports) {
     try {
       if (reports == null || reports.isEmpty()) {
         return null;
@@ -209,9 +208,9 @@ public class ProductsService {
       // Get numReports
       int numReports = reports.size();
       
-      return new Product(
+      return new SbomReport(
           sbomName,
-          productId,
+          sbomReportId,
           cveId,
           cveStatusCounts,
           statusCounts,
@@ -248,7 +247,6 @@ public class ProductsService {
     if (input != null) {
       Document scan = input.get("scan", Document.class);
       if (scan != null) {
-        @SuppressWarnings("unchecked")
         List<Document> vulns = scan.getList("vulns", Document.class);
         if (vulns != null && !vulns.isEmpty()) {
           Document firstVuln = vulns.get(0);
@@ -283,7 +281,6 @@ public class ProductsService {
     for (Document report : reports) {
       Document output = report.get("output", Document.class);
       if (output != null) {
-        @SuppressWarnings("unchecked")
         List<Document> analysis = output.getList("analysis", Document.class);
         if (analysis != null && !analysis.isEmpty()) {
           Document firstAnalysis = analysis.get(0);
@@ -337,3 +334,4 @@ public class ProductsService {
     return hasEmpty ? "" : (latestCompletedAt != null ? latestCompletedAt : "");
   }
 }
+

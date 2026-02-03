@@ -95,7 +95,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   });
 
   const columnNames = {
-    productId: "Product ID",
+    sbomReportId: "SBOM Report ID",
     sbomName: "SBOM name",
     cveId: "CVE ID",
     repositoriesAnalyzed: "Repositories Analyzed",
@@ -104,17 +104,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     completedAt: "Completion Date",
   };
 
-  // Handle Product ID link navigation based on numReports
-  const handleProductIdClick = (row: (typeof rows)[0]) => {
-    // Use firstReportId which is always populated from the Product API
+  // Handle SBOM Report ID link navigation based on numReports
+  const handleSbomReportIdClick = (row: (typeof rows)[0]) => {
+    // Use firstReportId which is always populated from the SBOM Reports API
     const reportId = row.firstReportId;
 
     if (row.numReports === 1 && reportId && row.cveId) {
       // Single report: navigate to component report page
       navigate(`/reports/component/${row.cveId}/${reportId}`);
     } else if (row.cveId) {
-      // Multiple reports: navigate to product report page
-      navigate(`/reports/product/${row.productId}/${row.cveId}`);
+      // Multiple reports: navigate to SBOM report page
+      navigate(`/reports/sbom-report/${row.sbomReportId}/${row.cveId}`);
     }
   };
 
@@ -137,7 +137,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
-      case "productId":
+      case "sbomReportId":
         return 0;
       case "sbomName":
         return 1;
@@ -236,11 +236,11 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   index: activeSortIndex,
                   direction: activeSortDirection,
                 },
-                onSort: () => handleSortToggle("productId"),
+                onSort: () => handleSortToggle("sbomReportId"),
                 columnIndex: 0,
               }}
             >
-              {columnNames.productId}
+              {columnNames.sbomReportId}
             </Th>
             <Th
               sort={{
@@ -317,9 +317,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             rows.map((row, index) => {
               const isCompleted = isAnalysisCompleted(row.analysisState);
               return (
-                <Tr key={`${row.productId}-${row.cveId}-${index}`}>
+                <Tr key={`${row.sbomReportId}-${row.cveId}-${index}`}>
                   <Td
-                    dataLabel={columnNames.productId}
+                    dataLabel={columnNames.sbomReportId}
                     style={{
                       maxWidth: "10rem",
                       overflow: "hidden",
@@ -331,7 +331,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       to="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleProductIdClick(row);
+                        handleSbomReportIdClick(row);
                       }}
                       style={{
                         display: "block",
@@ -341,7 +341,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                         cursor: "pointer",
                       }}
                     >
-                      {row.productId}
+                      {row.sbomReportId}
                     </Link>
                   </Td>
                   <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>

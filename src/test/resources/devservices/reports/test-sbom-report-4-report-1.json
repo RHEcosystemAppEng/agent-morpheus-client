@@ -2459,11 +2459,12 @@
     }
   },
   "metadata": {
-    "product_id": "product-4",
+    "sbom_report_id": "product-4",
     "user": "zgrinber@redhat.com",
     "requested_at": "2025-02-20T14:46:58.335Z",
     "submitted_at": "2025-02-20T15:46:58.335583Z",
-    "sent_at": "2025-02-20T15:47:00.245249Z"
+    "sent_at": "2025-02-20T15:47:00.245249Z",
+    "sbom_name": "Product_4"
   },
   "info": {
     "vdb": {

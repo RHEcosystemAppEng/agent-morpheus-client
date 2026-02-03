@@ -68,8 +68,8 @@ export class ReportEndpointService {
         imageTag,
         page = 0,
         pageSize = 100,
-        productId,
         reportId,
+        sbomReportId,
         sortBy,
         status,
         vulnId,
@@ -95,13 +95,13 @@ export class ReportEndpointService {
          */
         pageSize?: number,
         /**
-         * Filter by product ID (metadata.product_id)
-         */
-        productId?: string,
-        /**
          * Filter by report ID (input.scan.id)
          */
         reportId?: string,
+        /**
+         * Filter by SBOM report ID (metadata.sbom_report_id)
+         */
+        sbomReportId?: string,
         /**
          * Sort criteria in format 'field:direction'
          */
@@ -124,8 +124,8 @@ export class ReportEndpointService {
                 'imageTag': imageTag,
                 'page': page,
                 'pageSize': pageSize,
-                'productId': productId,
                 'reportId': reportId,
+                'sbomReportId': sbomReportId,
                 'sortBy': sortBy,
                 'status': status,
                 'vulnId': vulnId,

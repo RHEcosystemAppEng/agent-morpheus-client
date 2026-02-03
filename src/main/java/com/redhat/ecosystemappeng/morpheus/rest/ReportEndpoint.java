@@ -293,9 +293,9 @@ public class ReportEndpoint {
       )
       @QueryParam("imageTag") String imageTag,
       @Parameter(
-        description = "Filter by product ID (metadata.product_id)"
+        description = "Filter by SBOM report ID (metadata.sbom_report_id)"
       )
-      @QueryParam("productId") String productId,
+      @QueryParam("sbomReportId") String sbomReportId,
       @Parameter(
         description = "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN"
       )

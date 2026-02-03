@@ -1,10 +1,10 @@
 {
   "input": {
     "scan": {
-      "id": "edc301d5-4450-47dc-aa01-fd204844153e",
+      "id": "c60aa511-eb28-48d6-a591-08a5c5ec020f",
       "type": null,
-      "started_at": "2025-02-20T13:35:04.734513",
-      "completed_at": "2025-02-20T13:35:05.334699",
+      "started_at": "2025-02-20T13:32:55.115056",
+      "completed_at": "2025-02-20T13:32:55.932910",
       "vulns": [
         {
           "vuln_id": "CVE-2024-44337",
@@ -2022,11 +2022,11 @@
     }
   },
   "metadata": {
-    "product_id": "product-8",
-    "requested_at": "2025-02-20T12:35:00.612Z",
-    "submitted_at": "2025-02-20T13:35:00.612365Z",
+    "sbom_report_id": "product-6",
+    "requested_at": "2025-02-20T12:32:50.276Z",
+    "submitted_at": "2025-02-20T13:32:50.276090Z",
     "user": "rromerom@redhat.com",
-    "sent_at": "2025-02-20T13:35:02.415752Z"
+    "sent_at": "2025-02-20T13:32:52.045894Z"
   },
   "info": {
     "vdb": {
@@ -2269,7 +2269,7 @@
           "cve": "CVE-2024-44337"
         },
         "plugin_data": [],
-        "intel_score": 55,
+        "intel_score": 40,
         "has_sufficient_intel_for_agent": true
       }
     ],

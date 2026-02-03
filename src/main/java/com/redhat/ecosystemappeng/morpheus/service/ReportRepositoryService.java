@@ -35,7 +35,6 @@ import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
-import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,7 +48,7 @@ public class ReportRepositoryService {
 
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
-  private static final String PRODUCT_ID = "product_id";
+  private static final String SBOM_REPORT_ID = "sbom_report_id";
   private static final Collection<String> METADATA_DATES = List.of(SUBMITTED_AT, SENT_AT);
   private static final String COLLECTION = "reports";
   private static final Map<String, Bson> STATUS_FILTERS = Map.of(
@@ -64,7 +63,7 @@ public class ReportRepositoryService {
       "pending", Filters.and(
         Filters.eq("metadata." + SENT_AT, null),
         Filters.eq("metadata." + SUBMITTED_AT, null),
-        Filters.ne("metadata." + PRODUCT_ID, null)));
+        Filters.ne("metadata." + SBOM_REPORT_ID, null)));
 
   @Inject
   MongoClient mongoClient;
@@ -181,7 +180,7 @@ public class ReportRepositoryService {
       if (Objects.nonNull(metadata.get(SUBMITTED_AT))) {
         return "queued";
       }
-      if (Objects.nonNull(metadata.get(PRODUCT_ID))) {
+      if (Objects.nonNull(metadata.get(SBOM_REPORT_ID))) {
         return "pending";
       }
     }
@@ -317,12 +316,12 @@ public class ReportRepositoryService {
   }
 
 
-  public List<String> getReportIdsByProduct(List<String> productIds) {
+  public List<String> getReportIdsBySbomReport(List<String> sbomReportIds) {
     List<String> reportIds = new ArrayList<>();
-    if (Objects.isNull(productIds) || productIds.isEmpty()) {
+    if (Objects.isNull(sbomReportIds) || sbomReportIds.isEmpty()) {
       return reportIds;
     }
-    Bson filter = Filters.in("metadata.product_id", productIds);
+    Bson filter = Filters.in("metadata.sbom_report_id", sbomReportIds);
     getCollection()
       .find(filter)
       .iterator()
@@ -431,9 +430,9 @@ public class ReportRepositoryService {
           handleMultipleValues(e.getValue(), (value) -> 
             Filters.eq("input.image.tag", value), filters);
           break;
-        case "productId":
+        case "sbomReportId":
           handleMultipleValues(e.getValue(), (value) -> 
-            Filters.eq("metadata.product_id", value), filters);
+            Filters.eq("metadata.sbom_report_id", value), filters);
           break;
         case "gitRepo":
           var gitRepoValues = e.getValue().split(",");

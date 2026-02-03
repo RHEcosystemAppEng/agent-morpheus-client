@@ -2022,7 +2022,7 @@
     }
   },
   "metadata": {
-    "product_id": "product-5",
+    "sbom_report_id": "product-5",
     "requested_at": "2025-02-20T13:57:56.202Z",
     "submitted_at": "2025-02-20T14:57:56.202326Z",
     "user": "rromerom@redhat.com",

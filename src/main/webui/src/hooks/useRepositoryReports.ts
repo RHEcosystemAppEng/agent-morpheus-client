@@ -5,7 +5,7 @@
 import { useMemo } from "react";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { Report } from "../generated-client";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
 import { mapDisplayLabelToApiValue } from "../components/Filtering";
 import { isEqual } from "lodash";
@@ -33,7 +33,7 @@ export function hasReportStatesChanged(
 }
 
 export interface UseRepositoryReportsOptions {
-  productId: string;
+  sbomReportId: string;
   cveId: string;
   page: number;
   perPage: number;
@@ -42,7 +42,7 @@ export interface UseRepositoryReportsOptions {
   scanStateFilter: string[];
   exploitIqStatusFilter: string[];
   repositorySearchValue: string;
-  product: Product; // Used for determining polling condition
+  product: SbomReport; // Used for determining polling condition
 }
 
 export interface UseRepositoryReportsResult {
@@ -63,7 +63,7 @@ export function useRepositoryReports(
   options: UseRepositoryReportsOptions
 ): UseRepositoryReportsResult {
   const {
-    productId,
+    sbomReportId,
     cveId,
     page,
     perPage,
@@ -111,7 +111,7 @@ export function useRepositoryReports(
       query: {
         page: page - 1,
         pageSize: perPage,
-        productId: productId,
+        sbomReportId: sbomReportId,
         vulnId: cveId,
         sortBy: sortByParam,
         ...(statusFilterValue && { status: statusFilterValue }),
@@ -125,7 +125,7 @@ export function useRepositoryReports(
       deps: [
         page,
         perPage,
-        productId,
+        sbomReportId,
         cveId,
         sortByParam,
         statusFilterValue,

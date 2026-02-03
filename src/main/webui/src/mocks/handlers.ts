@@ -12,7 +12,7 @@ import type {
   ReportsSummary,
   Report,
   VulnResult,
-  Product,
+  SbomReport,
 } from "../generated-client";
 import { mockFullReports } from "./mockFullReports";
 
@@ -29,7 +29,7 @@ const generateMockProduct = (
     pendingCount?: number;
     hasVulnerabilities?: boolean;
   }
-): Product => {
+): SbomReport => {
   const now = new Date().toISOString();
 
   const state = options?.state || "completed";
@@ -62,7 +62,7 @@ const generateMockProduct = (
   const submittedAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
 
   return {
-    productId,
+    sbomReportId: productId,
     sbomName,
     cveId,
     cveStatusCounts,
@@ -130,8 +130,8 @@ const generateMockReport = (
 
 // Mock data storage (simulates a simple in-memory database)
 // Create diverse products with different states and repository counts
-// Note: Products are grouped by productId and cveId, so we create one Product per CVE
-const mockProducts: Product[] = [
+// Note: Products are grouped by sbomReportId and cveId, so we create one SbomReport per CVE
+const mockProducts: SbomReport[] = [
   // Product 1: Completed with vulnerabilities, 25 repositories, 3 CVEs
   generateMockProduct("product-1", "Sample Product A", "CVE-2024-1001", {
     state: "completed",
@@ -178,7 +178,7 @@ const mockProducts: Product[] = [
 
   // Product 3: Completed with NOT VULNERABLE + UNCERTAIN (no vulnerable repos), 15 repositories
   {
-    productId: "product-3",
+    sbomReportId: "product-3",
     sbomName: "Sample Product C",
     cveId: "CVE-2024-1003",
     cveStatusCounts: {
@@ -195,7 +195,7 @@ const mockProducts: Product[] = [
     firstReportId: "report-product-3-cve1003-1",
   },
   {
-    productId: "product-3",
+    sbomReportId: "product-3",
     sbomName: "Sample Product C",
     cveId: "CVE-2024-1004",
     cveStatusCounts: {
@@ -501,8 +501,8 @@ const generateMockReportsSummary = (): ReportsSummary => {
  * Each handler intercepts a specific API endpoint and returns mock data
  */
 export const handlers = [
-  // GET /api/v1/products - List all products
-  http.get("/api/v1/products", ({ request }) => {
+  // GET /api/v1/sbom-reports - List all SBOM reports
+  http.get("/api/v1/sbom-reports", ({ request }) => {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
@@ -525,10 +525,10 @@ export const handlers = [
           ? aName.localeCompare(bName)
           : bName.localeCompare(aName);
       });
-    } else if (sortField === "productId") {
+    } else if (sortField === "sbomReportId") {
       sortedProducts.sort((a, b) => {
-        const aId = a.productId || "";
-        const bId = b.productId || "";
+        const aId = a.sbomReportId || "";
+        const bId = b.sbomReportId || "";
         return sortDirection === "ASC"
           ? aId.localeCompare(bId)
           : bId.localeCompare(aId);
@@ -552,13 +552,13 @@ export const handlers = [
     });
   }),
 
-  // GET /api/v1/products/:productId - Get product data by ID
-  http.get("/api/v1/products/:productId", ({ params }) => {
-    const { productId } = params;
-    const product = mockProducts.find((p) => p.productId === productId);
+  // GET /api/v1/sbom-reports/:sbomReportId - Get SBOM report data by ID
+  http.get("/api/v1/sbom-reports/:sbomReportId", ({ params }) => {
+    const { sbomReportId } = params;
+    const product = mockProducts.find((p) => p.sbomReportId === sbomReportId);
 
     if (!product) {
-      return HttpResponse.json({ error: "Product not found" }, { status: 404 });
+      return HttpResponse.json({ error: "SBOM report not found" }, { status: 404 });
     }
 
     return HttpResponse.json(product);
@@ -569,16 +569,16 @@ export const handlers = [
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
-    const productId = url.searchParams.get("productId");
+    const sbomReportId = url.searchParams.get("sbomReportId");
     const vulnId = url.searchParams.get("vulnId");
     const status = url.searchParams.get("status");
 
     let filteredReports = [...mockReports];
 
     // Apply filters
-    if (productId) {
+    if (sbomReportId) {
       filteredReports = filteredReports.filter(
-        (r) => r.metadata?.productId === productId
+        (r) => r.metadata?.productId === sbomReportId // Note: Will be sbomReportId when types are updated
       );
     }
 
@@ -695,7 +695,7 @@ export const handlers = [
     
     // Find all products with this productId (since there can be multiple per productId, one per CVE)
     mockProducts.forEach((p, index) => {
-      if (p.productId === productId) {
+      if (p.sbomReportId === productId) {
         productIndices.push(index);
       }
     });
