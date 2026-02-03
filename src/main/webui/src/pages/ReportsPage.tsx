@@ -1,14 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { PageSection, Title } from "@patternfly/react-core";
 import ReportsTable from "../components/ReportsTable";
 import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
 import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";
 
+const DEBOUNCE_DELAY_MS = 500;
+
 const ReportsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchValue, setSearchValue] = useState<string>("");
   const [cveSearchValue, setCveSearchValue] = useState<string>("");
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>("");
+  const [debouncedCveSearchValue, setDebouncedCveSearchValue] =
+    useState<string>("");
   const [filters, setFilters] = useState<ReportsToolbarFilters>({});
   const [activeAttribute, setActiveAttribute] = useState<
     "SBOM Name" | "CVE ID"
@@ -16,7 +21,9 @@ const ReportsPage: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
-  // Restore filter state from URL on mount
+  const sbomSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cveSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     const sbomName = searchParams.get("sbomName") || "";
     const cveId = searchParams.get("cveId") || "";
@@ -24,11 +31,12 @@ const ReportsPage: React.FC = () => {
     const sortDir = searchParams.get("sortDirection");
 
     setSearchValue(sbomName);
+    setDebouncedSearchValue(sbomName);
     setCveSearchValue(cveId);
+    setDebouncedCveSearchValue(cveId);
 
     setFilters({});
 
-    // Restore sort state from URL
     if (
       sortField &&
       (sortField === "productId" ||
@@ -42,7 +50,38 @@ const ReportsPage: React.FC = () => {
     }
   }, []);
 
-  // Update URL when filters or sort change
+  useEffect(() => {
+    if (sbomSearchTimeoutRef.current) {
+      clearTimeout(sbomSearchTimeoutRef.current);
+    }
+
+    sbomSearchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchValue(searchValue);
+    }, DEBOUNCE_DELAY_MS);
+
+    return () => {
+      if (sbomSearchTimeoutRef.current) {
+        clearTimeout(sbomSearchTimeoutRef.current);
+      }
+    };
+  }, [searchValue]);
+
+  useEffect(() => {
+    if (cveSearchTimeoutRef.current) {
+      clearTimeout(cveSearchTimeoutRef.current);
+    }
+
+    cveSearchTimeoutRef.current = setTimeout(() => {
+      setDebouncedCveSearchValue(cveSearchValue);
+    }, DEBOUNCE_DELAY_MS);
+
+    return () => {
+      if (cveSearchTimeoutRef.current) {
+        clearTimeout(cveSearchTimeoutRef.current);
+      }
+    };
+  }, [cveSearchValue]);
+
   const updateUrlParams = (
     sbomName: string,
     cveId: string,
@@ -63,32 +102,40 @@ const ReportsPage: React.FC = () => {
     setSearchParams(newParams, { replace: true });
   };
 
+  useEffect(() => {
+    updateUrlParams(debouncedSearchValue, debouncedCveSearchValue);
+  }, [debouncedSearchValue, debouncedCveSearchValue]);
+
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
-    updateUrlParams(value, cveSearchValue);
   };
 
   const handleCveSearchChange = (value: string) => {
     setCveSearchValue(value);
-    updateUrlParams(searchValue, value);
   };
 
   const handleFiltersChange = (newFilters: ReportsToolbarFilters) => {
     setFilters(newFilters);
-    updateUrlParams(searchValue, cveSearchValue);
+    updateUrlParams(debouncedSearchValue, debouncedCveSearchValue);
   };
 
   const handleSortChange = (column: SortColumn, direction: SortDirection) => {
     setSortColumn(column);
     setSortDirection(direction);
-    updateUrlParams(searchValue, cveSearchValue, column, direction);
+    updateUrlParams(
+      debouncedSearchValue,
+      debouncedCveSearchValue,
+      column,
+      direction
+    );
   };
 
   const handleClearFilters = () => {
     setSearchValue("");
     setCveSearchValue("");
+    setDebouncedSearchValue("");
+    setDebouncedCveSearchValue("");
     setFilters({});
-    // Reset sort to default
     setSortColumn("completedAt");
     setSortDirection("desc");
     setSearchParams({}, { replace: true });
@@ -108,8 +155,10 @@ const ReportsPage: React.FC = () => {
       </PageSection>
       <PageSection>
         <ReportsTable
-          searchValue={searchValue}
-          cveSearchValue={cveSearchValue}
+          searchValue={debouncedSearchValue}
+          cveSearchValue={debouncedCveSearchValue}
+          displaySearchValue={searchValue}
+          displayCveSearchValue={cveSearchValue}
           filters={filters}
           activeAttribute={activeAttribute}
           onSearchChange={handleSearchChange}

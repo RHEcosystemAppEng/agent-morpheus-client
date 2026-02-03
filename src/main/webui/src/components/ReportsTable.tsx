@@ -31,6 +31,8 @@ const PER_PAGE = 10;
 interface ReportsTableProps {
   searchValue?: string;
   cveSearchValue?: string;
+  displaySearchValue?: string;
+  displayCveSearchValue?: string;
   filters?: {};
   activeAttribute?: "SBOM Name" | "CVE ID";
   onSearchChange?: (value: string) => void;
@@ -46,6 +48,8 @@ interface ReportsTableProps {
 const ReportsTable: React.FC<ReportsTableProps> = ({
   searchValue = "",
   cveSearchValue = "",
+  displaySearchValue,
+  displayCveSearchValue,
   filters = {},
   activeAttribute = "SBOM Name",
   onSearchChange = () => {},
@@ -78,6 +82,14 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       setSortDirection(propSortDirection);
     }
   }, [propSortDirection]);
+
+  // Use display values for toolbar, debounced values for API
+  const toolbarSearchValue =
+    displaySearchValue !== undefined ? displaySearchValue : searchValue;
+  const toolbarCveSearchValue =
+    displayCveSearchValue !== undefined
+      ? displayCveSearchValue
+      : cveSearchValue;
 
   // Reset page when filters change
   useEffect(() => {
@@ -185,8 +197,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     return (
       <>
         <ReportsToolbar
-          searchValue={searchValue}
-          cveSearchValue={cveSearchValue}
+          searchValue={toolbarSearchValue}
+          cveSearchValue={toolbarCveSearchValue}
           filters={filters}
           activeAttribute={activeAttribute}
           onSearchChange={onSearchChange}
@@ -209,8 +221,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   return (
     <>
       <ReportsToolbar
-        searchValue={searchValue}
-        cveSearchValue={cveSearchValue}
+        searchValue={toolbarSearchValue}
+        cveSearchValue={toolbarCveSearchValue}
         filters={filters}
         activeAttribute={activeAttribute}
         onSearchChange={onSearchChange}
