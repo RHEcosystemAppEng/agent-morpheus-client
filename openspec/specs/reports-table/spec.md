@@ -2,7 +2,6 @@
 
 ## Purpose
 The reports table displays vulnerability analysis reports in a tabular format, allowing users to view product-level analysis results. The table provides aggregate ExploitIQ status indicators that summarize the overall vulnerability posture of each product/SBOM.
-
 ## Requirements
 ### Requirement: Reports Table Display
 The application SHALL display a table of vulnerability analysis reports with columns that map to fields in the `Product` response from the `/api/v1/products` API endpoint. The table columns SHALL be:
@@ -11,7 +10,8 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **CVE ID**: Maps to `Product.cveId`
 - **Repositories Analyzed**: Calculated from `Product.statusCounts` (format: "completedCount / totalCount analyzed" where completedCount is from `statusCounts["completed"]` and totalCount is the sum of all values in `statusCounts`)
 - **ExploitIQ Status**: Calculated from `Product.cveStatusCounts` (maps "TRUE"/"true" -> vulnerable, "FALSE"/"false" -> not vulnerable, "UNKNOWN"/"unknown" -> uncertain)
-- **Completion Date**: Maps to `Product.completedAt` and SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation
+- **Submitted Date**: Maps to `Product.submittedAt` and SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation
+- **Completion Date**: Maps to `Product.completedAt` and SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation. This column SHALL NOT be sortable.
 
 The reports table SHALL use the `/api/v1/products` API endpoint to fetch data, which provides server-side grouping and aggregation for improved performance.
 
@@ -56,17 +56,24 @@ The reports table SHALL compare the entire Product objects between the previous 
   - If `numReports === 1`, navigate to `/reports/component/:cveId/:reportId` where `:cveId` is the CVE ID and `:reportId` is `Product.firstReportId`
   - Otherwise, navigate to `/reports/product/:productId/:cveId` where `:productId` is `Product.productId` and `:cveId` is the CVE ID
 
+#### Scenario: Submitted date column name and display
+- **WHEN** a user views the reports table
+- **THEN** the submitted date column is labeled "Submitted Date" and maps to `Product.submittedAt`
+- **AND** when `Product.submittedAt` has a value, the date is displayed in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST")
+- **AND** when `Product.submittedAt` is empty or null, the column displays " " (empty space)
+
 #### Scenario: Completion date column name and display
 - **WHEN** a user views the reports table
 - **THEN** the completion date column is labeled "Completion Date" and maps to `Product.completedAt`
 - **AND** when the analysis is completed AND `Product.completedAt` has a value, the date is displayed in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST")
 - **AND** when the analysis is not completed OR `Product.completedAt` is empty or null, the column displays " " (empty space)
+- **AND** the "Completion Date" column header is NOT clickable and does NOT support sorting
 
-#### Scenario: Default sorting by completedAt
+#### Scenario: Default sorting by submittedAt
 - **WHEN** a user first views the reports table
-- **THEN** the table is sorted by completedAt in descending order (newest reports first, oldest reports last) using server-side sorting
-- **AND** the sorting is performed by the `/api/v1/products` API endpoint with `sortField=completedAt` and `sortDirection=DESC`
-- **AND** the Product ID, SBOM name, and Completion Date columns are sortable by the user (ascending/descending)
+- **THEN** the table is sorted by submittedAt in descending order (newest reports first, oldest reports last) using server-side sorting
+- **AND** the sorting is performed by the `/api/v1/products` API endpoint with `sortField=submittedAt` and `sortDirection=DESC`
+- **AND** the Product ID, SBOM name, and Submitted Date columns are sortable by the user (ascending/descending)
 
 #### Scenario: Sorting by Product ID
 - **WHEN** a user clicks the Product ID column header to sort
@@ -80,18 +87,18 @@ The reports table SHALL compare the entire Product objects between the previous 
 - **AND** clicking again toggles between ascending (A-Z) and descending (Z-A) order
 - **AND** the sorting is performed by the `/api/v1/products` API endpoint with `sortField=sbomName` and the appropriate `sortDirection` (ASC or DESC)
 
-#### Scenario: Sorting by Completion Date
-- **WHEN** a user clicks the Completion Date column header to sort
-- **THEN** the table is sorted by Completion Date using server-side sorting
+#### Scenario: Sorting by Submitted Date
+- **WHEN** a user clicks the Submitted Date column header to sort
+- **THEN** the table is sorted by Submitted Date using server-side sorting
 - **AND** clicking again toggles between descending (newest first) and ascending (oldest first) order
-- **AND** the sorting is performed by the `/api/v1/products` API endpoint with `sortField=completedAt` and the appropriate `sortDirection` (ASC or DESC)
+- **AND** the sorting is performed by the `/api/v1/products` API endpoint with `sortField=submittedAt` and the appropriate `sortDirection` (ASC or DESC)
 
 #### Scenario: Sort state in URL
 - **WHEN** a user applies sorting to the reports table
 - **THEN** the sort field and sort direction are stored as query parameters in the browser URL (e.g., `/reports?sortField=productId&sortDirection=ASC`)
 - **AND** the URL can be shared with others to view the same sorted results
 - **AND** when navigating back to the reports page, the sort state is restored from URL parameters
-- **AND** sort parameters are combined with filter parameters in the URL (e.g., `/reports?sbomName=test&sortField=completedAt&sortDirection=DESC`)
+- **AND** sort parameters are combined with filter parameters in the URL (e.g., `/reports?sbomName=test&sortField=submittedAt&sortDirection=DESC`)
 
 #### Scenario: Sort persistence across navigation
 - **WHEN** a user applies sorting and then navigates away from the reports page
@@ -172,3 +179,4 @@ The reports table SHALL support filtering by SBOM Name and CVE ID. All filtering
 - **AND** the table SHALL skip the state update (prevent rerender) if all Product objects are unchanged (all fields match)
 - **AND** the table SHALL trigger a rerender if any field in any Product object has changed
 - **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
+

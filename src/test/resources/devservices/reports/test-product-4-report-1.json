@@ -7,7 +7,7 @@
       "completed_at": "2025-02-19T07:02:27.237544",
       "vulns": [
         {
-          "vuln_id": "CVE-2024-45496",
+          "vuln_id": "CVE-2024-1485",
           "description": null,
           "score": null,
           "severity": null,
@@ -2461,6 +2461,7 @@
   "metadata": {
     "product_id": "product-4",
     "user": "zgrinber@redhat.com",
+    "requested_at": "2025-02-20T14:46:58.335Z",
     "submitted_at": "2025-02-20T15:46:58.335583Z",
     "sent_at": "2025-02-20T15:47:00.245249Z"
   },
@@ -2471,7 +2472,7 @@
     },
     "intel": [
       {
-        "vuln_id": "CVE-2024-45496",
+        "vuln_id": "CVE-2024-1485",
         "ghsa": {
           "ghsa_id": "GHSA-j8gh-87rx-c7w9",
           "cve_id": "CVE-2024-45496",
@@ -5075,7 +5076,7 @@
     },
     "vulnerable_dependencies": [
       {
-        "vuln_id": "CVE-2024-45496",
+        "vuln_id": "CVE-2024-1485",
         "vuln_package_intel_sources": [],
         "vulnerable_sbom_packages": []
       }
@@ -5084,7 +5085,7 @@
   "output": {
     "analysis": [
       {
-        "vuln_id": "CVE-2024-45496",
+        "vuln_id": "CVE-2024-1485",
         "checklist": [
           {
             "input": "Is the `paragraph` function from the `github.com/gomarkdown/markdown` package called in the codebase?",

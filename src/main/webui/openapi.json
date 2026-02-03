@@ -188,6 +188,10 @@
             "type": "string",
             "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
           },
+          "submittedAt": {
+            "type": "string",
+            "description": "Submitted at timestamp from first report's metadata.submitted_at"
+          },
           "numReports": {
             "type": "integer",
             "format": "int32",
@@ -956,8 +960,16 @@
     "/api/v1/products": {
       "get": {
         "summary": "List products",
-        "description": "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName",
+        "description": "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by submittedAt, sbomName, or productId",
         "parameters": [
+          {
+            "description": "Filter by CVE ID (case-insensitive partial match)",
+            "name": "cveId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "description": "Page number (0-based)",
             "name": "page",
@@ -979,6 +991,14 @@
             }
           },
           {
+            "description": "Filter by SBOM name (case-insensitive partial match)",
+            "name": "sbomName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Sort direction: 'ASC' or 'DESC'",
             "name": "sortDirection",
             "in": "query",
@@ -988,12 +1008,12 @@
             }
           },
           {
-            "description": "Sort field: 'completedAt' or 'sbomName'",
+            "description": "Sort field: 'submittedAt', 'sbomName', or 'productId'",
             "name": "sortField",
             "in": "query",
             "schema": {
               "type": "string",
-              "default": "completedAt"
+              "default": "submittedAt"
             }
           }
         ],
@@ -1141,6 +1161,10 @@
                     "completedAt": {
                       "type": "string",
                       "description": "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value"
+                    },
+                    "submittedAt": {
+                      "type": "string",
+                      "description": "Submitted at timestamp from first report's metadata.submitted_at"
                     },
                     "numReports": {
                       "type": "integer",
@@ -1482,7 +1506,7 @@
                 "schema": {
                   "type": "string",
                   "examples": [
-                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": {\n    \"analysis\": [...],\n    \"vex\": null | {...}\n  },\n  \"info\": {...\n  },\n  \"metadata\": {...\n  }\n}\n"
+                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": {\n    \"analysis\": [...],\n    \"vex\": null | {...}\n  },\n  \"info\": {...\n  },\n  \"metadata\": {...\n  },\n  \"state\": \"completed\"\n}\n"
                   ]
                 }
               }

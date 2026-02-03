@@ -7,7 +7,7 @@
       "completed_at": "2025-02-18T14:29:21.846157",
       "vulns": [
         {
-          "vuln_id": "CVE-2024-3744",
+          "vuln_id": "CVE-2024-44337",
           "description": null,
           "score": null,
           "severity": null,
@@ -2670,6 +2670,7 @@
     "user": "vbelouso@redhat.com",
     "source": "morpheus-parser",
     "batch_id": "mp-10i7ly",
+    "requested_at": "2025-01-20T14:46:58.335Z",
     "submitted_at": "2025-01-20T15:46:58.335583Z",
     "sent_at": "2025-01-20T15:47:00.245249Z"
   },
@@ -2680,7 +2681,7 @@
     },
     "intel": [
       {
-        "vuln_id": "CVE-2024-3744",
+        "vuln_id": "CVE-2024-44337",
         "ghsa": {
           "ghsa_id": "GHSA-qjqg-4wg7-957h",
           "cve_id": "CVE-2024-3744",
@@ -5424,7 +5425,7 @@
     },
     "vulnerable_dependencies": [
       {
-        "vuln_id": "CVE-2024-3744",
+        "vuln_id": "CVE-2024-44337",
         "vuln_package_intel_sources": [],
         "vulnerable_sbom_packages": []
       }
@@ -5433,7 +5434,7 @@
   "output": {
     "analysis": [
       {
-        "vuln_id": "CVE-2024-3744",
+        "vuln_id": "CVE-2024-44337",
         "checklist": [
           {
             "input": "Verify TokenRequests Configuration: Check the CSIDriver object configuration within the containerized environment to see if TokenRequests is enabled. This is a prerequisite for the vulnerability to be exploitable, as it controls whether service account tokens are logged.",

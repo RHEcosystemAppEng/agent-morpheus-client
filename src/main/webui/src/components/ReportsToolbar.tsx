@@ -37,11 +37,11 @@ type ActiveAttribute = "SBOM Name" | "CVE ID";
 const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
   searchValue = "",
   cveSearchValue = "",
-  filters = {},
+  filters: _filters = {},
   activeAttribute = "SBOM Name",
   onSearchChange = () => {},
   onCveSearchChange = () => {},
-  onFiltersChange = () => {},
+  onFiltersChange: _onFiltersChange = () => {},
   onActiveAttributeChange = () => {},
   onClearFilters = () => {},
   pagination,

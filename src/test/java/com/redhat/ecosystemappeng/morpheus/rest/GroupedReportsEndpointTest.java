@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.Assertions;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -29,7 +30,7 @@ class GroupedReportsEndpointTest {
         RestAssured.baseURI = API_BASE;
         var size = RestAssured.given()
             .when()
-            .queryParam("sortField", "completedAt")
+            .queryParam("sortField", "submittedAt")
             .queryParam("sortDirection", "DESC")
             .queryParam("page", 0)
             .queryParam("pageSize", 100)
@@ -55,13 +56,14 @@ class GroupedReportsEndpointTest {
                 .get("/api/v1/products")
                 .then()
                 .body("[0].productId", notNullValue())
-                .body("[0].sbomName", anyOf(nullValue(), isA(String.class)))
-                .body("[0].cveId", anyOf(nullValue(), isA(String.class)))
+                .body("[0].sbomName", isA(String.class))
+                .body("[0].cveId", isA(String.class))
                 .body("[0].cveStatusCounts", isA(java.util.Map.class))
                 .body("[0].statusCounts", isA(java.util.Map.class))
-                .body("[0].completedAt", anyOf(nullValue(), isA(String.class)))
+                .body("[0].completedAt", notNullValue(), isA(String.class))
+                .body("[0].submittedAt", isA(String.class))
                 .body("[0].numReports", isA(Integer.class))
-                .body("[0].firstReportId", anyOf(nullValue(), isA(String.class)));
+                .body("[0].firstReportId", isA(String.class));
         }
     }
 
@@ -93,6 +95,82 @@ class GroupedReportsEndpointTest {
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("$", isA(java.util.List.class));
+    }
+
+    @Test
+    void testGetProducts_WithSortBySubmittedAt() {
+        RestAssured.baseURI = API_BASE;
+        
+        // Test sorting by submittedAt ASC
+        var ascResults = RestAssured.given()
+            .when()
+            .queryParam("sortField", "submittedAt")
+            .queryParam("sortDirection", "ASC")
+            .queryParam("pageSize", 100)
+            .get("/api/v1/products")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", isA(java.util.List.class))
+            .extract()
+            .jsonPath()
+            .getList("submittedAt", String.class);
+        
+        // Verify ASC sorting: each submittedAt should be <= the next one (or nulls at the end)
+        if (ascResults != null && ascResults.size() > 1) {
+            for (int i = 0; i < ascResults.size() - 1; i++) {
+                String current = ascResults.get(i);
+                String next = ascResults.get(i + 1);
+                if (current != null && next != null) {
+                    Assertions.assertTrue(
+                        current.compareTo(next) <= 0,
+                        String.format("ASC sort failed: %s should be <= %s at index %d", current, next, i)
+                    );
+                }
+            }
+        }
+        
+        // Test sorting by submittedAt DESC
+        var descResults = RestAssured.given()
+            .when()
+            .queryParam("sortField", "submittedAt")
+            .queryParam("sortDirection", "DESC")
+            .queryParam("pageSize", 100)
+            .get("/api/v1/products")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", isA(java.util.List.class))
+            .extract()
+            .jsonPath()
+            .getList("submittedAt", String.class);    
+        // Verify DESC sorting: each submittedAt should be >= the next one (or nulls at the end)
+        Assertions.assertNotNull(descResults, "DESC results should not be null");
+        Assertions.assertTrue(descResults.size() > 1, "DESC results should have at least 2 items");
+        for (int i = 0; i < descResults.size() - 1; i++) {
+            String current = descResults.get(i);
+            String next = descResults.get(i + 1);
+            if (current != null && next != null) {
+                Assertions.assertTrue(
+                    current.compareTo(next) >= 0,
+                    String.format("DESC sort failed: %s should be >= %s at index %d", current, next, i)
+                );
+            }
+        }
+        
+    }
+
+    @Test
+    void testGetProducts_WithSortByCompletedAt_Rejected() {
+        // Act & Assert - Test that sorting by completedAt is rejected
+        RestAssured.baseURI = API_BASE;
+        RestAssured.given()
+            .when()
+            .queryParam("sortField", "completedAt")
+            .queryParam("sortDirection", "DESC")
+            .get("/api/v1/products")
+            .then()
+            .statusCode(anyOf(is(400), is(500))); // Should return error for invalid sort field
     }
 
     @Test
@@ -191,6 +269,7 @@ class GroupedReportsEndpointTest {
                 .body("cveStatusCounts", isA(java.util.Map.class))
                 .body("statusCounts", isA(java.util.Map.class))
                 .body("completedAt", anyOf(nullValue(), isA(String.class)))
+                .body("submittedAt", anyOf(nullValue(), isA(String.class)))
                 .body("numReports", isA(Integer.class))
                 .body("firstReportId", anyOf(nullValue(), isA(String.class)));
         }

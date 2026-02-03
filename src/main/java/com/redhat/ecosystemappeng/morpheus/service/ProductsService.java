@@ -13,6 +13,7 @@ import org.jboss.logging.Logger;
 
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
@@ -79,10 +80,22 @@ public class ProductsService {
     List<Bson> pipeline = new ArrayList<>();
     pipeline.add(Aggregates.match(filter));
     pipeline.add(Aggregates.sort(sort));
+    
+    // Group by product_id, capturing first sort value for post-group sorting
+    List<BsonField> groupAccumulators = new ArrayList<>();
+    groupAccumulators.add(Accumulators.push("reports", "$$ROOT"));
+    groupAccumulators.add(Accumulators.first("sortValue", "$" + sortFieldPath));
     pipeline.add(Aggregates.group(
         "$metadata." + PRODUCT_ID,
-        Accumulators.push("reports", "$$ROOT")
+        groupAccumulators.toArray(new BsonField[0])
     ));
+    
+    // Sort groups by the captured sort value
+    Bson groupSort = sortType == SortType.ASC 
+        ? Sorts.ascending("sortValue")
+        : Sorts.descending("sortValue");
+    pipeline.add(Aggregates.sort(groupSort));
+    
     pipeline.add(Aggregates.skip(pagination.page() * pagination.size()));
     pipeline.add(Aggregates.limit(pagination.size()));
     
@@ -125,10 +138,10 @@ public class ProductsService {
 
   private String getSortFieldPath(String sortField) {
     return switch (sortField) {
-      case "completedAt" -> "input.scan.completed_at";
+      case "submittedAt" -> "metadata.submitted_at";
       case "sbomName" -> "metadata." + SBOM_NAME;
       case "productId" -> "metadata." + PRODUCT_ID;
-      default -> "input.scan.completed_at";
+      default -> "metadata.submitted_at";
     };
   }
 
@@ -190,6 +203,9 @@ public class ProductsService {
       // Calculate completedAt
       String completedAt = calculateCompletedAt(reports);
       
+      // Extract submittedAt from first report
+      String submittedAt = extractSubmittedAt(firstReport);
+      
       // Get numReports
       int numReports = reports.size();
       
@@ -200,6 +216,7 @@ public class ProductsService {
           cveStatusCounts,
           statusCounts,
           completedAt,
+          submittedAt,
           numReports,
           firstReportId
       );
@@ -236,6 +253,24 @@ public class ProductsService {
         if (vulns != null && !vulns.isEmpty()) {
           Document firstVuln = vulns.get(0);
           return firstVuln.getString("vuln_id");
+        }
+      }
+    }
+    return null;
+  }
+
+  private String extractSubmittedAt(Document report) {
+    Document metadata = report.get("metadata", Document.class);
+    if (metadata != null) {
+      Object submittedAtObj = metadata.get("submitted_at");
+      if (submittedAtObj != null) {
+        // Handle both String and Date/Instant types (MongoDB stores dates as Date objects)
+        if (submittedAtObj instanceof String) {
+          return (String) submittedAtObj;
+        } else if (submittedAtObj instanceof java.util.Date) {
+          return ((java.util.Date) submittedAtObj).toInstant().toString();
+        } else {
+          return submittedAtObj.toString();
         }
       }
     }

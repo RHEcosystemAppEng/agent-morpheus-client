@@ -192,7 +192,6 @@ public class ReportRepositoryService {
   public void updateWithOutput(List<String> ids, JsonNode report)
       throws JsonMappingException, JsonProcessingException {
     
-    Set<String> productIds = getProductId(ids);
     
     Document outputDoc = objectMapper.readValue(report.get("output").toPrettyString(), Document.class);
     var scan = report.get("input").get("scan").toPrettyString();
@@ -206,18 +205,13 @@ public class ReportRepositoryService {
         .toList();
     getCollection().bulkWrite(bulk);
     
-    productIds.forEach(this::checkAndStoreProductCompletion);
   }
 
   public void updateWithError(String id, String errorType, String errorMessage) {
-    String productId = getProductId(id);  
     
     var error = new Document("type", errorType).append("message", errorMessage);
     getCollection().updateOne(new Document(RepositoryConstants.ID_KEY, new ObjectId(id)), Updates.set("error", error));
     
-    if (productId != null) {
-      checkAndStoreProductCompletion(productId);
-    }
   }
 
   public Report save(String data) {
@@ -323,64 +317,6 @@ public class ReportRepositoryService {
   }
 
 
-  public List<String> getProductIds() {
-    List<String> productIds = new ArrayList<>();
-    Bson filter = Filters.exists("metadata.product_id", true);
-    getCollection()
-      .distinct("metadata.product_id", filter, String.class)
-      .iterator()
-      .forEachRemaining(pid -> {
-        if (pid != null && !pid.isEmpty()) {
-          productIds.add(pid);
-        }
-      });
-    return productIds;
-  }
-
-  private String getProductId(String reportId) {
-    Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(reportId))).first();
-    if (Objects.nonNull(doc)) {
-      var metadata = doc.get("metadata", Document.class);
-      if (Objects.nonNull(metadata)) {
-        return metadata.getString("product_id");
-      }
-    }
-    return null;
-  }
-
-  private Set<String> getProductId(Collection<String> reportIds) {
-    Set<String> productIds = new HashSet<>();
-    reportIds.forEach(id -> {
-      String productId = getProductId(id);
-      if (Objects.nonNull(productId)) {
-        productIds.add(productId);
-      }
-    });
-    return productIds;
-  }
-
-  private void checkAndStoreProductCompletion(String productId) {
-    // Product table update removed - product table is no longer used
-    // This method is kept for compatibility but no longer performs any operations
-  }
-
-  private String getReportCompletionTime(Document doc) {
-    var input = doc.get("input", Document.class);
-    if (Objects.nonNull(input)) {
-      var scan = input.get("scan", Document.class);
-      if (Objects.nonNull(scan)) {
-        String completedAt = scan.getString("completed_at");
-        if (Objects.nonNull(completedAt)) {
-          return completedAt;
-        }
-      }
-    }
-    
-    var metadata = extractMetadata(doc);
-    String submittedAt = metadata.get("submitted_at");
-    return submittedAt;
-  }
-
   public List<String> getReportIdsByProduct(List<String> productIds) {
     List<String> reportIds = new ArrayList<>();
     if (Objects.isNull(productIds) || productIds.isEmpty()) {
@@ -400,28 +336,17 @@ public class ReportRepositoryService {
   }
 
   public boolean remove(String id) {
-    String productId = getProductId(id);
     
-    boolean result = getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();
-    
-    if (result && Objects.nonNull(productId)) {
-      checkAndStoreProductCompletion(productId);
-    }
-    
+    boolean result = getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).wasAcknowledged();    
     return result;
   }
 
   public boolean remove(Collection<String> ids) {
-    Set<String> productIds = getProductId(ids);
     
     boolean result = getCollection()
         .deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids.stream()
             .map(id -> new ObjectId(id)).toList()))
         .wasAcknowledged();
-    
-    if (result) {
-      productIds.forEach(this::checkAndStoreProductCompletion);
-    }
     
     return result;
   }

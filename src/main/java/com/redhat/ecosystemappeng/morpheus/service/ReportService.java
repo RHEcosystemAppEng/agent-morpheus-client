@@ -133,14 +133,6 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
-
-  public List<String> getReportIds(List<String> productIds) {
-    if (Objects.isNull(productIds) || productIds.isEmpty()) {
-      return new ArrayList<>();
-    }
-    return repository.getReportIdsByProduct(productIds);
-  }
-
   public String get(String id) {
     LOGGER.debugf("Get report %s", id);
     return repository.findById(id);
