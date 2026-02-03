@@ -153,6 +153,7 @@ export function usePaginatedApi<T>(
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
+  const apiCallRef = useRef<() => ApiRequestOptions>(apiCall);
 
   const execute = async (isDependencyChange: boolean = false) => {
     // Cancel previous request if it exists
@@ -168,7 +169,7 @@ export function usePaginatedApi<T>(
     abortControllerRef.current = abortController;
 
     try {
-      const requestOptions = apiCall();
+      const requestOptions = apiCallRef.current();
       const url = buildUrl(OpenAPI, requestOptions);
       const headers = await getHeaders(OpenAPI, requestOptions);
 
@@ -241,6 +242,11 @@ export function usePaginatedApi<T>(
       abortControllerRef.current = null;
     }
   };
+
+  // Update apiCallRef whenever it changes (separate effect to avoid unnecessary re-runs)
+  useEffect(() => {
+    apiCallRef.current = apiCall;
+  });
 
   useEffect(() => {
     // Reset initial fetch flag when deps change
