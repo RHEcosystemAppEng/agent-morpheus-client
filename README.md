@@ -50,11 +50,7 @@ On this page, you will find a table containing all reports.
 
 **Report Organization:** Each row represents a specific SBOM, which may contain a single component (repository) or multiple components based on the original request file.
 
-**Sorting:** You will be able to sort the table by the _Product ID_, _SBOM Name_, and _Completed-at_ columns. By default, you will see the reports ordered by completion date, from newest to oldest.
-
-**Filtering:** You will find options to filter the list by _SBOM Name_, _CVE ID_, and _ExploitIQ status_ to locate specific results quickly.
-
-**Pagination:** You will also be able to customize the view by selecting how many reports to display per page.
+You will be able to sort, filter, and organize the reports table to quickly locate specific data.
 
 ![reports_page](./docs/images/reports_page.png)
 
@@ -76,7 +72,7 @@ On this page, you will find:
 
 ![repository_table](./docs/images/repository_table.png)
 
-- **Sorting and Filtering:** You will be able to sort the table by _Repository Name_ and _Completed date_, or filter results by _Repository Name_, _ExploitIQ Status_, and _Analysis State_.
+You will be able to sort, filter, and organize the reports to quickly locate specific data.
 
 - **Direct Links:** You will find that the _Repository Name_ column links directly to the git repository, while the _Commit ID_ column links to the specific commit used in the analysis.
 
