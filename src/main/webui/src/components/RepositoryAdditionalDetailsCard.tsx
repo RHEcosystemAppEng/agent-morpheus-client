@@ -12,10 +12,8 @@ import {
   Label,
   LabelGroup,
   Title,
-  Spinner,
 } from "@patternfly/react-core";
 import type { FullReport } from "../types/FullReport";
-import { useVulnComments } from "../hooks/useVulnComments";
 import FormattedTimestamp from "./FormattedTimestamp";
 import NotAvailable from "./NotAvailable";
 
@@ -45,9 +43,6 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const firstVuln = report?.output?.analysis?.[0] || {};
-  const firstVulnId = firstVuln?.vuln_id;
-  const { comments: userComments, loading: commentsLoading, error: commentsError } =
-    useVulnComments(firstVulnId);
   const cvssVector = firstVuln?.cvss?.vector_string ?? "";
 
   const submittedAt = parseMetadataTimestamp(report?.metadata, "submitted_at");
@@ -92,22 +87,6 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
       <CardExpandableContent>
         <CardBody>
           <DescriptionList isHorizontal isCompact>
-            <DescriptionListGroup>
-              <DescriptionListTerm>User comments</DescriptionListTerm>
-              <DescriptionListDescription>
-                {commentsLoading && (
-                  <Spinner size="sm" aria-label="Loading user comments" />
-                )}
-                {!commentsLoading && commentsError && (
-                  <NotAvailable/>
-                )}
-                {!commentsLoading && !commentsError && (
-                  userComments && String(userComments).trim().length > 0
-                    ? userComments
-                    : <NotAvailable/>
-                )}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
               <DescriptionListDescription>
