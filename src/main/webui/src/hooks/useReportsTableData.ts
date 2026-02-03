@@ -1,6 +1,8 @@
 import { useMemo } from "react";
+import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
+import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 import type { Product } from "../generated-client/models/Product";
 
 export type ProductStatus = {
@@ -222,6 +224,29 @@ export function mapSortDirectionToApi(sortDirection: SortDirection): string {
 }
 
 /**
+ * Pure function to compare Product objects between two arrays
+ * Compares all fields of each product using deep comparison
+ * Since the array contains maximum 100 products, and the number of fields is limited, the performance impact is negligible
+ */
+export function haveReportStatesChanged(
+  previousProducts: Product[] | null,
+  currentProducts: Product[]
+): boolean {
+  // If no previous data, always update (initial load)
+  if (!previousProducts || previousProducts.length === 0) {
+    return true;
+  }
+
+  // If different number of products, update
+  if (previousProducts.length !== currentProducts.length) {
+    return true;
+  }
+
+  // Deep comparison of full Product objects using lodash isEqual
+  return !isEqual(previousProducts, currentProducts);
+}
+
+/**
  * Hook to fetch reports and process them for the reports table
  * Follows Rule VI: Complex data processing logic is encapsulated in a custom hook
  * with separate pure functions for data transformation
@@ -247,7 +272,7 @@ export function useReportsTableData(
   if (sbomName) queryParams.sbomName = sbomName;
   if (cveId) queryParams.cveId = cveId;
 
-  // Fetch products using usePaginatedApi
+  // Fetch products using usePaginatedApi with auto-refresh
   const {
     data: groupedRows,
     loading,
@@ -261,6 +286,10 @@ export function useReportsTableData(
     }),
     {
       deps: [page, perPage, sortField, sortDirectionApi, sbomName, cveId],
+      pollInterval: REPORTS_TABLE_POLL_INTERVAL_MS,
+      shouldUpdate: (previousData, currentData) => {
+        return haveReportStatesChanged(previousData, currentData);
+      },
     }
   );
 

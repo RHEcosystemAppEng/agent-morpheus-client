@@ -9,95 +9,64 @@
 
 import { http, HttpResponse } from "msw";
 import type {
-  ProductSummary,
   ReportsSummary,
   Report,
   VulnResult,
+  Product,
 } from "../generated-client";
 import { mockFullReports } from "./mockFullReports";
 
 // Mock data generators with varied scenarios
-const generateMockProductSummary = (
-  id: string,
-  name: string,
+const generateMockProduct = (
+  productId: string,
+  sbomName: string,
+  cveId: string,
   options?: {
     state?: "completed" | "pending" | "analyzing";
-    submittedCount?: number;
+    numReports?: number;
     completedCount?: number;
     failedCount?: number;
     pendingCount?: number;
     hasVulnerabilities?: boolean;
-    cveCount?: number;
   }
-): ProductSummary => {
+): Product => {
   const now = new Date().toISOString();
-  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const twoDaysAgo = new Date(
-    Date.now() - 2 * 24 * 60 * 60 * 1000
-  ).toISOString();
 
   const state = options?.state || "completed";
-  const submittedCount = options?.submittedCount ?? 10;
+  const numReports = options?.numReports ?? 10;
   const completedCount =
-    options?.completedCount ?? Math.floor(submittedCount * 0.8);
-  const failedCount = options?.failedCount ?? Math.floor(submittedCount * 0.1);
+    options?.completedCount ?? Math.floor(numReports * 0.8);
+  const failedCount = options?.failedCount ?? Math.floor(numReports * 0.1);
   const pendingCount =
-    options?.pendingCount ?? submittedCount - completedCount - failedCount;
+    options?.pendingCount ?? numReports - completedCount - failedCount;
   const hasVulnerabilities = options?.hasVulnerabilities ?? true;
-  const cveCount = options?.cveCount ?? 2;
 
-  // Generate CVEs
-  const cves: Record<string, Array<{ status: string; label: string }>> = {};
-  const cveStatusCounts: Record<string, Record<string, number>> = {};
-
-  for (let i = 1; i <= cveCount; i++) {
-    const cveId = `CVE-2024-${1000 + i}`;
-    const isVulnerable = hasVulnerabilities && i === 1;
-
-    cves[cveId] = [
-      {
-        status: isVulnerable ? "TRUE" : "FALSE",
-        label: isVulnerable ? "vulnerable" : "not_vulnerable",
-      },
-    ];
-
-    if (isVulnerable) {
-      cveStatusCounts[cveId] = {
-        TRUE: Math.floor(completedCount * 0.4),
-        FALSE: Math.floor(completedCount * 0.3),
-        UNKNOWN: Math.floor(completedCount * 0.2),
-      };
-    } else {
-      cveStatusCounts[cveId] = {
-        FALSE: completedCount,
-      };
-    }
+  // Generate CVE status counts
+  const cveStatusCounts: Record<string, number> = {};
+  if (hasVulnerabilities) {
+    cveStatusCounts.TRUE = Math.floor(completedCount * 0.4);
+    cveStatusCounts.FALSE = Math.floor(completedCount * 0.3);
+    cveStatusCounts.UNKNOWN = Math.floor(completedCount * 0.2);
+  } else {
+    cveStatusCounts.FALSE = completedCount;
   }
 
+  // Generate status counts
+  const statusCounts: Record<string, number> = {
+    completed: completedCount,
+    failed: failedCount,
+    pending: pendingCount,
+  };
+
   return {
-    data: {
-      id,
-      name,
-      version: "1.0.0",
-      submittedAt: state === "analyzing" ? twoDaysAgo : yesterday,
-      submittedCount,
-      metadata: {
-        environment: "production",
-        team: "security",
-      },
-      submissionFailures: [],
-      completedAt: state === "completed" ? now : undefined,
-    },
-    summary: {
-      productState: state === "analyzing" ? "analyzing" : state,
-      componentStates: {
-        completed: completedCount,
-        failed: failedCount,
-        pending: pendingCount,
-      },
-      cves,
-      cveStatusCounts,
-    },
+    productId,
+    sbomName,
+    cveId,
+    cveStatusCounts,
+    statusCounts,
+    completedAt: state === "completed" ? now : undefined,
+    numReports,
+    firstReportId: `report-${productId}-${cveId}-1`,
   };
 };
 
@@ -156,110 +125,173 @@ const generateMockReport = (
 };
 
 // Mock data storage (simulates a simple in-memory database)
-// Create diverse product summaries with different states and repository counts
-const mockProducts: ProductSummary[] = [
-  // Product 1: Completed with vulnerabilities, 25 repositories
-  generateMockProductSummary("product-1", "Sample Product A", {
+// Create diverse products with different states and repository counts
+// Note: Products are grouped by productId and cveId, so we create one Product per CVE
+const mockProducts: Product[] = [
+  // Product 1: Completed with vulnerabilities, 25 repositories, 3 CVEs
+  generateMockProduct("product-1", "Sample Product A", "CVE-2024-1001", {
     state: "completed",
-    submittedCount: 25,
+    numReports: 25,
     completedCount: 22,
     failedCount: 2,
     pendingCount: 1,
     hasVulnerabilities: true,
-    cveCount: 3,
+  }),
+  generateMockProduct("product-1", "Sample Product A", "CVE-2024-1002", {
+    state: "completed",
+    numReports: 25,
+    completedCount: 22,
+    failedCount: 2,
+    pendingCount: 1,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-1", "Sample Product A", "CVE-2024-1003", {
+    state: "completed",
+    numReports: 25,
+    completedCount: 22,
+    failedCount: 2,
+    pendingCount: 1,
+    hasVulnerabilities: false,
   }),
 
-  // Product 2: Still analyzing, 50 repositories
-  generateMockProductSummary("product-2", "Sample Product B", {
+  // Product 2: Still analyzing, 50 repositories, 2 CVEs
+  generateMockProduct("product-2", "Sample Product B", "CVE-2024-1004", {
     state: "analyzing",
-    submittedCount: 50,
+    numReports: 50,
     completedCount: 35,
     failedCount: 3,
     pendingCount: 12,
     hasVulnerabilities: true,
-    cveCount: 2,
+  }),
+  generateMockProduct("product-2", "Sample Product B", "CVE-2024-1005", {
+    state: "analyzing",
+    numReports: 50,
+    completedCount: 35,
+    failedCount: 3,
+    pendingCount: 12,
+    hasVulnerabilities: false,
   }),
 
   // Product 3: Completed with NOT VULNERABLE + UNCERTAIN (no vulnerable repos), 15 repositories
   {
-    data: {
-      id: "product-3",
-      name: "Sample Product C",
-      version: "1.0.0",
-      submittedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      submittedCount: 15,
-      metadata: {
-        environment: "production",
-        team: "security",
-      },
-      submissionFailures: [],
-      completedAt: new Date().toISOString(),
+    productId: "product-3",
+    sbomName: "Sample Product C",
+    cveId: "CVE-2024-1003",
+    cveStatusCounts: {
+      FALSE: 10, // 10 repos not vulnerable
+      UNKNOWN: 5, // 5 repos uncertain
     },
-    summary: {
-      productState: "completed",
-      componentStates: {
-        completed: 15,
-        failed: 0,
-        pending: 0,
-      },
-      cves: {
-        "CVE-2024-1003": [
-          {
-            status: "FALSE",
-            label: "not_vulnerable",
-          },
-        ],
-        "CVE-2024-1004": [
-          {
-            status: "UNKNOWN",
-            label: "uncertain",
-          },
-        ],
-      },
-      cveStatusCounts: {
-        "CVE-2024-1003": {
-          FALSE: 10, // 10 repos not vulnerable
-          UNKNOWN: 5, // 5 repos uncertain
-        },
-        "CVE-2024-1004": {
-          FALSE: 8, // 8 repos not vulnerable
-          UNKNOWN: 7, // 7 repos uncertain
-        },
-      },
+    statusCounts: {
+      completed: 15,
+      failed: 0,
+      pending: 0,
     },
+    completedAt: new Date().toISOString(),
+    numReports: 15,
+    firstReportId: "report-product-3-cve1003-1",
+  },
+  {
+    productId: "product-3",
+    sbomName: "Sample Product C",
+    cveId: "CVE-2024-1004",
+    cveStatusCounts: {
+      FALSE: 8, // 8 repos not vulnerable
+      UNKNOWN: 7, // 7 repos uncertain
+    },
+    statusCounts: {
+      completed: 15,
+      failed: 0,
+      pending: 0,
+    },
+    completedAt: new Date().toISOString(),
+    numReports: 15,
+    firstReportId: "report-product-3-cve1004-1",
   },
 
   // Product 4: Pending analysis, 8 repositories
-  generateMockProductSummary("product-4", "Sample Product D", {
+  generateMockProduct("product-4", "Sample Product D", "CVE-2024-1006", {
     state: "pending",
-    submittedCount: 8,
+    numReports: 8,
     completedCount: 0,
     failedCount: 0,
     pendingCount: 8,
     hasVulnerabilities: false,
-    cveCount: 0,
   }),
 
-  // Product 5: Completed with many repositories, 100 repositories
-  generateMockProductSummary("product-5", "Sample Product E", {
+  // Product 5: Completed with many repositories, 100 repositories, 5 CVEs
+  generateMockProduct("product-5", "Sample Product E", "CVE-2024-1007", {
     state: "completed",
-    submittedCount: 100,
+    numReports: 100,
     completedCount: 95,
     failedCount: 3,
     pendingCount: 2,
     hasVulnerabilities: true,
-    cveCount: 5,
+  }),
+  generateMockProduct("product-5", "Sample Product E", "CVE-2024-1008", {
+    state: "completed",
+    numReports: 100,
+    completedCount: 95,
+    failedCount: 3,
+    pendingCount: 2,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-5", "Sample Product E", "CVE-2024-1009", {
+    state: "completed",
+    numReports: 100,
+    completedCount: 95,
+    failedCount: 3,
+    pendingCount: 2,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-5", "Sample Product E", "CVE-2024-1010", {
+    state: "completed",
+    numReports: 100,
+    completedCount: 95,
+    failedCount: 3,
+    pendingCount: 2,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-5", "Sample Product E", "CVE-2024-1011", {
+    state: "completed",
+    numReports: 100,
+    completedCount: 95,
+    failedCount: 3,
+    pendingCount: 2,
+    hasVulnerabilities: false,
   }),
 
-  // Product 6: Analyzing with medium repository count, 30 repositories
-  generateMockProductSummary("product-6", "Sample Product F", {
+  // Product 6: Analyzing with medium repository count, 30 repositories, 4 CVEs
+  generateMockProduct("product-6", "Sample Product F", "CVE-2024-1012", {
     state: "analyzing",
-    submittedCount: 30,
+    numReports: 30,
     completedCount: 20,
     failedCount: 2,
     pendingCount: 8,
     hasVulnerabilities: true,
-    cveCount: 4,
+  }),
+  generateMockProduct("product-6", "Sample Product F", "CVE-2024-1013", {
+    state: "analyzing",
+    numReports: 30,
+    completedCount: 20,
+    failedCount: 2,
+    pendingCount: 8,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-6", "Sample Product F", "CVE-2024-1014", {
+    state: "analyzing",
+    numReports: 30,
+    completedCount: 20,
+    failedCount: 2,
+    pendingCount: 8,
+    hasVulnerabilities: false,
+  }),
+  generateMockProduct("product-6", "Sample Product F", "CVE-2024-1015", {
+    state: "analyzing",
+    numReports: 30,
+    completedCount: 20,
+    failedCount: 2,
+    pendingCount: 8,
+    hasVulnerabilities: false,
   }),
 ];
 
@@ -465,15 +497,53 @@ const generateMockReportsSummary = (): ReportsSummary => {
  * Each handler intercepts a specific API endpoint and returns mock data
  */
 export const handlers = [
-  // GET /api/v1/reports/product - List all product data
-  http.get("/api/v1/reports/product", () => {
-    return HttpResponse.json(mockProducts);
+  // GET /api/v1/products - List all products
+  http.get("/api/v1/products", ({ request }) => {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get("page") || "0", 10);
+    const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
+    const sortField = url.searchParams.get("sortField") || "completedAt";
+    const sortDirection = url.searchParams.get("sortDirection") || "DESC";
+
+    // Apply sorting
+    let sortedProducts = [...mockProducts];
+    if (sortField === "completedAt") {
+      sortedProducts.sort((a, b) => {
+        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        return sortDirection === "ASC" ? aTime - bTime : bTime - aTime;
+      });
+    } else if (sortField === "sbomName") {
+      sortedProducts.sort((a, b) => {
+        const aName = a.sbomName || "";
+        const bName = b.sbomName || "";
+        return sortDirection === "ASC"
+          ? aName.localeCompare(bName)
+          : bName.localeCompare(aName);
+      });
+    }
+
+    // Calculate pagination info
+    const totalElements = sortedProducts.length;
+    const totalPages = Math.ceil(totalElements / pageSize);
+
+    // Apply pagination
+    const start = page * pageSize;
+    const end = start + pageSize;
+    const paginatedProducts = sortedProducts.slice(start, end);
+
+    return HttpResponse.json(paginatedProducts, {
+      headers: {
+        "X-Total-Elements": totalElements.toString(),
+        "X-Total-Pages": totalPages.toString(),
+      },
+    });
   }),
 
-  // GET /api/v1/reports/product/:id - Get product data by ID
-  http.get("/api/v1/reports/product/:id", ({ params }) => {
-    const { id } = params;
-    const product = mockProducts.find((p) => p.data.id === id);
+  // GET /api/v1/products/:productId - Get product data by ID
+  http.get("/api/v1/products/:productId", ({ params }) => {
+    const { productId } = params;
+    const product = mockProducts.find((p) => p.productId === productId);
 
     if (!product) {
       return HttpResponse.json({ error: "Product not found" }, { status: 404 });
@@ -606,19 +676,30 @@ export const handlers = [
     return HttpResponse.json({ message: "Report deleted successfully" });
   }),
 
-  // DELETE /api/v1/reports/product/:id - Delete product by ID
-  http.delete("/api/v1/reports/product/:id", ({ params }) => {
-    const { id } = params;
-    const productIndex = mockProducts.findIndex((p) => p.data.id === id);
+  // DELETE /api/v1/products/:productId - Delete product by ID
+  http.delete("/api/v1/products/:productId", ({ params }) => {
+    const { productId } = params;
+    const productIndices: number[] = [];
+    
+    // Find all products with this productId (since there can be multiple per productId, one per CVE)
+    mockProducts.forEach((p, index) => {
+      if (p.productId === productId) {
+        productIndices.push(index);
+      }
+    });
 
-    if (productIndex === -1) {
+    if (productIndices.length === 0) {
       return HttpResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    mockProducts.splice(productIndex, 1);
+    // Remove products in reverse order to maintain indices
+    productIndices.reverse().forEach((index) => {
+      mockProducts.splice(index, 1);
+    });
+
     // Also remove associated reports
     const reportsToRemove = mockReports.filter(
-      (r) => r.metadata?.productId === id
+      (r) => r.metadata?.productId === productId
     );
     reportsToRemove.forEach((report) => {
       const reportIndex = mockReports.findIndex((r) => r.id === report.id);

@@ -261,7 +261,21 @@ public class ReportRepositoryService {
     if (result == null) {
       return null;
     }
-    return result.toJson();
+    try {
+      // Extract metadata and calculate state
+      var metadata = extractMetadata(result);
+      var state = getStatus(result, metadata);
+      
+      // Parse JSON, add state field, and serialize back
+      var jsonString = result.toJson();
+      var jsonNode = objectMapper.readTree(jsonString);
+      ((com.fasterxml.jackson.databind.node.ObjectNode) jsonNode).put("state", state);
+      return objectMapper.writeValueAsString(jsonNode);
+    } catch (JsonProcessingException e) {
+      LOGGER.errorf("Error adding state to report JSON for id %s: %s", id, e.getMessage());
+      // Fallback to original JSON if parsing fails
+      return result.toJson();
+    }
   }
 
   public List<Report> findByName(String name) {
@@ -321,76 +335,6 @@ public class ReportRepositoryService {
         }
       });
     return productIds;
-  }
-
-  public ProductReportsSummary getProductSummaryData(String productId) {
-    Bson productFilter = Filters.eq("metadata.product_id", productId);
-    Map<String, Set<Justification>> cveSet = new HashMap<>();
-    Map<String, Integer> componentStates = new HashMap<>();
-    Map<String, Map<String, Integer>> cveStatusCounts = new HashMap<>();
-    String productState = "unknown";
-
-    getCollection()
-      .find(productFilter)
-      .iterator()
-      .forEachRemaining(doc -> {
-        Map<String, String> metadata = extractMetadata(doc);
-        String reportStatus = getStatus(doc, metadata);
-        componentStates.merge(reportStatus, 1, Integer::sum);
-
-        Object inputObj = doc.get("input");
-        if (inputObj instanceof org.bson.Document inputDoc) {
-          Object scanObj = inputDoc.get("scan");
-          if (scanObj instanceof org.bson.Document scanDoc) {
-            Object vulnsObj = scanDoc.get("vulns");
-            if (vulnsObj instanceof List<?> vulnsList) {
-              for (Object vulnObj : vulnsList) {
-                if (vulnObj instanceof org.bson.Document vulnDoc) {
-                  String cve = vulnDoc.getString("vuln_id");
-                  if (cve != null && !cve.isEmpty()) {
-                    cveSet.putIfAbsent(cve, new HashSet<>());
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        Document outputDoc = doc.get("output", Document.class);
-        Object analysisObj = Objects.nonNull(outputDoc) ? outputDoc.get("analysis") : null;
-        if (analysisObj instanceof List<?> analysisList) {
-          for (Object analysis : analysisList) {
-            if (analysis instanceof org.bson.Document analysisDoc) {
-              String cve = analysisDoc.getString("vuln_id");
-              if (cve != null && !cve.isEmpty()) {
-                Set<Justification> justifications = cveSet.computeIfAbsent(cve, k -> new HashSet<>());
-                Object justificationObj = analysisDoc.get("justification");
-                if (justificationObj instanceof org.bson.Document justificationDoc) {
-                  String status = justificationDoc.getString("status");
-                  String label = justificationDoc.getString("label");
-                  if (status != null && !status.isEmpty() && label != null && !label.isEmpty()) {
-                    justifications.add(new Justification(status, label));
-                    cveStatusCounts.computeIfAbsent(cve, k -> new HashMap<>()).merge(status, 1, Integer::sum);
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-    if (componentStates.containsKey("pending") || componentStates.containsKey("queued") || componentStates.containsKey("sent")) {
-      productState = "analysing";
-    } else {
-      productState = "completed";
-    }
-
-    return new ProductReportsSummary(
-      productState,
-      componentStates,
-      cveSet,
-      cveStatusCounts
-    );
   }
 
   private String getProductId(String reportId) {

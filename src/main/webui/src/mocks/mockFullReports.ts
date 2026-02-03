@@ -102,6 +102,7 @@ export const mockFullReports: Record<string, FullReport> = {
       environment: "production",
       team: "security",
     },
+    state: "completed",
   },
   "report-2": {
     _id: "report-2",
@@ -176,6 +177,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-1",
       environment: "production",
     },
+    state: "completed",
   },
   "report-3": {
     _id: "report-3",
@@ -249,6 +251,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-9",
       environment: "staging",
     },
+    state: "completed",
   },
   "report-product2-cve1001-1": {
     _id: "report-product2-cve1001-1",
@@ -344,6 +347,7 @@ export const mockFullReports: Record<string, FullReport> = {
       environment: "production",
       team: "security",
     },
+    state: "completed",
   },
   "report-product2-cve1001-2": {
     _id: "report-product2-cve1001-2",
@@ -418,6 +422,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-2",
       environment: "staging",
     },
+    state: "completed",
   },
   "report-product3-cve1001-1": {
     _id: "report-product3-cve1001-1",
@@ -492,6 +497,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-3",
       environment: "production",
     },
+    state: "completed",
   },
   "report-product3-cve1001-2": {
     _id: "report-product3-cve1001-2",
@@ -566,6 +572,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-3",
       environment: "staging",
     },
+    state: "queued",
   },
   "report-product4-cve1001-1": {
     _id: "report-product4-cve1001-1",
@@ -640,6 +647,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-4",
       environment: "production",
     },
+    state: "completed",
   },
   "report-product4-cve1001-2": {
     _id: "report-product4-cve1001-2",
@@ -714,6 +722,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-4",
       environment: "staging",
     },
+    state: "sent",
   },
   "report-product5-cve1001-1": {
     _id: "report-product5-cve1001-1",
@@ -788,6 +797,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-5",
       environment: "production",
     },
+    state: "completed",
   },
   "report-product5-cve1001-2": {
     _id: "report-product5-cve1001-2",
@@ -862,6 +872,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-5",
       environment: "staging",
     },
+    state: "failed",
   },
   "report-product6-cve1001-1": {
     _id: "report-product6-cve1001-1",
@@ -936,6 +947,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-6",
       environment: "production",
     },
+    state: "completed",
   },
   "report-product7-cve1001-1": {
     _id: "report-product7-cve1001-1",
@@ -1010,6 +1022,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-7",
       environment: "production",
     },
+    state: "completed",
   },
   "report-product1-cve1001-1": {
     _id: "report-product1-cve1001-1",
@@ -1105,6 +1118,7 @@ export const mockFullReports: Record<string, FullReport> = {
       environment: "production",
       team: "security",
     },
+    state: "completed",
   },
 };
 

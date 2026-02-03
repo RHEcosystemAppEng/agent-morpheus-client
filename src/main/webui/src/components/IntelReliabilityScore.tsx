@@ -1,4 +1,5 @@
 import { Progress, ProgressSize } from "@patternfly/react-core";
+import NotAvailable from "./NotAvailable";
 
 interface IntelReliabilityScoreProps {
   score: number | string | null | undefined;
@@ -15,7 +16,7 @@ const IntelReliabilityScore: React.FC<IntelReliabilityScoreProps> = ({
   const isNumeric = !Number.isNaN(numeric);
 
   if (!isDefined || !isNumeric) {
-    return null;
+    return <NotAvailable />;
   }
 
   const confidenceLevel =

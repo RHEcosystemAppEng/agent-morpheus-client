@@ -26,7 +26,16 @@ const CveStatus: React.FC<CveStatusProps> = ({ vuln }) => {
     return "orange";
   };
 
-  return <Label color={getColor(status)}>{label}</Label>;
+  const getLabel = (
+    status: string
+  ): string => {
+    if (status === "TRUE" || status === "true") return "Vulnerable";
+    if (status === "FALSE" || status === "false") return "Not Vulnerable";
+    if (status === "UNKNOWN" || status === "unknown") return "Uncertain";
+    return status;
+  };
+
+  return <Label color={getColor(status)}>{getLabel(status)}</Label>;
 };
 
 export default CveStatus;

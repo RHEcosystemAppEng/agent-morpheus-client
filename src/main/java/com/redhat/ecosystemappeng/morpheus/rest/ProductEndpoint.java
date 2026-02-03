@@ -11,28 +11,39 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.ReportData;
+import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
+import com.redhat.ecosystemappeng.morpheus.model.ValidationErrorResponse;
 import com.redhat.ecosystemappeng.morpheus.service.ProductsService;
+import com.redhat.ecosystemappeng.morpheus.service.ReportService;
+import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
+import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
+import com.redhat.ecosystemappeng.morpheus.service.ValidationException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import java.io.InputStream;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
 @Path("/products")
-@Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProductEndpoint {
 
@@ -46,6 +57,12 @@ public class ProductEndpoint {
 
   @Inject
   ObjectMapper objectMapper;
+
+  @Inject
+  CycloneDxUploadService cycloneDxUploadService;
+
+  @Inject
+  ReportService reportService;
 
   @GET
   @Operation(
@@ -146,6 +163,75 @@ public class ProductEndpoint {
           .entity(objectMapper.createObjectNode()
           .put("error", e.getMessage()))
           .build();
+    }
+  }
+
+  @POST
+  @Path("/upload-cyclonedx")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(
+    summary = "Upload CycloneDX file for analysis", 
+    description = "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with product ID, and queues it for analysis")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202", 
+      description = "File uploaded and analysis request queued",
+      content = @Content(
+        schema = @Schema(implementation = ReportData.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "400", 
+      description = "Invalid request data (invalid CVE format, invalid JSON, missing required fields)",
+      content = @Content(
+        schema = @Schema(implementation = ValidationErrorResponse.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "429", 
+      description = "Request queue exceeded"
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response uploadCycloneDx(
+    @Parameter(
+      description = "CVE ID to analyze (must match the official CVE pattern CVE-YYYY-NNNN+)",
+      required = true
+    )
+    @FormParam("cveId") String cveId,
+    @Parameter(
+      description = "CycloneDX JSON file",
+      required = true
+    )
+    @FormParam("file") InputStream fileInputStream) {
+    try {
+      ReportRequest request = cycloneDxUploadService.processUpload(cveId, fileInputStream);
+      ReportData res = reportService.process(request);
+      reportService.submit(res.reportRequestId().id(), res.report());
+      return Response.accepted(res).build();
+    } catch (ValidationException e) {
+      ValidationErrorResponse errorResponse = new ValidationErrorResponse(e.getErrors());
+      return Response.status(Status.BAD_REQUEST)
+        .entity(errorResponse)
+        .build();
+    } catch (ClientWebApplicationException e) {
+      return Response.status(e.getResponse().getStatus())
+        .entity(e.getResponse().getEntity())
+        .build();
+    } catch (RequestQueueExceededException e) {
+      return Response.status(Status.TOO_MANY_REQUESTS)
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to process CycloneDX file upload request", e);
+      return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+        .put("error", e.getMessage()))
+        .build();
     }
   }
 }

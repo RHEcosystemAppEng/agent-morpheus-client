@@ -344,7 +344,8 @@ public class ReportEndpoint {
           "info": {...
           },
           "metadata": {...
-          }
+          },
+          "state": "completed"
         }
         """)
       )

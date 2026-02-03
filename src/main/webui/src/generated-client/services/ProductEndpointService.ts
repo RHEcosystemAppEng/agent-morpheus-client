@@ -3,13 +3,14 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Product } from '../models/Product';
+import type { ReportData } from '../models/ReportData';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ProductEndpointService {
     /**
      * List products
-     * Retrieves a paginated list of products grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName
+     * Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName
      * @returns Product Products retrieved successfully
      * @throws ApiError
      */
@@ -46,6 +47,32 @@ export class ProductEndpointService {
                 'sortField': sortField,
             },
             errors: {
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Upload CycloneDX file for analysis
+     * Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with product ID, and queues it for analysis
+     * @returns ReportData File uploaded and analysis request queued
+     * @throws ApiError
+     */
+    public static postApiV1ProductsUploadCyclonedx({
+        formData,
+    }: {
+        formData: {
+            cveId?: string;
+            file?: Blob;
+        },
+    }): CancelablePromise<ReportData> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/products/upload-cyclonedx',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `Invalid request data (invalid CVE format, invalid JSON, missing required fields)`,
+                429: `Request queue exceeded`,
                 500: `Internal server error`,
             },
         });
@@ -93,7 +120,7 @@ export class ProductEndpointService {
          */
         numReports: number;
         /**
-         * Report ID from the first report in the group, always populated for navigation purposes
+         * MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes
          */
         firstReportId?: string;
     }> {

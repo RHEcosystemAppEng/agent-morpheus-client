@@ -12,10 +12,8 @@ import {
   Label,
   LabelGroup,
   Title,
-  Spinner,
 } from "@patternfly/react-core";
 import type { FullReport } from "../types/FullReport";
-import { useVulnComments } from "../hooks/useVulnComments";
 import FormattedTimestamp from "./FormattedTimestamp";
 import NotAvailable from "./NotAvailable";
 
@@ -45,9 +43,6 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const firstVuln = report?.output?.analysis?.[0] || {};
-  const firstVulnId = firstVuln?.vuln_id;
-  const { comments: userComments, loading: commentsLoading, error: commentsError } =
-    useVulnComments(firstVulnId);
   const cvssVector = firstVuln?.cvss?.vector_string ?? "";
 
   const submittedAt = parseMetadataTimestamp(report?.metadata, "submitted_at");
@@ -93,54 +88,36 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
         <CardBody>
           <DescriptionList isHorizontal isCompact>
             <DescriptionListGroup>
-              <DescriptionListTerm>User comments</DescriptionListTerm>
+              <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
               <DescriptionListDescription>
-                {commentsLoading && (
-                  <Spinner size="sm" aria-label="Loading user comments" />
-                )}
-                {!commentsLoading && commentsError && (
-                  <NotAvailable/>
-                )}
-                {!commentsLoading && !commentsError && (
-                  userComments && String(userComments).trim().length > 0
-                    ? userComments
-                    : <NotAvailable/>
-                )}
+                {cvssVector || <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            {cvssVector && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
-                <DescriptionListDescription>
-                  {cvssVector}
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
             <DescriptionListGroup>
               <DescriptionListTerm>Submitted</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={submittedAt} />
+                {submittedAt ? <FormattedTimestamp date={submittedAt} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Sent</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={sentAt} />
+                {sentAt ? <FormattedTimestamp date={sentAt} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Started</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={started} />
+                {started ? <FormattedTimestamp date={started} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Completed</DescriptionListTerm>
               <DescriptionListDescription>
-                <FormattedTimestamp date={completed} />
+                {completed ? <FormattedTimestamp date={completed} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            {otherMetadata.length > 0 && (
+            {otherMetadata.length > 0 ? (
               <DescriptionListGroup>
                 <DescriptionListTerm>Metadata</DescriptionListTerm>
                 <DescriptionListDescription>
@@ -153,7 +130,7 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
                   </LabelGroup>
                 </DescriptionListDescription>
               </DescriptionListGroup>
-            )}
+            ) : <NotAvailable />}
           </DescriptionList>
         </CardBody>
       </CardExpandableContent>
