@@ -60,7 +60,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>(
-    propSortColumn || "completedAt"
+    propSortColumn || "submittedAt"
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     propSortDirection || "desc"
@@ -100,6 +100,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     cveId: "CVE ID",
     repositoriesAnalyzed: "Repositories Analyzed",
     exploitIqStatus: "ExploitIQ Status",
+    submittedAt: "Submitted Date",
     completedAt: "Completion Date",
   };
 
@@ -140,7 +141,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         return 0;
       case "sbomName":
         return 1;
-      case "completedAt":
+      case "submittedAt":
         return 5;
       default:
         return 5;
@@ -161,6 +162,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           "CVE ID",
           "Repositories Analyzed",
           "ExploitIQ Status",
+          "Submitted Date",
           "Completion Date",
         ]}
       />
@@ -201,7 +203,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
           }}
         />
-        <TableEmptyState columnCount={6} titleText="No reports found" />
+        <TableEmptyState columnCount={7} titleText="No reports found" />
       </>
     );
   }
@@ -295,10 +297,13 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   index: activeSortIndex,
                   direction: activeSortDirection,
                 },
-                onSort: () => handleSortToggle("completedAt"),
+                onSort: () => handleSortToggle("submittedAt"),
                 columnIndex: 5,
               }}
             >
+              {columnNames.submittedAt}
+            </Th>
+            <Th>
               {columnNames.completedAt}
             </Th>
           </Tr>
@@ -306,7 +311,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         <Tbody>
           {rows.length === 0 ? (
             <Tr>
-              <Td colSpan={6}>No reports found</Td>
+              <Td colSpan={7}>No reports found</Td>
             </Tr>
           ) : (
             rows.map((row, index) => {
@@ -364,11 +369,18 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                         })()
                       : ""}
                   </Td>
+                  <Td dataLabel={columnNames.submittedAt}>
+                    {row.submittedAt ? (
+                      <FormattedTimestamp date={row.submittedAt} />
+                    ) : (
+                      " "
+                    )}
+                  </Td>
                   <Td dataLabel={columnNames.completedAt}>
                     {isCompleted ? (
                       <FormattedTimestamp date={row.completedAt} />
                     ) : (
-                      ""
+                      " "
                     )}
                   </Td>
                 </Tr>

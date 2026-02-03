@@ -10,16 +10,22 @@ import { request as __request } from '../core/request';
 export class ProductEndpointService {
     /**
      * List products
-     * Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt or sbomName
+     * Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by submittedAt, sbomName, or productId
      * @returns Product Products retrieved successfully
      * @throws ApiError
      */
     public static getApiV1Products({
+        cveId,
         page = 0,
         pageSize = 100,
+        sbomName,
         sortDirection = 'DESC',
-        sortField = 'completedAt',
+        sortField = 'submittedAt',
     }: {
+        /**
+         * Filter by CVE ID (case-insensitive partial match)
+         */
+        cveId?: string,
         /**
          * Page number (0-based)
          */
@@ -29,11 +35,15 @@ export class ProductEndpointService {
          */
         pageSize?: number,
         /**
+         * Filter by SBOM name (case-insensitive partial match)
+         */
+        sbomName?: string,
+        /**
          * Sort direction: 'ASC' or 'DESC'
          */
         sortDirection?: string,
         /**
-         * Sort field: 'completedAt' or 'sbomName'
+         * Sort field: 'submittedAt', 'sbomName', or 'productId'
          */
         sortField?: string,
     }): CancelablePromise<Array<Product>> {
@@ -41,8 +51,10 @@ export class ProductEndpointService {
             method: 'GET',
             url: '/api/v1/products',
             query: {
+                'cveId': cveId,
                 'page': page,
                 'pageSize': pageSize,
+                'sbomName': sbomName,
                 'sortDirection': sortDirection,
                 'sortField': sortField,
             },
@@ -115,6 +127,10 @@ export class ProductEndpointService {
          * Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value
          */
         completedAt?: string;
+        /**
+         * Submitted at timestamp from first report's metadata.submitted_at
+         */
+        submittedAt?: string;
         /**
          * Number of reports in this product group
          */

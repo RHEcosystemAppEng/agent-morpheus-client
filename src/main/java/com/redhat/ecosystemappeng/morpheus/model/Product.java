@@ -20,6 +20,8 @@ public record Product(
     Map<String, Integer> statusCounts,
     @Schema(description = "Completed at timestamp - empty if any report's completed_at is empty, otherwise latest value")
     String completedAt,
+    @Schema(description = "Submitted at timestamp from first report's metadata.submitted_at")
+    String submittedAt,
     @Schema(required = true, description = "Number of reports in this product group")
     Integer numReports,
     @Schema(description = "MongoDB document _id (as hex string) of the first report in the group, always populated for navigation purposes")

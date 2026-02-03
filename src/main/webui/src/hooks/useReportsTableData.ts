@@ -16,6 +16,7 @@ export interface ReportRow {
   sbomName: string;
   cveId: string;
   repositoriesAnalyzed: string;
+  submittedAt: string;
   completedAt: string;
   analysisState: string;
   productStatus: ProductStatus;
@@ -24,7 +25,7 @@ export interface ReportRow {
 }
 
 export type SortDirection = "asc" | "desc";
-export type SortColumn = "productId" | "sbomName" | "completedAt";
+export type SortColumn = "productId" | "sbomName" | "submittedAt";
 
 export interface UseReportsTableOptions {
   page: number;
@@ -145,6 +146,7 @@ export function calculateRepositoriesFromStatusCounts(
 export function transformGroupedReportRowToRow(groupedRow: Product): ReportRow {
   const sbomName = groupedRow.sbomName || "-";
   const cveId = groupedRow.cveId || "-";
+  const submittedAt = groupedRow.submittedAt || "";
   const completedAt = groupedRow.completedAt || "";
 
   // Calculate analysis state from statusCounts
@@ -175,6 +177,7 @@ export function transformGroupedReportRowToRow(groupedRow: Product): ReportRow {
     sbomName,
     cveId,
     repositoriesAnalyzed,
+    submittedAt,
     completedAt,
     analysisState,
     productStatus,
@@ -209,10 +212,10 @@ export function mapSortColumnToApiField(sortColumn: SortColumn): string {
       return "productId";
     case "sbomName":
       return "sbomName";
-    case "completedAt":
-      return "completedAt";
+    case "submittedAt":
+      return "submittedAt";
     default:
-      return "completedAt";
+      return "submittedAt";
   }
 }
 

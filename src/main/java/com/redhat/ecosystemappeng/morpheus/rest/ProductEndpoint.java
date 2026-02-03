@@ -67,7 +67,7 @@ public class ProductEndpoint {
   @GET
   @Operation(
     summary = "List products", 
-    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by completedAt, sbomName, or productId")
+    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by submittedAt, sbomName, or productId")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
@@ -83,9 +83,9 @@ public class ProductEndpoint {
   })
   public Response listProducts(
       @Parameter(
-        description = "Sort field: 'completedAt', 'sbomName', or 'productId'"
+        description = "Sort field: 'submittedAt', 'sbomName', or 'productId'"
       )
-      @QueryParam("sortField") @DefaultValue("completedAt") String sortField,
+      @QueryParam("sortField") @DefaultValue("submittedAt") String sortField,
       @Parameter(
         description = "Sort direction: 'ASC' or 'DESC'"
       )
