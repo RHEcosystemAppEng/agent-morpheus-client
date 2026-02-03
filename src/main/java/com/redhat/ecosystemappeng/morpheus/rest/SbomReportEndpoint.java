@@ -14,13 +14,13 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.model.SbomReport;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.ValidationErrorResponse;
-import com.redhat.ecosystemappeng.morpheus.service.ProductsService;
+import com.redhat.ecosystemappeng.morpheus.service.SbomReportsService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
@@ -43,17 +43,17 @@ import java.io.InputStream;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
-@Path("/products")
+@Path("/sbom-reports")
 @Produces(MediaType.APPLICATION_JSON)
-public class ProductEndpoint {
+public class SbomReportEndpoint {
 
-  private static final Logger LOGGER = Logger.getLogger(ProductEndpoint.class);
+  private static final Logger LOGGER = Logger.getLogger(SbomReportEndpoint.class);
 
   private static final String PAGE = "page";
   private static final String PAGE_SIZE = "pageSize";
 
   @Inject
-  ProductsService productsService;
+  SbomReportsService sbomReportsService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -66,14 +66,14 @@ public class ProductEndpoint {
 
   @GET
   @Operation(
-    summary = "List products", 
-    description = "Retrieves a paginated list of reports grouped by product_id, filtered to only include reports with metadata.product_id, sorted by submittedAt, sbomName, or productId")
+    summary = "List SBOM reports", 
+    description = "Retrieves a paginated list of reports grouped by sbom_report_id, filtered to only include reports with metadata.sbom_report_id, sorted by submittedAt, sbomName, or sbomReportId")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
-      description = "Products retrieved successfully",
+      description = "SBOM reports retrieved successfully",
       content = @Content(
-        schema = @Schema(type = SchemaType.ARRAY, implementation = Product.class)
+        schema = @Schema(type = SchemaType.ARRAY, implementation = SbomReport.class)
       )
     ),
     @APIResponse(
@@ -81,9 +81,9 @@ public class ProductEndpoint {
       description = "Internal server error"
     )
   })
-  public Response listProducts(
+  public Response listSbomReports(
       @Parameter(
-        description = "Sort field: 'submittedAt', 'sbomName', or 'productId'"
+        description = "Sort field: 'submittedAt', 'sbomName', or 'sbomReportId'"
       )
       @QueryParam("sortField") @DefaultValue("submittedAt") String sortField,
       @Parameter(
@@ -108,14 +108,14 @@ public class ProductEndpoint {
       @QueryParam("cveId") String cveId) {
     try {
       SortType sortType = SortType.valueOf(sortDirection.toUpperCase());
-      var result = productsService.getProducts(sortField, sortType, new Pagination(page, pageSize), 
+      var result = sbomReportsService.getSbomReports(sortField, sortType, new Pagination(page, pageSize), 
           sbomName, cveId);
       return Response.ok(result.results)
           .header("X-Total-Pages", result.totalPages)
           .header("X-Total-Elements", result.totalElements)
           .build();
     } catch (Exception e) {
-      LOGGER.error("Unable to retrieve products", e);
+      LOGGER.error("Unable to retrieve SBOM reports", e);
       return Response.serverError()
           .entity(objectMapper.createObjectNode()
           .put("error", e.getMessage()))
@@ -124,41 +124,41 @@ public class ProductEndpoint {
   }
 
   @GET
-  @Path("/{productId}")
+  @Path("/{sbomReportId}")
   @Operation(
-    summary = "Get product by ID", 
-    description = "Retrieves product data for a specific product ID")
+    summary = "Get SBOM report by ID", 
+    description = "Retrieves SBOM report data for a specific SBOM report ID")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
-      description = "Product retrieved successfully",
+      description = "SBOM report retrieved successfully",
       content = @Content(
-        schema = @Schema(type = SchemaType.OBJECT, implementation = Product.class)
+        schema = @Schema(type = SchemaType.OBJECT, implementation = SbomReport.class)
       )
     ),
     @APIResponse(
       responseCode = "404", 
-      description = "Product not found"
+      description = "SBOM report not found"
     ),
     @APIResponse(
       responseCode = "500", 
       description = "Internal server error"
     )
   })
-  public Response getProduct(
+  public Response getSbomReport(
       @Parameter(
-        description = "Product ID", 
+        description = "SBOM report ID", 
         required = true
       )
-      @PathParam("productId") String productId) {
+      @PathParam("sbomReportId") String sbomReportId) {
     try {
-      Product product = productsService.getProductById(productId);
-      if (product == null) {
+      SbomReport sbomReport = sbomReportsService.getSbomReportById(sbomReportId);
+      if (sbomReport == null) {
         return Response.status(Response.Status.NOT_FOUND).build();
       }
-      return Response.ok(product).build();
+      return Response.ok(sbomReport).build();
     } catch (Exception e) {
-      LOGGER.error("Unable to retrieve product", e);
+      LOGGER.error("Unable to retrieve SBOM report", e);
       return Response.serverError()
           .entity(objectMapper.createObjectNode()
           .put("error", e.getMessage()))
@@ -171,7 +171,7 @@ public class ProductEndpoint {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Operation(
     summary = "Upload CycloneDX file for analysis", 
-    description = "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with product ID, and queues it for analysis")
+    description = "Accepts a multipart form with CVE ID and CycloneDX file, validates the file structure, creates a report with SBOM report ID, and queues it for analysis")
   @APIResponses({
     @APIResponse(
       responseCode = "202", 

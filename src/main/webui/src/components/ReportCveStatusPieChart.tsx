@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardTitle, CardBody, Title } from "@patternfly/react-core";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 import DonutChartWrapper from "./DonutChartWrapper";
 
 interface ReportCveStatusPieChartProps {
-  product: Product;
+  product: SbomReport;
   cveId: string;
 }
 
@@ -21,12 +21,13 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
 
     Object.entries(statusCounts).forEach(([statusKey, count]) => {
       const normalizedKey = statusKey.toUpperCase();
+      const countValue = count as number;
       if (normalizedKey === "TRUE") {
-        vulnerableCount += count;
+        vulnerableCount += countValue;
       } else if (normalizedKey === "FALSE") {
-        notVulnerableCount += count;
+        notVulnerableCount += countValue;
       } else {
-        unknownCount += count;
+        unknownCount += countValue;
       }
     });
 

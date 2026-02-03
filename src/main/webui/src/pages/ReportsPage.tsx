@@ -31,11 +31,11 @@ const ReportsPage: React.FC = () => {
     // Restore sort state from URL
     if (
       sortField &&
-      (sortField === "productId" ||
+      (sortField === "sbomReportId" ||
         sortField === "sbomName" ||
         sortField === "submittedAt")
     ) {
-      setSortColumn(sortField);
+      setSortColumn(sortField as SortColumn);
     }
     if (sortDir && (sortDir === "asc" || sortDir === "desc")) {
       setSortDirection(sortDir);

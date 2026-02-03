@@ -8,11 +8,11 @@ import {
   DescriptionListDescription,
   Title,
 } from "@patternfly/react-core";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 import FormattedTimestamp from "./FormattedTimestamp";
 
 interface ReportAdditionalDetailsProps {
-  product: Product;
+  product: SbomReport;
 }
 
 const ReportAdditionalDetails: React.FC<ReportAdditionalDetailsProps> = ({

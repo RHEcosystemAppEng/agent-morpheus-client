@@ -10,10 +10,10 @@ import {
   GridItem,
   Title,
 } from "@patternfly/react-core";
-import type { Product } from "../generated-client/models/Product";
+import type { SbomReport } from "../generated-client/models/SbomReport";
 
 interface ReportDetailsProps {
-  product: Product;
+  product: SbomReport;
   cveId: string;
 }
 
