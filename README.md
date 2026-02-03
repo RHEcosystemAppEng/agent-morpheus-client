@@ -1,13 +1,14 @@
 # ExploitIQ - Client
 
-This project is a Quarkus + React web application that interacts with the ExploitIQ service to send requests for evaluating vulnerabilities on specific SBOMs.
+This project is a Quarkus + React web application implemented to interact with ExploitIQ service
+for sending requests to evaluate vulnerabilities on specific SBOMs.
 
 ## Development
 
-Check these documents for additional information:
+Check this other documents for:
 
-- [Configuration](./docs/configuration.md)
-- [Development](./docs/development.md)
+* [Configuration](./docs/configuration.md)
+* [Development](./docs/development.md)
 
 ## Using the Application
 
