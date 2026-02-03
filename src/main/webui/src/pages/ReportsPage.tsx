@@ -13,7 +13,7 @@ const ReportsPage: React.FC = () => {
   const [activeAttribute, setActiveAttribute] = useState<
     "SBOM Name" | "CVE ID"
   >("SBOM Name");
-  const [sortColumn, setSortColumn] = useState<SortColumn>("completedAt");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("submittedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   // Restore filter state from URL on mount
@@ -33,7 +33,7 @@ const ReportsPage: React.FC = () => {
       sortField &&
       (sortField === "productId" ||
         sortField === "sbomName" ||
-        sortField === "completedAt")
+        sortField === "submittedAt")
     ) {
       setSortColumn(sortField);
     }
@@ -55,8 +55,8 @@ const ReportsPage: React.FC = () => {
     // Add sort parameters (use current state if not provided)
     const currentSortCol = sortCol !== undefined ? sortCol : sortColumn;
     const currentSortDir = sortDir !== undefined ? sortDir : sortDirection;
-    // Only add sort params if not default (completedAt DESC)
-    if (currentSortCol !== "completedAt" || currentSortDir !== "desc") {
+    // Only add sort params if not default (submittedAt DESC)
+    if (currentSortCol !== "submittedAt" || currentSortDir !== "desc") {
       newParams.set("sortField", currentSortCol);
       newParams.set("sortDirection", currentSortDir);
     }
@@ -89,7 +89,7 @@ const ReportsPage: React.FC = () => {
     setCveSearchValue("");
     setFilters({});
     // Reset sort to default
-    setSortColumn("completedAt");
+    setSortColumn("submittedAt");
     setSortDirection("desc");
     setSearchParams({}, { replace: true });
   };

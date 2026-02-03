@@ -31,6 +31,10 @@ export type Product = {
      */
     completedAt?: string;
     /**
+     * Submitted at timestamp from first report's metadata.submitted_at
+     */
+    submittedAt?: string;
+    /**
      * Number of reports in this product group
      */
     numReports: number;

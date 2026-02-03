@@ -58,6 +58,9 @@ const generateMockProduct = (
     pending: pendingCount,
   };
 
+  // Generate submittedAt timestamp (2 days ago for variety)
+  const submittedAt = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+
   return {
     productId,
     sbomName,
@@ -65,6 +68,7 @@ const generateMockProduct = (
     cveStatusCounts,
     statusCounts,
     completedAt: state === "completed" ? now : undefined,
+    submittedAt,
     numReports,
     firstReportId: `report-${productId}-${cveId}-1`,
   };
@@ -502,15 +506,15 @@ export const handlers = [
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
-    const sortField = url.searchParams.get("sortField") || "completedAt";
+    const sortField = url.searchParams.get("sortField") || "submittedAt";
     const sortDirection = url.searchParams.get("sortDirection") || "DESC";
 
     // Apply sorting
     let sortedProducts = [...mockProducts];
-    if (sortField === "completedAt") {
+    if (sortField === "submittedAt") {
       sortedProducts.sort((a, b) => {
-        const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-        const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+        const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+        const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
         return sortDirection === "ASC" ? aTime - bTime : bTime - aTime;
       });
     } else if (sortField === "sbomName") {
@@ -520,6 +524,14 @@ export const handlers = [
         return sortDirection === "ASC"
           ? aName.localeCompare(bName)
           : bName.localeCompare(aName);
+      });
+    } else if (sortField === "productId") {
+      sortedProducts.sort((a, b) => {
+        const aId = a.productId || "";
+        const bId = b.productId || "";
+        return sortDirection === "ASC"
+          ? aId.localeCompare(bId)
+          : bId.localeCompare(aId);
       });
     }
 
