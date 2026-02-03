@@ -1,106 +1,86 @@
 # ExploitIQ - Client
 
-This project is a Quarkus + React web application implemented to interact with ExploitIQ service
-for sending requests to evaluate vulnerabilities on specific SBOMs.
+This project is a Quarkus + React web application that interacts with the ExploitIQ service to send requests for evaluating vulnerabilities on specific SBOMs.
 
 ## Development
 
-Check this other documents for:
+Check these documents for additional information:
 
-* [Configuration](./docs/configuration.md)
-* [Development](./docs/development.md)
+- [Configuration](./docs/configuration.md)
+- [Development](./docs/development.md)
 
-## Using the application
+## Using the Application
 
 Open http://localhost:8080/
 
+### Home Page
+
+On the Home page, you will find a central dashboard designed to manage your exploitability analysis workflow and monitor recent system performance.
+
+**Get Started with ExploitIQ**
+
+In this section, you will find quick-access links to the core functions of the application: Request Analysis, View Reports, and Learn More.
+
+**Last Week Metrics**
+
+In this section, you will find a summary of system performance from the past seven days.
+
+![home_page](./docs/images/home_page.png)
+
 ### Request Analysis
 
-In the _Request Analysis_ tab you will access a form where you can load a CycloneDX SBOM and type a list of CVEs to inspect.
-The Request ID will be used to trace the request and will be generated from the SBOM data but can be updated before submitting the request. 
-If not provided a UUID will be generated.
+In the _Request Analysis_ tab, you will access a form where you can load a CycloneDX SBOM and enter a CVE to inspect. The `user name` will be automatically added as a metadata parameter.
 
-![form](./docs/images/form.png)
+![request_analysis](./docs/images/request_analysis.png)
 
-The Metadata can include any key/pair set of values. You can add a `batch_id` if this request is related to others and you will
-be able to group them when browsing the reports. Note that the `user` will be automatically added as a metadata parameter.
+Once you have uploaded an SBOM and entered the CVE ID, you will be able to submit the request:
 
-After submitting the request you can go to the _View Reports_ tab where you can manage all the received reports.
+![request_analysis_full](./docs/images/request_analysis_full.png)
 
-There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after
-a certain time a callback response is not received, the report will be _expired_ (failed).
-
-### User supplied Git repository snapshot
-Sometimes The container image' labels misses the source location (git repository) and 
-its version(commit id or semver tag), or it's exists but under non-standard labels names.
-These values are mandatory for the analysis as they are at the core of the main tools of the agent.
-
-Because of that, one can supply through the `Add Metadata` button these values manually,  using the
-following 2 labels:
-
-1. `image.source-location` - This one is for the git repository sources of the container image
-2. `image.source.commit-id` - This is for the commit id or tag of the above git repository.
-
-Example:
-![img.png](img.png)
-
-
-### View Reports
-
-This table shows all the reports and allows sorting by _ID_ and _Completed at_ columns. There is a _Status_ dropdown that can be
-used to filter by Status. You can use any metadata as a query parameter for advanced filtering. e.g. `?batch_id=001`
-
-![reports_table](./docs/images/reports_table.png)
-
-* The _ID_ link will take you to the report's detail.
-* Click the CVE to filter reports with the same CVE.
-* Use the Actions to _Retry_ or _Delete_ the selected report.
-
-The checkboxes can be used to delete multiple reports. You can delete all the reports by checking the top checkbox.
-It is important to mention that the selection will affect all the reports with the current filter but if no filter is
-selected, all the reports can be deleted.
-
-The available _States_ displayed in the table are:
-
-* _Completed_: The report has been sent and completed in Morpheus.
-* _Sent_: The report has been sent but not yet analyzed (or received)
-* _Queued_: The report is in the waiting queue and will be sent as soon as there is space in the pool.
-* _Failed_: The report has either timeout or failed
-
-You can click on the refresh icon to reload the table.
-
-### Report
-
-When you click _View_ on a report in the table you will see all the details of the given report.
+After submitting the request, you will be redirected to the Report page. Once the analysis is complete, you will find a detailed report featuring the Agent's results for your request along with additional data insights.
 
 ![report](./docs/images/report.png)
 
-The first part includes some details about the report like the image and tag or all the available timestamps and
-metadata.
+**Note:** There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after a certain time a callback response is not received, the report will be _expired_ (failed).
 
-The _Image_, _Tag_, _metadata_ elements and the CVE are clickable and will take you to the _View Reports_ table but
-filtering all the reports sharing this element. e.g. All reports related to the `ose-console` image.
+### Reports Page
 
-The second part of the report shows the result of the analysis of each of the selected CVEs with the _Justification Label_,
-the _Reason_, _Summary_ and finally, the _Checklist_.
+On this page, you will find a table containing all reports.
 
-Each element in the checklist includes a Q/A with the generated checklist item and the justification.
+**Report Organization:** Each row represents a specific SBOM, which may contain a single component (repository) or multiple components based on the original request file.
 
-At the bottom of the report you will find buttons to:
+**Sorting:** You will be able to sort the table by the _Product ID_, _SBOM Name_, and _Completed-at_ columns. By default, you will see the reports ordered by completion date, from newest to oldest.
 
-* _Download_ the raw Json report.
-* _Delete_ the report.
-* _Back_ to the previous screen.
+**Filtering:** You will find options to filter the list by _SBOM Name_, _CVE ID_, and _ExploitIQ status_ to locate specific results quickly.
 
-### Vulnerabilities
+**Pagination:** You will also be able to customize the view by selecting how many reports to display per page.
 
-This table is meant to manage and show the Vulnerabilities additional data that can be used from Morpheus if the UI is
-configured as an additional Intel Source.
+![reports_page](./docs/images/reports_page.png)
 
-![vulnerabilities](./docs/images/vulnerabilities.png)
+After clicking a _Product ID_ link, you will find one of two views depending on the request type:
 
-If you add/edit a vulnerability a Text area will appear and let you add any free text about the vulnerability that you
-want the analysis to use.
+- **Single Component:** You will be taken directly to the detailed report page as described above.
 
-Finally the _Reports_ button will show you all the reports related to this vulnerability and the _Delete_ button will
-remove it from the table.
+- **Multiple Components:** You will be directed to an SBOM overview page that provides a high-level summary of results across all components.
+
+### Report Page
+
+![report_page](./docs/images/report_page.png)
+
+On this page, you will find:
+
+- **Report Details:** You will see general information about the report, including _overview statuses_ such as Repository Analysis Distribution and a CVE Status Summary, which provide high-level data on the SBOM and its associated CVEs.
+
+- **Component Table:** Below the summary data, you will find a table listing all components included in the SBOM:
+
+![repository_table](./docs/images/repository_table.png)
+
+- **Sorting and Filtering:** You will be able to sort the table by _Repository Name_ and _Completed date_, or filter results by _Repository Name_, _ExploitIQ Status_, and _Analysis State_.
+
+- **Direct Links:** You will find that the _Repository Name_ column links directly to the git repository, while the _Commit ID_ column links to the specific commit used in the analysis.
+
+- **View Button:** Finally, By clicking the _View_ button, you will be taken to the detailed report page for that specific repository, the same page you would access directly for a single-component SBOM.
+
+### Report
+
+![report](./docs/images/report.png)
