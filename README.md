@@ -81,3 +81,12 @@ You will be able to sort, filter, and organize the reports to quickly locate spe
 ### Report
 
 ![report](./docs/images/report.png)
+
+
+### Download Feature
+
+A blue **Download** button is available on the repository report page, providing access to download either the VEX (Vulnerability Exploitability eXchange) data or the complete report as JSON files. The VEX option is only available when the component is in a vulnerable status and is automatically disabled otherwise.
+
+![download_button](./docs/images/download_button.png)
+
+![download_open](./docs/images/download_open.png)
