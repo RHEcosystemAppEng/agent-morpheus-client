@@ -141,7 +141,7 @@ export function usePaginatedApi<T>(
   apiCall: () => ApiRequestOptions,
   options: UsePaginatedApiOptions<T> = {}
 ): UsePaginatedApiResult<T> {
-  const { deps = [], pollInterval, shouldPoll, shouldUpdate } = options;
+  const { deps = [], pollInterval } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -154,6 +154,20 @@ export function usePaginatedApi<T>(
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
   const apiCallRef = useRef<() => ApiRequestOptions>(apiCall);
+  // Store options in ref to avoid stale closures
+  const optionsRef = useRef<UsePaginatedApiOptions<T>>(options);
+  // Store data in ref to access latest value in polling callback without restarting interval
+  const dataRef = useRef<T | null>(null);
+  
+  // Update options ref whenever options change
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+  
+  // Update data ref whenever data changes
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   const execute = async (isDependencyChange: boolean = false) => {
     // Cancel previous request if it exists
@@ -162,7 +176,10 @@ export function usePaginatedApi<T>(
     }
 
     cancelledRef.current = false;
-    setLoading(true);
+    // Only set loading to true on initial fetch or dependency changes, not during polling
+    if (isDependencyChange || !initialFetchCompleteRef.current) {
+      setLoading(true);
+    }
     setError(null);
 
     const abortController = new AbortController();
@@ -212,6 +229,7 @@ export function usePaginatedApi<T>(
       if (!cancelledRef.current) {
         // Always update if dependencies changed (filters/pagination changed)
         // Otherwise, check if we should update based on comparison function
+        const shouldUpdate = optionsRef.current.shouldUpdate;
         const shouldUpdateState = isDependencyChange || !shouldUpdate
           ? true
           : shouldUpdate(previousDataRef.current, responseData);
@@ -294,8 +312,9 @@ export function usePaginatedApi<T>(
         return;
       }
 
-      // Check if we should continue polling
-      if (shouldPoll && !shouldPoll(data)) {
+      // Check if we should continue polling using latest data from ref
+      const shouldPoll = optionsRef.current.shouldPoll;
+      if (shouldPoll && !shouldPoll(dataRef.current)) {
         // Stop polling if shouldPoll returns false
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
@@ -315,7 +334,7 @@ export function usePaginatedApi<T>(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval, shouldPoll, data]);
+  }, [pollInterval]);
 
   return { data, loading, error, pagination };
 }
