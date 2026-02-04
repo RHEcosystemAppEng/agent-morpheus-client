@@ -78,7 +78,7 @@ export function useApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>,
   options: UseApiOptions<T> = {}
 ): UseApiResult<T> & { refetch: () => void } {
-  const { deps = [], pollInterval, shouldPoll, shouldUpdate } = options;
+  const { deps = [], pollInterval } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -90,15 +90,32 @@ export function useApi<T>(
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
+  // Store options in ref to avoid stale closures
+  const optionsRef = useRef<UseApiOptions<T>>(options);
+  // Store data in ref to access latest value in polling callback without restarting interval
+  const dataRef = useRef<T | null>(null);
+  
+  // Update options ref whenever options change
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
+  
+  // Update data ref whenever data changes
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
-  const execute = () => {
+  const execute = (isDependencyChange: boolean = false) => {
     // Cancel previous request if it's a CancelablePromise
     if (promiseRef.current && 'cancel' in promiseRef.current) {
       (promiseRef.current as CancelablePromise<T>).cancel();
     }
 
     cancelledRef.current = false;
-    setLoading(true);
+    // Only set loading to true on initial fetch or dependency changes, not during polling
+    if (isDependencyChange || !initialFetchCompleteRef.current) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -109,14 +126,13 @@ export function useApi<T>(
         .then((result) => {
           if (!cancelledRef.current) {
             // Check if we should update based on comparison function
+            const shouldUpdate = optionsRef.current.shouldUpdate;
             const shouldUpdateState = shouldUpdate
               ? shouldUpdate(previousDataRef.current, result)
               : true;
-            
             if (shouldUpdateState) {
               setData(result);
             }
-            
             // Always update previous data ref for future comparisons
             previousDataRef.current = result;
             
@@ -155,7 +171,8 @@ export function useApi<T>(
     previousDataRef.current = null;
     
     // Always execute immediately (this is useApi, not usePostApi)
-    execute();
+    // Pass true to indicate this is a dependency change, so loading state is updated
+    execute(true);
 
     return () => {
       cancelledRef.current = true;
@@ -190,8 +207,9 @@ export function useApi<T>(
     if (initialFetchCompleteRef.current) {
       // Set up polling interval
       intervalRef.current = setInterval(() => {
-        // Check if we should continue polling
-        if (shouldPoll && !shouldPoll(data)) {
+        // Check if we should continue polling using latest data from ref
+        const shouldPoll = optionsRef.current.shouldPoll;
+        if (shouldPoll && !shouldPoll(dataRef.current)) {
           // Stop polling if shouldPoll returns false
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
@@ -200,8 +218,8 @@ export function useApi<T>(
           return;
         }
 
-        // Execute the API call
-        execute();
+        // Execute the API call (not a dependency change, so don't update loading state)
+        execute(false);
       }, pollInterval);
     }
 
@@ -212,10 +230,11 @@ export function useApi<T>(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval, shouldPoll, data]);
+  }, [pollInterval]);
 
   const refetch = () => {
-    execute();
+    // Manual refetch should show loading state
+    execute(true);
   };
 
   return { data, loading, error, refetch };

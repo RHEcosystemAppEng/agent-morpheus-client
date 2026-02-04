@@ -20,7 +20,6 @@ export function hasRepositoryReportStateChanged(
   if (!previousReport) {
     return true;
   }
-
   return previousReport.state !== currentReport.state;
 }
 
