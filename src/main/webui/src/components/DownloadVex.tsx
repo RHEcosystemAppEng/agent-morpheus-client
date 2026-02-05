@@ -19,7 +19,6 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
   cveId,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const onToggle = () => {
     setIsOpen(!isOpen);
@@ -43,45 +42,28 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
   };
 
   const handleDownloadVex = () => {
-    setIsOpen(false);
-    setIsDownloading(true);
-
     const vexData = report.output?.vex;
     if (!vexData || vexData === null) {
-      setIsDownloading(false);
       return;
     }
 
     const filename = `vex-${cveId}-${report._id || "report"}.json`;
     downloadFile(vexData, filename);
-    setIsDownloading(false);
   };
 
   const handleDownloadReport = () => {
-    setIsOpen(false);
-    setIsDownloading(true);
-
     const filename = `report-${cveId}-${report._id || "report"}.json`;
     downloadFile(report, filename);
-    setIsDownloading(false);
   };
 
   const hasVex = report.output?.vex !== null;
 
   const dropdownItems = (
     <>
-      <DropdownItem
-        key="vex"
-        onClick={handleDownloadVex}
-        isDisabled={!hasVex || isDownloading}
-      >
+      <DropdownItem key="vex" onClick={handleDownloadVex} isDisabled={!hasVex}>
         VEX
       </DropdownItem>
-      <DropdownItem
-        key="report"
-        onClick={handleDownloadReport}
-        isDisabled={isDownloading}
-      >
+      <DropdownItem key="report" onClick={handleDownloadReport}>
         Report
       </DropdownItem>
     </>
@@ -98,7 +80,6 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
           isExpanded={isOpen}
           onClick={onToggle}
           icon={<DownloadIcon />}
-          isDisabled={isDownloading}
           variant="primary"
           style={{
             borderRadius: "2rem",
