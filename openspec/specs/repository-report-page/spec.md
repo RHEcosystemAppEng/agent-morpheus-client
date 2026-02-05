@@ -103,3 +103,30 @@ The repository report page SHALL compare the report `state` field between the pr
 - **AND** this optimization SHALL prevent UI jumps and visual disruption when the report state remains unchanged
 - **AND** note that only the `state` field is compared, not the entire report object
 
+### Requirement: Download Feature
+The repository report page SHALL provide a download button that allows users to download either the VEX (Vulnerability Exploitability eXchange) data or the complete report as JSON files.
+
+#### Scenario: Download dropdown menu
+- **WHEN** a user clicks the **Download** button
+- **THEN** a dropdown menu opens displaying two options:
+  - "VEX" option for downloading VEX data
+  - "Report" option for downloading the complete report data
+
+#### Scenario: VEX download availability
+- **WHEN** a user views the repository report page
+- **AND** the report contains VEX data (component is in a vulnerable status)
+- **THEN** the "VEX" option in the download dropdown is enabled and clickable
+- **AND** when the user clicks the "VEX" option, a JSON file is downloaded containing the VEX data from `report.output.vex`
+- **AND** the downloaded file is named in the format `vex-{cveId}-{reportId}.json`
+
+#### Scenario: VEX download disabled
+- **WHEN** a user views the repository report page
+- **AND** the report does not contain VEX data (`report.output.vex` is null or undefined, indicating the component is not in a vulnerable status)
+- **THEN** the "VEX" option in the download dropdown is disabled (not clickable)
+- **AND** the disabled state visually indicates that VEX data is not available
+
+#### Scenario: Report download
+- **WHEN** a user clicks the "Report" option in the download dropdown
+- **THEN** a JSON file is downloaded containing the complete report data
+- **AND** the downloaded file is named in the format `report-{cveId}-{reportId}.json`
+- **AND** the report download option is always available regardless of VEX data availability

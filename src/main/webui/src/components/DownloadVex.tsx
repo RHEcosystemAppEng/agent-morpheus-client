@@ -46,33 +46,24 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
     setIsOpen(false);
     setIsDownloading(true);
 
-    try {
-      const vexData = report.output?.vex;
-      if (!vexData || vexData === null) {
-        return;
-      }
-
-      const filename = `vex-${cveId}-${report._id || "report"}.json`;
-      downloadFile(vexData, filename);
-    } catch (err) {
-      console.error("Error downloading VEX:", err);
-    } finally {
+    const vexData = report.output?.vex;
+    if (!vexData || vexData === null) {
       setIsDownloading(false);
+      return;
     }
+
+    const filename = `vex-${cveId}-${report._id || "report"}.json`;
+    downloadFile(vexData, filename);
+    setIsDownloading(false);
   };
 
   const handleDownloadReport = () => {
     setIsOpen(false);
     setIsDownloading(true);
 
-    try {
-      const filename = `report-${cveId}-${report._id || "report"}.json`;
-      downloadFile(report, filename);
-    } catch (err) {
-      console.error("Error downloading report:", err);
-    } finally {
-      setIsDownloading(false);
-    }
+    const filename = `report-${cveId}-${report._id || "report"}.json`;
+    downloadFile(report, filename);
+    setIsDownloading(false);
   };
 
   const hasVex = report.output?.vex !== null;
