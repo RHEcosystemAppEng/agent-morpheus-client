@@ -105,6 +105,8 @@ The repository reports table SHALL automatically refresh data every 5 seconds by
 
 The repository reports table SHALL compare the entire Report objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any Report object has changed (including state, completion dates, ExploitIQ status, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
 
+The repository reports table SHALL display a loading skeleton only on the initial load when first entering the report page. When users change sort order or filters, the existing table data SHALL remain visible while new data loads in the background. The table SHALL update with new data once the API call completes, without showing the skeleton. This prevents visual disruption and table jumping during user interactions.
+
 #### Scenario: Repository reports table displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** a table displays with columns: Repository, Commit ID, ExploitIQ Status, Completed (displaying dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ"), and Scan state
@@ -117,9 +119,23 @@ The repository reports table SHALL compare the entire Report objects between the
 - **AND** pagination uses backend pagination support via `/api/v1/reports` endpoint with `page` and `pageSize` query parameters
 - **AND** users can navigate between pages of repository reports
 
-#### Scenario: Repository reports table loading state
-- **WHEN** reports data is being fetched
-- **THEN** the table displays a loading spinner
+#### Scenario: Loading skeleton on initial page load
+- **WHEN** a user first views the report page with the repository reports table
+- **THEN** a loading skeleton is displayed while the initial data is being fetched
+- **AND** the skeleton shows placeholder rows matching the table structure
+- **AND** once data is loaded, the skeleton is replaced with the actual table data
+
+#### Scenario: No skeleton on sort change
+- **WHEN** a user changes the sort order in the repository reports table (e.g., clicks a column header to sort)
+- **THEN** the existing table data remains visible
+- **AND** the table updates with sorted data once the API call completes
+- **AND** no loading skeleton is displayed during the sort operation
+
+#### Scenario: No skeleton on filter change
+- **WHEN** a user changes a filter value in the repository reports table (e.g., selects scan state filter, exploitIQ status filter, or enters repository search text)
+- **THEN** the existing table data remains visible
+- **AND** the table updates with filtered data once the API call completes
+- **AND** no loading skeleton is displayed during the filter operation
 
 #### Scenario: Repository reports table error state
 - **WHEN** reports data fetch fails
@@ -143,21 +159,6 @@ The repository reports table SHALL compare the entire Report objects between the
 - **THEN** the table SHALL compare the entire Report objects between the previous and current data using deep comparison
 - **AND** the table SHALL skip the state update (prevent rerender) if all Report objects are unchanged (all fields match)
 - **AND** the table SHALL trigger a rerender if any field in any Report object has changed
-- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
-
-#### Scenario: Report page auto-refresh
-- **WHEN** a user views the report page
-- **AND** some analysis states in `sbomReport.statusCounts` are not "failed" or "completed"
-- **THEN** the report page automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/sbom-reports/${sbomReportId}` endpoint
-- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops
-- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
-- **AND** the auto-refresh preserves the current view state (no disruption to user interactions)
-
-#### Scenario: Report page auto-refresh prevents unnecessary rerenders
-- **WHEN** the report page auto-refreshes AND the SbomReport data has not changed
-- **THEN** the page SHALL compare the entire SbomReport object between the previous and current data using deep comparison
-- **AND** the page SHALL skip the state update (prevent rerender) if the SbomReport object is unchanged (all fields match)
-- **AND** the page SHALL trigger a rerender if any field in the SbomReport object has changed
 - **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
 
 ### Requirement: Report Page Layout

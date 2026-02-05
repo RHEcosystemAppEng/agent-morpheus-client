@@ -19,6 +19,26 @@ The reports table SHALL automatically refresh data every 15 seconds by re-fetchi
 
 The reports table SHALL compare the entire SbomReport objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any SbomReport object has changed (including analysis states, completion dates, status counts, CVE status counts, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
 
+The reports table SHALL display a loading skeleton only on the initial page load when first entering the reports page. When users change sort order or filters, the existing table data SHALL remain visible while new data loads in the background. The table SHALL update with new data once the API call completes, without showing the skeleton. This prevents visual disruption and table jumping during user interactions.
+
+#### Scenario: Loading skeleton on initial page load
+- **WHEN** a user first navigates to the reports page
+- **THEN** a loading skeleton is displayed while the initial data is being fetched
+- **AND** the skeleton shows placeholder rows matching the table structure
+- **AND** once data is loaded, the skeleton is replaced with the actual table data
+
+#### Scenario: No skeleton on sort change
+- **WHEN** a user changes the sort order (e.g., clicks a column header to sort)
+- **THEN** the existing table data remains visible
+- **AND** the table updates with sorted data once the API call completes
+- **AND** no loading skeleton is displayed during the sort operation
+
+#### Scenario: No skeleton on filter change
+- **WHEN** a user changes a filter value (e.g., enters text in SBOM Name or CVE ID search field)
+- **THEN** the existing table data remains visible
+- **AND** the table updates with filtered data once the API call completes
+- **AND** no loading skeleton is displayed during the filter operation
+
 #### Scenario: Reports table displays SBOM report and CVE information
 - **WHEN** a user views the reports page
 - **THEN** the table displays one row per CVE per SBOM report with columns that map to `SbomReport` fields
