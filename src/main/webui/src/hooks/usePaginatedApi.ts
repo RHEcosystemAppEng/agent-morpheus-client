@@ -158,6 +158,8 @@ export function usePaginatedApi<T>(
   const optionsRef = useRef<UsePaginatedApiOptions<T>>(options);
   // Store data in ref to access latest value in polling callback without restarting interval
   const dataRef = useRef<T | null>(null);
+  // Track if this is the very first mount (not dependency changes)
+  const isFirstMountRef = useRef<boolean>(true);
   
   // Update options ref whenever options change
   useEffect(() => {
@@ -176,8 +178,10 @@ export function usePaginatedApi<T>(
     }
 
     cancelledRef.current = false;
-    // Only set loading to true on initial fetch or dependency changes, not during polling
-    if (isDependencyChange || !initialFetchCompleteRef.current) {
+    // Only set loading to true on the very first mount, not on dependency changes or polling
+    // This prevents showing skeleton when sort/filter changes
+    // Check if data is null (initial load) AND this is the first mount
+    if (data === null && isFirstMountRef.current) {
       setLoading(true);
     }
     setError(null);
@@ -240,9 +244,7 @@ export function usePaginatedApi<T>(
         
         // Always update previous data ref for future comparisons
         previousDataRef.current = responseData;
-        
-        // Always update loading state and pagination, even if data didn't change
-        setLoading(false);
+      
         initialFetchCompleteRef.current = true;
       }
     } catch (err) {
@@ -253,11 +255,14 @@ export function usePaginatedApi<T>(
       
       if (!cancelledRef.current) {
         setError(err instanceof Error ? err : new Error(String(err)));
-        setLoading(false);
         initialFetchCompleteRef.current = true;
       }
     } finally {
       abortControllerRef.current = null;
+      setLoading(false);
+      // Mark that first mount is complete after first fetch (success or error)
+      // This ensures skeleton only shows on initial load, not on dependency changes
+      isFirstMountRef.current = false;
     }
   };
 
@@ -267,8 +272,6 @@ export function usePaginatedApi<T>(
   });
 
   useEffect(() => {
-    // Reset initial fetch flag when deps change
-    initialFetchCompleteRef.current = false;
     // Reset previous data ref when deps change (new query = fresh comparison)
     previousDataRef.current = null;
     
