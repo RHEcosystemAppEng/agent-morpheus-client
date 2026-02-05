@@ -8,6 +8,8 @@ import {
   GridItem,
   EmptyState,
   EmptyStateBody,
+  Flex,
+  FlexItem,
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useRepositoryReport } from "../hooks/useRepositoryReport";
@@ -16,6 +18,7 @@ import DetailsCard from "../components/DetailsCard";
 import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
 import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkeleton";
+import DownloadDropdown from "../components/DownloadVex";
 
 interface RepositoryReportPageErrorProps {
   title: string;
@@ -128,16 +131,26 @@ const RepositoryReportPage: React.FC = () => {
     return (
       <Grid hasGutter>
         <GridItem>
-          <Title headingLevel="h1">
-            CVE Repository Report:{" "}
-            <span
-              style={{
-                fontSize: "var(--pf-t--global--font--size--heading--h6)",
-              }}
-            >
-              {reportIdDisplay}
-            </span>
-          </Title>
+          <Flex
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
+            alignItems={{ default: "alignItemsCenter" }}
+          >
+            <FlexItem>
+              <Title headingLevel="h1">
+                CVE Repository Report:{" "}
+                <span
+                  style={{
+                    fontSize: "var(--pf-t--global--font--size--heading--h6)",
+                  }}
+                >
+                  {reportIdDisplay}
+                </span>
+              </Title>
+            </FlexItem>
+            <FlexItem>
+              <DownloadDropdown report={report} cveId={cveId} />
+            </FlexItem>
+          </Flex>
         </GridItem>
         <GridItem>
           <DetailsCard
