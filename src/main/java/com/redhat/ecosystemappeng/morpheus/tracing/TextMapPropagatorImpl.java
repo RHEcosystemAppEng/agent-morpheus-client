@@ -31,11 +31,13 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
         if (Objects.isNull(traceId)) {
             traceId = getTraceIdFromContext(context);
         }
-        setter.set(carrier, TRACE_ID, traceId);
+        if (Objects.nonNull(traceId)) {
+            setter.set(carrier, TRACE_ID, traceId);
+        }
     }
 
     public static String getTraceIdFromContext(Context context) {
-        String traceId=null;
+        String traceId = null;
         String tracingContextString = context.toString();
         final String regex = "traceId\\s*=\\s*[a-f0-9]+";
         final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
@@ -45,7 +47,7 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
             String[] split = matcher.group(0).split("=");
             String key = split[0];
             String traceIdValue = split[1];
-            if (Objects.nonNull(traceIdValue) && !traceIdValue.matches("0+") ) {
+            if (Objects.nonNull(traceIdValue) && !traceIdValue.matches("0+")) {
                 traceId = traceIdValue;
                 break;
             }
@@ -58,13 +60,11 @@ public class TextMapPropagatorImpl implements TextMapPropagator {
         String traceId = getter.get(carrier, TRACE_ID);
         // Logs should be with same traceId As request
         if (Objects.nonNull(traceId)) {
-            MDC.put(TRACE_ID,traceId);
+            MDC.put(TRACE_ID, traceId);
             return context.with(TRACE_ID_CONTEXT_KEY, traceId);
-        }
-        else{
+        } else {
             return context;
         }
-
 
     }
 }

@@ -115,4 +115,5 @@ spec:
             storage: 1Gi
   - name: dockerconfig-ws
     secret:
-      secretName: redhat-quay-registry-secret
+      secretName: ips-for-client-build
+

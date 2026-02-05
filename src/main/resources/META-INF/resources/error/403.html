@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" class="pf-v6-u-h-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - ExploitIQ</title>
+    <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@6.1.0/patternfly.css" crossorigin="anonymous">
+    <script>
+        function logout() {
+            fetch('/api/v1/user/logout', { method: 'POST' })
+                .then(() => {
+                    window.location.href = "/";
+                });
+        }
+    </script>
+</head>
+
+<body class="pf-v6-u-h-100 pf-v6-u-m-0 pf-v6-u-background-color-200">
+    <div class="pf-v6-l-bullseye pf-v6-u-h-100">
+        <div class="pf-v6-c-empty-state pf-m-lg">
+            <div class="pf-v6-c-empty-state__content">
+                <div class="pf-v6-c-empty-state__icon">
+                    <svg fill="currentColor" height="1em" width="1em" viewBox="0 0 512 512" aria-hidden="true"
+                        role="img">
+                        <path
+                            d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z" />
+                    </svg>
+                </div>
+                <h1 class="pf-v6-c-empty-state__title-text">You do not have access to ExploitIQ</h1>
+                <div class="pf-v6-c-empty-state__body">
+                    Please contact your administrator if you believe this is an error.
+                </div>
+                <div class="pf-v6-c-empty-state__footer">
+                    <div class="pf-v6-c-empty-state__actions">
+                        <button class="pf-v6-c-button pf-m-primary pf-m-display-lg" type="button"
+                            onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -13,7 +13,49 @@ For authentication setup (Keycloak, external identity providers, testing), see t
 You can run your application in dev mode that enables live coding using:
 
 ```shell
-quarkus dev -Dquarkus.rest-client.morpheus.url=https://agent-morpheus-route.com/scan  -Dquarkus.http.auth.permission.authenticated.policy=permit
+./mvnw quarkus:dev -Dquarkus.rest-client.morpheus.url=https://agent-morpheus-route.com/scan
+```
+
+By default, this runs with **authentication disabled**. To enable Keycloak DevServices and OIDC:
+
+```shell
+./mvnw quarkus:dev -Dquarkus.oidc.enabled=true -Dquarkus.keycloak.devservices.enabled=true
+```
+
+This runs both the backend and frontend together, with the UI served through Quarkus at `http://localhost:8080`.
+
+### Standalone Frontend Development
+
+For faster frontend development cycles, you can run the UI standalone (without Quarkus). This is useful when you want to iterate quickly on frontend changes without restarting the Quarkus backend.
+
+**Required Environment Variables:**
+
+- `VITE_STANDALONE`: Set to `true` to enable standalone mode (automatically set by `dev:standalone` script)
+- `VITE_API_BASE_URL`: Backend API base URL. **Required.** Must be a valid URL (e.g., `http://localhost:8080` or `https://api.example.com`)
+- `API_TOKEN`: Authentication token for API requests. **Required.** The token will be automatically added to all API requests via the `Authorization: Bearer <token>` header.
+
+**How to run:**
+```shell script
+cd src/main/webui
+VITE_API_BASE_URL=http://localhost:8080 API_TOKEN=your-token-here npm run dev:standalone
+```
+
+This will:
+- Start Vite dev server on `http://localhost:3000`
+- Serve the UI at the root path 
+- Proxy all `/api/*` requests to the backend URL specified in `VITE_API_BASE_URL` with automatic authentication
+
+**Using environment file (.env):**
+You can also create a `.env` file in `src/main/webui/`:
+```bash
+VITE_API_BASE_URL=http://localhost:8080
+API_TOKEN=your-token-here
+```
+
+Then run:
+```shell script
+cd src/main/webui
+npm run dev:standalone
 ```
 
 This runs both the backend and frontend together, with the UI served through Quarkus at `http://localhost:8080`.

@@ -287,18 +287,22 @@ User → Application → Keycloak (Broker) → External IdP (GitHub/Google)
 
 ### DevServices (Automatic)
 
-Quarkus automatically starts Keycloak via DevServices:
+By default, authentication is **disabled** in the `dev` profile to simplify local development.
+
+To enable OIDC and start Keycloak DevServices, run:
 
 ```bash
-./mvnw quarkus:dev
+./mvnw quarkus:dev \
+  -Dquarkus.oidc.enabled=true \
+  -Dquarkus.keycloak.devservices.enabled=true
 ```
 
-Test users are pre-configured in `application.properties`:
-
-```properties
-%dev.quarkus.keycloak.devservices.users.bruce=wayne
-%dev.quarkus.keycloak.devservices.users.peter=parker
-```
+Test users are defined in `src/test/resources/devservices/keycloak-realm.json`, which is automatically imported.
+Default users:
+- `bruce` / `wayne` (Admin)
+- `peter` / `parker` (Viewer)
+- `miles` / `morales` (Client Role Admin)
+- `gwen` / `stacy` (Client Role Viewer)
 
 ### External Keycloak (Manual)
 
@@ -365,6 +369,30 @@ The application displays user information with this priority:
 4. `anonymous` (fallback)
 
 Ensure your identity provider or Keycloak is configured to include the `email` claim in tokens.
+
+## Role Mapping
+
+The application implements a **Unified Role Mapping** strategy, allowing you to manage permissions using either OpenShift Groups or OIDC Roles (Keycloak), depending on your environment.
+
+The application looks for specific **Target Roles** (configurable via `exploit-iq.security.target-roles`):
+- `exploit-iq-admin`: Admin access
+- `exploit-iq-view`: Read-only access
+- `exploit-iq-prodsec`: Product Security access
+
+### OpenShift Groups (Production)
+In the `prod` profile, OpenShift Groups are automatically mapped to these roles.
+- Group `exploit-iq-admin` -> Mapped to `exploit-iq-admin`
+- Group `exploit-iq-view` -> Mapped to `exploit-iq-view`
+- Group `exploit-iq-prodsec` -> Mapped to `exploit-iq-prodsec`
+
+### OIDC Roles (Keycloak / External)
+In `external-idp` or `dev` profiles, roles are extracted from the OIDC token:
+- **Realm Roles:** `exploit-iq-admin`, `exploit-iq-view`
+- **Resource Access (Client Roles):** Roles defined specifically for the `exploit-iq-client` client.
+
+This flexibility allows you to choose the management style that fits your platform:
+- **OpenShift Native:** Access is controlled by OpenShift Groups.
+- **Identity Provider:** Access is controlled by Keycloak/IdP roles.
 
 ## Troubleshooting
 

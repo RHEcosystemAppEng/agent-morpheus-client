@@ -123,6 +123,7 @@ Scenarios:
   4) External Keycloak + GitHub - External Keycloak with GitHub broker
   5) External Keycloak + Google - External Keycloak with Google broker
   6) Direct Google OIDC         - Direct connection to Google (no Keycloak)
+  7) Import Keycloak Realm      - Import keycloak-realm.json (Miles/Gwen users)
 
 Test Users (for Keycloak scenarios):
   - ${TEST_USER_1}/${TEST_USER_1_PASS}
@@ -137,6 +138,7 @@ check_dependencies() {
   local missing=()
   
   command -v curl >/dev/null 2>&1 || missing+=("curl")
+  command -v jq >/dev/null 2>&1 || missing+=("jq")
   
   # Check for container engine
   if ! command -v podman >/dev/null 2>&1 && ! command -v docker >/dev/null 2>&1; then
@@ -336,107 +338,8 @@ get_admin_token() {
 
 configure_keycloak() {
   local app_url="$1"
-  
-  print_info "--- Configuring Keycloak ---"
-  get_admin_token
-
-  # Delete existing realm for clean state
-  echo -n "Cleaning up existing realm... "
-  curl -k -s -X DELETE "${KC_BASE_URL}/admin/realms/${KC_REALM}" \
-    -H "Authorization: Bearer $KC_TOKEN" || true
-  print_success "done"
-
-  # Create realm (with sslRequired=NONE for local development)
-  echo -n "Creating realm '${KC_REALM}'... "
-  curl -k -s -o /dev/null -X POST "${KC_BASE_URL}/admin/realms" \
-    -H "Authorization: Bearer $KC_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{\"realm\": \"${KC_REALM}\", \"enabled\": true, \"sslRequired\": \"NONE\"}"
-  print_success "done"
-
-  sleep 1
-
-  # Create client
-  echo -n "Creating client '${APP_CLIENT_ID}'... "
-  curl -k -s -o /dev/null -X POST "${KC_BASE_URL}/admin/realms/${KC_REALM}/clients" \
-    -H "Authorization: Bearer $KC_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"clientId\": \"${APP_CLIENT_ID}\",
-      \"enabled\": true,
-      \"clientAuthenticatorType\": \"client-secret\",
-      \"secret\": \"${APP_CLIENT_SECRET}\",
-      \"redirectUris\": [\"${app_url}/*\"],
-      \"webOrigins\": [\"${app_url}\"],
-      \"publicClient\": false,
-      \"standardFlowEnabled\": true,
-      \"directAccessGrantsEnabled\": true,
-      \"attributes\": {
-        \"post.logout.redirect.uris\": \"${app_url}/logged-out\"
-      }
-    }"
-  print_success "done"
-
-  # Create test users
-  echo -n "Creating test users... "
-  curl -k -s -o /dev/null -X POST "${KC_BASE_URL}/admin/realms/${KC_REALM}/users" \
-    -H "Authorization: Bearer $KC_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"username\": \"${TEST_USER_1}\",
-      \"enabled\": true,
-      \"email\": \"${TEST_USER_1_EMAIL}\",
-      \"firstName\": \"${TEST_USER_1^}\",
-      \"lastName\": \"Wayne\",
-      \"emailVerified\": true,
-      \"credentials\": [{\"type\": \"password\", \"value\": \"${TEST_USER_1_PASS}\", \"temporary\": false}]
-    }"
-  
-  curl -k -s -o /dev/null -X POST "${KC_BASE_URL}/admin/realms/${KC_REALM}/users" \
-    -H "Authorization: Bearer $KC_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"username\": \"${TEST_USER_2}\",
-      \"enabled\": true,
-      \"email\": \"${TEST_USER_2_EMAIL}\",
-      \"firstName\": \"${TEST_USER_2^}\",
-      \"lastName\": \"Parker\",
-      \"emailVerified\": true,
-      \"credentials\": [{\"type\": \"password\", \"value\": \"${TEST_USER_2_PASS}\", \"temporary\": false}]
-    }"
-  print_success "done"
-
-  # Create protocol mappers
-  echo -n "Creating protocol mappers... "
-  local client_uuid
-  client_uuid=$(curl -k -s -H "Authorization: Bearer $KC_TOKEN" \
-    "${KC_BASE_URL}/admin/realms/${KC_REALM}/clients?clientId=${APP_CLIENT_ID}" \
-    | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
-  
-  for mapper in "preferred_username:username" "upn:username" "email:email"; do
-    local name="${mapper%%:*}"
-    local attr="${mapper##*:}"
-    curl -k -s -o /dev/null -X POST \
-      "${KC_BASE_URL}/admin/realms/${KC_REALM}/clients/${client_uuid}/protocol-mappers/models" \
-      -H "Authorization: Bearer $KC_TOKEN" \
-      -H "Content-Type: application/json" \
-      -d "{
-        \"name\": \"${name}\",
-        \"protocol\": \"openid-connect\",
-        \"protocolMapper\": \"oidc-usermodel-property-mapper\",
-        \"config\": {
-          \"userinfo.token.claim\": \"true\",
-          \"user.attribute\": \"${attr}\",
-          \"id.token.claim\": \"true\",
-          \"access.token.claim\": \"true\",
-          \"claim.name\": \"${name}\",
-          \"jsonType.label\": \"String\"
-        }
-      }"
-  done
-  print_success "done"
-
-  print_success "Keycloak configured successfully"
+  print_info "--- Configuring Keycloak (via Realm Import) ---"
+  import_keycloak_realm "$app_url"
 }
 
 # ==============================================================================
@@ -601,7 +504,7 @@ scenario_devservices() {
   print_info "App URL: ${LOCAL_APP_URL}"
   echo ""
   
-  start_local_quarkus -Dquarkus.keycloak.devservices.enabled=true
+  start_local_quarkus -Dquarkus.oidc.enabled=true -Dquarkus.keycloak.devservices.enabled=true
 }
 
 scenario_devservices_github() {
@@ -763,6 +666,133 @@ scenario_direct_google() {
   fi
 }
 
+import_keycloak_realm() {
+  local app_url="$1"
+  local realm_file="${PROJECT_ROOT}/src/test/resources/devservices/keycloak-realm.json"
+  
+  if [ ! -f "$realm_file" ]; then
+    print_error "Realm file not found: $realm_file"
+    exit 1
+  fi
+  
+  print_info "--- Importing Keycloak Realm from JSON ---"
+  get_admin_token
+  
+  # Delete existing realm for clean state
+  echo -n "Cleaning up existing realm... "
+  curl -k -s -X DELETE "${KC_BASE_URL}/admin/realms/${KC_REALM}" \
+    -H "Authorization: Bearer $KC_TOKEN" || true
+  print_success "done"
+  
+  sleep 1
+  
+  # Update redirectUris in realm JSON dynamically
+  echo -n "Preparing realm configuration... "
+  local temp_realm="/tmp/keycloak-realm-updated.json"
+  
+  if command -v jq >/dev/null 2>&1; then
+    # Use jq if available
+    jq --arg url "${app_url}/*" \
+       --arg origin "${app_url}" \
+       --arg cid "${APP_CLIENT_ID}" \
+       --arg csec "${APP_CLIENT_SECRET}" \
+       '.clients[0].redirectUris = [$url] | .clients[0].webOrigins = [$origin] | .clients[0].clientId = $cid | .clients[0].secret = $csec' \
+      "$realm_file" > "$temp_realm"
+  else
+    # Fallback to sed
+    cp "$realm_file" "$temp_realm"
+    # This is a simple replacement, may need adjustment based on JSON structure
+    print_warning "jq not found, using sed (less reliable)"
+  fi
+  print_success "done"
+  
+  # Import realm
+  echo -n "Importing realm '${KC_REALM}'... "
+  local import_response
+  import_response=$(curl -k -s -w "\n%{http_code}" -X POST "${KC_BASE_URL}/admin/realms" \
+    -H "Authorization: Bearer $KC_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d @"$temp_realm")
+  
+  local http_code="${import_response##*$'\n'}"
+  
+  if [ "$http_code" = "201" ] || [ "$http_code" = "204" ]; then
+    print_success "done"
+  else
+    print_error "Failed to import realm (HTTP $http_code)"
+    echo "$import_response" | head -n -1
+    exit 1
+  fi
+  
+  rm -f "$temp_realm"
+  
+  print_success "Keycloak realm imported successfully"
+  print_info "Test users: miles/morales, gwen/stacy"
+}
+
+scenario_import_realm() {
+  echo ""
+  print_info "=== Scenario 7: Import Keycloak Realm (keycloak-realm.json) ==="
+  
+  echo ""
+  print_info "Select Keycloak Environment:"
+  echo "1) Local Docker (localhost:${KC_LOCAL_PORT})"
+  echo "2) OpenShift (Auto-provision in '${KC_OCP_NAMESPACE}')"
+  read -p "Option: " infra_choice
+  
+  local app_base_url=""
+  local run_mode=""
+  
+  if [ "$infra_choice" = "2" ]; then
+    detect_ocp_namespace
+    setup_ocp_keycloak
+    
+    print_info "Detecting App Route in namespace '${APP_NAMESPACE}'..."
+    app_base_url=$(get_app_route 2>/dev/null || echo "")
+    
+    if [ -n "$app_base_url" ]; then
+      run_mode="remote"
+      print_success "Found OCP App: ${app_base_url}"
+    else
+      print_warning "App Route not found. Falling back to Local App."
+      app_base_url="$LOCAL_APP_URL"
+      run_mode="local"
+    fi
+  else
+    setup_local_keycloak
+    app_base_url="$LOCAL_APP_URL"
+    run_mode="local"
+  fi
+  
+  import_keycloak_realm "$app_base_url"
+  
+  echo ""
+  if [ "$run_mode" = "remote" ]; then
+    update_ocp_deployment \
+      "QUARKUS_PROFILE=external-idp" \
+      "QUARKUS_OIDC_AUTH_SERVER_URL=${KC_BASE_URL}/realms/${KC_REALM}" \
+      "QUARKUS_OIDC_CREDENTIALS_SECRET=${APP_CLIENT_SECRET}" \
+      "QUARKUS_OIDC_TLS_VERIFICATION=none" \
+      "QUARKUS_OIDC_PROVIDER-" \
+      "QUARKUS_OIDC_CLIENT_ID-"
+    
+    print_success "Done. Check app at ${app_base_url}"
+    print_info "Login with: miles/morales or gwen/stacy"
+  else
+    print_info "Starting local Quarkus app..."
+    print_info "Login with: miles/morales or gwen/stacy"
+    echo ""
+    
+    start_local_quarkus \
+      -Dquarkus.profile=external-idp \
+      "-Dquarkus.oidc.auth-server-url=${KC_BASE_URL}/realms/${KC_REALM}" \
+      "-Dquarkus.oidc.credentials.secret=${APP_CLIENT_SECRET}" \
+      -Dquarkus.keycloak.devservices.enabled=false \
+      -Dquarkus.oidc.tls.verification=none \
+      -Dmorpheus.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
+  fi
+}
+
 # ==============================================================================
 # MAIN
 # ==============================================================================
@@ -803,6 +833,9 @@ main() {
   echo "--- Direct OIDC ---"
   echo "6) Direct Google OIDC"
   echo ""
+  echo "--- Import Realm ---"
+  echo "7) Import Keycloak Realm (keycloak-realm.json)"
+  echo ""
   read -p "Enter option: " choice
 
   case "$choice" in
@@ -823,6 +856,9 @@ main() {
       ;;
     6)
       scenario_direct_google
+      ;;
+    7)
+      scenario_import_realm
       ;;
     *)
       print_error "Invalid option: $choice"

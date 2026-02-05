@@ -1,0 +1,180 @@
+{
+  "realm": "quarkus",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "exploit-iq-client",
+      "enabled": true,
+      "secret": "example-credentials",
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ],
+      "defaultClientScopes": [
+        "roles",
+        "profile",
+        "email"
+      ],
+      "protocolMappers": [
+        {
+          "name": "preferred_username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "upn",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "upn",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "user.attribute": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "email",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "exploit-iq-view",
+        "description": "ExploitIQ read-only access"
+      },
+      {
+        "name": "exploit-iq-prodsec",
+        "description": "ExploitIQ product security team"
+      },
+      {
+        "name": "exploit-iq-admin",
+        "description": "ExploitIQ full administrative access"
+      }
+    ],
+    "client": {
+      "exploit-iq-client": [
+        {
+          "name": "exploit-iq-view",
+          "description": "ExploitIQ read-only access (Client Role)"
+        },
+        {
+          "name": "exploit-iq-admin",
+          "description": "ExploitIQ full administrative access (Client Role)"
+        }
+      ]
+    }
+  },
+  "users": [
+    {
+      "username": "bruce",
+      "enabled": true,
+      "email": "bruce.wayne@example.com",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "wayne",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "exploit-iq-admin"
+      ]
+    },
+    {
+      "username": "peter",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "parker",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "exploit-iq-view"
+      ]
+    },
+    {
+      "username": "miles",
+      "enabled": true,
+      "email": "miles.morales@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "morales",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "exploit-iq-client": [
+          "exploit-iq-admin"
+        ]
+      }
+    },
+    {
+      "username": "gwen",
+      "enabled": true,
+      "email": "gwen.stacy@example.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "stacy",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "exploit-iq-client": [
+          "exploit-iq-view"
+        ]
+      }
+    },
+    {
+      "username": "johndoe",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "johndoe",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}
