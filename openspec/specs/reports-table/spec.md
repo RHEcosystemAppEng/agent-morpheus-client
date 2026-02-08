@@ -13,11 +13,7 @@ The application SHALL display a table of vulnerability analysis reports with col
 - **Submitted Date**: Maps to `SbomReport.submittedAt` and SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation
 - **Completion Date**: Maps to `SbomReport.completedAt` and SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation. This column SHALL NOT be sortable.
 
-The reports table SHALL use the `/api/v1/sbom-reports` API endpoint to fetch data, which provides server-side grouping and aggregation for improved performance.
-
-The reports table SHALL automatically refresh data every 15 seconds by re-fetching from the `/api/v1/sbom-reports` API endpoint.
-
-The reports table SHALL compare the entire SbomReport objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any SbomReport object has changed (including analysis states, completion dates, status counts, CVE status counts, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+The reports table SHALL use the `/api/v1/sbom-reports` API endpoint to fetch data, which provides server-side grouping and aggregation for improved performance. The table SHALL use the `usePaginatedApi` hook for data fetching with automatic refresh every 15 seconds and optimization to prevent unnecessary rerenders (see `api-hooks` specification).
 
 The reports table SHALL display a loading skeleton only on the initial page load when first entering the reports page. When users change sort order or filters, the existing table data SHALL remain visible while new data loads in the background. The table SHALL update with new data once the API call completes, without showing the skeleton. This prevents visual disruption and table jumping during user interactions.
 
@@ -186,17 +182,9 @@ The reports table SHALL support filtering by SBOM Name and CVE ID. All filtering
 - **AND** the same filter input remains displayed even after the filter is applied
 - **AND** the active attribute only changes when the user manually selects a different attribute from the attribute selector
 
-#### Scenario: Auto-refresh every 15 seconds
+#### Scenario: Auto-refresh behavior
 - **WHEN** a user views the reports table
-- **THEN** the table automatically refreshes data every 15 seconds by re-fetching from the `/api/v1/sbom-reports` API endpoint
-- **AND** the auto-refresh continues while the page is visible
-- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+- **THEN** the table automatically refreshes data every 15 seconds (see `api-hooks` specification for polling behavior)
 - **AND** the auto-refresh preserves current pagination, sorting, and filter settings
-
-#### Scenario: Auto-refresh prevents unnecessary rerenders
-- **WHEN** the reports table auto-refreshes AND the SbomReport data for all visible rows has not changed
-- **THEN** the table SHALL compare the entire SbomReport objects between the previous and current data using deep comparison
-- **AND** the table SHALL skip the state update (prevent rerender) if all SbomReport objects are unchanged (all fields match)
-- **AND** the table SHALL trigger a rerender if any field in any SbomReport object has changed
-- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
+- **AND** the auto-refresh prevents unnecessary rerenders when data hasn't changed (see `api-hooks` specification for `shouldUpdate` behavior)
 

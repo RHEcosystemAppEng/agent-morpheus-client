@@ -77,7 +77,7 @@ export interface UseApiOptions<T = unknown> {
 export function useApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>,
   options: UseApiOptions<T> = {}
-): UseApiResult<T> & { refetch: () => void } {
+): UseApiResult<T> {
   const { deps = [], pollInterval } = options;
   
   const [data, setData] = useState<T | null>(null);
@@ -232,11 +232,6 @@ export function useApi<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pollInterval]);
 
-  const refetch = () => {
-    // Manual refetch should show loading state
-    execute(true);
-  };
-
-  return { data, loading, error, refetch };
+  return { data, loading, error };
 }
 
