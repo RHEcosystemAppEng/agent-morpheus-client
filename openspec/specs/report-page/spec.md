@@ -15,9 +15,9 @@ The application SHALL provide navigation from the reports table to a report page
 ### Requirement: Report Details Display
 The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
 
-The report page SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/sbom-reports/${sbomReportId}` endpoint, but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop.
+The report page SHALL automatically refresh data every 5 seconds using `useReport` hook with polling, but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop (see `api-hooks` specification for `useReport` and polling behavior).
 
-The report page SHALL compare the entire SbomReport object between the previous and current data during auto-refresh using deep comparison. The page SHALL only trigger a rerender if any field in the SbomReport object has changed (including statusCounts, completion dates, CVE status counts, SBOM name, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+The report page SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
@@ -101,9 +101,9 @@ The report page SHALL display a donut chart summarizing component scan states fr
 ### Requirement: Repository Reports Table
 The report page SHALL display an embedded table listing all repository reports (CVE + component combinations) for the components in the SBOM, filtered by both the report's SBOM report ID and the CVE ID from the route parameters. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST").
 
-The repository reports table SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/reports` endpoint, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue auto-refreshing.
+The repository reports table SHALL automatically refresh data every 5 seconds using `usePaginatedApi` with polling, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue auto-refreshing (see `api-hooks` specification for polling behavior).
 
-The repository reports table SHALL compare the entire Report objects between the previous and current data during auto-refresh using deep comparison. The table SHALL only trigger a rerender if any field in any Report object has changed (including state, completion dates, ExploitIQ status, or any other field). This optimization SHALL prevent unnecessary rerenders and UI jumps when the data remains unchanged.
+The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
 The repository reports table SHALL display a loading skeleton only on the initial load when first entering the report page. When users change sort order or filters, the existing table data SHALL remain visible while new data loads in the background. The table SHALL update with new data once the API call completes, without showing the skeleton. This prevents visual disruption and table jumping during user interactions.
 
@@ -148,18 +148,11 @@ The repository reports table SHALL display a loading skeleton only on the initia
 #### Scenario: Repository reports table auto-refresh
 - **WHEN** a user views the report page with a repository reports table
 - **AND** some analysis states in `sbomReport.statusCounts` (from the parent report page) are not "failed" or "completed"
-- **THEN** the repository reports table automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/reports` endpoint
+- **THEN** the repository reports table automatically refreshes data every 5 seconds using `usePaginatedApi` with polling (see `api-hooks` specification)
 - **AND** the repository reports table uses the same `sbomReport.statusCounts` condition as the parent report page to determine whether to continue auto-refreshing
 - **AND** the auto-refresh preserves current pagination, sorting, and filter settings
-- **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", auto-refresh stops (same condition as the parent report page)
-- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
-
-#### Scenario: Repository reports table auto-refresh prevents unnecessary rerenders
-- **WHEN** the repository reports table auto-refreshes AND the Report data for all visible rows has not changed
-- **THEN** the table SHALL compare the entire Report objects between the previous and current data using deep comparison
-- **AND** the table SHALL skip the state update (prevent rerender) if all Report objects are unchanged (all fields match)
-- **AND** the table SHALL trigger a rerender if any field in any Report object has changed
-- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
+- **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", auto-refresh stops
+- **AND** the auto-refresh prevents unnecessary rerenders when data hasn't changed (see `api-hooks` specification for `shouldUpdate` behavior)
 
 ### Requirement: Report Page Layout
 The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation and page title at the top of the page.
@@ -189,23 +182,22 @@ The report page SHALL use PatternFly layout components and follow the standard p
   - The CVE ID is extracted from route parameters
 
 ### Requirement: API Integration
-The report page SHALL use API calls for data fetching, using the `useApi` and `usePaginatedApi` hooks.
+The report page SHALL use API calls for data fetching, using hooks defined in the `api-hooks` capability. See `api-hooks` specification for details on `useApi`, `usePaginatedApi`, and `useReport` hooks.
 
 #### Scenario: Report data fetched via API
 - **WHEN** the report page loads with SBOM report ID and CVE ID in route parameters
-- **THEN** report data is fetched using `/api/v1/sbom-reports/${sbomReportId}` endpoint via the `useReport` hook (which uses `useApi` internally)
+- **THEN** report data is fetched using `/api/v1/sbom-reports/${sbomReportId}` endpoint via the `useReport` hook (see `api-hooks` specification)
 - **AND** the page extracts and displays data for the specific CVE ID from the route parameters, not the first CVE
 
 #### Scenario: Repository reports data fetched via API
 - **WHEN** the repository reports table loads with SBOM report ID and CVE ID in route parameters
-- **THEN** reports data is fetched using `/api/v1/reports` endpoint with `sbomReportId` and `vulnId` query parameters via the `usePaginatedApi` hook
+- **THEN** reports data is fetched using `/api/v1/reports` endpoint with `sbomReportId` and `vulnId` query parameters via the `usePaginatedApi` hook (see `api-hooks` specification)
 - **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `exploitIqStatus`, `gitRepo`)
 
 #### Scenario: Report page auto-refresh
 - **WHEN** a user views the report page
 - **AND** some analysis states in `sbomReport.statusCounts` are not "failed" or "completed"
-- **THEN** the report page automatically refreshes data every 5 seconds by re-fetching from the `/api/v1/sbom-reports/${sbomReportId}` endpoint
-- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops
-- **AND** the auto-refresh stops when the user navigates away from the page or the component is unmounted
+- **THEN** the report page automatically refreshes data every 5 seconds using `useReport` hook with polling (see `api-hooks` specification)
+- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops (via `shouldPoll` function)
 - **AND** the auto-refresh preserves the current view state (no disruption to user interactions)
 

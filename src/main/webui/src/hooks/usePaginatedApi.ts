@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
 import { OpenAPI } from '../generated-client/core/OpenAPI';
 import { getHeaders } from '../generated-client/core/request';
 import type { ApiRequestOptions } from '../generated-client/core/ApiRequestOptions';
@@ -160,12 +161,16 @@ export function usePaginatedApi<T>(
   const dataRef = useRef<T | null>(null);
   // Track if this is the very first mount (not dependency changes)
   const isFirstMountRef = useRef<boolean>(true);
+  // Store debounced execute function
+  const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
+  // Track if debounce is pending (user is typing/changing filters)
+  const debouncePendingRef = useRef<boolean>(false);
   
   // Update options ref whenever options change
   useEffect(() => {
     optionsRef.current = options;
   }, [options]);
-  
+
   // Update data ref whenever data changes
   useEffect(() => {
     dataRef.current = data;
@@ -275,20 +280,38 @@ export function usePaginatedApi<T>(
     // Reset previous data ref when deps change (new query = fresh comparison)
     previousDataRef.current = null;
     
-    // Always execute immediately (this is usePaginatedApi, always immediate)
-    // Pass true to indicate this is a dependency change, so we always update
-    execute(true);
+    // On initial mount, execute immediately without debounce
+    if (isFirstMountRef.current) {
+      // Pass true to indicate this is a dependency change, so we always update
+      // execute() will set isFirstMountRef.current = false in its finally block
+      execute(true);
+    } else {
+      // On subsequent dependency changes, debounce the API call
+      // Create debounced function if it doesn't exist
+      if (!debouncedExecuteRef.current) {
+        debouncedExecuteRef.current = debounce(() => {
+          execute(true);
+          // Clear pending flag when debounce fires
+          debouncePendingRef.current = false;
+        }, 300);
+      }
+      
+      // Mark as pending and call the debounced function
+      debouncePendingRef.current = true;
+      debouncedExecuteRef.current();
+    }
 
     return () => {
       cancelledRef.current = true;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      // Clear polling interval
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      // Cancel any pending debounced calls
+      if (debouncedExecuteRef.current) {
+        debouncedExecuteRef.current.cancel();
+        debouncePendingRef.current = false; // Clear pending state on cancel
       }
+      // Note: Do NOT clear polling interval here - it's managed by the polling effect
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
@@ -312,6 +335,12 @@ export function usePaginatedApi<T>(
     intervalRef.current = setInterval(() => {
       // Don't poll until initial fetch completes (prevents duplicate calls on mount)
       if (!initialFetchCompleteRef.current) {
+        return;
+      }
+
+      // Skip polling if user is actively changing filters (debounce pending)
+      // This prevents polling with stale filter values and respects user input
+      if (debouncePendingRef.current) {
         return;
       }
 
