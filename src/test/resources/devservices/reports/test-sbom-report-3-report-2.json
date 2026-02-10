@@ -10867,7 +10867,7 @@
     ]
   },
   "metadata": {
-    "sbom_report_id": "product-3",
+    "product_id": "product-3",
     "requested_at": "2025-02-20T14:46:58.335Z",
     "submitted_at": "2025-02-20T15:46:58.335583Z",
     "user": "rromerom@redhat.com",

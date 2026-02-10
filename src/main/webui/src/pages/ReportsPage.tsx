@@ -31,9 +31,10 @@ const ReportsPage: React.FC = () => {
     // Restore sort state from URL
     if (
       sortField &&
-      (sortField === "sbomReportId" ||
-        sortField === "sbomName" ||
-        sortField === "submittedAt")
+      (sortField === "name" ||
+        sortField === "submittedAt" ||
+        sortField === "completedAt" ||
+        sortField === "cveId")
     ) {
       setSortColumn(sortField as SortColumn);
     }

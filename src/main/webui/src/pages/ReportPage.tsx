@@ -22,9 +22,9 @@ import { getErrorMessage } from "../utils/errorHandling";
 import ReportStatusLabel from "../components/ReportStatusLabel";
 
 const ReportPage: React.FC = () => {
-  const { sbomReportId, cveId } = useParams<{ sbomReportId: string; cveId: string }>();
+  const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
 
-  const { data, loading, error } = useReport(sbomReportId || "");
+  const { data, loading, error } = useReport(productId || "");
 
   if (loading) {
     return <ReportPageSkeleton />;
@@ -40,7 +40,7 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  if (!data || !sbomReportId || !cveId) {
+  if (!data || !productId || !cveId) {
     return (
       <PageSection>
         <Alert variant={AlertVariant.warning} title="Invalid report">
@@ -50,9 +50,9 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  const sbomName = data.sbomName || "";
-  const breadcrumbText = `${sbomName}/${cveId}`;
-  const productState = data.statusCounts["completed"] ? "completed" : "";
+  const productName = data.data?.name || "";
+  const breadcrumbText = `${productName}/${cveId}`;
+  const productState = data.summary?.statusCounts?.["completed"] ? "completed" : "";
 
   return (
     <>
@@ -104,7 +104,7 @@ const ReportPage: React.FC = () => {
         </Grid>
       </PageSection>
       <PageSection>
-        <RepositoryReportsTable sbomReportId={sbomReportId} cveId={cveId} product={data} />
+        <RepositoryReportsTable productId={productId} cveId={cveId} product={data} />
       </PageSection>
     </>
   );

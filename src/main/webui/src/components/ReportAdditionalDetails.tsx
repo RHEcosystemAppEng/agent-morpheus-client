@@ -8,17 +8,17 @@ import {
   DescriptionListDescription,
   Title,
 } from "@patternfly/react-core";
-import type { SbomReport } from "../generated-client/models/SbomReport";
+import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import FormattedTimestamp from "./FormattedTimestamp";
 
 interface ReportAdditionalDetailsProps {
-  product: SbomReport;
+  product: ProductSummary;
 }
 
 const ReportAdditionalDetails: React.FC<ReportAdditionalDetailsProps> = ({
   product,
 }) => {
-  const completedAt = product.completedAt;
+  const completedAt = product.data?.completedAt;
 
   return (
     <Card>

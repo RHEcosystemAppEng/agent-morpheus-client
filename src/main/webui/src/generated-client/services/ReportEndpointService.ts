@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { FailedComponent } from '../models/FailedComponent';
+import type { ProductSummary } from '../models/ProductSummary';
 import type { Report } from '../models/Report';
 import type { ReportData } from '../models/ReportData';
 import type { ReportRequest } from '../models/ReportRequest';
@@ -69,7 +71,7 @@ export class ReportEndpointService {
         page = 0,
         pageSize = 100,
         reportId,
-        sbomReportId,
+        productId,
         sortBy,
         status,
         vulnId,
@@ -99,9 +101,9 @@ export class ReportEndpointService {
          */
         reportId?: string,
         /**
-         * Filter by SBOM report ID (metadata.sbom_report_id)
+         * Filter by SBOM report ID (metadata.product_id)
          */
-        sbomReportId?: string,
+        productId?: string,
         /**
          * Sort criteria in format 'field:direction'
          */
@@ -125,7 +127,7 @@ export class ReportEndpointService {
                 'page': page,
                 'pageSize': pageSize,
                 'reportId': reportId,
-                'sbomReportId': sbomReportId,
+                'productId': productId,
                 'sortBy': sortBy,
                 'status': status,
                 'vulnId': vulnId,
@@ -165,6 +167,127 @@ export class ReportEndpointService {
             errors: {
                 400: `Invalid request data`,
                 429: `Request queue exceeded`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * List all product data
+     * Retrieves paginated, sortable, and filterable product data for all products
+     * @returns ProductSummary Product data retrieved successfully
+     * @throws ApiError
+     */
+    public static getApiV1ReportsProduct({
+        cveId,
+        name,
+        page = 0,
+        pageSize = 100,
+        sortDirection = 'DESC',
+        sortField = 'submittedAt',
+    }: {
+        cveId?: string,
+        name?: string,
+        page?: number,
+        pageSize?: number,
+        sortDirection?: string,
+        sortField?: string,
+    }): CancelablePromise<Array<ProductSummary>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/reports/product',
+            query: {
+                'cveId': cveId,
+                'name': name,
+                'page': page,
+                'pageSize': pageSize,
+                'sortDirection': sortDirection,
+                'sortField': sortField,
+            },
+            errors: {
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Get product data by ID
+     * Retrieves product data for a specific product ID
+     * @returns any Product data retrieved successfully
+     * @throws ApiError
+     */
+    public static getApiV1ReportsProduct1({
+        id,
+    }: {
+        /**
+         * Product ID
+         */
+        id: string,
+    }): CancelablePromise<{
+        /**
+         * Product data
+         */
+        data: {
+            /**
+             * Product ID
+             */
+            id: string;
+            /**
+             * Product name
+             */
+            name: string;
+            /**
+             * Product version
+             */
+            version: string;
+            /**
+             * Submitted at timestamp
+             */
+            submittedAt?: string;
+            /**
+             * Submitted count
+             */
+            submittedCount?: number;
+            /**
+             * CVE ID associated with this product
+             */
+            cveId?: string;
+            /**
+             * User provided metadata for the product
+             */
+            metadata?: Record<string, string>;
+            /**
+             * Submission failures
+             */
+            submissionFailures?: Array<FailedComponent>;
+            /**
+             * Completed at timestamp
+             */
+            completedAt?: string;
+        };
+        /**
+         * Product reports summary data
+         */
+        summary: {
+            /**
+             * Product state: 'analysing' or 'completed'
+             */
+            productState: string;
+            /**
+             * Map of analysis state to count of reports with that state
+             */
+            statusCounts: Record<string, number>;
+            /**
+             * Map of justification status to count of reports with that status
+             */
+            justificationStatusCounts: Record<string, number>;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/reports/product/{id}',
+            path: {
+                'id': id,
+            },
+            errors: {
                 500: `Internal server error`,
             },
         });

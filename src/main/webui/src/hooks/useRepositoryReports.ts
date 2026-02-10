@@ -33,7 +33,7 @@ export function hasReportStatesChanged(
 }
 
 export interface UseRepositoryReportsOptions {
-  sbomReportId: string;
+  productId: string;
   cveId: string;
   page: number;
   perPage: number;
@@ -63,7 +63,7 @@ export function useRepositoryReports(
   options: UseRepositoryReportsOptions
 ): UseRepositoryReportsResult {
   const {
-    sbomReportId,
+    productId,
     cveId,
     page,
     perPage,
@@ -111,7 +111,7 @@ export function useRepositoryReports(
       query: {
         page: page - 1,
         pageSize: perPage,
-        sbomReportId: sbomReportId,
+        productId: productId,
         vulnId: cveId,
         sortBy: sortByParam,
         ...(statusFilterValue && { status: statusFilterValue }),
@@ -125,7 +125,7 @@ export function useRepositoryReports(
       deps: [
         page,
         perPage,
-        sbomReportId,
+        productId,
         cveId,
         sortByParam,
         statusFilterValue,

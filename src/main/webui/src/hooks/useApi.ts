@@ -44,7 +44,7 @@ export interface UseApiOptions<T = unknown> {
 /**
  * Hook for immediate API calls with optional polling support.
  * Always fetches immediately on mount and when dependencies change.
- * For manual/triggered API calls (e.g., POST requests), use usePostApi instead.
+ * For manual/triggered API calls (e.g., POST requests), use useExecuteApi instead.
  * 
  * @param apiCall - Function that returns a promise (or CancelablePromise)
  * @param options - Configuration options

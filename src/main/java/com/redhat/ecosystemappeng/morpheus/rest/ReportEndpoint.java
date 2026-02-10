@@ -32,6 +32,7 @@ import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
+import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -293,9 +294,9 @@ public class ReportEndpoint {
       )
       @QueryParam("imageTag") String imageTag,
       @Parameter(
-        description = "Filter by SBOM report ID (metadata.sbom_report_id)"
+        description = "Filter by SBOM report ID (metadata.product_id)"
       )
-      @QueryParam("sbomReportId") String sbomReportId,
+      @QueryParam("productId") String productId,
       @Parameter(
         description = "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN"
       )
@@ -372,6 +373,88 @@ public class ReportEndpoint {
     return report;
   }
 
+  @GET
+  @Path("/product/{id}")
+  @Operation(
+    summary = "Get product data by ID", 
+    description = "Retrieves product data for a specific product ID")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "200", 
+      description = "Product data retrieved successfully",
+      content = @Content(
+        schema = @Schema(type = SchemaType.OBJECT, implementation = ProductSummary.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response listProduct(
+    @Parameter(
+      description = "Product ID", 
+      required = true
+    )
+    @PathParam("id") String id) throws InterruptedException {
+    try {
+      var result = reportService.getProductSummary(id);
+      if (result == null || result.data() == null) {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+      return Response.ok(result).build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to retrieve product", e);
+      return Response.serverError()
+          .entity(objectMapper.createObjectNode()
+              .put("error", e.getMessage()))
+          .build();
+    }
+  }
+
+  @GET
+  @Path("/product")
+  @Operation(
+    summary = "List all product data", 
+    description = "Retrieves paginated, sortable, and filterable product data for all products")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "200", 
+      description = "Product data retrieved successfully",
+      content = @Content(
+        schema = @Schema(type = SchemaType.ARRAY, implementation = ProductSummary.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response listProducts(
+      @QueryParam("page") @DefaultValue("0") Integer page,
+      @QueryParam("pageSize") @DefaultValue("100") Integer pageSize,
+      @QueryParam("sortField") @DefaultValue("submittedAt") String sortField,
+      @QueryParam("sortDirection") @DefaultValue("DESC") String sortDirection,
+      @QueryParam("name") String name,
+      @QueryParam("cveId") String cveId) {
+    try {
+      var result = reportService.listProductSummaries(page, pageSize, sortField, sortDirection, name, cveId);
+      
+      // Calculate total pages
+      long totalPages = (result.totalCount + pageSize - 1) / pageSize;
+      
+      return Response.ok(result.summaries)
+          .header("X-Total-Pages", String.valueOf(totalPages))
+          .header("X-Total-Elements", String.valueOf(result.totalCount))
+          .build();
+    } catch (Exception e) {
+      LOGGER.error("Unable to retrieve products", e);
+      return Response.serverError()
+          .entity(objectMapper.createObjectNode()
+              .put("error", e.getMessage()))
+          .build();
+    }
+  }
 
   @POST
   @Path("/{id}/submit")

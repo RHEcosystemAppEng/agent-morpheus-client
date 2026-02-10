@@ -78,13 +78,11 @@ const RepositoryReportPage: React.FC = () => {
   }>();
   
   const { productId, cveId, reportId } = params;
-  const isComponentRoute = !productId; // Component route doesn't have productId
-
   const { data: report, loading, error } = useRepositoryReport(reportId || "");
 
   if (!cveId) {
     return <RepositoryReportPageError
-      title="Invalid report"
+      title="Invalid URL format"
       message={`URL is invalid. Please use the format /reports/product/:productId/:cveId/:reportId or /reports/component/:cveId/:reportId.`}
     />;
   }
@@ -176,7 +174,7 @@ const RepositoryReportPage: React.FC = () => {
           <BreadcrumbItem>
             <Link to="/reports">Reports</Link>
           </BreadcrumbItem>
-          {!isComponentRoute && productId && cveId && (
+          {productId && (
             <BreadcrumbItem>
               <Link to={`/reports/product/${productId}/${cveId}`}>
                 {productCveBreadcrumbText}
