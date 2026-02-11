@@ -130,3 +130,10 @@ The repository report page SHALL provide a download button that allows users to 
 - **THEN** a JSON file is downloaded containing the complete report data
 - **AND** the downloaded file is named in the format `report-{cveId}-{reportId}.json`
 - **AND** the report download option is always available regardless of VEX data availability
+
+#### Scenario: CVE ID is clickable link
+- **WHEN** a user views the repository report page with report data loaded
+- **THEN** the CVE ID displayed in the DetailsCard "CVE" field is displayed as a clickable link
+- **AND** when the user clicks the CVE ID link, the application navigates to `/reports/cve/:cveId` where `:cveId` is the CVE ID from the report
+- **AND** the CVE ID link uses React Router `Link` component or equivalent for client-side navigation
+- **AND** the CVE ID link maintains the same visual styling as other clickable links in the application

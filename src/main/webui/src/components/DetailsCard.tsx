@@ -10,6 +10,7 @@ import {
   Flex,
   FlexItem,
 } from "@patternfly/react-core";
+import { Link, useParams } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import CveStatus from "./CveStatus";
@@ -38,7 +39,30 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   const codeTag = codeSource?.ref;
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
-  const outputVuln = output.find((v) => v.vuln_id === cveId);``
+  const outputVuln = output.find((v) => v.vuln_id === cveId);
+
+  const params = useParams<{
+    sbomReportId?: string;
+    productId?: string;
+    reportId?: string;
+  }>();
+  const { sbomReportId, productId, reportId } = params;
+  const isComponentRoute = !sbomReportId && !productId;
+
+  const productName = report?.metadata?.product_id;
+  const reportIdDisplay = vuln?.vuln_id
+    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
+    : "";
+
+  const getBreadcrumbState = () => {
+    return {
+      sbomReportId: sbomReportId || productId,
+      sbomName: productName,
+      reportId,
+      reportIdDisplay,
+      isComponentRoute,
+    };
+  };
 
   return (
     <Card>
@@ -61,7 +85,12 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    {vuln.vuln_id}
+                    <Link
+                      to={`/reports/cve/${cveId}`}
+                      state={getBreadcrumbState()}
+                    >
+                      {vuln.vuln_id}
+                    </Link>
                   </FlexItem>
                   <FlexItem>
                     {outputVuln ? <CveStatus vuln={outputVuln} /> : <NotAvailable />}
@@ -137,4 +166,3 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
 };
 
 export default DetailsCard;
-
