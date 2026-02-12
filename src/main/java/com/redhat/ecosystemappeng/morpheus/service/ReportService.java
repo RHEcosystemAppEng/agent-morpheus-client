@@ -31,6 +31,9 @@ import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.config.AppConfig;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
+import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
@@ -74,6 +77,9 @@ public class ReportService {
 
   @Inject
   RequestQueueService queueService;
+
+  @Inject
+  ProductRepositoryService productRepository;
 
   @ConfigProperty(name = "morpheus-ui.includes.path", defaultValue = "includes.json")
   String includesPath;
@@ -155,6 +161,58 @@ public class ReportService {
     Collection<String> deleteIds = repository.remove(query);
     queueService.deleted(deleteIds);
     return deleteIds;
+  }
+
+  public List<ProductSummary> listProductSummaries() {
+    return listProductSummaries(null, null, null, null, null, null).summaries;
+  }
+
+  public List<ProductSummary> listProductSummaries(String cveId) {
+    return listProductSummaries(null, null, null, null, null, cveId).summaries;
+  }
+
+  public static class ProductSummariesResult {
+    public final List<ProductSummary> summaries;
+    public final long totalCount;
+
+    public ProductSummariesResult(List<ProductSummary> summaries, long totalCount) {
+      this.summaries = summaries;
+      this.totalCount = totalCount;
+    }
+  }
+
+  public ProductSummariesResult listProductSummaries(Integer page, Integer pageSize, String sortField, String sortDirection, String name, String cveId) {
+    // Get paginated products from repository
+    ProductRepositoryService.ListResult listResult = productRepository.list(page, pageSize, sortField, sortDirection, name, cveId);
+    
+    // Build ProductSummary for each product
+    List<ProductSummary> summaries = new ArrayList<>();
+    for (Product product : listResult.products) {
+      ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product.id());
+      summaries.add(new ProductSummary(product, productReportsSummary));
+    }
+    
+    return new ProductSummariesResult(summaries, listResult.totalCount);
+  }
+
+  public ProductSummary getProductSummary(String productId) {
+    Product product = productRepository.get(productId);
+    if (product == null) {
+      return null;
+    }
+    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId);
+    
+    return new ProductSummary(
+      product, 
+      productReportsSummary
+    );
+  }
+
+  public List<String> getReportIds(List<String> productIds) {
+    if (Objects.isNull(productIds) || productIds.isEmpty()) {
+      return new ArrayList<>();
+    }
+    return repository.getReportIdsByProduct(productIds);
   }
 
   public boolean retry(String id) throws JsonProcessingException {
@@ -240,8 +298,19 @@ public class ReportService {
   }
 
   private String determineUser(JsonNode report) {
-    // User determination from product table removed - product table is no longer used
-    
+    JsonNode metadata = report.get("metadata");
+    if (Objects.nonNull(metadata)) {
+      JsonNode productIdNode = metadata.get("product_id");
+      if (Objects.nonNull(productIdNode) && !productIdNode.isNull()) {
+        String productId = productIdNode.asText();
+        if (Objects.nonNull(productId) && !productId.isEmpty()) {
+          String userName = productRepository.getUserName(productId);
+          if (Objects.nonNull(userName)) {
+            return userName;
+          }
+        }
+      }
+    }
     return userService.getUserName();
   }
 

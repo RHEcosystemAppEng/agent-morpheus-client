@@ -4,13 +4,13 @@
 TBD - created by archiving change connect-request-analysis-modal-to-upload-api. Update Purpose after archive.
 ## Requirements
 ### Requirement: Request Analysis Modal Submission
-The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/api/v1/sbom-reports/upload-cyclonedx` API endpoint and navigate to the repository report page upon successful submission. When validation errors occur, the modal SHALL display field-specific error messages under the corresponding form fields.
+The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/api/v1/products/upload-cyclonedx` API endpoint and navigate to the repository report page upon successful submission. When validation errors occur, the modal SHALL display field-specific error messages under the corresponding form fields.
 
 #### Scenario: Successful submission and navigation
 - **WHEN** a user fills in a valid CVE ID and selects a valid CycloneDX file in the request analysis modal
 - **AND** clicks the "Submit Analysis Request" button
 - **THEN** the modal creates a multipart form with the CVE ID and file
-- **AND** calls the `/api/v1/sbom-reports/upload-cyclonedx` API endpoint using the generated OpenAPI client service
+- **AND** calls the `/api/v1/products/upload-cyclonedx` API endpoint using the generated OpenAPI client service
 - **AND** displays a loading state (disables submit button) during the API call
 - **AND** upon successful response (HTTP 202), extracts the `reportRequestId.id` field from the `ReportData` response
 - **AND** navigates to the repository report page at `/reports/component/:cveId/:reportId` where `:cveId` is the CVE ID from the form and `:reportId` is the `reportRequestId.id` from the API response

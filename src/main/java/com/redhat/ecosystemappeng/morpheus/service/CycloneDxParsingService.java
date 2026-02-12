@@ -20,7 +20,7 @@ public class CycloneDxParsingService {
   /**
    * Parses and validates CycloneDX JSON file from InputStream
    * @param fileInputStream InputStream containing the CycloneDX JSON file
-   * @return ParsedCycloneDx containing the parsed JSON and extracted SBOM name and version
+   * @return ParsedCycloneDx containing the parsed JSON and extracted SBOM metadata
    * @throws FileValidationException if file is null, not valid JSON, or missing required fields
    * @throws IOException if file cannot be read
    */
@@ -40,11 +40,15 @@ public class CycloneDxParsingService {
     JsonNode component = getComponent(sbomJson);
     validateCycloneDxStructure(component);
 
-    // Extract SBOM name and version during parsing to avoid re-extraction
+    // Extract SBOM metadata during parsing to avoid re-extraction
     String sbomName = extractSbomName(component);
     String sbomVersion = extractSbomVersion(component);
+    String sbomDescription = extractSbomDescription(component);
+    String sbomType = extractSbomType(component);
+    String sbomPurl = extractSbomPurl(component);
+    String bomRef = extractBomRef(component);
 
-    return new ParsedCycloneDx(sbomJson, sbomName, sbomVersion);
+    return new ParsedCycloneDx(sbomJson, sbomName, sbomVersion, sbomDescription, sbomType, sbomPurl, bomRef);
   }
 
   /**
@@ -100,6 +104,58 @@ public class CycloneDxParsingService {
       return null;
     }
     return componentVersion.asText();
+  }
+
+  /**
+   * Extracts the SBOM description from component.description
+   * @param component Component node from metadata.component
+   * @return SBOM description, or null if not present
+   */
+  private String extractSbomDescription(JsonNode component) {
+    JsonNode componentDescription = component.get("description");
+    if (Objects.isNull(componentDescription) || componentDescription.isNull()) {
+      return null;
+    }
+    return componentDescription.asText();
+  }
+
+  /**
+   * Extracts the SBOM type from component.type
+   * @param component Component node from metadata.component
+   * @return SBOM type, or null if not present
+   */
+  private String extractSbomType(JsonNode component) {
+    JsonNode componentType = component.get("type");
+    if (Objects.isNull(componentType) || componentType.isNull()) {
+      return null;
+    }
+    return componentType.asText();
+  }
+
+  /**
+   * Extracts the SBOM purl from component.purl
+   * @param component Component node from metadata.component
+   * @return SBOM purl, or null if not present
+   */
+  private String extractSbomPurl(JsonNode component) {
+    JsonNode componentPurl = component.get("purl");
+    if (Objects.isNull(componentPurl) || componentPurl.isNull()) {
+      return null;
+    }
+    return componentPurl.asText();
+  }
+
+  /**
+   * Extracts the BOM reference from component.bom-ref
+   * @param component Component node from metadata.component
+   * @return BOM reference, or null if not present
+   */
+  private String extractBomRef(JsonNode component) {
+    JsonNode componentBomRef = component.get("bom-ref");
+    if (Objects.isNull(componentBomRef) || componentBomRef.isNull()) {
+      return null;
+    }
+    return componentBomRef.asText();
   }
 }
 

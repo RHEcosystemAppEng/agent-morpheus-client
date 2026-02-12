@@ -3,7 +3,7 @@ package com.redhat.ecosystemappeng.morpheus.service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Result of parsing a CycloneDX file, containing both the parsed JSON and the extracted SBOM name and version.
+ * Result of parsing a CycloneDX file, containing both the parsed JSON and the extracted SBOM metadata.
  */
 public record ParsedCycloneDx(
     /**
@@ -17,7 +17,23 @@ public record ParsedCycloneDx(
     /**
      * The SBOM version extracted from metadata.component.version (may be null if not present)
      */
-    String sbomVersion
+    String sbomVersion,
+    /**
+     * The SBOM description extracted from metadata.component.description (may be null if not present)
+     */
+    String sbomDescription,
+    /**
+     * The SBOM type extracted from metadata.component.type (may be null if not present)
+     */
+    String sbomType,
+    /**
+     * The SBOM purl extracted from metadata.component.purl (may be null if not present)
+     */
+    String sbomPurl,
+    /**
+     * The BOM reference extracted from metadata.component.bom-ref (may be null if not present)
+     */
+    String bomRef
 ) {
 }
 

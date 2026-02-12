@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Label,
@@ -10,6 +10,7 @@ import {
   CardBody,
   Popover,
   Icon,
+  Spinner,
 } from "@patternfly/react-core";
 import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
@@ -25,6 +26,9 @@ import ReportsToolbar from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import TableEmptyState from "./TableEmptyState";
+import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
+import type { Report } from "../generated-client/models/Report";
+import { useExecuteApi } from "../hooks/useExecuteApi";
 
 const PER_PAGE = 10;
 
@@ -65,6 +69,26 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     propSortDirection || "desc"
   );
+  // Track which row is currently loading (only one at a time)
+  // Store as object to avoid delimiter issues with productId or cveId
+  const [loadingRow, setLoadingRow] = useState<{ productId: string; cveId: string } | null>(null);
+  // Use ref to store current productId for the API call
+  const currentProductIdRef = useRef<string | null>(null);
+  
+  // Use executeApi hook for on-demand API calls - automatically cancels previous promise
+  const { data: reportsData, loading: reportsLoading, error: reportsError, execute: executeReportsQuery } = useExecuteApi<Array<Report>>(
+    () => {
+      // This will be called when execute() is invoked
+      // Get productId from ref
+      if (!currentProductIdRef.current) {
+        throw new Error("No product ID set for query");
+      }
+      return ReportEndpointService.getApiV1Reports({
+        productId: currentProductIdRef.current,
+        pageSize: 1, // We only need the first report
+      });
+    }
+  );
 
   // Sync with props when they change (from URL)
   useEffect(() => {
@@ -90,31 +114,79 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     perPage: PER_PAGE,
     sortColumn,
     sortDirection,
-    sbomName: searchValue,
+    name: searchValue,
     cveId: cveSearchValue,
   });
 
   const columnNames = {
-    sbomReportId: "SBOM Report ID",
-    sbomName: "SBOM name",
+    productId: "Report ID",
+    productName: "SBOM Name",
     cveId: "CVE ID",
-    repositoriesAnalyzed: "Repositories Analyzed",
+    repositoriesAnalyzed: "Repos Analyzed",
     exploitIqStatus: "ExploitIQ Status",
     submittedAt: "Submitted Date",
     completedAt: "Completion Date",
   };
 
-  // Handle SBOM Report ID link navigation based on numReports
-  const handleSbomReportIdClick = (row: (typeof rows)[0]) => {
-    // Use firstReportId which is always populated from the SBOM Reports API
-    const reportId = row.firstReportId;
+  // Helper function to clear loading state and navigate to product page
+  const navigateToProductPage = (productId: string, cveId: string) => {
+    setLoadingRow(null);
+    currentProductIdRef.current = null;
+    navigate(`/reports/product/${productId}/${cveId}`);
+  };
 
-    if (row.numReports === 1 && reportId && row.cveId) {
-      // Single report: navigate to component report page
-      navigate(`/reports/component/${row.cveId}/${reportId}`);
-    } else if (row.cveId) {
-      // Multiple reports: navigate to SBOM report page
-      navigate(`/reports/sbom-report/${row.sbomReportId}/${row.cveId}`);
+  // Handle navigation after reports query completes
+  useEffect(() => {
+    if (!reportsLoading && loadingRow) {
+      const { productId, cveId } = loadingRow;
+      
+      if (reportsError) {
+        // Error handling: clear loading state and fall back to product page (silent fallback)
+        navigateToProductPage(productId, cveId);
+        return;
+      }
+      
+      if (reportsData) {
+        // Handle edge cases
+        if (reportsData.length === 0) {
+          // Empty results: fall back to product page
+          navigateToProductPage(productId, cveId);
+          return;
+        }
+
+        // Take the first report and navigate to component route
+        const firstReport = reportsData[0];
+        if (!firstReport || !firstReport.id) {
+          // No report or no report ID: fall back to product page
+          navigateToProductPage(productId, cveId);
+          return;
+        }
+
+        // Navigate directly to the report component page
+        setLoadingRow(null);
+        currentProductIdRef.current = null;
+        navigate(`/reports/component/${cveId}/${firstReport.id}`);
+      }
+    }
+  }, [reportsData, reportsLoading, reportsError, loadingRow, navigate]);
+
+  // Handle Product ID link navigation
+  const handleProductIdClick = (row: (typeof rows)[0]) => {
+    if (!row.productId) {
+      return;
+    }
+
+    // If submittedCount === 1, query reports and navigate directly to the report
+    if (row.submittedCount === 1) {
+      // Set productId in ref and loading state for this row
+      // This will cancel any previous query when execute() is called
+      currentProductIdRef.current = row.productId;
+      setLoadingRow({ productId: row.productId, cveId: row.cveId });
+      // Execute the query - useExecuteApi will cancel previous promise automatically
+      executeReportsQuery();
+    } else {
+      // Standard navigation for multiple reports or undefined submittedCount
+      navigate(`/reports/product/${row.productId}/${row.cveId}`);
     }
   };
 
@@ -137,12 +209,14 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
-      case "sbomReportId":
-        return 0;
-      case "sbomName":
+      case "name":
         return 1;
+      case "cveId":
+        return 2;
       case "submittedAt":
         return 5;
+      case "completedAt":
+        return 6;
       default:
         return 5;
     }
@@ -157,10 +231,10 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       <SkeletonTable
         rowsCount={10}
         columns={[
-          "Product ID",
-          "SBOM name",
+          "Report ID",
+          "SBOM Name",
           "CVE ID",
-          "Repositories Analyzed",
+          "Repos Analyzed",
           "ExploitIQ Status",
           "Submitted Date",
           "Completion Date",
@@ -230,17 +304,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       <Table aria-label="Reports table">
         <Thead>
           <Tr>
-            <Th
-              sort={{
-                sortBy: {
-                  index: activeSortIndex,
-                  direction: activeSortDirection,
-                },
-                onSort: () => handleSortToggle("sbomReportId"),
-                columnIndex: 0,
-              }}
-            >
-              {columnNames.sbomReportId}
+            <Th>
+              {columnNames.productId}
             </Th>
             <Th
               sort={{
@@ -248,20 +313,44 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   index: activeSortIndex,
                   direction: activeSortDirection,
                 },
-                onSort: () => handleSortToggle("sbomName"),
+                onSort: () => handleSortToggle("name"),
                 columnIndex: 1,
               }}
             >
-              {columnNames.sbomName}
+              {columnNames.productName}
             </Th>
-            <Th>{columnNames.cveId}</Th>
-            <Th>{columnNames.repositoriesAnalyzed}</Th>
-            <Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("cveId"),
+                columnIndex: 2,
+              }}
+            >
+              {columnNames.cveId}
+            </Th>
+            <Th
+            >
+              {columnNames.repositoriesAnalyzed}
+            </Th>
+            <Th
+              style={{
+                whiteSpace: "nowrap",
+              }}
+            >
               <Flex
-                gap={{ default: "gapSm" }}
-                alignItems={{ default: "alignItemsCenter" }}
+                gap={{ default: "gapXs" as const }}
+                alignItems={{ default: "alignItemsCenter" as const }}
               >
-                <FlexItem>{columnNames.exploitIqStatus}</FlexItem>
+                <FlexItem
+                  style={{
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {columnNames.exploitIqStatus}
+                </FlexItem>
                 <FlexItem>
                   <Popover
                     triggerAction="hover"
@@ -283,6 +372,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       style={{
                         cursor: "help",
                         color: "var(--pf-v6-global--Color--200)",
+                        flexShrink: 0,
                       }}
                     >
                       <OutlinedQuestionCircleIcon />
@@ -303,7 +393,16 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             >
               {columnNames.submittedAt}
             </Th>
-            <Th>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("completedAt"),
+                columnIndex: 6,
+              }}
+            >
               {columnNames.completedAt}
             </Th>
           </Tr>
@@ -317,9 +416,9 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             rows.map((row, index) => {
               const isCompleted = isAnalysisCompleted(row.analysisState);
               return (
-                <Tr key={`${row.sbomReportId}-${row.cveId}-${index}`}>
+                <Tr key={`${row.productId}-${row.cveId}-${index}`}>
                   <Td
-                    dataLabel={columnNames.sbomReportId}
+                    dataLabel={columnNames.productId}
                     style={{
                       maxWidth: "10rem",
                       overflow: "hidden",
@@ -331,7 +430,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       to="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleSbomReportIdClick(row);
+                        handleProductIdClick(row);
                       }}
                       style={{
                         display: "block",
@@ -341,10 +440,14 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                         cursor: "pointer",
                       }}
                     >
-                      {row.sbomReportId}
+                      {loadingRow?.productId === row.productId && loadingRow?.cveId === row.cveId ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        row.productId
+                      )}
                     </Link>
                   </Td>
-                  <Td dataLabel={columnNames.sbomName}>{row.sbomName}</Td>
+                  <Td dataLabel={columnNames.productName}>{row.productName}</Td>
                   <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
                   <Td dataLabel={columnNames.repositoriesAnalyzed}>
                     {row.repositoriesAnalyzed}
@@ -354,7 +457,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                       ? (() => {
                           const statusItems = getStatusItems(row.productStatus);
                           return statusItems.length > 0 ? (
-                            <Flex gap={{ default: "gapSm" }}>
+                            <Flex gap={{ default: "gapXs" }}>
                               {statusItems.map((item, index) => (
                                 <FlexItem key={index}>
                                   <Label color={item.color}>
@@ -377,7 +480,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     )}
                   </Td>
                   <Td dataLabel={columnNames.completedAt}>
-                    {isCompleted ? (
+                    {row.completedAt ? (
                       <FormattedTimestamp date={row.completedAt} />
                     ) : (
                       " "

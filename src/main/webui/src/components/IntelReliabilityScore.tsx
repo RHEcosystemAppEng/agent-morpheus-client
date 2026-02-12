@@ -26,7 +26,11 @@ const IntelReliabilityScore: React.FC<IntelReliabilityScoreProps> = ({
     <div>
       {isNumeric && (
         <div style={{ marginTop: "0.5rem", maxWidth: "20%" }}>
-          <Progress value={numeric} size={ProgressSize.sm} />
+          <Progress 
+            value={numeric} 
+            size={ProgressSize.sm}
+            aria-label={`Intel Reliability Score: ${numeric}%`}
+          />
         </div>
       )}
       <div style={{ marginTop: "0.5rem" }}>

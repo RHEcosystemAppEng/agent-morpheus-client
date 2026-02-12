@@ -1,0 +1,42 @@
+{
+  "input": {
+    "scan": {
+      "id": "x1y2z3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
+      "type": null,
+      "started_at": "2025-02-10T10:00:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-99999",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "test-image-10",
+      "tag": "v1.0.0",
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/test-product-10",
+          "ref": "main"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "product_id": "product-10",
+    "submitted_at": "2025-02-10T10:00:00.000000Z",
+    "user": "test@example.com"
+  },
+  "info": {}
+}

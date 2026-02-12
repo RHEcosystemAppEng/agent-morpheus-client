@@ -10,10 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "copy:openapi": "node scripts/remove-servers.js ../../../target/generated/openapi/openapi.json openapi.json || (echo 'Warning: OpenAPI spec not found. Run generate:openapi first.' && exit 1)",
-    "generate:openapi": "cd ../../.. && (bash ./mvnw clean package -DskipTests || mvn clean package -DskipTests) && cd src/main/webui && npm run copy:openapi",
+    "generate:openapi": "cd ../../.. && ./mvnw clean package -DskipTests -Dquarkus.quinoa.enabled=false && cd src/main/webui && npm run copy:openapi",
     "generate:client": "openapi --input openapi.json --output src/generated-client --client fetch --useOptions --useUnionTypes",
-    "generate:all": "npm run generate:openapi && npm run generate:client",
-    "msw:init": "msw init public/ --save"
+    "generate:all": "(npm run generate:openapi || true) && (npm run copy:openapi || true) && npm run generate:client"
   },
   "dependencies": {
     "@patternfly/react-charts": "^8.4.0",

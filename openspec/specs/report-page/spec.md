@@ -10,7 +10,7 @@ The application SHALL provide navigation from the reports table to a report page
 - **WHEN** a user clicks the "SBOM Report ID" link in a table row
 - **THEN** the application navigates based on `SbomReport.numReports`:
   - If `numReports === 1`, navigate to `/reports/component/:cveId/:reportId` where `:cveId` is the CVE ID and `:reportId` is `SbomReport.firstReportId`
-  - Otherwise, navigate to `/reports/sbom-report/:sbomReportId/:cveId` where `:sbomReportId` is `SbomReport.sbomReportId` and `:cveId` is the CVE ID
+  - Otherwise, navigate to `/reports/product/:productId/:cveId` where `:productId` is `SbomReport.productId` and `:cveId` is the CVE ID
 
 ### Requirement: Report Details Display
 The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
@@ -186,12 +186,12 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 
 #### Scenario: Report data fetched via API
 - **WHEN** the report page loads with SBOM report ID and CVE ID in route parameters
-- **THEN** report data is fetched using `/api/v1/sbom-reports/${sbomReportId}` endpoint via the `useReport` hook (see `api-hooks` specification)
+- **THEN** report data is fetched using `/api/v1/product/${productId}` endpoint via the `useReport` hook (see `api-hooks` specification)
 - **AND** the page extracts and displays data for the specific CVE ID from the route parameters, not the first CVE
 
 #### Scenario: Repository reports data fetched via API
 - **WHEN** the repository reports table loads with SBOM report ID and CVE ID in route parameters
-- **THEN** reports data is fetched using `/api/v1/reports` endpoint with `sbomReportId` and `vulnId` query parameters via the `usePaginatedApi` hook (see `api-hooks` specification)
+- **THEN** reports data is fetched using `/api/v1/reports` endpoint with `productId` and `vulnId` query parameters via the `usePaginatedApi` hook (see `api-hooks` specification)
 - **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `exploitIqStatus`, `gitRepo`)
 
 #### Scenario: Report page auto-refresh

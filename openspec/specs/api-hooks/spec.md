@@ -43,11 +43,11 @@ The hook SHALL NOT execute automatically on mount. The hook SHALL only execute w
 - **AND** the loading state is set to false when the API call completes (success or error)
 
 ### Requirement: useReport Hook
-The `useReport` hook SHALL use `useApi` internally to fetch report data from the `/api/v1/sbom-reports/${sbomReportId}` endpoint. The hook SHALL provide a convenient wrapper around `useApi` for fetching SBOM report data.
+The `useReport` hook SHALL use `useApi` internally to fetch report data from the `/api/v1/product/${productId}` endpoint. The hook SHALL provide a convenient wrapper around `useApi` for fetching SBOM report data.
 
 #### Scenario: useReport fetches report data
 - **WHEN** a component uses `useReport` hook with a report ID
-- **THEN** the hook uses `useApi` internally to fetch from `/api/v1/sbom-reports/${sbomReportId}`
+- **THEN** the hook uses `useApi` internally to fetch from `/api/v1/product/${productId}`
 - **AND** the hook returns `{ data, loading, error }`
 ### Requirement: Debounced Dependency Changes in Paginated API Hook
 The `usePaginatedApi` hook SHALL debounce API calls when dependencies in the `deps` array change (excluding the initial mount). The hook SHALL wait for a debounce period of 300ms before executing the API call after a dependency change. This prevents excessive API calls when users are typing in filter input fields, which is the primary use case.

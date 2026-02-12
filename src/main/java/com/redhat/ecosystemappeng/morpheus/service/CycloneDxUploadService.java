@@ -65,7 +65,11 @@ public class CycloneDxUploadService {
     try {
       parsedCycloneDx = cycloneDxParsingService.parseCycloneDxFile(fileInputStream);
     } catch (FileValidationException e) {
+      LOGGER.errorf("File validation failed: %s", e.getMessage());
       errors.put("file", e.getMessage());
+    } catch (IOException e) {
+      LOGGER.errorf("IO error while parsing file: %s", e.getMessage());
+      errors.put("file", "Failed to read file: " + e.getMessage());
     }
 
     // If any validation errors occurred, throw ValidationException with all errors
@@ -76,14 +80,34 @@ public class CycloneDxUploadService {
     // All validations passed, proceed with processing
     JsonNode sbomJson = parsedCycloneDx.sbomJson();
     String sbomName = parsedCycloneDx.sbomName();
+    String sbomVersion = parsedCycloneDx.sbomVersion();
+    String sbomDescription = parsedCycloneDx.sbomDescription();
+    String sbomType = parsedCycloneDx.sbomType();
+    String sbomPurl = parsedCycloneDx.sbomPurl();
+    String bomRef = parsedCycloneDx.bomRef();
 
     // Generate SBOM report ID from SBOM name and timestamp
-    String sbomReportId = generateSbomReportId(sbomName);
+    String productId = generateSbomReportId(sbomName);
 
-    // Create metadata with sbom_report_id and sbom_name
+    // Create metadata with product_id, sbom_name, sbom_version, and additional SBOM metadata fields
     Map<String, String> metadata = new HashMap<>();
-    metadata.put("sbom_report_id", sbomReportId);
+    metadata.put("product_id", productId);
     metadata.put("sbom_name", sbomName);
+    if (sbomVersion != null) {
+      metadata.put("sbom_version", sbomVersion);
+    }
+    if (sbomDescription != null) {
+      metadata.put("sbom_description", sbomDescription);
+    }
+    if (sbomType != null) {
+      metadata.put("sbom_type", sbomType);
+    }
+    if (sbomPurl != null) {
+      metadata.put("sbom_purl", sbomPurl);
+    }
+    if (bomRef != null) {
+      metadata.put("sbom_bom_ref", bomRef);
+    }
 
     // Create and return ReportRequest
     return createReportRequest(cveId, sbomJson, metadata);
@@ -105,7 +129,7 @@ public class CycloneDxUploadService {
    * Creates a ReportRequest from CVE ID and parsed CycloneDX JSON
    * @param cveId Validated CVE ID
    * @param sbomJson Parsed and validated CycloneDX JSON
-   * @param metadata Metadata map containing sbom_report_id and sbom_name
+   * @param metadata Metadata map containing product_id and sbom_name
    * @return ReportRequest ready for processing
    */
   private ReportRequest createReportRequest(String cveId, JsonNode sbomJson, Map<String, String> metadata) {

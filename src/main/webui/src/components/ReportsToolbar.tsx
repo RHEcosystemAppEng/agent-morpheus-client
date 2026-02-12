@@ -46,7 +46,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
   onClearFilters = () => {},
   pagination,
 }) => {
-  const sbomSearchInput = (
+  const productSearchInput = (
     <SearchInput
       aria-label="Search by SBOM name"
       placeholder="Search by SBOM Name"
@@ -92,7 +92,7 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
               categoryName="SBOM Name"
               showToolbarItem={activeAttribute === "SBOM Name"}
             >
-              {sbomSearchInput}
+              {productSearchInput}
             </ToolbarFilter>
             <ToolbarFilter
               labels={cveSearchValue !== "" ? [cveSearchValue] : []}

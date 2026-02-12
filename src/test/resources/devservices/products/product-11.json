@@ -1,0 +1,11 @@
+{
+  "id": "product-11",
+  "name": "test-sbom-product-11",
+  "version": "1.0.0",
+  "cveId": "CVE-2024-88888",
+  "submittedAt": "2025-02-10T11:00:00.000000Z",
+  "submittedCount": 2,
+  "metadata": {},
+  "submissionFailures": []
+}
+

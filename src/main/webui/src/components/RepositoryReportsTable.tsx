@@ -22,7 +22,7 @@ import {
 } from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { Report } from "../generated-client";
-import type { SbomReport } from "../generated-client/models/SbomReport";
+import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
@@ -43,16 +43,17 @@ const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
 });
 
 interface RepositoryReportsTableProps {
-  sbomReportId: string;
+  productId: string;
   cveId: string;
-  product: SbomReport;
+  product: ProductSummary;
 }
 
 const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
-  sbomReportId,
+  productId,
   cveId,
   product,
 }) => {
+  const isComponentRoute = !product?.data?.id; // Component route doesn't have productId
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
@@ -66,9 +67,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     useState<string>("");
 
   const scanStateOptions = useMemo(() => {
-    const statusCounts = product.statusCounts || {};
+    const statusCounts = product.summary?.statusCounts || {};
     return Object.keys(statusCounts).sort();
-  }, [product.statusCounts]);
+  }, [product.summary?.statusCounts]);
 
   const getVulnerabilityStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
@@ -83,7 +84,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     error,
     pagination,
   } = useRepositoryReports({
-    sbomReportId,
+    productId,
     cveId,
     page,
     perPage,
@@ -391,7 +392,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
                   <Button
                     variant="primary"
                     onClick={() =>
-                      navigate(`/reports/component/${cveId}/${report.id}`)
+                      isComponentRoute ?
+                        navigate(`/reports/component/${cveId}/${report.id}`)
+                      :
+                        navigate(`/reports/product/${productId}/${cveId}/${report.id}`)
                     }
                   >
                     View

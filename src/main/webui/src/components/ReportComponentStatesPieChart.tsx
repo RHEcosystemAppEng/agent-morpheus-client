@@ -7,11 +7,11 @@ import {
   EmptyState,
   EmptyStateBody,
 } from "@patternfly/react-core";
-import type { SbomReport } from "../generated-client/models/SbomReport";
+import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import DonutChartWrapper from "./DonutChartWrapper";
 
 interface ReportComponentStatesPieChartProps {
-  product: SbomReport;
+  product: ProductSummary;
 }
 
 // State ordering: states appear in this order when present in data
@@ -40,7 +40,7 @@ const ReportComponentStatesPieChart: React.FC<
   ReportComponentStatesPieChartProps
 > = ({ product }) => {
   const chartData = useMemo(() => {
-    const statusCounts = product.statusCounts || {};
+    const statusCounts = product.summary?.statusCounts || {};
     const baseData = Object.entries(statusCounts).map(([x, y]) => ({ x, y: y as number }));
     
     // Calculate "Preprocessing failed" count
@@ -92,9 +92,9 @@ const ReportComponentStatesPieChart: React.FC<
 
   const total = useMemo(() => {
     // Total should include all submitted components
-    const statusCounts = product.statusCounts || {};
+    const statusCounts = product.summary?.statusCounts || {};
     return Object.values(statusCounts).reduce((sum: number, count: number) => sum + count, 0) || chartData.reduce((sum, d) => sum + d.y, 0);
-  }, [chartData, product.statusCounts]);
+  }, [chartData, product.summary?.statusCounts]);
   
   const legendData = useMemo(
     () => chartData.map((d) => ({ name: `${d.x}: ${d.y}` })),

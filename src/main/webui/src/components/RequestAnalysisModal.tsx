@@ -21,9 +21,7 @@ import {
 } from "@patternfly/react-core";
 import { UploadIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router";
-// Note: This import will be updated when the OpenAPI client is regenerated
-// The new service will be SbomReportEndpointService
-import { SbomReportEndpointService } from "../generated-client/services/SbomReportEndpointService";
+import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
 import { getErrorMessage, isValidationError } from "../utils/errorHandling";
 
@@ -115,7 +113,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
         file: file,
       };
 
-      const response: ReportData = await SbomReportEndpointService.postApiV1SbomReportsUploadCyclonedx({
+      const response: ReportData = await ProductEndpointService.postApiV1ProductsUploadCyclonedx({
         formData,
       });
 

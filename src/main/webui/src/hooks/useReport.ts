@@ -1,23 +1,24 @@
 import { useApi } from "./useApi";
-import type { SbomReport } from "../generated-client/models/SbomReport";
+import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
-import { SbomReportEndpointService } from "../generated-client";
+import { request } from "../generated-client/core/request";
+import { OpenAPI } from "../generated-client/core/OpenAPI";
 import { isEqual } from "lodash";
 
 export interface UseReportResult {
-  data: SbomReport | null;
+  data: ProductSummary | null;
   loading: boolean;
   error: Error | null;
 }
 
 /**
- * Pure function to compare SbomReport objects between two arrays
- * Compares all fields of each SBOM report using deep comparison
- * Returns true if any SBOM report data has changed, false otherwise
+ * Pure function to compare ProductSummary objects
+ * Compares all fields of the product summary using deep comparison
+ * Returns true if any product data has changed, false otherwise
  */
 export function hasProductStatusCountsChanged(
-  previousProduct: SbomReport | null,
-  currentProduct: SbomReport
+  previousProduct: ProductSummary | null,
+  currentProduct: ProductSummary
 ): boolean {
   // If no previous data, always update (initial load)
   if (!previousProduct) {
@@ -28,20 +29,27 @@ export function hasProductStatusCountsChanged(
 }
 
 /**
- * Hook to fetch SBOM report data for a report page with conditional auto-refresh.
- * Auto-refresh continues while SBOM report data has changed.
- * Only updates state when SBOM report data has changed to prevent unnecessary rerenders.
+ * Hook to fetch product data for a report page with conditional auto-refresh.
+ * Auto-refresh continues while product data has changed.
+ * Only updates state when product data has changed to prevent unnecessary rerenders.
  * 
- * @param sbomReportId - The SBOM report ID to fetch data for
+ * @param productId - The product ID to fetch data for
  * @returns Object with data, loading, and error states
  */
-export function useReport(sbomReportId: string): UseReportResult {
-  const { data, loading, error } = useApi<SbomReport>(
-    () => SbomReportEndpointService.getApiV1SbomReports1({ sbomReportId }),
+export function useReport(productId: string): UseReportResult {
+  const { data, loading, error } = useApi<ProductSummary>(
+    () => request<ProductSummary>(OpenAPI, {
+      method: "GET",
+      url: `/api/v1/reports/product/${productId}`,
+      errors: {
+        404: "Product not found",
+        500: "Internal server error",
+      },
+    }),
     {
-      deps: [sbomReportId],
+      deps: [productId],
       pollInterval: POLL_INTERVAL_MS,
-      shouldPoll: (product) => shouldContinuePollingByStatusCounts(product?.statusCounts),
+      shouldPoll: (product) => shouldContinuePollingByStatusCounts(product?.summary?.statusCounts),
       shouldUpdate: (previousProduct, currentProduct) => {
         return hasProductStatusCountsChanged(previousProduct, currentProduct);
       },

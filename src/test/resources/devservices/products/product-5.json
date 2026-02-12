@@ -1,0 +1,11 @@
+{
+  "id": "product-5",
+  "name": "Product_5",
+  "version": "1.0.0",
+  "cveId": "CVE-2024-44337",
+  "submittedAt": "2025-02-20T14:57:56.202326Z",
+  "submittedCount": 2,
+  "completedAt": "2025-02-20T14:58:02.339384Z",
+  "metadata": {},
+  "submissionFailures": []
+}

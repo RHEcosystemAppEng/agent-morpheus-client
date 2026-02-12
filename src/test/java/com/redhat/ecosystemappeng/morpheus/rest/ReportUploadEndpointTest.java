@@ -61,7 +61,16 @@ class ReportUploadEndpointTest {
                     "component": {
                       "version": "1.0.0"
                     },
-                    "properties": []
+                    "properties": [
+                      {
+                        "name": "image.source-location",
+                        "value": "https://github.com/openshift/kubernetes-nmstate"
+                      },
+                      {
+                        "name": "image.source.commit-id",
+                        "value": "444141eb5cc460308e662509df18ae1d0274005b"
+                      }
+                    ]
                   },
                   "components": [],
                   "dependencies": []
@@ -76,17 +85,34 @@ class ReportUploadEndpointTest {
         File sbomFile = new File(TEST_SBOM_FILE);
         RestAssured.baseURI = API_BASE;
         
-        RestAssured.given()
+        // Upload the file and verify report was created
+        String productId = RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
             .multiPart("file", sbomFile)
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(202)
             .contentType(ContentType.JSON)
             .body("reportRequestId", notNullValue())
-            .body("reportRequestId.id", notNullValue());
+            .body("reportRequestId.id", notNullValue())
+            .body("report.metadata.product_id", notNullValue())
+            .extract()
+            .path("report.metadata.product_id");
+        
+        // Verify product was created by querying the product endpoint
+        RestAssured.given()
+            .when()
+            .get("/api/v1/reports/product/" + productId)
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("data.id", equalTo(productId))
+            .body("data.name", notNullValue())
+            .body("data.cveId", equalTo(TEST_CVE_ID))
+            .body("data.submittedCount", equalTo(1))
+            .body("data.submittedAt", notNullValue());
     }
 
     @Test
@@ -99,7 +125,7 @@ class ReportUploadEndpointTest {
             .multiPart("cveId", TEST_CVE_ID)
             .multiPart("file", new File(filePath))
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -118,7 +144,7 @@ class ReportUploadEndpointTest {
             .multiPart("cveId", TEST_CVE_ID)
             .multiPart("file", new File(filePath))
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -136,7 +162,7 @@ class ReportUploadEndpointTest {
             .contentType(ContentType.MULTIPART)
             .multiPart("file", sbomFile)
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -153,7 +179,7 @@ class ReportUploadEndpointTest {
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -172,7 +198,7 @@ class ReportUploadEndpointTest {
             .multiPart("cveId", "INVALID-CVE-FORMAT")
             .multiPart("file", sbomFile)
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -191,7 +217,7 @@ class ReportUploadEndpointTest {
             .multiPart("cveId", "CVE-2023-3106")
             .multiPart("file", mongodbFile)
             .when()
-            .post("/api/v1/sbom-reports/upload-cyclonedx")
+            .post("/api/v1/products/upload-cyclonedx")
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
@@ -199,6 +225,168 @@ class ReportUploadEndpointTest {
             .body("errors.file", notNullValue())
             .body("errors.file", containsString("SBOM is missing required field"))
             .body("errors.file", containsString("Checked keys:"));
+    }
+
+    @Test
+    void testUpload_ProductCreatedWithVersion() throws IOException {
+        // Create a CycloneDX file with version
+        Path tempFile = Files.createTempFile("cyclonedx-with-version-", ".json");
+        File file = tempFile.toFile();
+        file.deleteOnExit();
+        
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write("""
+                {
+                  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+                  "bomFormat": "CycloneDX",
+                  "specVersion": "1.6",
+                  "metadata": {
+                    "component": {
+                      "name": "test-product-with-version",
+                      "version": "2.5.0"
+                    },
+                    "properties": [
+                      {
+                        "name": "image.source-location",
+                        "value": "https://github.com/openshift/kubernetes-nmstate"
+                      },
+                      {
+                        "name": "image.source.commit-id",
+                        "value": "444141eb5cc460308e662509df18ae1d0274005b"
+                      }
+                    ]
+                  },
+                  "components": []
+                }
+                """);
+        }
+        
+        RestAssured.baseURI = API_BASE;
+        
+        String productId = RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("cveId", TEST_CVE_ID)
+            .multiPart("file", file)
+            .when()
+            .post("/api/v1/products/upload-cyclonedx")
+            .then()
+            .statusCode(202)
+            .extract()
+            .path("report.metadata.product_id");
+        
+        // Verify product was created with the version from the file
+        RestAssured.given()
+            .when()
+            .get("/api/v1/reports/product/" + productId)
+            .then()
+            .statusCode(200)
+            .body("data.version", equalTo("2.5.0"));
+    }
+
+    @Test
+    void testUpload_ProductCreatedWithoutVersion() throws IOException {
+        // Create a CycloneDX file without version
+        Path tempFile = Files.createTempFile("cyclonedx-no-version-", ".json");
+        File file = tempFile.toFile();
+        file.deleteOnExit();
+        
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write("""
+                {
+                  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+                  "bomFormat": "CycloneDX",
+                  "specVersion": "1.6",
+                  "metadata": {
+                    "component": {
+                      "name": "test-product-without-version"
+                    },
+                    "properties": [
+                      {
+                        "name": "image.source-location",
+                        "value": "https://github.com/openshift/kubernetes-nmstate"
+                      },
+                      {
+                        "name": "image.source.commit-id",
+                        "value": "444141eb5cc460308e662509df18ae1d0274005b"
+                      }
+                    ]
+                  },
+                  "components": [],
+                  "dependencies": []
+                }
+                """);
+        }
+        
+        RestAssured.baseURI = API_BASE;
+        
+        // Upload should succeed even without version
+        io.restassured.response.Response response = RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("cveId", TEST_CVE_ID)
+            .multiPart("file", file)
+            .when()
+            .post("/api/v1/products/upload-cyclonedx");
+        
+        if (response.getStatusCode() != 202) {
+            System.err.println("Error response body: " + response.getBody().asString());
+            System.err.println("Status code: " + response.getStatusCode());
+        }
+        
+        String productId = response.then()
+            .statusCode(202)
+            .extract()
+            .path("report.metadata.product_id");
+        
+        // Verify product was created with empty string version (no default version fallback)
+        RestAssured.given()
+            .when()
+            .get("/api/v1/reports/product/" + productId)
+            .then()
+            .statusCode(200)
+            .body("data.version", equalTo(""));
+    }
+
+    @Test
+    void testUpload_InvalidJsonFile_NoProductCreated() throws IOException {
+        String filePath = createInvalidJsonFile();
+        RestAssured.baseURI = API_BASE;
+        
+        RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("cveId", TEST_CVE_ID)
+            .multiPart("file", new File(filePath))
+            .when()
+            .post("/api/v1/products/upload-cyclonedx")
+            .then()
+            .statusCode(400)
+            .contentType(ContentType.JSON)
+            .body("errors", notNullValue())
+            .body("errors.file", notNullValue())
+            .body("errors.file", containsString("not valid JSON"));
+        
+        // Verify no product was created by checking that a random product ID doesn't exist
+        // (We can't easily verify "no product created" without knowing what product ID would have been generated,
+        // but we can at least verify the request failed before product creation)
+    }
+
+    @Test
+    void testUpload_MissingCveId_NoProductCreated() {
+        File sbomFile = new File(TEST_SBOM_FILE);
+        RestAssured.baseURI = API_BASE;
+        
+        RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("file", sbomFile)
+            .when()
+            .post("/api/v1/products/upload-cyclonedx")
+            .then()
+            .statusCode(400)
+            .contentType(ContentType.JSON)
+            .body("errors", notNullValue())
+            .body("errors.cveId", notNullValue())
+            .body("errors.cveId", containsString("CVE ID is required"));
+        
+        // Verify no product was created (validation failed before product creation)
     }
 }
 

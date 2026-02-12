@@ -1,13 +1,14 @@
 /**
- * Hook for manual/triggered API calls (typically POST requests)
- * Does not fetch immediately - requires manual trigger via execute() or refetch()
+ * Hook for on-demand API calls that require explicit execution
+ * Does not fetch immediately - requires manual trigger via execute()
  * Does not support polling (use useApi for polling scenarios)
+ * Automatically cancels previous promise when execute() is called again
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { CancelablePromise } from '../generated-client';
 
-export interface UsePostApiResult<T> {
+export interface UseExecuteApiResult<T> {
   data: T | null;
   loading: boolean;
   error: Error | null;
@@ -15,25 +16,26 @@ export interface UsePostApiResult<T> {
 }
 
 /**
- * Hook for manual API calls that require explicit triggering
- * Typically used for POST, PUT, DELETE operations
+ * Hook for on-demand API calls that require explicit execution
+ * Typically used for GET, POST, PUT, DELETE operations that should be triggered manually
+ * Automatically cancels any in-flight request when execute() is called again
  * 
  * @param apiCall - Function that returns a promise (or CancelablePromise)
  * @returns Object with data, loading, error states and execute function
  * 
  * @example
  * ```tsx
- * const { data, loading, error, execute } = usePostApi(() => 
- *   Reports.postApiReportsNew({ requestBody: report })
+ * const { data, loading, error, execute } = useExecuteApi(() => 
+ *   Reports.getApiReports({ productId: id })
  * );
  * 
  * // Trigger manually
- * <button onClick={execute}>Submit</button>
+ * <button onClick={execute}>Load Reports</button>
  * ```
  */
-export function usePostApi<T>(
+export function useExecuteApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>
-): UsePostApiResult<T> {
+): UseExecuteApiResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);

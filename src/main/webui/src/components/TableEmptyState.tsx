@@ -16,18 +16,18 @@ const TableEmptyState: React.FC<TableEmptyStateProps> = ({
   titleText = "No results found",
 }) => {
   return (
-    <Table>
+    <Table aria-label="Empty table">
       <Thead>
         <Tr>
           {Array.from({ length: columnCount }).map((_, index) => (
-            <Th key={index} />
+            <Th key={index} aria-label="Empty column header" />
           ))}
         </Tr>
       </Thead>
       <Tbody>
         <Tr>
           <Td colSpan={columnCount}>
-            <Bullseye>
+            <Bullseye>  
               <EmptyState
                 headingLevel="h2"
                 titleText={titleText}

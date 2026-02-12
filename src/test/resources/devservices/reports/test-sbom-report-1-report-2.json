@@ -32,9 +32,6 @@
           "ref": "main"
         }
       ]
-    },
-    "metadata": {
-      "sbom_name": "test-sbom-product-1"
     }
   },
   "output": {
@@ -51,8 +48,7 @@
     "vex": null
   },
   "metadata": {
-    "sbom_report_id": "product-1",
-    "sbom_name": "test-sbom-product-1",
+    "product_id": "product-1",
     "submitted_at": "2025-01-15T10:00:00.000000Z",
     "sent_at": "2025-01-15T10:00:00.000000Z",
     "user": "test@example.com"
