@@ -24,36 +24,36 @@ export type ProductSummary = {
          */
         version: string;
         /**
-         * Submitted at timestamp
+         * Timestamp of product scan request submission
          */
-        submittedAt?: string;
+        submittedAt: string;
         /**
-         * Submitted count
+         * Number of components submitted for scanning
          */
-        submittedCount?: number;
+        submittedCount: number;
+        /**
+         * Product user provided metadata
+         */
+        metadata: Record<string, string>;
+        /**
+         * List of submitted components failed to be processed for scanning
+         */
+        submissionFailures: Array<FailedComponent>;
+        /**
+         * Timestamp of product scan request completion
+         */
+        completedAt?: string;
         /**
          * CVE ID associated with this product
          */
-        cveId?: string;
-        /**
-         * User provided metadata for the product
-         */
-        metadata?: Record<string, string>;
-        /**
-         * Submission failures
-         */
-        submissionFailures?: Array<FailedComponent>;
-        /**
-         * Completed at timestamp
-         */
-        completedAt?: string;
+        cveId: string;
     };
     /**
      * Product reports summary data
      */
     summary: {
         /**
-         * Product state: 'analysing' or 'completed'
+         * Product state of analysis
          */
         productState: string;
         /**

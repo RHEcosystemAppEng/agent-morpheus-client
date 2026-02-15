@@ -3,11 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Summary of reports data for a product
+ * Product reports data
  */
 export type ProductReportsSummary = {
     /**
-     * Product state: 'analysing' or 'completed'
+     * Product state of analysis
      */
     productState: string;
     /**

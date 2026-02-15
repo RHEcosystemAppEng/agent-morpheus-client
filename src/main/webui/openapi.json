@@ -158,7 +158,12 @@
         "required": [
           "id",
           "name",
-          "version"
+          "version",
+          "submittedAt",
+          "submittedCount",
+          "metadata",
+          "submissionFailures",
+          "cveId"
         ],
         "properties": {
           "id": {
@@ -175,39 +180,39 @@
           },
           "submittedAt": {
             "type": "string",
-            "description": "Submitted at timestamp"
+            "description": "Timestamp of product scan request submission"
           },
           "submittedCount": {
             "type": "integer",
             "format": "int32",
-            "description": "Submitted count"
-          },
-          "cveId": {
-            "type": "string",
-            "description": "CVE ID associated with this product"
+            "description": "Number of components submitted for scanning"
           },
           "metadata": {
             "type": "object",
             "additionalProperties": {
               "type": "string"
             },
-            "description": "User provided metadata for the product"
+            "description": "Product user provided metadata"
           },
           "submissionFailures": {
+            "description": "List of submitted components failed to be processed for scanning",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FailedComponent"
-            },
-            "description": "Submission failures"
+            }
           },
           "completedAt": {
             "type": "string",
-            "description": "Completed at timestamp"
+            "description": "Timestamp of product scan request completion"
+          },
+          "cveId": {
+            "type": "string",
+            "description": "CVE ID associated with this product"
           }
         }
       },
       "ProductReportsSummary": {
-        "description": "Summary of reports data for a product",
+        "description": "Product reports data",
         "type": "object",
         "required": [
           "productState",
@@ -217,7 +222,7 @@
         "properties": {
           "productState": {
             "type": "string",
-            "description": "Product state: 'analysing' or 'completed'"
+            "description": "Product state of analysis"
           },
           "statusCounts": {
             "type": "object",
@@ -251,7 +256,12 @@
             "required": [
               "id",
               "name",
-              "version"
+              "version",
+              "submittedAt",
+              "submittedCount",
+              "metadata",
+              "submissionFailures",
+              "cveId"
             ],
             "properties": {
               "id": {
@@ -268,34 +278,34 @@
               },
               "submittedAt": {
                 "type": "string",
-                "description": "Submitted at timestamp"
+                "description": "Timestamp of product scan request submission"
               },
               "submittedCount": {
                 "type": "integer",
                 "format": "int32",
-                "description": "Submitted count"
-              },
-              "cveId": {
-                "type": "string",
-                "description": "CVE ID associated with this product"
+                "description": "Number of components submitted for scanning"
               },
               "metadata": {
                 "type": "object",
                 "additionalProperties": {
                   "type": "string"
                 },
-                "description": "User provided metadata for the product"
+                "description": "Product user provided metadata"
               },
               "submissionFailures": {
+                "description": "List of submitted components failed to be processed for scanning",
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/FailedComponent"
-                },
-                "description": "Submission failures"
+                }
               },
               "completedAt": {
                 "type": "string",
-                "description": "Completed at timestamp"
+                "description": "Timestamp of product scan request completion"
+              },
+              "cveId": {
+                "type": "string",
+                "description": "CVE ID associated with this product"
               }
             }
           },
@@ -310,7 +320,7 @@
             "properties": {
               "productState": {
                 "type": "string",
-                "description": "Product state: 'analysing' or 'completed'"
+                "description": "Product state of analysis"
               },
               "statusCounts": {
                 "type": "object",
@@ -567,38 +577,6 @@
           "reportId": {
             "type": "string",
             "description": "ID assigned on scan request submission"
-          }
-        }
-      },
-      "ReportsSummary": {
-        "description": "Summary of reports statistics",
-        "type": "object",
-        "required": [
-          "vulnerableReportsCount",
-          "nonVulnerableReportsCount",
-          "pendingRequestsCount",
-          "newReportsTodayCount"
-        ],
-        "properties": {
-          "vulnerableReportsCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Count of reports containing vulnerable CVEs"
-          },
-          "nonVulnerableReportsCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Count of reports containing only non-vulnerable CVEs"
-          },
-          "pendingRequestsCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Count of pending analysis requests"
-          },
-          "newReportsTodayCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Count of new reports submitted today"
           }
         }
       },
@@ -1034,6 +1012,88 @@
         ]
       }
     },
+    "/api/v1/products": {
+      "get": {
+        "summary": "List all product data",
+        "description": "Retrieves paginated, sortable, and filterable product data for all products",
+        "parameters": [
+          {
+            "name": "cveId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "0"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": "100"
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "DESC"
+            }
+          },
+          {
+            "name": "sortField",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "submittedAt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductSummary"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
+      }
+    },
     "/api/v1/products/upload-cyclonedx": {
       "post": {
         "summary": "Upload CycloneDX file for analysis",
@@ -1070,6 +1130,79 @@
           },
           "400": {
             "description": "Validation error with field-specific error messages"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
+      }
+    },
+    "/api/v1/products/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "Product ID",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "summary": "Remove",
+        "tags": [
+          "Product Endpoint"
+        ]
+      },
+      "get": {
+        "summary": "Get product",
+        "description": "Gets product by ID from database",
+        "parameters": [
+          {
+            "description": "Product ID",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found in database",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSummary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found in database"
           },
           "500": {
             "description": "Internal server error"
@@ -1205,16 +1338,16 @@
             }
           },
           {
-            "description": "Filter by report ID (input.scan.id)",
-            "name": "reportId",
+            "description": "Filter by SBOM report ID (metadata.product_id)",
+            "name": "productId",
             "in": "query",
             "schema": {
               "type": "string"
             }
           },
           {
-            "description": "Filter by SBOM report ID (metadata.product_id)",
-            "name": "productId",
+            "description": "Filter by report ID (input.scan.id)",
+            "name": "reportId",
             "in": "query",
             "schema": {
               "type": "string"
@@ -1335,6 +1468,43 @@
       }
     },
     "/api/v1/reports/product": {
+      "delete": {
+        "summary": "Delete product by IDs",
+        "description": "Deletes all component analysis reports and product metadata associated with specified product IDs",
+        "parameters": [
+          {
+            "description": "List of product IDs to delete",
+            "required": true,
+            "name": "productIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
+          },
+          "400": {
+            "description": "Invalid request - no product IDs provided"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      },
       "get": {
         "summary": "List all product data",
         "description": "Retrieves paginated, sortable, and filterable product data for all products",
@@ -1417,6 +1587,37 @@
       }
     },
     "/api/v1/reports/product/{id}": {
+      "delete": {
+        "summary": "Delete product by ID",
+        "description": "Deletes all component analysis reports and product metadata associated with a specific product ID",
+        "parameters": [
+          {
+            "description": "Product ID to delete",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Product deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      },
       "get": {
         "summary": "Get product data by ID",
         "description": "Retrieves product data for a specific product ID",
@@ -1450,7 +1651,12 @@
                       "required": [
                         "id",
                         "name",
-                        "version"
+                        "version",
+                        "submittedAt",
+                        "submittedCount",
+                        "metadata",
+                        "submissionFailures",
+                        "cveId"
                       ],
                       "properties": {
                         "id": {
@@ -1467,34 +1673,34 @@
                         },
                         "submittedAt": {
                           "type": "string",
-                          "description": "Submitted at timestamp"
+                          "description": "Timestamp of product scan request submission"
                         },
                         "submittedCount": {
                           "type": "integer",
                           "format": "int32",
-                          "description": "Submitted count"
-                        },
-                        "cveId": {
-                          "type": "string",
-                          "description": "CVE ID associated with this product"
+                          "description": "Number of components submitted for scanning"
                         },
                         "metadata": {
                           "type": "object",
                           "additionalProperties": {
                             "type": "string"
                           },
-                          "description": "User provided metadata for the product"
+                          "description": "Product user provided metadata"
                         },
                         "submissionFailures": {
+                          "description": "List of submitted components failed to be processed for scanning",
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/FailedComponent"
-                          },
-                          "description": "Submission failures"
+                          }
                         },
                         "completedAt": {
                           "type": "string",
-                          "description": "Completed at timestamp"
+                          "description": "Timestamp of product scan request completion"
+                        },
+                        "cveId": {
+                          "type": "string",
+                          "description": "CVE ID associated with this product"
                         }
                       }
                     },
@@ -1509,7 +1715,7 @@
                       "properties": {
                         "productState": {
                           "type": "string",
-                          "description": "Product state: 'analysing' or 'completed'"
+                          "description": "Product state of analysis"
                         },
                         "statusCounts": {
                           "type": "object",
@@ -1602,7 +1808,7 @@
                 "schema": {
                   "type": "string",
                   "examples": [
-                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": {\n    \"analysis\": [...],\n    \"vex\": null | {...}\n  },\n  \"info\": {...\n  },\n  \"metadata\": {...\n  },\n  \"state\": \"completed\"\n}\n"
+                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": {\n    \"analysis\": [...],\n    \"vex\": null | {...}\n  },\n  \"info\": {...\n  },\n  \"metadata\": {...\n  },\n}\n"
                   ]
                 }
               }

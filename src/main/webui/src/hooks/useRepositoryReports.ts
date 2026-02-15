@@ -4,8 +4,7 @@
 
 import { useMemo } from "react";
 import { usePaginatedApi } from "./usePaginatedApi";
-import { Report } from "../generated-client";
-import type { SbomReport } from "../generated-client/models/SbomReport";
+import { Report, ProductSummary } from "../generated-client";
 import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
 import { mapDisplayLabelToApiValue } from "../components/Filtering";
 import { isEqual } from "lodash";
@@ -42,7 +41,7 @@ export interface UseRepositoryReportsOptions {
   scanStateFilter: string[];
   exploitIqStatusFilter: string[];
   repositorySearchValue: string;
-  product: SbomReport; // Used for determining polling condition
+  product: ProductSummary; // Used for determining polling condition
 }
 
 export interface UseRepositoryReportsResult {
@@ -96,8 +95,8 @@ export function useRepositoryReports(
 
   // Determine if auto-refresh should continue based on product statusCounts
   const shouldContinuePolling = useMemo(() => {
-    return shouldContinuePollingByStatusCounts(product.statusCounts);
-  }, [product.statusCounts]);
+    return shouldContinuePollingByStatusCounts(product.summary.statusCounts);
+  }, [product.summary.statusCounts]);
 
   const {
     data: reports,
