@@ -50,7 +50,6 @@ public class ReportRepositoryService {
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
   private static final String PRODUCT_ID = "product_id";
-  private static final String SBOM_REPORT_ID = "product_id";
   private static final Collection<String> METADATA_DATES = List.of(SUBMITTED_AT, SENT_AT);
   private static final String COLLECTION = "reports";
   private static final Map<String, Bson> STATUS_FILTERS = Map.of(
@@ -65,7 +64,7 @@ public class ReportRepositoryService {
       "pending", Filters.and(
         Filters.eq("metadata." + SENT_AT, null),
         Filters.eq("metadata." + SUBMITTED_AT, null),
-        Filters.ne("metadata." + SBOM_REPORT_ID, null)));
+        Filters.ne("metadata." + PRODUCT_ID, null)));
 
   @Inject
   MongoClient mongoClient;
@@ -185,7 +184,7 @@ public class ReportRepositoryService {
       if (Objects.nonNull(metadata.get(SUBMITTED_AT))) {
         return "queued";
       }
-      if (Objects.nonNull(metadata.get(SBOM_REPORT_ID))) {
+      if (Objects.nonNull(metadata.get(PRODUCT_ID))) {
         return "pending";
       }
     }

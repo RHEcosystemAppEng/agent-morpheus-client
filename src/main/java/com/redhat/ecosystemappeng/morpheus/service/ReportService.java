@@ -139,30 +139,6 @@ public class ReportService {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
 
-  public String get(String id) {
-    LOGGER.debugf("Get report %s", id);
-    return repository.findById(id);
-  }
-
-  public boolean remove(String id) {
-    LOGGER.debugf("Remove report %s", id);
-    queueService.deleted(id);
-    return repository.remove(id);
-  }
-
-  public boolean remove(Collection<String> ids) {
-    LOGGER.debugf("Remove reports %s", ids.toString());
-    queueService.deleted(ids);
-    return repository.remove(ids);
-  }
-  
-  public Collection<String> remove(Map<String, String> query) {
-    LOGGER.debugf("Remove reports with filter: %s", query);
-    Collection<String> deleteIds = repository.remove(query);
-    queueService.deleted(deleteIds);
-    return deleteIds;
-  }
-
   public List<ProductSummary> listProductSummaries() {
     return listProductSummaries(null, null, null, null, null, null).summaries;
   }
@@ -213,6 +189,30 @@ public class ReportService {
       return new ArrayList<>();
     }
     return repository.getReportIdsByProduct(productIds);
+  }
+
+  public String get(String id) {
+    LOGGER.debugf("Get report %s", id);
+    return repository.findById(id);
+  }
+
+  public boolean remove(String id) {
+    LOGGER.debugf("Remove report %s", id);
+    queueService.deleted(id);
+    return repository.remove(id);
+  }
+
+  public boolean remove(Collection<String> ids) {
+    LOGGER.debugf("Remove reports %s", ids.toString());
+    queueService.deleted(ids);
+    return repository.remove(ids);
+  }
+  
+  public Collection<String> remove(Map<String, String> query) {
+    LOGGER.debugf("Remove reports with filter: %s", query);
+    Collection<String> deleteIds = repository.remove(query);
+    queueService.deleted(deleteIds);
+    return deleteIds;
   }
 
   public boolean retry(String id) throws JsonProcessingException {
