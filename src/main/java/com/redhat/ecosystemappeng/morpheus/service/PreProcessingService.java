@@ -1,17 +1,17 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -25,7 +25,6 @@ import com.redhat.ecosystemappeng.morpheus.client.ComponentSyncerService;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 
 import io.quarkus.scheduler.Scheduled;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
@@ -39,7 +38,7 @@ public class PreProcessingService {
 
   @ConfigProperty(name = "morpheus.syncer.timeout", defaultValue = "1h")
   Duration timeout;
-  
+
   @Inject
   ObjectMapper objectMapper;
 
@@ -54,7 +53,7 @@ public class PreProcessingService {
 
     try (InputStream is = getClass().getClassLoader().getResourceAsStream("preProcessingTemplate.json")) {
       if (Objects.isNull(is)) {
-          throw new IllegalArgumentException("Template file not found in resources.");
+        throw new IllegalArgumentException("Template file not found in resources.");
       }
       ObjectNode templateJson = (ObjectNode) objectMapper.readTree(is);
 
@@ -63,14 +62,14 @@ public class PreProcessingService {
       ArrayNode dataArray = objectMapper.createArrayNode();
 
       for (ReportData payload : payloads) {
-        String scanId = payload.reportRequestId().id();
+        String reportId = payload.reportRequestId().id();
         JsonNode sourceInfo = payload.report().at("/input/image/source_info");
 
-        if (Objects.nonNull(scanId) && !scanId.isEmpty() && !sourceInfo.isMissingNode()) {
-            ObjectNode dataEntry = objectMapper.createObjectNode();
-            dataEntry.put("scan_id", scanId);
-            dataEntry.set("source_info", sourceInfo);
-            dataArray.add(dataEntry);
+        if (Objects.nonNull(reportId) && !reportId.isEmpty() && !sourceInfo.isMissingNode()) {
+          ObjectNode dataEntry = objectMapper.createObjectNode();
+          dataEntry.put("report_id", reportId);
+          dataEntry.set("source_info", sourceInfo);
+          dataArray.add(dataEntry);
         }
       }
 
@@ -98,19 +97,19 @@ public class PreProcessingService {
       LOGGER.debug("Component Syncer response status: " + status);
 
       if (status >= Response.Status.OK.getStatusCode() && status < Response.Status.MULTIPLE_CHOICES.getStatusCode()) {
-          LOGGER.info("Successfully sent payloads to Component Syncer");
-          
-          LocalDateTime now = LocalDateTime.now();
-          ids.forEach(id -> submitted.put(id, now));
+        LOGGER.info("Successfully sent payloads to Component Syncer");
 
-          return response;
+        LocalDateTime now = LocalDateTime.now();
+        ids.forEach(id -> submitted.put(id, now));
+
+        return response;
       } else if (status >= Response.Status.INTERNAL_SERVER_ERROR.getStatusCode() && attempt < maxRetries) {
-          LOGGER.warnf("Component Syncer failed with status code: %s, will retry in %dms", status, delay);
-          Thread.sleep(delay);
-          delay = delay * BACKOFF_MULTIPLIER;
+        LOGGER.warnf("Component Syncer failed with status code: %s, will retry in %dms", status, delay);
+        Thread.sleep(delay);
+        delay = delay * BACKOFF_MULTIPLIER;
       } else {
-          LOGGER.errorf("Component Syncer failed with status code: %s, all retries exhausted", status);
-          return response;
+        LOGGER.errorf("Component Syncer failed with status code: %s, all retries exhausted", status);
+        return response;
       }
     }
   }
@@ -130,12 +129,12 @@ public class PreProcessingService {
     Set<String> expired = new HashSet<>();
 
     submitted.forEach((id, startTime) -> {
-        if (now.isAfter(startTime.plus(timeout))) {
-            expired.add(id);
-            LOGGER.warnf("Component Syncer timeout for component Id: %s", id);
-            handleError(id,"component-syncer-timeout-error",String.format("No response from Component Syncer after %s seconds", timeout.toSeconds())
+      if (now.isAfter(startTime.plus(timeout))) {
+        expired.add(id);
+        LOGGER.warnf("Component Syncer timeout for component Id: %s", id);
+        handleError(id,"component-syncer-timeout-error",String.format("No response from Component Syncer after %s seconds", timeout.toSeconds())
             );
-        }
+      }
     });
 
     expired.forEach(submitted::remove);

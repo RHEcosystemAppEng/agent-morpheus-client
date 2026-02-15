@@ -66,10 +66,10 @@ public class ProductRepositoryService {
         .append(VERSION, product.version())
         .append(SUBMITTED_AT, product.submittedAt())
         .append(SUBMITTED_COUNT, product.submittedCount())
-        .append(CVE_ID, product.cveId())
         .append(METADATA, metadataWithUser)
         .append(SUBMISSION_FAILURES, product.submissionFailures())
-        .append(COMPLETED_AT, product.completedAt());
+        .append(COMPLETED_AT, product.completedAt())
+        .append(CVE_ID, product.cveId());
 
     getCollection().insertOne(doc);
     LOGGER.debugf("Saved product %s to %s collection", product.id(), COLLECTION);
@@ -218,10 +218,10 @@ public class ProductRepositoryService {
         doc.getString(VERSION),
         doc.getString(SUBMITTED_AT),
         doc.getInteger(SUBMITTED_COUNT),
-        doc.getString(CVE_ID),
         metadata,
         submissionFailures,
-        doc.getString(COMPLETED_AT)
+        doc.getString(COMPLETED_AT),
+        doc.getString(CVE_ID)
     );
   }
 }

@@ -28,6 +28,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
+import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
@@ -75,6 +76,9 @@ public class ReportEndpoint {
 
   @Inject
   PreProcessingService preProcessingService;
+
+  @Inject
+  ProductService productService;
 
   @Inject
   ObjectMapper objectMapper;
@@ -345,8 +349,7 @@ public class ReportEndpoint {
           "info": {...
           },
           "metadata": {...
-          },
-          "state": "completed"
+          },        
         }
         """)
       )
@@ -632,4 +635,73 @@ public class ReportEndpoint {
     return Response.accepted().build();
   }
 
+  @DELETE
+  @Path("/product")
+  @Operation(
+    summary = "Delete product by IDs", 
+    description = "Deletes all component analysis reports and product metadata associated with specified product IDs")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202", 
+      description = "Product deletion request accepted"
+    ),
+    @APIResponse(
+      responseCode = "400", 
+      description = "Invalid request - no product IDs provided"
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response removeManyByProductId(
+    @Parameter(
+      description = "List of product IDs to delete", 
+      required = true
+    )
+    @QueryParam("productIds") List<String> productIds) {
+    if (Objects.isNull(productIds) || productIds.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST)
+        .entity(objectMapper.createObjectNode()
+        .put("error", "No productIds provided"))
+        .build();
+    }
+    List<String> reportIds = reportService.getReportIds(productIds);
+    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
+      return Response.accepted().build();
+    }
+    reportService.remove(reportIds);
+    productService.remove(productIds);
+    return Response.accepted().build();
+  }
+
+  @DELETE
+  @Path("/product/{id}")
+  @Operation(
+    summary = "Delete product by ID", 
+    description = "Deletes all component analysis reports and product metadata associated with a specific product ID")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202", 
+      description = "Product deletion request accepted"
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response removeByProductId(
+    @Parameter(
+      description = "Product ID to delete", 
+      required = true
+    )
+    @PathParam("id") String id) {
+    List<String> reportIds = reportService.getReportIds(List.of(id));
+    if (Objects.isNull(reportIds) || reportIds.isEmpty()) {
+      return Response.accepted().build();
+    }
+    reportService.remove(reportIds);
+    productService.remove(id);
+    return Response.accepted().build();
+  }
 }

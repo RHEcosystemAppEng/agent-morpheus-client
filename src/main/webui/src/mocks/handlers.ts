@@ -9,7 +9,6 @@
 
 import { http, HttpResponse } from "msw";
 import type {
-  ReportsSummary,
   Report,
   VulnResult,
   ProductSummary,
@@ -446,35 +445,6 @@ const mockReports: Report[] = [
   }),
 ];
 
-// Generate reports summary based on actual mock data
-const generateMockReportsSummary = (): ReportsSummary => {
-  // Calculate summary from actual mock reports
-  const completedReports = mockReports.filter((r) => r.state === "completed");
-  const vulnerableReports = completedReports.filter((r) =>
-    r.vulns?.some((v) => v.justification?.status === "TRUE")
-  );
-  const nonVulnerableReports = completedReports.filter(
-    (r) => !r.vulns?.some((v) => v.justification?.status === "TRUE")
-  );
-  const pendingReports = mockReports.filter(
-    (r) => r.state === "pending" || r.state === "queued" || r.state === "sent"
-  );
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const newReportsToday = completedReports.filter((r) => {
-    if (!r.completedAt) return false;
-    const completedDate = new Date(r.completedAt);
-    return completedDate >= today;
-  });
-
-  return {
-    vulnerableReportsCount: vulnerableReports.length,
-    nonVulnerableReportsCount: nonVulnerableReports.length,
-    pendingRequestsCount: pendingReports.length,
-    newReportsTodayCount: newReportsToday.length,
-  };
-};
 
 /**
  * MSW request handlers
@@ -625,11 +595,6 @@ export const handlers = [
     return HttpResponse.text(JSON.stringify(report), {
       headers: { "Content-Type": "application/json" },
     });
-  }),
-
-  // GET /api/v1/reports/summary - Get reports summary
-  http.get("/api/v1/reports/summary", () => {
-    return HttpResponse.json(generateMockReportsSummary());
   }),
 
   // POST /api/v1/reports/new - Create new analysis request
