@@ -18,12 +18,14 @@ import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
 import com.redhat.ecosystemappeng.morpheus.service.ValidationException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
@@ -34,13 +36,16 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
@@ -58,6 +63,9 @@ public class ProductEndpoint {
 
   @Inject
   ProductRepositoryService productRepository;
+
+  @Inject
+  ProductService productService;
 
   @Inject
   UserService userService;
@@ -149,6 +157,28 @@ public class ProductEndpoint {
           .build();
     }
   }
+  
+  @DELETE
+  @Path("/{id}")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202", 
+      description = "Product deletion request accepted"
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response remove(
+    @Parameter(
+      description = "Product ID", 
+      required = true
+    )
+    @PathParam("id") String id) {
+    productService.remove(id);
+    return Response.accepted().build();
+  }
 
   @POST
   @Path("/upload-cyclonedx")
@@ -209,10 +239,9 @@ public class ProductEndpoint {
             sbomVersion != null ? sbomVersion : "",
             Instant.now().toString(),
             1,
-            cveId,
-            new HashMap<>(), // Empty metadata - SBOM fields are in report metadata
+            new HashMap<String, String>(), // Explicitly specify HashMap generic types
             Collections.emptyList(),
-            null // completedAt
+            cveId
           );
           productRepository.save(product, userService.getUserName());
         } catch (Exception e) {
@@ -238,6 +267,4 @@ public class ProductEndpoint {
               .put("error", e.getMessage()))
           .build();
     }
-  }
-}
-
+  }}

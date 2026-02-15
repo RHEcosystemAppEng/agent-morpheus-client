@@ -34,6 +34,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
+import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
@@ -45,7 +46,6 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SourceInfo;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.VulnId;
-
 
 import com.redhat.ecosystemappeng.morpheus.rest.NotificationSocket;
 
@@ -74,6 +74,9 @@ public class ReportService {
 
   @Inject
   ReportRepositoryService repository;
+
+  @Inject
+  ProductService productService;
 
   @Inject
   RequestQueueService queueService;
@@ -172,10 +175,8 @@ public class ReportService {
   }
 
   public ProductSummary getProductSummary(String productId) {
-    Product product = productRepository.get(productId);
-    if (product == null) {
-      return null;
-    }
+    Product product = productService.get(productId);
+
     ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId);
     
     return new ProductSummary(
@@ -299,18 +300,14 @@ public class ReportService {
 
   private String determineUser(JsonNode report) {
     JsonNode metadata = report.get("metadata");
-    if (Objects.nonNull(metadata)) {
-      JsonNode productIdNode = metadata.get("product_id");
-      if (Objects.nonNull(productIdNode) && !productIdNode.isNull()) {
-        String productId = productIdNode.asText();
-        if (Objects.nonNull(productId) && !productId.isEmpty()) {
-          String userName = productRepository.getUserName(productId);
-          if (Objects.nonNull(userName)) {
-            return userName;
-          }
-        }
+    if (metadata != null && metadata.has("product_id")) {
+      String productId = metadata.get("product_id").asText();
+      String productUser = productService.getUserName(productId);
+      if (productUser != null && !productUser.isEmpty()) {
+        return productUser;
       }
     }
+    
     return userService.getUserName();
   }
 

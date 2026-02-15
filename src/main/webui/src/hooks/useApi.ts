@@ -54,7 +54,7 @@ export interface UseApiOptions<T = unknown> {
  * ```tsx
  * // Simple usage
  * const { data, loading, error } = useApi(() => 
- *   Reports.getApiReportsSummary()
+ *   Reports.getApiReports1({ id: reportId })
  * );
  * 
  * // With dependencies
