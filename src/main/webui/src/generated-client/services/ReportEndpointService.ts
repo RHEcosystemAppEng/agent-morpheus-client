@@ -70,8 +70,8 @@ export class ReportEndpointService {
         imageTag,
         page = 0,
         pageSize = 100,
-        reportId,
         productId,
+        reportId,
         sortBy,
         status,
         vulnId,
@@ -97,13 +97,13 @@ export class ReportEndpointService {
          */
         pageSize?: number,
         /**
-         * Filter by report ID (input.scan.id)
-         */
-        reportId?: string,
-        /**
          * Filter by SBOM report ID (metadata.product_id)
          */
         productId?: string,
+        /**
+         * Filter by report ID (input.scan.id)
+         */
+        reportId?: string,
         /**
          * Sort criteria in format 'field:direction'
          */
@@ -126,8 +126,8 @@ export class ReportEndpointService {
                 'imageTag': imageTag,
                 'page': page,
                 'pageSize': pageSize,
-                'reportId': reportId,
                 'productId': productId,
+                'reportId': reportId,
                 'sortBy': sortBy,
                 'status': status,
                 'vulnId': vulnId,
@@ -172,6 +172,32 @@ export class ReportEndpointService {
         });
     }
     /**
+     * Delete product by IDs
+     * Deletes all component analysis reports and product metadata associated with specified product IDs
+     * @returns any Product deletion request accepted
+     * @throws ApiError
+     */
+    public static deleteApiV1ReportsProduct({
+        productIds,
+    }: {
+        /**
+         * List of product IDs to delete
+         */
+        productIds: Array<string>,
+    }): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/reports/product',
+            query: {
+                'productIds': productIds,
+            },
+            errors: {
+                400: `Invalid request - no product IDs provided`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * List all product data
      * Retrieves paginated, sortable, and filterable product data for all products
      * @returns ProductSummary Product data retrieved successfully
@@ -209,6 +235,31 @@ export class ReportEndpointService {
         });
     }
     /**
+     * Delete product by ID
+     * Deletes all component analysis reports and product metadata associated with a specific product ID
+     * @returns any Product deletion request accepted
+     * @throws ApiError
+     */
+    public static deleteApiV1ReportsProduct1({
+        id,
+    }: {
+        /**
+         * Product ID to delete
+         */
+        id: string,
+    }): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/reports/product/{id}',
+            path: {
+                'id': id,
+            },
+            errors: {
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * Get product data by ID
      * Retrieves product data for a specific product ID
      * @returns any Product data retrieved successfully
@@ -239,36 +290,36 @@ export class ReportEndpointService {
              */
             version: string;
             /**
-             * Submitted at timestamp
+             * Timestamp of product scan request submission
              */
-            submittedAt?: string;
+            submittedAt: string;
             /**
-             * Submitted count
+             * Number of components submitted for scanning
              */
-            submittedCount?: number;
+            submittedCount: number;
+            /**
+             * Product user provided metadata
+             */
+            metadata: Record<string, string>;
+            /**
+             * List of submitted components failed to be processed for scanning
+             */
+            submissionFailures: Array<FailedComponent>;
+            /**
+             * Timestamp of product scan request completion
+             */
+            completedAt?: string;
             /**
              * CVE ID associated with this product
              */
-            cveId?: string;
-            /**
-             * User provided metadata for the product
-             */
-            metadata?: Record<string, string>;
-            /**
-             * Submission failures
-             */
-            submissionFailures?: Array<FailedComponent>;
-            /**
-             * Completed at timestamp
-             */
-            completedAt?: string;
+            cveId: string;
         };
         /**
          * Product reports summary data
          */
         summary: {
             /**
-             * Product state: 'analysing' or 'completed'
+             * Product state of analysis
              */
             productState: string;
             /**

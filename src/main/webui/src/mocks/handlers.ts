@@ -186,10 +186,6 @@ const mockProducts: ProductSummary[] = [
       },
     },
   },
-    completedAt: new Date().toISOString(),
-    metadata: {},
-    submissionFailures: [],
-  },
 
   // Product 4: Pending analysis, 8 repositories
   generateMockProductSummary("product-4", "Sample Product D", "4.0.0", "CVE-2024-1006", {
@@ -517,7 +513,7 @@ export const handlers = [
   // GET /api/v1/reports/product/:id - Get product data by ID
   http.get("/api/v1/reports/product/:id", ({ params }) => {
     const { id } = params;
-    const product = mockProductSummaries.find((p) => p.data.id === id);
+    const product = mockProducts.find((p: ProductSummary) => p.data.id === id);
 
     if (!product) {
       return HttpResponse.json({ error: "Product not found" }, { status: 404 });
@@ -650,8 +646,8 @@ export const handlers = [
     const productIndices: number[] = [];
     
     // Find all products with this productId (since there can be multiple per productId, one per CVE)
-    mockProducts.forEach((p, index) => {
-      if (p.productId === productId) {
+    mockProducts.forEach((p: ProductSummary, index: number) => {
+      if (p.data.id === productId) {
         productIndices.push(index);
       }
     });
