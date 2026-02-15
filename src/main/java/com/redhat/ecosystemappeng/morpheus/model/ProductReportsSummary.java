@@ -6,10 +6,10 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 
-@Schema(name = "ProductReportsSummary", description = "Summary of reports data for a product")
+@Schema(name = "ProductReportsSummary", description = "Product reports data")
 @RegisterForReflection
 public record ProductReportsSummary(
-    @Schema(required = true, description = "Product state: 'analysing' or 'completed'")
+    @Schema(required = true, description = "Product state of analysis")
     String productState,
     @Schema(required = true, description = "Map of analysis state to count of reports with that state", type = SchemaType.OBJECT)
     Map<String, Integer> statusCounts,

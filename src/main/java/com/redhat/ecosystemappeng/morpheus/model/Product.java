@@ -5,6 +5,7 @@ import java.util.Map;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 
 @Schema(name = "Product", description = "Product metadata")
 @RegisterForReflection
@@ -15,17 +16,17 @@ public record Product(
     String name,
     @Schema(required = true, description = "Product version")
     String version,
-    @Schema(description = "Submitted at timestamp")
+    @Schema(description = "Timestamp of product scan request submission")
     String submittedAt,
-    @Schema(description = "Submitted count")
+    @Schema(description = "Number of components submitted for scanning")
     Integer submittedCount,
     @Schema(description = "CVE ID associated with this product")
     String cveId,
-    @Schema(description = "User provided metadata for the product")
+    @Schema(description = "Product user provided metadata")
     Map<String, String> metadata,
-    @Schema(description = "Submission failures")
+    @Schema(type = SchemaType.ARRAY, implementation = FailedComponent.class, description = "List of submitted components failed to be processed for scanning")
     List<FailedComponent> submissionFailures,
-    @Schema(description = "Completed at timestamp")
+    @Schema(description = "Timestamp of product scan request completion")
     String completedAt
 ) {}
 
