@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import { PageSection, Title } from "@patternfly/react-core";
+import { Content, PageSection, Title } from "@patternfly/react-core";
 import ReportsTable from "../components/ReportsTable";
 import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
 import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";
@@ -97,15 +97,11 @@ const ReportsPage: React.FC = () => {
 
   return (
     <>
-      <PageSection>
-        <Title headingLevel="h1" size="2xl">
-          Reports
-        </Title>
-        <p>
-          View comprehensive report for your product and their security
-          analysis. Reports include CVE exploitability assessments, VEX status
-          justifications, and detailed analysis summaries.
-        </p>
+      <PageSection isWidthLimited aria-labelledby="main-title">
+        <Content>
+          <h1><strong>Reports</strong></h1>
+          <p>View comprehensive report for your product and their security analysis. Reports include CVE exploitability assessments, VEX status justifications, and detailed analysis summaries.</p>
+        </Content>        
       </PageSection>
       <PageSection>
         <ReportsTable

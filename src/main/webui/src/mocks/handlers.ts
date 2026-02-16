@@ -7,13 +7,40 @@
  * To enable mocks, set VITE_ENABLE_MSW=true in your environment.
  */
 
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse, delay } from "msw";
 import type {
   Report,
   VulnResult,
   ProductSummary,
 } from "../generated-client";
 import { mockFullReports } from "./mockFullReports";
+
+/**
+ * Get delay from URL query parameter or environment variable
+ * Usage: Add ?mockDelay=1000 to URL to set delay to 1000ms
+ * Or set VITE_MOCK_DELAY_MS environment variable (default: 500ms)
+ */
+const getMockDelay = (request?: Request): number => {
+  // Check URL query parameter first (e.g., ?mockDelay=1000)
+  if (request) {
+    try {
+      const url = new URL(request.url);
+      const delayParam = url.searchParams.get("mockDelay");
+      if (delayParam) {
+        const delayMs = parseInt(delayParam, 10);
+        if (!isNaN(delayMs) && delayMs >= 0) {
+          return delayMs;
+        }
+      }
+    } catch (e) {
+      // Ignore URL parsing errors
+    }
+  }
+  
+  // Fall back to environment variable or default
+  const envDelay = parseInt(import.meta.env.VITE_MOCK_DELAY_MS || "500", 10);
+  return isNaN(envDelay) ? 500 : envDelay;
+};
 
 // Mock data generators with varied scenarios
 const generateMockProductSummary = (
@@ -87,11 +114,12 @@ const generateMockReport = (
   id: string,
   productId: string,
   options?: {
-    state?: "completed" | "pending" | "queued" | "sent" | "failed";
+    state?: "completed" | "pending" | "queued" | "sent" | "failed" | "expired";
     hasVulnerabilities?: boolean;
     vulnCount?: number;
     imageName?: string;
     imageTag?: string;
+    cveId?: string;
   }
 ): Report => {
   const now = new Date().toISOString();
@@ -103,6 +131,7 @@ const generateMockReport = (
   const state = options?.state || "completed";
   const hasVulnerabilities = options?.hasVulnerabilities ?? true;
   const vulnCount = options?.vulnCount ?? 2;
+  const cveId = options?.cveId;
 
   // Generate vulnerabilities based on state
   const vulns: VulnResult[] = [];
@@ -110,13 +139,23 @@ const generateMockReport = (
     for (let i = 1; i <= vulnCount; i++) {
       const isVulnerable = hasVulnerabilities && i === 1;
       vulns.push({
-        vulnId: `CVE-2024-${1000 + i}`,
+        vulnId: cveId || `CVE-2024-${1000 + i}`,
         justification: {
           status: isVulnerable ? "TRUE" : "FALSE",
           label: isVulnerable ? "vulnerable" : "not_vulnerable",
         },
       });
     }
+  } else if (cveId) {
+    // For non-completed states, add a placeholder vulnerability if cveId is provided
+    // This allows the report to be filtered by CVE ID
+    vulns.push({
+      vulnId: cveId,
+      justification: {
+        status: "UNKNOWN",
+        label: "uncertain",
+      },
+    });
   }
 
   return {
@@ -305,7 +344,160 @@ const mockProducts: ProductSummary[] = [
   }),
 ];
 
+// Helper function to cycle through different analysis states
+const getStateByIndex = (index: number): "completed" | "queued" | "sent" | "expired" | "failed" | "pending" => {
+  const states: Array<"completed" | "queued" | "sent" | "expired" | "failed" | "pending"> = [
+    "completed",
+    "queued",
+    "sent",
+    "expired",
+    "failed",
+    "pending",
+  ];
+  return states[index % states.length]!; // Use ! to assert non-null since modulo ensures valid index
+};
+
 const mockReports: Report[] = [
+  // All Colors Demo Product Reports - Shows all component states and CVE statuses
+  // Each report has a different analysis state
+  // 7 vulnerable reports (TRUE) and 1 not vulnerable (FALSE) with different CVSS scores
+  generateMockReport("report-all-colors-completed-1", "product-all-colors", {
+    state: getStateByIndex(0) as "completed" | "pending" | "queued" | "sent" | "failed" | "expired", // completed
+    hasVulnerabilities: false, // Not vulnerable - green status
+    vulnCount: 1,
+    imageName: "demo-completed-vuln-1",
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  }),
+  generateMockReport("report-all-colors-completed-2", "product-all-colors", {
+    state: getStateByIndex(1), // queued
+    hasVulnerabilities: true,
+    vulnCount: 1,
+    imageName: "demo-completed-vuln-2",
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  }),
+  generateMockReport("report-all-colors-completed-3", "product-all-colors", {
+    state: getStateByIndex(2), // sent
+    hasVulnerabilities: true,
+    vulnCount: 1,
+    imageName: "demo-completed-vuln-3",
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  }),
+  generateMockReport("report-all-colors-completed-4", "product-all-colors", {
+    state: getStateByIndex(3), // expired
+    hasVulnerabilities: true,
+    vulnCount: 1,
+    imageName: "demo-completed-vuln-4",
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  }),
+  ...Array.from({ length: 4 }, (_, i) => generateMockReport(`report-all-colors-completed-${i + 5}`, "product-all-colors", {
+    state: getStateByIndex(4 + i), // failed, pending, completed, queued
+    hasVulnerabilities: true,
+    vulnCount: 1,
+    imageName: `demo-completed-vuln-${i + 5}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+  // 10 not vulnerable reports (FALSE) - green
+  ...Array.from({ length: 10 }, (_, i) => generateMockReport(`report-all-colors-completed-safe-${i + 1}`, "product-all-colors", {
+    state: getStateByIndex(8 + i), // cycles through all states
+    hasVulnerabilities: false,
+    vulnCount: 1,
+    imageName: `demo-completed-safe-${i + 1}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+  // 2 uncertain reports (UNKNOWN) - gray
+  ...Array.from({ length: 2 }, (_, i) => ({
+    id: `report-all-colors-completed-unknown-${i + 1}`,
+    name: `Report report-all-colors-completed-unknown-${i + 1}`,
+    startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: getStateByIndex(18 + i) === "completed" ? new Date().toISOString() : "",
+    imageName: `demo-completed-unknown-${i + 1}`,
+    imageTag: "v1.0.0",
+    state: getStateByIndex(18 + i) as "completed" | "queued" | "sent" | "expired" | "failed" | "pending",
+    vulns: [{
+      vulnId: "CVE-2024-DEMO",
+      justification: {
+        status: "UNKNOWN",
+        label: "uncertain",
+      },
+    }],
+    metadata: {
+      productId: "product-all-colors",
+      environment: "production",
+    },
+    gitRepo: `https://github.com/example/demo-completed-unknown-${i + 1}`,
+    ref: "main",
+  })),
+
+  // Expired reports (10 total - dark red)
+  ...Array.from({ length: 10 }, (_, i) => ({
+    id: `report-all-colors-expired-${i + 1}`,
+    name: `Report report-all-colors-expired-${i + 1}`,
+    startedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+    completedAt: "",
+    imageName: `demo-expired-${i + 1}`,
+    imageTag: "v1.0.0",
+    state: getStateByIndex(20 + i) as "completed" | "queued" | "sent" | "expired" | "failed" | "pending",
+    vulns: [{
+      vulnId: "CVE-2024-DEMO",
+      justification: {
+        status: "UNKNOWN",
+        label: "uncertain",
+      },
+    }],
+    metadata: {
+      productId: "product-all-colors",
+      environment: "production",
+    },
+    gitRepo: `https://github.com/example/demo-expired-${i + 1}`,
+    ref: "main",
+  })),
+
+  // Failed reports (8 total - red)
+  ...Array.from({ length: 8 }, (_, i) => generateMockReport(`report-all-colors-failed-${i + 1}`, "product-all-colors", {
+    state: getStateByIndex(30 + i), // cycles through all states
+    hasVulnerabilities: false,
+    vulnCount: 0,
+    imageName: `demo-failed-${i + 1}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+
+  // Queued reports (7 total - medium gray)
+  ...Array.from({ length: 7 }, (_, i) => generateMockReport(`report-all-colors-queued-${i + 1}`, "product-all-colors", {
+    state: getStateByIndex(38 + i), // cycles through all states
+    hasVulnerabilities: false,
+    vulnCount: 0,
+    imageName: `demo-queued-${i + 1}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+
+  // Sent reports (8 total - darker gray)
+  ...Array.from({ length: 8 }, (_, i) => generateMockReport(`report-all-colors-sent-${i + 1}`, "product-all-colors", {
+    state: getStateByIndex(45 + i), // cycles through all states
+    hasVulnerabilities: false,
+    vulnCount: 0,
+    imageName: `demo-sent-${i + 1}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+
+  // Pending reports (7 total - light gray)
+  ...Array.from({ length: 7 }, (_, i) => generateMockReport(`report-all-colors-pending-${i + 1}`, "product-all-colors", {
+    state: getStateByIndex(53 + i), // cycles through all states
+    hasVulnerabilities: false,
+    vulnCount: 0,
+    imageName: `demo-pending-${i + 1}`,
+    imageTag: "v1.0.0",
+    cveId: "CVE-2024-DEMO",
+  })),
+
   // Report 1: Completed with vulnerabilities
   generateMockReport("report-1", "product-1", {
     state: "completed",
@@ -479,7 +671,8 @@ const mockReports: Report[] = [
  */
 export const handlers = [
   // GET /api/v1/reports/product - List all products
-  http.get("/api/v1/reports/product", ({ request }) => {
+  http.get("/api/v1/reports/product", async ({ request }) => {
+    await delay(getMockDelay(request));
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
@@ -542,7 +735,8 @@ export const handlers = [
   }),
 
   // GET /api/v1/reports/product/:id - Get product data by ID
-  http.get("/api/v1/reports/product/:id", ({ params }) => {
+  http.get("/api/v1/reports/product/:id", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { id } = params;
     const product = mockProducts.find((p: ProductSummary) => p.data.id === id);
 
@@ -553,7 +747,8 @@ export const handlers = [
   }),
 
   // GET /api/v1/reports - List analysis reports
-  http.get("/api/v1/reports", ({ request }) => {
+  http.get("/api/v1/reports", async ({ request }) => {
+    await delay(getMockDelay(request));
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "100", 10);
@@ -599,7 +794,8 @@ export const handlers = [
   }),
 
   // GET /api/v1/reports/:id - Get analysis report by ID (FullReport)
-  http.get("/api/v1/reports/:id", ({ params }) => {
+  http.get("/api/v1/reports/:id", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { id } = params as { id: string };
     
     // First check if we have a FullReport mock
@@ -626,6 +822,7 @@ export const handlers = [
 
   // POST /api/v1/reports/new - Create new analysis request
   http.post("/api/v1/reports/new", async ({ request }) => {
+    await delay(getMockDelay(request));
     const body = (await request.json()) as any;
 
     // Generate a new report ID
@@ -659,7 +856,8 @@ export const handlers = [
   }),
 
   // DELETE /api/v1/reports/:id - Delete analysis report
-  http.delete("/api/v1/reports/:id", ({ params }) => {
+  http.delete("/api/v1/reports/:id", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { id } = params;
     const index = mockReports.findIndex((r) => r.id === id);
 
@@ -672,7 +870,8 @@ export const handlers = [
   }),
 
   // DELETE /api/v1/products/:productId - Delete product by ID
-  http.delete("/api/v1/products/:productId", ({ params }) => {
+  http.delete("/api/v1/products/:productId", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { productId } = params;
     const productIndices: number[] = [];
     
@@ -707,7 +906,8 @@ export const handlers = [
   }),
 
   // POST /api/v1/reports/:id/submit - Submit to ExploitIQ
-  http.post("/api/v1/reports/:id/submit", ({ params }) => {
+  http.post("/api/v1/reports/:id/submit", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { id } = params;
     const report = mockReports.find((r) => r.id === id);
 
@@ -722,7 +922,8 @@ export const handlers = [
   }),
 
   // POST /api/reports/:id/retry - Retry analysis request
-  http.post("/api/reports/:id/retry", ({ params }) => {
+  http.post("/api/reports/:id/retry", async ({ request, params }) => {
+    await delay(getMockDelay(request));
     const { id } = params;
     const report = mockReports.find((r) => r.id === id);
 
@@ -737,7 +938,8 @@ export const handlers = [
   }),
 
   // GET /api/vulnerabilities - List vulnerabilities
-  http.get("/api/vulnerabilities", ({ request }) => {
+  http.get("/api/vulnerabilities", async ({ request }) => {
+    await delay(getMockDelay(request));
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "0", 10);
     const pageSize = parseInt(url.searchParams.get("pageSize") || "1000", 10);

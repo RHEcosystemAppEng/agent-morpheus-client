@@ -1,4 +1,4 @@
-import { Label, Icon } from "@patternfly/react-core";
+import { Label } from "@patternfly/react-core";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -20,15 +20,7 @@ const ReportStatusLabel: React.FC<ReportStatusLabelProps> = ({ state }) => {
 
   if (stateLower === "completed") {
     return (
-      <Label
-        variant="outline"
-        color="green"
-        icon={
-          <Icon status="success">
-            <CheckCircleIcon />
-          </Icon>
-        }
-      >
+      <Label status="success" variant="outline" icon={<CheckCircleIcon />}>
         {formatToTitleCase(state)}
       </Label>
     );
@@ -36,15 +28,7 @@ const ReportStatusLabel: React.FC<ReportStatusLabelProps> = ({ state }) => {
 
   if (stateLower === "expired") {
     return (
-      <Label
-        variant="outline"
-        color="orange"
-        icon={
-          <Icon status="warning">
-            <ExclamationTriangleIcon />
-          </Icon>
-        }
-      >
+      <Label status="danger" variant="outline" icon={<ExclamationTriangleIcon />}>
         {formatToTitleCase(state)}
       </Label>
     );
@@ -52,38 +36,22 @@ const ReportStatusLabel: React.FC<ReportStatusLabelProps> = ({ state }) => {
 
   if (stateLower === "failed") {
     return (
-      <Label
-        variant="outline"
-        color="red"
-        icon={
-          <Icon status="danger">
-            <ExclamationTriangleIcon />
-          </Icon>
-        }
-      >
+      <Label status="danger" variant="outline" icon={<ExclamationTriangleIcon />}>
         {formatToTitleCase(state)}
       </Label>
     );
   }
 
-  if (stateLower === "queued" || stateLower === "sent") {
+  if (stateLower === "queued" || stateLower === "sent" || stateLower === "pending") {
     return (
-      <Label
-        variant="outline"
-        color="grey"
-        icon={
-          <Icon>
-            <SyncIcon />
-          </Icon>
-        }
-      >
+      <Label variant="outline" icon={<SyncIcon />}>
         {formatToTitleCase(state)}
       </Label>
     );
   }
 
   return (
-    <Label variant="outline" color="grey">
+    <Label status="info" variant="outline">
       {formatToTitleCase(state)}
     </Label>
   );

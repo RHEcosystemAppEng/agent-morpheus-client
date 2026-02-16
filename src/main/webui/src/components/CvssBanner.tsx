@@ -6,6 +6,10 @@ import {
   SeverityModerateIcon,
   SeverityNoneIcon,
 } from "@patternfly/react-icons";
+import t_global_icon_color_status_danger_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_danger_default";
+import t_global_icon_color_status_warning_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_warning_default";
+import t_global_icon_color_status_info_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_info_default";
+import t_global_icon_color_status_success_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_success_default";
 import type { Cvss } from "../types/FullReport";
 import NotAvailable from "./NotAvailable";
 
@@ -28,28 +32,28 @@ const CvssBanner: React.FC<CvssBannerProps> = ({ cvss }) => {
 
   let severity = "";
   let Icon: React.ComponentType<{ color?: string }> | null = null;
-  let color = "dimgray";
+  let color: string = t_global_icon_color_status_info_default.var; // Default fallback
 
   if (score === 0.0) {
     severity = "None";
     Icon = SeverityNoneIcon;
-    color = "darkseagreen";
+    color = t_global_icon_color_status_success_default.var;
   } else if (score > 0.0 && score < 4.0) {
     severity = "Low";
     Icon = SeverityMinorIcon;
-    color = "darkgoldenrod";
+    color = t_global_icon_color_status_success_default.var;
   } else if (score >= 4.0 && score < 7.0) {
     severity = "Medium";
     Icon = SeverityModerateIcon;
-    color = "peru";
+    color = t_global_icon_color_status_info_default.var;
   } else if (score >= 7.0 && score < 9.0) {
     severity = "High";
     Icon = SeverityImportantIcon;
-    color = "firebrick";
+    color = t_global_icon_color_status_warning_default.var;
   } else if (score >= 9.0 && score <= 10.0) {
     severity = "Critical";
     Icon = SeverityCriticalIcon;
-    color = "indigo";
+    color = t_global_icon_color_status_danger_default.var;
   }
 
   if (Icon) {

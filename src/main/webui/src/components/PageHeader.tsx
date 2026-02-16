@@ -37,10 +37,7 @@ const Brand: React.FC = () => {
             style={{ height: "var(--pf-t--global--spacer--xl)" }}
             aria-label="Red Hat logo"
           />
-      </FlexItem>
-      <FlexItem>
-        <Divider orientation={{ default: "vertical" }} />
-      </FlexItem>
+      </FlexItem>          
       <FlexItem>
         <Stack>
           <Title headingLevel="h6" >
@@ -65,7 +62,12 @@ interface PageHeaderProps {
 
 const PageHeader: React.FC<PageHeaderProps> = ({ isSidebarOpen, onSidebarToggle }) => {
   const headerToolbar = (
-    <Toolbar id="toolbar" isFullHeight isStatic>
+    <Toolbar 
+      id="toolbar" 
+      isFullHeight 
+      isStatic
+      aria-label="Page header toolbar"
+    >
       <ToolbarContent>
         <ToolbarGroup
           variant="action-group-plain"
@@ -111,11 +113,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ isSidebarOpen, onSidebarToggle 
             <BarsIcon />
           </PageToggleButton>
         </MastheadToggle>
-        <MastheadBrand>
+        <MastheadBrand aria-label="Red Hat Trusted Profile Analyzer ExploitIQ">
           <Brand />
         </MastheadBrand>
       </MastheadMain>
-      <MastheadContent>{headerToolbar}</MastheadContent>
+      <MastheadContent aria-label="Page header content">
+        {headerToolbar}
+      </MastheadContent>
     </Masthead>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { PageSection, Title, Stack, StackItem } from "@patternfly/react-core";
+import { PageSection, Title, Stack, StackItem, Content } from "@patternfly/react-core";
 import GetStartedCard from "../components/GetStartedCard";
 import MetricsCard from "../components/MetricsCard";
 
@@ -8,13 +8,13 @@ import MetricsCard from "../components/MetricsCard";
  */
 const HomePage: React.FC = () => {
   return (
-    <>
-      <PageSection>
-        <Title headingLevel="h1" size="2xl">
-          Home
-        </Title>
-        <p>Request new analysis and view important system data.</p>
-      </PageSection>
+    <>      
+      <PageSection isWidthLimited aria-labelledby="main-title">
+          <Content>
+            <h1><strong>Home</strong></h1>
+            <p>Request new analysis and view important system data.</p>
+          </Content>
+      </PageSection>              
       <PageSection>
         <Stack hasGutter>
           <StackItem>

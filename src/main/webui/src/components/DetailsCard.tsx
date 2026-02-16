@@ -64,7 +64,11 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     {vuln.vuln_id}
                   </FlexItem>
                   <FlexItem>
-                    {outputVuln ? <CveStatus vuln={outputVuln} /> : <NotAvailable />}
+                    {outputVuln?.justification?.status ? (
+                      <CveStatus status={outputVuln.justification.status} />
+                    ) : (
+                      <NotAvailable />
+                    )}
                   </FlexItem>
                 </Flex>
               </DescriptionListDescription>

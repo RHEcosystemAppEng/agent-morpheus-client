@@ -4,7 +4,6 @@ import {
   Button,
   Alert,
   AlertVariant,
-  Label,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -23,6 +22,7 @@ import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
 import TableEmptyState from "./TableEmptyState";
 import ReportStatusLabel from "./ReportStatusLabel";
+import CveStatus from "./CveStatus";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
 
 const PER_PAGE = 10;
@@ -62,10 +62,13 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return Object.keys(statusCounts).sort();
   }, [product.summary?.statusCounts]);
 
-  const getVulnerabilityStatus = (report: Report) => {
+  // Render ExploitIQ status using CveStatus component
+  const renderExploitIqStatus = (report: Report) => {
     if (!report.vulns || !cveId) return null;
     const vuln = report.vulns.find((v) => v.vulnId === cveId);
-    return vuln?.justification?.status;
+    if (!vuln?.justification?.status) return null;
+    
+    return <CveStatus status={vuln.justification.status} />;
   };
 
   // Use the dedicated hook for repository reports with auto-refresh
@@ -148,23 +151,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   // Get the current sort index and direction for PatternFly
   const activeSortIndex = getColumnIndex(sortColumn);
   const activeSortDirection = sortDirection;
-
-  const renderExploitIqStatus = (report: Report) => {
-    const status = getVulnerabilityStatus(report);
-    if (!status) return "";
-
-    if (status === "TRUE") {
-      return <Label color="red">vulnerable</Label>;
-    }
-    if (status === "FALSE") {
-      return <Label color="green">Not vulnerable</Label>;
-    }
-    if (status === "UNKNOWN") {
-      return <Label color="grey">Uncertain</Label>;
-    }
-    return "";
-  };
-
   // Use ReportStatusLabel component instead of reimplementing
 
   const toolbar = (

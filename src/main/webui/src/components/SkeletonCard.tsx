@@ -1,4 +1,4 @@
-import { Card, CardBody, Skeleton } from "@patternfly/react-core";
+import { Card, CardBody, Skeleton, Stack, StackItem } from "@patternfly/react-core";
 
 interface SkeletonCardProps {
   /** Number of skeleton lines to display */
@@ -20,15 +20,16 @@ const SkeletonCard: React.FC<SkeletonCardProps> = ({
   return (
     <Card>
       <CardBody>
-        {Array.from({ length: lines }).map((_, index) => (
-          <div key={index}>
-            <Skeleton
-              width={widths[index] || "50%"}
-              screenreaderText={screenreaderText}
-            />
-            {index < lines - 1 && <br />}
-          </div>
-        ))}
+        <Stack hasGutter>
+          {Array.from({ length: lines }).map((_, index) => (            
+            <StackItem key={index} aria-hidden="true">
+              <Skeleton
+                width={widths[index] || "50%"}
+                screenreaderText={screenreaderText}
+              />
+              </StackItem>
+            ))}
+        </Stack>        
       </CardBody>
     </Card>
   );

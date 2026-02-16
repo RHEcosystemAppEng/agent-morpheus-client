@@ -172,8 +172,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       <ModalHeader
         title="Request Analysis"
         labelId="request-analysis-modal-title"
-      />
-      <br />
+      />      
       <ModalBody>
         {error && (
           <Alert
