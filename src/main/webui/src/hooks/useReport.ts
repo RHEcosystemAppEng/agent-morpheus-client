@@ -36,7 +36,11 @@ export function hasProductStatusCountsChanged(
  * @param productId - The product ID to fetch data for
  * @returns Object with data, loading, and error states
  */
-export function useReport(productId: string): UseReportResult {
+export function useReport(productId: string | undefined): UseReportResult {
+  if (!productId) {
+    return { data: null, loading: false, error: new Error("Product ID is required") };
+  }
+
   const { data, loading, error } = useApi<ProductSummary>(
     () => request<ProductSummary>(OpenAPI, {
       method: "GET",

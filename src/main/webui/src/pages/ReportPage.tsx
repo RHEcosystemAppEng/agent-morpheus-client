@@ -8,8 +8,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   Title,
-  Flex,
-  FlexItem,
 } from "@patternfly/react-core";
 import { useReport } from "../hooks/useReport";
 import ReportDetails from "../components/ReportDetails";
@@ -19,15 +17,24 @@ import ReportComponentStatesPieChart from "../components/ReportComponentStatesPi
 import RepositoryReportsTable from "../components/RepositoryReportsTable";
 import ReportPageSkeleton from "../components/ReportPageSkeleton";
 import { getErrorMessage } from "../utils/errorHandling";
-import ReportStatusLabel from "../components/ReportStatusLabel";
 
 const ReportPage: React.FC = () => {
   const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
 
-  const { data, loading, error } = useReport(productId || "");
+  const { data, loading, error } = useReport(productId);
 
   if (loading) {
     return <ReportPageSkeleton />;
+  }
+
+  if (!productId || !cveId) {
+    return (
+      <PageSection>
+        <Alert variant={AlertVariant.warning} title="Invalid report">
+          Invalid page parameters. Should be /reports/product/:productId/:cveId.
+        </Alert>
+      </PageSection>
+    );
   }
 
   if (error) {
@@ -40,19 +47,17 @@ const ReportPage: React.FC = () => {
     );
   }
 
-  if (!data || !productId || !cveId) {
+  if (!data) {
     return (
       <PageSection>
-        <Alert variant={AlertVariant.warning} title="Invalid report">
-          Report not found or invalid parameters.
+        <Alert variant={AlertVariant.danger} title="Report not found">
+          Unexpected error: API returned no data.          
         </Alert>
       </PageSection>
     );
   }
-
-  const productName = data.data?.name || "";
-  const breadcrumbText = `${productName}/${cveId}`;
-  const productState = data.summary?.statusCounts?.["completed"] ? "completed" : "";
+  const productName = data.data.name;
+  const breadcrumbText = `${productName}/${cveId}`;  
 
   return (
     <>
@@ -66,20 +71,10 @@ const ReportPage: React.FC = () => {
               <BreadcrumbItem isActive>{breadcrumbText}</BreadcrumbItem>
             </Breadcrumb>
           </GridItem>
-          <GridItem>
-            <Flex
-              justifyContent={{ default: "justifyContentSpaceBetween" }}
-              alignItems={{ default: "alignItemsCenter" }}
-            >
-              <FlexItem>
-                <Title headingLevel="h1" size="2xl">
-                  <strong>Report:</strong> {breadcrumbText}
-                </Title>
-              </FlexItem>
-              <FlexItem>
-                <ReportStatusLabel state={productState} />
-              </FlexItem>
-            </Flex>
+          <GridItem>                          
+            <Title headingLevel="h1" size="2xl">
+              <strong>Report:</strong> {breadcrumbText}
+            </Title>                                       
           </GridItem>
         </Grid>
       </PageSection>

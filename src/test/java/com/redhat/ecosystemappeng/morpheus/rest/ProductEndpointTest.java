@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -25,10 +26,13 @@ class ProductEndpointTest {
     private static final String BASE_URL = System.getenv("BASE_URL");
     private static final String API_BASE = BASE_URL != null ? BASE_URL : "http://localhost:8080";
 
-    @Test
-    void testGetProducts_ReturnsExpectedStructure() {
+    @BeforeEach
+    void setUp() {
         RestAssured.baseURI = API_BASE;
-        
+    }
+
+    @Test
+    void testGetProducts_ReturnsExpectedStructure() {        
         // Get product-1 which is a known test product
         RestAssured.given()
             .when()
@@ -50,7 +54,6 @@ class ProductEndpointTest {
 
     @Test
     void testGetProducts_WithSortBySubmittedAt() {
-        RestAssured.baseURI = API_BASE;
         
         // Test sorting by submittedAt ASC
         var ascResults = RestAssured.given()
@@ -116,7 +119,6 @@ class ProductEndpointTest {
 
     @Test
     void testGetProducts_WithSortByCveId() {
-        RestAssured.baseURI = API_BASE;
         
         // Test sorting by cveId ASC
         var ascResults = RestAssured.given()
@@ -181,8 +183,6 @@ class ProductEndpointTest {
 
     @Test
     void testGetProducts_WithSortByName() {
-        RestAssured.baseURI = API_BASE;
-        
         // Test sorting by name ASC
         var ascResults = RestAssured.given()
             .when()
@@ -314,8 +314,7 @@ class ProductEndpointTest {
 
     @Test
     void testGetProducts_WithPagination() {
-        // Act & Assert - Test pagination
-        RestAssured.baseURI = API_BASE;
+        // Act & Assert - Test pagination        
         RestAssured.given()
             .when()
             .queryParam("page", 0)
@@ -331,9 +330,7 @@ class ProductEndpointTest {
     }
 
     @Test
-    void testGetProducts_WithCveIdFilter() {
-        RestAssured.baseURI = API_BASE;
-        
+    void testGetProducts_WithCveIdFilter() {        
         // Test filtering by CVE ID - product-1 has CVE-2024-12345
         var results = RestAssured.given()
             .when()
@@ -441,7 +438,6 @@ class ProductEndpointTest {
     @Test
     void testGetProductById_ReturnsExpectedStructure() {
         // Arrange - First get a product ID from the list
-        RestAssured.baseURI = API_BASE;
 
         RestAssured.given()
             .when()
@@ -459,8 +455,7 @@ class ProductEndpointTest {
     @Test
     void testGetProductById_NotFound() {
         // Act & Assert - Test getting a non-existent product
-        // Use a product ID that definitely doesn't exist (very long random string)
-        RestAssured.baseURI = API_BASE;
+        // Use a product ID that definitely doesn't exist (very long random string)        
         RestAssured.given()
             .when()
             .get("/api/v1/reports/product/this-product-id-definitely-does-not-exist-123456789")
@@ -473,8 +468,7 @@ class ProductEndpointTest {
         // This test demonstrates the bug: justificationStatusCounts should count
         // all statuses from the first analysis entry of each report, not just
         // those that were present in the first report's first analysis entry.
-        RestAssured.baseURI = API_BASE;
-        
+                
         // Get a product that has multiple reports with different justification statuses
         var response = RestAssured.given()
             .when()
