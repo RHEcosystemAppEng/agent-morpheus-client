@@ -13,7 +13,7 @@ import {
   Spinner,
 } from "@patternfly/react-core";
 import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
-import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
+import { Table, Thead, Tr, Th, Tbody, Td, TableText } from "@patternfly/react-table";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import {
   useReportsTableData,
@@ -304,10 +304,11 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       <Table aria-label="Reports table">
         <Thead>
           <Tr>
-            <Th>
+            <Th width={10}>
               {columnNames.productId}
             </Th>
             <Th
+              width={15}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -320,6 +321,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               {columnNames.productName}
             </Th>
             <Th
+              width={10}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -331,25 +333,19 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             >
               {columnNames.cveId}
             </Th>
-            <Th
-            >
+            <Th width={10}>
               {columnNames.repositoriesAnalyzed}
             </Th>
             <Th
-              style={{
-                whiteSpace: "nowrap",
-              }}
-            >
+              width={15}              
+            >              
               <Flex
                 gap={{ default: "gapXs" as const }}
                 alignItems={{ default: "alignItemsCenter" as const }}
               >
-                <FlexItem
-                  style={{
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {columnNames.exploitIqStatus}
+                
+                <FlexItem>                  
+                    {columnNames.exploitIqStatus}                  
                 </FlexItem>
                 <FlexItem>
                   <Popover
@@ -379,9 +375,11 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     </Icon>
                   </Popover>
                 </FlexItem>
+                
               </Flex>
             </Th>
             <Th
+              width={20}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -394,6 +392,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               {columnNames.submittedAt}
             </Th>
             <Th
+              width={20}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -419,35 +418,26 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                 <Tr key={`${row.productId}-${row.cveId}-${index}`}>
                   <Td
                     dataLabel={columnNames.productId}
-                    style={{
-                      maxWidth: "10rem",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
                   >
-                    <Link
-                      to="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleProductIdClick(row);
-                      }}
-                      style={{
-                        display: "block",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {loadingRow?.productId === row.productId && loadingRow?.cveId === row.cveId ? (
-                        <Spinner size="sm" />
-                      ) : (
-                        row.productId
-                      )}
-                    </Link>
+                    <TableText wrapModifier="truncate">
+                      <Link
+                        to="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleProductIdClick(row);
+                        }}                        
+                      >
+                        {loadingRow?.productId === row.productId && loadingRow?.cveId === row.cveId ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          row.productId
+                        )}
+                      </Link>
+                    </TableText>
                   </Td>
-                  <Td dataLabel={columnNames.productName}>{row.productName}</Td>
+                  <Td dataLabel={columnNames.productName}>
+                    <TableText wrapModifier="truncate">{row.productName}</TableText>
+                  </Td>
                   <Td dataLabel={columnNames.cveId}>{row.cveId}</Td>
                   <Td dataLabel={columnNames.repositoriesAnalyzed}>
                     {row.repositoriesAnalyzed}
