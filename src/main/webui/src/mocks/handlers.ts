@@ -140,6 +140,37 @@ const generateMockReport = (
 // Mock data storage (simulates a simple in-memory database)
 // Create diverse products with different states and repository counts
 const mockProducts: ProductSummary[] = [
+  // Product 0: All Colors Demo - Shows all component states with different colors
+  {
+    data: {
+      id: "product-all-colors",
+      name: "All Colors Demo Product",
+      version: "1.0.0",
+      cveId: "CVE-2024-DEMO",
+      submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      submittedCount: 60,
+      completedAt: new Date().toISOString(),
+      metadata: {},
+      submissionFailures: [],
+    },
+    summary: {
+      productState: "completed",
+      statusCounts: {
+        completed: 20,  // Green
+        expired: 10,    // Dark red
+        failed: 8,      // Red
+        queued: 7,      // Medium gray
+        sent: 8,        // Darker gray
+        pending: 7,     // Light gray
+      },
+      justificationStatusCounts: {
+        TRUE: 8,        // Red (vulnerable)
+        FALSE: 10,      // Green (not vulnerable)
+        UNKNOWN: 2,     // Gray (uncertain)
+      },
+    },
+  },
+
   // Product 1: Completed with vulnerabilities, 25 repositories
   generateMockProductSummary("product-1", "Sample Product A", "1.0.0", "CVE-2024-1001", {
     state: "completed",

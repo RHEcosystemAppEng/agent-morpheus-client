@@ -7,6 +7,12 @@ import {
   EmptyState,
   EmptyStateBody,
 } from "@patternfly/react-core";
+import t_global_color_status_success_100 from "@patternfly/react-tokens/dist/esm/t_global_color_status_success_100";
+import t_global_color_nonstatus_red_400 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_red_400";
+import t_global_color_status_danger_200 from "@patternfly/react-tokens/dist/esm/t_global_color_status_danger_200";
+import t_global_color_nonstatus_gray_200 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_200";
+import t_global_color_nonstatus_gray_300 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_300";
+import t_global_color_nonstatus_gray_400 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_400";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import DonutChartWrapper from "./DonutChartWrapper";
 
@@ -26,12 +32,12 @@ const STATE_ORDER = [
 
 // Color mapping for each component state
 const STATE_COLORS: Record<string, string> = {
-  completed: "#3E8635", // green
-  expired: "#F0AB00", // orange
-  failed: "#C9190B", // red
-  queued: "#F0AB00", // orange
-  sent: "#6753AC", // purple
-  pending: "#009596", // turquoise
+  completed: t_global_color_status_success_100.var,
+  expired: t_global_color_status_danger_200.var,
+  failed: t_global_color_nonstatus_red_400.var,
+  queued: t_global_color_nonstatus_gray_300.var,
+  sent: t_global_color_nonstatus_gray_400.var,
+  pending: t_global_color_nonstatus_gray_200.var,
 };
 
 const ReportComponentStatesPieChart: React.FC<

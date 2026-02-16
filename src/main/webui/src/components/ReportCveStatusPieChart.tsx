@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardTitle, CardBody, Title } from "@patternfly/react-core";
+import t_global_color_status_success_100 from "@patternfly/react-tokens/dist/esm/t_global_color_status_success_100";
+import t_global_color_nonstatus_gray_300 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_300";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import DonutChartWrapper from "./DonutChartWrapper";
+import t_global_color_nonstatus_red_400 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_red_400";
 
 interface ReportCveStatusPieChartProps {
   product: ProductSummary;
@@ -40,9 +43,9 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   }, [product, cveId]);
 
   const computeColors = (slices: Array<{ x: string; y: number }>) => {
-    const red = "#C9190B";
-    const green = "#3E8635";
-    const gray = "#6A6E73";
+    const red = t_global_color_nonstatus_red_400.var;
+    const green = t_global_color_status_success_100.var;
+    const gray = t_global_color_nonstatus_gray_300.var;
     return slices.map((d) => {
       if (d.x === "vulnerable") return red;
       if (d.x === "not_vulnerable") return green;
