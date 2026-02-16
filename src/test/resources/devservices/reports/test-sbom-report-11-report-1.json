@@ -1,4 +1,7 @@
 {
+  "_id": {
+    "$oid": "507f1f77bcf86cd799439023"
+  },
   "input": {
     "scan": {
       "id": "z3a4b5c6-d7e8-4f9a-0b1c-2d3e4f5a6b7c",
