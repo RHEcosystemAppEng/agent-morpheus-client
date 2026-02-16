@@ -35,6 +35,10 @@ public class OverviewMetricsResource {
             schema = @Schema(implementation = OverviewMetricsDTO.class)
         )
     )
+    @APIResponse(
+        responseCode = "500",
+        description = "Internal server error"
+    )
     public OverviewMetricsDTO getOverviewMetrics() {
         return metricsService.getMetrics();
     }

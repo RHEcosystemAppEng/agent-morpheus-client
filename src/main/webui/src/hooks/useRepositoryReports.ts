@@ -7,7 +7,7 @@ import { usePaginatedApi } from "./usePaginatedApi";
 import { Report, ProductSummary } from "../generated-client";
 import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
 import { mapDisplayLabelToApiValue } from "../components/Filtering";
-import { isEqual } from "lodash";
+import isEqual from "lodash/isEqual";
 
 /**
  * Pure function to compare report states between two arrays of reports

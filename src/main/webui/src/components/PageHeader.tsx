@@ -15,6 +15,10 @@ import {
   ToolbarGroup,
   ToolbarItem,
   Title,
+  Flex,
+  Stack,
+  FlexItem,
+  Divider,
 } from '@patternfly/react-core';
 import { PageToggleButton } from '@patternfly/react-core';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
@@ -25,25 +29,32 @@ import UserAvatarDropdown from './UserAvatarDropdown';
  */
 const Brand: React.FC = () => {
   return (
-    <div style={{ display: "flex", gap: "10px" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-        <img src="/redhat.svg" alt="Red Hat" style={{ height: 26 }} />
-        <div
-          style={{borderLeft: "0.3px solid #737679",height: 38,}}
-        />
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Title headingLevel="h6" >
-          Red Hat
-        </Title>
-        <Title headingLevel="h6">
-          <strong>Trusted Profile Analyzer</strong>
-        </Title>
-        <Title headingLevel="h6">
-          <strong>ExploitIQ</strong>
-        </Title>
-      </div>
-    </div>
+    <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsFlexStart" }}>
+      <FlexItem>
+          <img 
+            src="/redhat.svg" 
+            alt="Red Hat" 
+            style={{ height: "var(--pf-t--global--spacer--xl)" }}
+            aria-label="Red Hat logo"
+          />
+      </FlexItem>
+      <FlexItem>
+        <Divider orientation={{ default: "vertical" }} />
+      </FlexItem>
+      <FlexItem>
+        <Stack>
+          <Title headingLevel="h6" >
+            Red Hat
+          </Title>
+          <Title headingLevel="h6">
+            <strong>Trusted Profile Analyzer</strong>
+          </Title>
+          <Title headingLevel="h6">
+            <strong>ExploitIQ</strong>
+          </Title>
+        </Stack>
+      </FlexItem>
+    </Flex>
   );
 };
 

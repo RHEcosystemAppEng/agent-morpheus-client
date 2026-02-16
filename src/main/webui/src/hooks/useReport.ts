@@ -3,7 +3,7 @@ import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
 import { request } from "../generated-client/core/request";
 import { OpenAPI } from "../generated-client/core/OpenAPI";
-import { isEqual } from "lodash";
+import isEqual from "lodash/isEqual";
 
 export interface UseReportResult {
   data: ProductSummary | null;
