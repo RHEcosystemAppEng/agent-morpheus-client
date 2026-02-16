@@ -1,11 +1,10 @@
-import { useState, useMemo, type CSSProperties } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   Button,
   Alert,
   AlertVariant,
   Label,
-  Icon,
 } from "@patternfly/react-core";
 import {
   Table,
@@ -16,10 +15,6 @@ import {
   Tbody,
   Td,
 } from "@patternfly/react-table";
-import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-} from "@patternfly/react-icons";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import { Report } from "../generated-client";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
@@ -27,6 +22,7 @@ import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
 import TableEmptyState from "./TableEmptyState";
+import ReportStatusLabel from "./ReportStatusLabel";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
 
 const PER_PAGE = 10;
@@ -34,13 +30,8 @@ const PER_PAGE = 10;
 type SortColumn = "gitRepo" | "completedAt" | "state";
 type SortDirection = "asc" | "desc";
 
-// Shared style function for table cells with ellipsis truncation
-const getEllipsisStyle = (maxWidthRem: number): CSSProperties => ({
-  maxWidth: `${maxWidthRem}rem`,
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-});
+// Shared CSS class for table cells with ellipsis truncation
+// Using PF6 TableText component with wrapModifier="truncate" is preferred
 
 interface RepositoryReportsTableProps {
   productId: string;
@@ -174,47 +165,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     return "";
   };
 
-  const renderAnalysisState = (report: Report) => {
-    const state = report.state?.toLowerCase();
-
-    if (state === "completed") {
-      return (
-        <Label
-          variant="outline"
-          color="green"
-          icon={
-            <Icon status="success">
-              <CheckCircleIcon />
-            </Icon>
-          }
-        >
-          {report.state}
-        </Label>
-      );
-    }
-
-    if (state === "expired") {
-      return (
-        <Label
-          variant="outline"
-          color="orange"
-          icon={
-            <Icon status="warning">
-              <ExclamationTriangleIcon />
-            </Icon>
-          }
-        >
-          {report.state}
-        </Label>
-      );
-    }
-
-    return (
-      <Label variant="outline" icon={<CheckCircleIcon />}>
-        {report.state}
-      </Label>
-    );
-  };
+  // Use ReportStatusLabel component instead of reimplementing
 
   const toolbar = (
     <RepositoryTableToolbar
@@ -313,65 +264,39 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
         <Tbody>
           {displayReports.map((report) => (
             <Tr key={report.id}>
-              <Td dataLabel="Repository" style={getEllipsisStyle(15)}>
-                {report.gitRepo ? (
-                  <a
-                    href={report.gitRepo}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: "block",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {report.gitRepo}
-                  </a>
-                ) : (
-                  <span
-                    style={{
-                      display: "block",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {report.gitRepo || ""}
-                  </span>
-                )}
+              <Td dataLabel="Repository">
+                <TableText wrapModifier="truncate">
+                  {report.gitRepo ? (
+                    <a
+                      href={report.gitRepo}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {report.gitRepo}
+                    </a>
+                  ) : (
+                    <span>{report.gitRepo || ""}</span>
+                  )}
+                </TableText>
               </Td>
-              <Td dataLabel="Commit ID" style={getEllipsisStyle(15)}>
-                {report.gitRepo && report.ref ? (
-                  <a
-                    href={`${
-                      report.gitRepo.endsWith("/")
-                        ? report.gitRepo.slice(0, -1)
-                        : report.gitRepo
-                    }/commit/${report.ref}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      display: "block",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {report.ref.substring(0, 7)}
-                  </a>
-                ) : (
-                  <span
-                    style={{
-                      display: "block",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {report.ref ? report.ref.substring(0, 7) : ""}
-                  </span>
-                )}
+              <Td dataLabel="Commit ID">
+                <TableText wrapModifier="truncate">
+                  {report.gitRepo && report.ref ? (
+                    <a
+                      href={`${
+                        report.gitRepo.endsWith("/")
+                          ? report.gitRepo.slice(0, -1)
+                          : report.gitRepo
+                      }/commit/${report.ref}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {report.ref.substring(0, 7)}
+                    </a>
+                  ) : (
+                    <span>{report.ref ? report.ref.substring(0, 7) : ""}</span>
+                  )}
+                </TableText>
               </Td>
               <Td dataLabel="ExploitIQ Status" style={{ width: "10%" }}>
                 {renderExploitIqStatus(report)}
@@ -381,12 +306,15 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
                 style={{
                   width: "22%",
                   paddingLeft: "0.5rem",
-                  ...getEllipsisStyle(22),
                 }}
               >
-                <FormattedTimestamp date={report.completedAt} />
+                <TableText wrapModifier="truncate">
+                  <FormattedTimestamp date={report.completedAt} />
+                </TableText>
               </Td>
-              <Td dataLabel="Analysis state">{renderAnalysisState(report)}</Td>
+              <Td dataLabel="Analysis state">
+                <ReportStatusLabel state={report.state} />
+              </Td>
               <Td dataLabel="CVE Repository Report">
                 <TableText>
                   <Button

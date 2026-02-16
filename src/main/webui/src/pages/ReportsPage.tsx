@@ -98,7 +98,7 @@ const ReportsPage: React.FC = () => {
   return (
     <>
       <PageSection>
-        <Title headingLevel="h1" size="3xl">
+        <Title headingLevel="h1" size="2xl">
           Reports
         </Title>
         <p>

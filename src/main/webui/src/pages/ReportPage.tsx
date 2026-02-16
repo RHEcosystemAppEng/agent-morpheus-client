@@ -72,7 +72,7 @@ const ReportPage: React.FC = () => {
               alignItems={{ default: "alignItemsCenter" }}
             >
               <FlexItem>
-                <Title headingLevel="h1" size="3xl">
+                <Title headingLevel="h1" size="2xl">
                   <strong>Report:</strong> {breadcrumbText}
                 </Title>
               </FlexItem>
