@@ -22,7 +22,6 @@ const STATE_ORDER = [
   "queued",
   "sent",
   "pending",
-  "preprocessing failed",
 ] as const;
 
 // Color mapping for each component state
@@ -33,7 +32,6 @@ const STATE_COLORS: Record<string, string> = {
   queued: "#F0AB00", // orange
   sent: "#6753AC", // purple
   pending: "#009596", // turquoise
-  "preprocessing failed": "#8A8D90", // light gray
 };
 
 const ReportComponentStatesPieChart: React.FC<
@@ -41,20 +39,7 @@ const ReportComponentStatesPieChart: React.FC<
 > = ({ product }) => {
   const chartData = useMemo(() => {
     const statusCounts = product.summary?.statusCounts || {};
-    const baseData = Object.entries(statusCounts).map(([x, y]) => ({ x, y: y as number }));
-    
-    // Calculate "Preprocessing failed" count
-    const scannedTotal = baseData.reduce((sum, d) => sum + d.y, 0);
-    const totalCount = Object.values(statusCounts).reduce((sum: number, count: number) => sum + count, 0);
-    const preprocessingFailedCount = totalCount - scannedTotal;
-    
-    // Add "Preprocessing failed" slice if count > 0
-    if (preprocessingFailedCount > 0) {
-      baseData.push({ x: "Preprocessing failed", y: preprocessingFailedCount });
-    }
-    
-    // Sort data according to predefined state order
-    // States in the predefined list appear first in order, then any other states
+    const baseData = Object.entries(statusCounts).map(([x, y]) => ({ x, y: y as number }));        
     const sortedData = [...baseData].sort((a, b) => {
       const indexA = STATE_ORDER.indexOf(a.x.toLowerCase() as typeof STATE_ORDER[number]);
       const indexB = STATE_ORDER.indexOf(b.x.toLowerCase() as typeof STATE_ORDER[number]);
