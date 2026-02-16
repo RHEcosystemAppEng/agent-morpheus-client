@@ -59,33 +59,28 @@ The report page SHALL display a donut chart summarizing CVE vulnerability status
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Component Scan States donut Chart
-The report page SHALL display a donut chart summarizing component scan states from the report summary data, including components that have not been scanned. Component states SHALL be displayed in a specific order: completed, expired, failed, queued, sent, pending, preprocessing failed. States that appear in the data SHALL be shown first in this order, followed by any states not in the predefined list (appended at the end). Each component state SHALL be displayed with a specific, semantically meaningful color: completed (green), expired (orange), failed (red), queued (orange), sent (purple), pending (turquoise), preprocessing failed (light gray).
+The report page SHALL display a donut chart summarizing component scan states from the report summary data, including components that have not been scanned. Component states SHALL be displayed in a specific order: completed, expired, failed, queued, sent, pending. States that appear in the data SHALL be shown first in this order, followed by any states not in the predefined list (appended at the end). Each component state SHALL be displayed with a specific, semantically meaningful color: completed (green), expired (orange), failed (red), queued (orange), sent (purple), pending (turquoise).
 
 #### Scenario: Component Scan states donut chart displays
 - **WHEN** a user views the report page with report data loaded
 - **THEN** a donut chart displays with slices for each unique component state from the `sbomReport.statusCounts` map
 - **AND** each slice shows the count of components with that state
 - **AND** the chart includes a legend showing state labels and counts
-- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending, preprocessing failed (only states present in data are shown)
+- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending (only states present in data are shown)
 - **AND** any states not in the predefined list are displayed at the end, after the predefined states
-- **AND** each state is displayed with its specified color: completed (green), expired (orange), failed (red), queued (orange), sent (purple), pending (turquoise), preprocessing failed (light gray)
-- **AND** the chart calculates "Preprocessing failed" count from `sbomReport.statusCounts` (as the difference between total count and scanned total, both calculated from `sbomReport.statusCounts`)
-- **AND** if the "Preprocessing failed" count is greater than 0, the chart SHALL include an additional "Preprocessing failed" slice with that count
-- **AND** the "Preprocessing failed" slice SHALL be displayed with light gray color
+- **AND** each state is displayed with its specified color: completed (green), expired (orange), failed (red), queued (orange), sent (purple), pending (turquoise)
 
 #### Scenario: Component states donut chart with no unscanned components
 - **WHEN** a user views the report page with report data loaded
-- **AND** the calculated "Preprocessing failed" count is 0 or less
 - **THEN** the donut chart displays with slices for each unique component state from the `statusCounts` map
-- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending, preprocessing failed (only states present in data are shown)
+- **AND** component states are displayed in the order: completed, expired, failed, queued, sent, pending (only states present in data are shown)
 - **AND** each state is displayed with its specified color
-- **AND** the chart does NOT display a "Preprocessing failed" slice
 
 #### Scenario: Component states donut chart with states not in predefined list
 - **WHEN** a user views the report page with report data loaded
-- **AND** the `sbomReport.statusCounts` map contains states that are not in the predefined list (completed, expired, failed, queued, sent, pending, preprocessing failed)
+- **AND** the `sbomReport.statusCounts` map contains states that are not in the predefined list (completed, expired, failed, queued, sent, pending)
 - **THEN** the donut chart displays slices for all component states
-- **AND** predefined states are displayed first in the specified order (completed, expired, failed, queued, sent, pending, preprocessing failed)
+- **AND** predefined states are displayed first in the specified order (completed, expired, failed, queued, sent, pending)
 - **AND** states not in the predefined list are displayed at the end, after all predefined states
 - **AND** each predefined state uses its specified color
 - **AND** states not in the predefined list use a default color from the color palette

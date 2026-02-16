@@ -65,11 +65,6 @@ const ReportComponentStatesPieChart: React.FC<
       // Normalize state name for lookup (case-insensitive)
       const normalizedState = d.x.toLowerCase();
       
-      // Handle "Preprocessing failed" with different capitalizations
-      if (normalizedState === "preprocessing failed") {
-        return STATE_COLORS["preprocessing failed"] || "#8A8D90";
-      }
-      
       // Look up color for normalized state name
       return STATE_COLORS[normalizedState] || "#8A8D90"; // Default to light gray for unknown states
     });
