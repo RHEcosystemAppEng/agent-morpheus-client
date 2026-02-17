@@ -26,6 +26,8 @@ import type { ReportData } from "../generated-client/models/ReportData";
 import { getErrorMessage, isValidationError } from "../utils/errorHandling";
 
 const FALLBACK_ERROR_MESSAGE = "An error occurred while submitting the analysis request.";
+// CVE ID pattern matching backend validation: ^CVE-[0-9]{4}-[0-9]{4,19}$
+const CVE_ID_PATTERN = /^CVE-[0-9]{4}-[0-9]{4,19}$/;
 interface RequestAnalysisModalProps {
   onClose: () => void;
 }
@@ -45,6 +47,21 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const [cveIdError, setCveIdError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
+  /**
+   * Validates CVE ID format using the official CVE regex pattern
+   * @param cveId CVE ID to validate
+   * @returns Error message if invalid, null if valid
+   */
+  const validateCveIdFormat = (cveId: string): string | null => {
+    if (!cveId || cveId.trim() === "") {
+      return null; // Empty validation handled separately as "Required"
+    }
+    if (!CVE_ID_PATTERN.test(cveId.trim())) {
+      return "CVE ID format is invalid. Must match the official CVE pattern CVE-YYYY-NNNN+";
+    }
+    return null;
+  };
+
   const handleCveIdChange = (
     _event: React.FormEvent<HTMLInputElement>,
     value: string
@@ -56,6 +73,25 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   };
 
+  const handleCveIdBlur = () => {
+    const trimmedCveId = cveId.trim();
+    if (trimmedCveId !== "") {
+      const formatError = validateCveIdFormat(trimmedCveId);
+      setCveIdError(formatError);
+    }
+  };
+
+  const handleCveIdKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevent form submission on Enter
+      const trimmedCveId = cveId.trim();
+      if (trimmedCveId !== "") {
+        const formatError = validateCveIdFormat(trimmedCveId);
+        setCveIdError(formatError);
+      }
+    }
+  };
+
   // Show status once a file has been uploaded
   useEffect(() => {
     if (!showStatus && currentFiles.length > 0) {
@@ -63,8 +99,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   }, [currentFiles.length, showStatus]);
 
-  // Check if both fields are filled
-  const isFormValid = cveId.trim() !== "" && currentFiles.length > 0 && !isSubmitting;
+  // Note: Submit button is only disabled during submission progress, not based on form validation
 
   /**
    * Handles errors from the API submission, setting field-specific or generic error messages
@@ -97,14 +132,38 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid || currentFiles.length === 0) {
+    // Clear previous errors
+    setError(null);
+    setCveIdError(null);
+    setFileError(null);
+
+    // Validate required fields
+    const trimmedCveId = cveId.trim();
+    let hasValidationErrors = false;
+
+    if (trimmedCveId === "") {
+      setCveIdError("Required");
+      hasValidationErrors = true;
+    } else {
+      // Validate CVE ID format
+      const formatError = validateCveIdFormat(trimmedCveId);
+      if (formatError) {
+        setCveIdError(formatError);
+        hasValidationErrors = true;
+      }
+    }
+
+    if (currentFiles.length === 0) {
+      setFileError("Required");
+      hasValidationErrors = true;
+    }
+
+    // Prevent API call if validation fails
+    if (hasValidationErrors) {
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
-    setCveIdError(null);
-    setFileError(null);
 
     try {
       const file = currentFiles[0];
@@ -147,7 +206,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     const firstFile = droppedFiles[0];
     if (firstFile) {
       setCurrentFiles([firstFile]);
-      // Clear error when user selects a new file
+      // Clear error when user adds a file
       if (fileError) {
         setFileError(null);
       }
@@ -197,6 +256,8 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
               name="cve-id"
               value={cveId}
               onChange={handleCveIdChange}
+              onBlur={handleCveIdBlur}
+              onKeyDown={handleCveIdKeyDown}
               placeholder="Enter CVE ID"
               isDisabled={isSubmitting}
               validated={cveIdError ? "error" : "default"}
@@ -269,7 +330,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           key="submit"
           variant="primary"
           onClick={handleSubmit}
-          isDisabled={!isFormValid}
+          isDisabled={isSubmitting}
           isLoading={isSubmitting}
         >
           {isSubmitting ? "Submitting..." : "Submit Analysis Request"}
