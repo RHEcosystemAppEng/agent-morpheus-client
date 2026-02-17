@@ -793,7 +793,7 @@ export const handlers = [
     });
   }),
 
-  // GET /api/v1/reports/:id - Get analysis report by ID (FullReport)
+  // GET /api/v1/reports/:id - Get analysis report by ID (FullReport with status)
   http.get("/api/v1/reports/:id", async ({ request, params }) => {
     await delay(getMockDelay(request));
     const { id } = params as { id: string };
@@ -801,10 +801,22 @@ export const handlers = [
     // First check if we have a FullReport mock
     const fullReport = mockFullReports[id];
     if (fullReport) {
-      // Return as JSON string (as per API contract - backend returns String)
-      // HttpResponse.text() returns the string directly without double-encoding
-      return HttpResponse.text(JSON.stringify(fullReport), {
-        headers: { "Content-Type": "application/json" },
+      // Calculate status based on report data
+      let status = "unknown";
+      if (fullReport.input?.scan?.completed_at) {
+        status = "completed";
+      } else if (fullReport.metadata?.sent_at) {
+        status = "sent";
+      } else if (fullReport.metadata?.submitted_at) {
+        status = "queued";
+      } else if (fullReport.metadata?.product_id) {
+        status = "pending";
+      }
+      
+      // Return new structure with report and status
+      return HttpResponse.json({
+        report: fullReport,
+        status: status,
       });
     }
 
@@ -814,9 +826,23 @@ export const handlers = [
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    // Return as string (as per API contract)
-    return HttpResponse.text(JSON.stringify(report), {
-      headers: { "Content-Type": "application/json" },
+    // For fallback, create a minimal FullReport structure
+    const fallbackFullReport = {
+      _id: report.id,
+      input: {
+        scan: {
+          id: report.name,
+          started_at: report.startedAt,
+          completed_at: report.completedAt,
+        },
+      },
+      metadata: report.metadata || {},
+    };
+    
+    // Return new structure with report and status
+    return HttpResponse.json({
+      report: fallbackFullReport,
+      status: report.state || "unknown",
     });
   }),
 

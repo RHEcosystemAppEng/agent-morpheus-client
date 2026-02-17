@@ -4,16 +4,15 @@
  * shows String return types for performance reasons.
  */
 
-import type { FullReport } from '../types/FullReport';
-import type { CancelablePromise } from '../generated-client';
+import type { CancelablePromise, ReportWithStatus } from '../generated-client';
 import { ReportEndpointService } from '../generated-client/services/ReportEndpointService';
 
 /**
- * Get Repository FullReport type isn't available in the generated client, since it's not defined in the Java code, so it's coded in the types/FullReport.ts file.
+ * Get Repository report with status. The API returns a ReportWithStatusResponse with separate report and status fields.
  * @param id - Report ID (24-character hexadecimal MongoDB ObjectId format)
- * @returns Promise resolving to FullReport
+ * @returns Promise resolving to ReportWithStatusResponse
  */
-export function getRepositoryReport(id: string): CancelablePromise<FullReport> {
-  return ReportEndpointService.getApiV1Reports1({ id }) as any as CancelablePromise<FullReport>;
+export function getRepositoryReport(id: string): CancelablePromise<ReportWithStatus> {
+  return ReportEndpointService.getApiV1Reports1({ id }) as any as CancelablePromise<ReportWithStatus>;
 }
 

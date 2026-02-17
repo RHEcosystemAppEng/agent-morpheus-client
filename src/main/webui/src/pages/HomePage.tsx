@@ -1,5 +1,5 @@
 import React from "react";
-import { PageSection, Title, Stack, StackItem, Content } from "@patternfly/react-core";
+import { PageSection, Stack, StackItem, Content } from "@patternfly/react-core";
 import GetStartedCard from "../components/GetStartedCard";
 import MetricsCard from "../components/MetricsCard";
 

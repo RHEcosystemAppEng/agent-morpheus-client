@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import { Content, PageSection, Title } from "@patternfly/react-core";
+import { Content, PageSection } from "@patternfly/react-core";
 import ReportsTable from "../components/ReportsTable";
 import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
 import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";

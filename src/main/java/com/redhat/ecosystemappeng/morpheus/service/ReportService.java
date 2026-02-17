@@ -40,6 +40,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
+import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
@@ -195,6 +196,28 @@ public class ReportService {
   public String get(String id) {
     LOGGER.debugf("Get report %s", id);
     return repository.findById(id);
+  }
+
+  public ReportWithStatus getWithStatus(String id) {
+    LOGGER.debugf("Get report with status %s", id);
+    var reportJson = repository.findById(id);
+    if (reportJson == null) {
+      return null;
+    }
+    try {
+      // Parse JSON once for both report and status calculation
+      var reportNode = objectMapper.readTree(reportJson);
+      var document = org.bson.Document.parse(reportJson);
+      var metadata = repository.extractMetadata(document);
+      var status = repository.getStatus(document, metadata);
+      return new ReportWithStatus(reportNode, status);
+    } catch (JsonProcessingException e) {
+      LOGGER.errorf("Error parsing report JSON for id %s: %s", id, e.getMessage());
+      throw new RuntimeException("Failed to parse report JSON", e);
+    } catch (Exception e) {
+      LOGGER.errorf("Error processing report for id %s: %s", id, e.getMessage());
+      throw new RuntimeException("Failed to process report", e);
+    }
   }
 
   public boolean remove(String id) {

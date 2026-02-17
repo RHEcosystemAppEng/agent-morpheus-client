@@ -19,6 +19,7 @@ export type { Report } from './models/Report';
 export type { ReportData } from './models/ReportData';
 export type { ReportRequest } from './models/ReportRequest';
 export type { ReportRequestId } from './models/ReportRequestId';
+export type { ReportWithStatus } from './models/ReportWithStatus';
 export type { SbomInfoType } from './models/SbomInfoType';
 export type { SourceInfo } from './models/SourceInfo';
 export type { UserComments } from './models/UserComments';

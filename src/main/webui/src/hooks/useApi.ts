@@ -195,33 +195,33 @@ export function useApi<T>(
     if (!pollInterval) {
       return;
     }
-
     // Clear any existing interval
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
-    // Wait for initial fetch to complete before starting polling
-    // This prevents duplicate API calls on mount
-    if (initialFetchCompleteRef.current) {
-      // Set up polling interval
-      intervalRef.current = setInterval(() => {
-        // Check if we should continue polling using latest data from ref
-        const shouldPoll = optionsRef.current.shouldPoll;
-        if (shouldPoll && !shouldPoll(dataRef.current)) {
-          // Stop polling if shouldPoll returns false
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-          return;
+    // This prevents duplicate API calls on mount    
+    // Set up polling interval
+    intervalRef.current = setInterval(() => {
+      // Check if we should continue polling using latest data from ref
+      if (!initialFetchCompleteRef.current) {
+        return;
+      }
+      const shouldPoll = optionsRef.current.shouldPoll;
+      if (shouldPoll && !shouldPoll(dataRef.current)) {
+        // Stop polling if shouldPoll returns false
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
+        return;
+      }
 
-        // Execute the API call (not a dependency change, so don't update loading state)
-        execute(false);
-      }, pollInterval);
-    }
+      // Execute the API call (not a dependency change, so don't update loading state)
+      execute(false);
+    }, pollInterval);
+    
 
     return () => {
       if (intervalRef.current) {

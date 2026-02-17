@@ -83,7 +83,7 @@ public class ReportRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
-  Map<String, String> extractMetadata(Document doc) {
+  public Map<String, String> extractMetadata(Document doc) {
     var metadata = new HashMap<String, String>();
     var metadataField = doc.get("metadata", Document.class);
     if (metadataField != null) {
@@ -162,7 +162,7 @@ public class ReportRepositoryService {
         ref);
   }
 
-  String getStatus(Document doc, Map<String, String> metadata) {
+  public String getStatus(Document doc, Map<String, String> metadata) {
     if (doc.containsKey("error")) {
       var error = doc.get("error", Document.class);
       if (error.getString("type").equals("expired")) {
@@ -264,21 +264,8 @@ public class ReportRepositoryService {
     if (result == null) {
       return null;
     }
-    try {
-      // Extract metadata and calculate state
-      var metadata = extractMetadata(result);
-      var state = getStatus(result, metadata);
-      
-      // Parse JSON, add state field, and serialize back
-      var jsonString = result.toJson();
-      var jsonNode = objectMapper.readTree(jsonString);
-      ((com.fasterxml.jackson.databind.node.ObjectNode) jsonNode).put("state", state);
-      return objectMapper.writeValueAsString(jsonNode);
-    } catch (JsonProcessingException e) {
-      LOGGER.errorf("Error adding state to report JSON for id %s: %s", id, e.getMessage());
-      // Fallback to original JSON if parsing fails
-      return result.toJson();
-    }
+    // Return raw JSON without modification
+    return result.toJson();
   }
 
   public List<Report> findByName(String name) {

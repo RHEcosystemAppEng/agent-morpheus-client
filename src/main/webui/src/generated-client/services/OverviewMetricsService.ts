@@ -17,6 +17,9 @@ export class OverviewMetricsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/overview-metrics',
+            errors: {
+                500: `Internal server error`,
+            },
         });
     }
 }

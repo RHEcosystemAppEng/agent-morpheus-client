@@ -2,50 +2,52 @@ import { useApi } from "./useApi";
 import { getRepositoryReport } from "../utils/reportApi";
 import { POLL_INTERVAL_MS } from "../utils/polling";
 import type { FullReport } from "../types/FullReport";
-
+import type { ReportWithStatus } from "../generated-client";
 export interface UseRepositoryReportResult {
-  data: FullReport | null;
+  data?: FullReport;
+  status?: string;
   loading: boolean;
   error: Error | null;
 }
 
 /**
-   If the report state has changed, it indicates that the report has been updated
+   If the report status has changed, it indicates that the report has been updated
  */
 export function hasRepositoryReportStateChanged(
-  previousReport: FullReport | null,
-  currentReport: FullReport
+  previousResponse: ReportWithStatus | null,
+  currentResponse: ReportWithStatus
 ): boolean {
   // If no previous data, always update (initial load)
-  if (!previousReport) {
+  if (!previousResponse) {
     return true;
   }
-  return previousReport.state !== currentReport.state;
+  return previousResponse.status !== currentResponse.status;
 }
 
 /**
- * Pure function to determine if polling should continue based on report state
+ * Pure function to determine if polling should continue based on report status
  * Returns true if polling should continue, false to stop
  */
 export function shouldContinuePollingRepositoryReport(
-  report: FullReport | null
+  response: ReportWithStatus | null
 ): boolean {
-  if (!report) return true; // Continue polling if no data yet
-  const state = report.state;
-  // Continue polling if state is not "completed" or "failed"
-  return state !== "completed" && state !== "failed";
+  if (!response) return true; // Continue polling if no data yet
+  const status = response.status;
+  console.log("status", status);
+  // Continue polling if status is not "completed" or "failed"
+  return status !== "completed" && status !== "failed";
 }
 
 /**
  * Hook to fetch repository report data with conditional auto-refresh.
- * Auto-refresh continues while report state is not "completed" or "failed".
- * Only updates state when report state or other relevant data have changed to prevent unnecessary rerenders.
+ * Auto-refresh continues while report status is not "completed" or "failed".
+ * Only updates state when report status or other relevant data have changed to prevent unnecessary rerenders.
  * 
  * @param reportId - The report ID to fetch data for
- * @returns Object with data, loading, and error states
+ * @returns Object with data (report), status, loading, and error states
  */
 export function useRepositoryReport(reportId: string): UseRepositoryReportResult {
-  const { data, loading, error } = useApi<FullReport>(
+  const { data: response, loading, error } = useApi<ReportWithStatus>(
     () => getRepositoryReport(reportId),
     {
       deps: [reportId],
@@ -55,6 +57,11 @@ export function useRepositoryReport(reportId: string): UseRepositoryReportResult
     }
   );
 
-  return { data: data || null, loading, error };
+  return { 
+    data: response?.report, 
+    status: response?.status,
+    loading, 
+    error 
+  };
 }
 

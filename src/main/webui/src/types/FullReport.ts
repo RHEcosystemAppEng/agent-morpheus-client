@@ -136,7 +136,5 @@ export interface FullReport {
   info?: Record<string, unknown>;
   /** User provided metadata for the report */
   metadata?: Record<string, string>;
-  /** Calculated analysis state of the report (completed, queued, sent, expired, failed, pending, unknown) */
-  state?: string;
 }
 

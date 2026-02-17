@@ -2,7 +2,6 @@
 
 ## Purpose
 The report file upload capability enables users to upload CycloneDX SBOM files for vulnerability analysis. The system validates the uploaded files, extracts product information, creates reports, and manages product metadata with version information.
-
 ## Requirements
 ### Requirement: CycloneDX File Upload Endpoint
 The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` that accepts multipart form data containing a CVE ID and a CycloneDX file. The endpoint SHALL parse the uploaded file, validate its structure, validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`, create a report object with an SBOM report ID, and queue the report for analysis. The endpoint SHALL always generate an SBOM report ID by combining the SBOM name (from `metadata.component.name`) with a timestamp. The endpoint SHALL add the SBOM name (from `metadata.component.name`) to the report metadata as the `sbom_name` field. When validation fails, the endpoint SHALL return a structured error response mapping field names to error messages. The endpoint SHALL create a product entry for every successful upload. When the SBOM contains version information (`metadata.component.version`), the product SHALL use that version. When the SBOM does not contain version information, the product SHALL use an empty string (`""`) as the version value.
@@ -73,14 +72,15 @@ The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` 
 - **AND** each field maps to its specific validation error message
 
 ### Requirement: Full Report Retrieval API
-The system SHALL provide an API endpoint to retrieve full report data by report ID, including the calculated analysis state.
+The system SHALL provide an API endpoint to retrieve full report data by report ID, returning the report data and calculated analysis status as separate fields in a structured response.
 
 #### Scenario: Get full report by ID
 - **WHEN** a client calls `GET /api/v1/reports/{id}` with a valid report ID
-- **THEN** the API returns a JSON object containing the full report data
-- **AND** the response includes all report fields: `_id`, `input`, `output`, `info`, and `metadata`
-- **AND** the response includes a `state` field containing the calculated analysis state of the report
-- **AND** the state value is one of: "completed", "queued", "sent", "expired", "failed", "pending", or "unknown"
-- **AND** the state is calculated using the same logic as the `getStatus()` method in `ReportRepositoryService`
-- **AND** the state field is included in the JSON response even if the report data is otherwise incomplete
+- **THEN** the API returns a JSON object with two fields: `report` and `status`
+- **AND** the `report` field contains the full report data as a JSON object with all report fields: `_id`, `input`, `output`, `info`, and `metadata`
+- **AND** the `status` field contains the calculated analysis status as a string value
+- **AND** the status value is one of: "completed", "queued", "sent", "expired", "failed", "pending", or "unknown"
+- **AND** the status is calculated using the same logic as the `getStatus()` method in `ReportRepositoryService`
+- **AND** the status field is included in the response even if the report data is otherwise incomplete
+- **AND** the report data is returned without modification (no fields are added or removed from the stored document)
 

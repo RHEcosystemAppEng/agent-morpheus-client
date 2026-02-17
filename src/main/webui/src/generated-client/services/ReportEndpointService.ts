@@ -8,6 +8,7 @@ import type { Report } from '../models/Report';
 import type { ReportData } from '../models/ReportData';
 import type { ReportRequest } from '../models/ReportRequest';
 import type { ReportRequestId } from '../models/ReportRequestId';
+import type { ReportWithStatus } from '../models/ReportWithStatus';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -370,8 +371,8 @@ export class ReportEndpointService {
     }
     /**
      * Get analysis report
-     * Retrieves a specific analysis report by ID
-     * @returns string Report retrieved successfully
+     * Retrieves a specific analysis report by ID with calculated analysis status
+     * @returns ReportWithStatus Report retrieved successfully
      * @throws ApiError
      */
     public static getApiV1Reports1({
@@ -381,7 +382,7 @@ export class ReportEndpointService {
          * Report ID to get (24-character hexadecimal MongoDB ObjectId format)
          */
         id: string,
-    }): CancelablePromise<string> {
+    }): CancelablePromise<ReportWithStatus> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/reports/{id}',

@@ -33,6 +33,7 @@ import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
+import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 
 import jakarta.inject.Inject;
@@ -326,32 +327,13 @@ public class ReportEndpoint {
   @Path("/{id}")
   @Operation(
     summary = "Get analysis report", 
-    description = "Retrieves a specific analysis report by ID")
+    description = "Retrieves a specific analysis report by ID with calculated analysis status")
   @APIResponses({
     @APIResponse(
       responseCode = "200", 
       description = "Report retrieved successfully",
       content = @Content(
-        schema = @Schema(
-          type = SchemaType.STRING, 
-          example = """
-        {
-          "input": {
-            "scan": {...
-            },
-            "image": {...
-            }
-          },
-          "output": {
-            "analysis": [...],
-            "vex": null | {...}
-          },
-          "info": {...
-          },
-          "metadata": {...
-          },        
-        }
-        """)
+        schema = @Schema(implementation = ReportWithStatus.class)
       )
     ),
     @APIResponse(
@@ -363,17 +345,17 @@ public class ReportEndpoint {
       description = "Internal server error"
     )
   })
-  public String get(
+  public ReportWithStatus get(
     @Parameter(
       description = "Report ID to get (24-character hexadecimal MongoDB ObjectId format)", 
       required = true
     )
     @PathParam("id") String id) throws InterruptedException {
-    var report = reportService.get(id);
-    if (Objects.isNull(report)) {
+    var reportWithStatus = reportService.getWithStatus(id);
+    if (Objects.isNull(reportWithStatus)) {
       throw new NotFoundException(id);
     }
-    return report;
+    return reportWithStatus;
   }
 
   @GET
@@ -500,8 +482,8 @@ public class ReportEndpoint {
     @PathParam("id") String id) {
     preProcessingService.confirmResponse(id);
     
-    String report = reportService.get(id); 
-    if (Objects.isNull(report)) {
+    var reportJson = reportService.get(id); 
+    if (Objects.isNull(reportJson)) {
       preProcessingService.handleError(id, "report-not-found-error", "No report exists for ID " + id + " for submission.");
 
       return Response.status(Response.Status.NOT_FOUND)
@@ -511,8 +493,8 @@ public class ReportEndpoint {
     }
     
     try {
-      JsonNode reportJson = objectMapper.readTree(report);
-      reportService.submit(id, reportJson);
+      JsonNode reportJsonNode = objectMapper.readTree(reportJson);
+      reportService.submit(id, reportJsonNode);
 
       return Response.accepted(id).build();
     } catch (IllegalArgumentException e) {

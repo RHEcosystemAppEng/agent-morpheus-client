@@ -580,6 +580,24 @@
           }
         }
       },
+      "ReportWithStatus": {
+        "description": "Report data with calculated analysis status",
+        "type": "object",
+        "required": [
+          "report",
+          "status"
+        ],
+        "properties": {
+          "report": {
+            "description": "Full report data from MongoDB",
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "description": "Calculated analysis status of the report (completed, queued, sent, expired, failed, pending, unknown)"
+          }
+        }
+      },
       "SbomInfoType": {
         "description": "SBOM information type",
         "type": "string",
@@ -964,6 +982,9 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
@@ -1788,7 +1809,7 @@
       },
       "get": {
         "summary": "Get analysis report",
-        "description": "Retrieves a specific analysis report by ID",
+        "description": "Retrieves a specific analysis report by ID with calculated analysis status",
         "parameters": [
           {
             "description": "Report ID to get (24-character hexadecimal MongoDB ObjectId format)",
@@ -1806,10 +1827,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string",
-                  "examples": [
-                    "{\n  \"input\": {\n    \"scan\": {...\n    },\n    \"image\": {...\n    }\n  },\n  \"output\": {\n    \"analysis\": [...],\n    \"vex\": null | {...}\n  },\n  \"info\": {...\n  },\n  \"metadata\": {...\n  },\n}\n"
-                  ]
+                  "$ref": "#/components/schemas/ReportWithStatus"
                 }
               }
             }

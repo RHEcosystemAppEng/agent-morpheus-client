@@ -78,7 +78,7 @@ const RepositoryReportPage: React.FC = () => {
   }>();
   
   const { productId, cveId, reportId } = params;
-  const { data: report, loading, error } = useRepositoryReport(reportId || "");
+  const { data: report, status, loading, error } = useRepositoryReport(reportId || "");
 
   if (!cveId) {
     return <RepositoryReportPageError
@@ -154,7 +154,7 @@ const RepositoryReportPage: React.FC = () => {
           <DetailsCard
             report={report}
             cveId={cveId}
-            analysisState={report.state}
+            analysisState={status}
           />
         </GridItem>
         <GridItem>

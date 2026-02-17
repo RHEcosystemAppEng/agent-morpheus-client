@@ -18,7 +18,6 @@ import {
   Flex,
   Stack,
   FlexItem,
-  Divider,
 } from '@patternfly/react-core';
 import { PageToggleButton } from '@patternfly/react-core';
 import BarsIcon from '@patternfly/react-icons/dist/esm/icons/bars-icon';
