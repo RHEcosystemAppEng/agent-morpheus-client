@@ -3,7 +3,7 @@ package com.redhat.ecosystemappeng.morpheus.metrics;
 
 import com.mongodb.client.MongoCollection;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
-import com.redhat.ecosystemappeng.morpheus.service.ReportRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.annotation.PostConstruct;

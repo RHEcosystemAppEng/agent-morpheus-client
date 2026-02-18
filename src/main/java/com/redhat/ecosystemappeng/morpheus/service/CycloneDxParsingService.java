@@ -7,6 +7,8 @@ import java.util.Objects;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.ecosystemappeng.morpheus.exception.FileValidationException;
+import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

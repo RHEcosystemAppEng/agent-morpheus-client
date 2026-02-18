@@ -1,10 +1,13 @@
-package com.redhat.ecosystemappeng.morpheus.service;
+package com.redhat.ecosystemappeng.morpheus.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
  * Result of parsing a CycloneDX file, containing both the parsed JSON and the extracted SBOM metadata.
  */
+@RegisterForReflection
 public record ParsedCycloneDx(
     /**
      * The parsed CycloneDX JSON structure

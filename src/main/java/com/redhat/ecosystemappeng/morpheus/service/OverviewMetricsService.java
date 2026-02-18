@@ -14,9 +14,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import org.jboss.logging.Logger;
-
-
+import java.util.Objects;
 
 /**
  * Service for calculating overview metrics for the home page.
@@ -30,13 +28,16 @@ import org.jboss.logging.Logger;
  */
 @ApplicationScoped
 public class OverviewMetricsService {
-    private static final Logger LOGGER = Logger.getLogger(OverviewMetricsService.class);
     private static final String COLLECTION = "reports";
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
             .withZone(ZoneOffset.UTC);
 
-    @Inject
-    MongoClient mongoClient;
+    private MongoClient mongoClient;
+
+    @Inject    
+    public void setMongoClient(MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+    }
 
     @ConfigProperty(name = "quarkus.mongodb.database")
     String dbName;
@@ -93,15 +94,15 @@ public class OverviewMetricsService {
         
         for (Document report : collection.find(completedReportsFilter)) {
             Document output = report.get("output", Document.class);
-            if (output != null) {
+            if (Objects.nonNull(output)) {
                 List<?> analysisList = output.getList("analysis", Document.class);
-                if (analysisList != null && analysisList.size() > 0) {
+                if (Objects.nonNull(analysisList) && analysisList.size() > 0) {
                     // Only use the first analysis item (index 0)
                     Object firstItem = analysisList.get(0);
                     if (firstItem instanceof Document) {
                         Document analysisItem = (Document) firstItem;
                         Object intelScoreObj = analysisItem.get("intel_score");
-                        if (intelScoreObj != null) {
+                        if (Objects.nonNull(intelScoreObj)) {
                                 double intelScore = getDoubleValue(intelScoreObj);
                                 sum += intelScore;
                                 count++;

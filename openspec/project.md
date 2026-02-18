@@ -2,11 +2,9 @@
 
 ## Purpose
 ExploitIQ Client is a Quarkus + React web application that interacts with the ExploitIQ (Agent Morpheus) service to evaluate vulnerabilities on Software Bill of Materials (SBOMs). The application allows users to:
-- Submit CycloneDX SBOMs and CVEs for vulnerability analysis
+- Submit CycloneDX SBOMs and CVE for vulnerability analysis
 - Manage and view vulnerability analysis reports
 - Track products and components across multiple reports
-- Add metadata and user comments to reports
-- Manage vulnerability intelligence data
 
 The application serves as a client interface for the Agent Morpheus vulnerability analysis service, providing request queuing, report management, and a web-based UI for interacting with analysis results.
 
@@ -15,8 +13,8 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
 ### Backend
 - **Framework**: Quarkus 3.29.4
 - **Language**: Java 21
-- **Database**: MongoDB (via Quarkus Panache)
-- **API**: REST (JAX-RS), OpenAPI/Swagger
+- **Database**: Classic MongoDB Hava client driver
+- **API**: REST (Quarkus REST JAX-RS, Vert.x), API Documentation - OpenAPI/Swagger  
 - **Authentication**: OIDC/OAuth2 (OpenShift integration)
 - **Observability**: Micrometer/Prometheus, OpenTelemetry
 - **Build**: Maven
@@ -90,19 +88,52 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
 - API versioning considered for breaking changes
 
 #### Frontend Architecture
-- All API calls use `useApi` hook with generated client services
+- All API calls use `useApi` or `usePaginatedApi` hook with generated client services
 - No direct fetch/axios calls in components
 - Generated client provides full type safety
 - Components are small, focused, and reusable
 
 ### Testing Strategy
-- **Backend**: JUnit5 (included in dependencies, test structure to be established)
-- **Frontend**: TypeScript compilation must pass without errors
-- **Integration**: Maven Failsafe plugin for integration tests
-- **Quality Gates**: 
-  - TypeScript MUST compile without errors
-  - Java code MUST compile and pass linting
-  - No test files currently present in codebase
+
+#### Backend Testing
+- **Unit Tests**: JUnit5 for isolated component testing
+  - Location: `src/test/java/com/redhat/ecosystemappeng/morpheus/service/`
+  - Framework: JUnit5
+  - Examples: `ReportServiceMetadataKeysTest` (tests utility methods without dependencies)
+  - Execution: Maven Surefire plugin (`mvn test`)
+  
+- **Integration/E2E Tests**: REST Assured for API endpoint testing
+  - Location: `src/test/java/com/redhat/ecosystemappeng/morpheus/rest/`
+  - Framework: REST Assured with JUnit5
+  - Examples: `ProductEndpointTest`, `ReportUploadEndpointTest`
+  - Execution: Maven Failsafe plugin (`mvn verify`)
+  - Configuration: Tests require `BASE_URL` environment variable (skipped if not set)
+  - Pattern: End-to-end tests that require a running service instance with a database initialized with test data from `src/test/resources/devservices/`
+
+- **Test Resources**: 
+  - Test data: `src/test/resources/devservices/` (reports, products, SBOMs)
+  - Keycloak realm config: `src/test/resources/devservices/keycloak-realm.json`
+
+#### Frontend Testing
+- **Type Safety**: TypeScript strict mode compilation
+  - Execution: `npm run build` (includes `tsc` type checking)
+  - Requirement: MUST compile without errors
+  
+- **Mocking**: MSW (Mock Service Worker) available for API mocking
+  - Location: `src/main/webui/src/mocks/`
+  - Usage: Development scenarios
+  - Note: Test framework (Jest/Vitest) not currently configured
+
+#### Quality Gates
+- **Compilation**: 
+  - TypeScript MUST compile without errors (`tsc`)
+  - Java code MUST compile without errors
+- **Linting**: 
+  - ESLint MUST pass with zero warnings (`npm run lint`)
+  - Java code MUST pass linting checks
+- **Test Execution**:
+  - Unit tests run automatically with `mvn test`
+  - Integration tests run with `mvn verify` (require `BASE_URL` env var)
 
 ### Git Workflow
 - Branching strategy: Not explicitly documented (currently on `homepage` branch)
@@ -125,7 +156,7 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
 
 #### Reports
 - Represent a vulnerability analysis request and its results
-- States: `Completed`, `Sent`, `Queued`, `Failed`
+- States: `Completed`, `Sent`, `Queued`, `Failed`, `Pending`, `Expired`
 - Include metadata (batch_id, user, custom key-value pairs)
 - Contain justification labels and analysis results
 - Can be retried or deleted
@@ -162,11 +193,9 @@ Standard labels used to categorize vulnerability analysis results:
 
 ### Technical Constraints
 - **Frontend location**: UI MUST be under `src/main/webui` (Quinoa requirement)
-- **Component size**: React components MUST NOT exceed 50 lines
 - **Type safety**: No `any` types in TypeScript, strict mode required
-- **API calls**: MUST use generated OpenAPI client via `useApi` hook
+- **API calls**: MUST use generated OpenAPI client via `useApi` or `usePaginatedApi` hooks
 - **UI components**: Prefer PatternFly components over native HTML
-- **Backend independence**: Backend MUST be deployable without frontend
 - **Java version**: Java 21 required
 - **Request size**: Max 1GB body size for requests
 
@@ -213,9 +242,10 @@ Standard labels used to categorize vulnerability analysis results:
   - JWKS for token validation
 
 ### Development Tools
-- **WireMock**: For local development and testing
+- **WireMock**: For local development (devservices)
   - Mock external services in dev mode
-  - Configurable via devservices
+  - Configurable via Quarkus devservices
+  - Note: Not used in test code, only for development environment
 
 - **Quinoa**: Quarkus extension for frontend integration
   - Manages frontend build and serving

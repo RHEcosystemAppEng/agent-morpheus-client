@@ -384,7 +384,7 @@ public class ReportEndpoint {
     @PathParam("id") String id) throws InterruptedException {
     try {
       var result = reportService.getProductSummary(id);
-      if (result == null || result.data() == null) {
+      if (Objects.isNull(result) || Objects.isNull(result.data())) {
         return Response.status(Response.Status.NOT_FOUND).build();
       }
       return Response.ok(result).build();
@@ -426,11 +426,11 @@ public class ReportEndpoint {
       var result = reportService.listProductSummaries(page, pageSize, sortField, sortDirection, name, cveId);
       
       // Calculate total pages
-      long totalPages = (result.totalCount + pageSize - 1) / pageSize;
+      long totalPages = (result.totalCount() + pageSize - 1) / pageSize;
       
-      return Response.ok(result.summaries)
+      return Response.ok(result.summaries())
           .header("X-Total-Pages", String.valueOf(totalPages))
-          .header("X-Total-Elements", String.valueOf(result.totalCount))
+          .header("X-Total-Elements", String.valueOf(result.totalCount()))
           .build();
     } catch (Exception e) {
       LOGGER.error("Unable to retrieve products", e);

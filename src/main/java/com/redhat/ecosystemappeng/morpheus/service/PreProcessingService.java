@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.client.ComponentSyncerService;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
+import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
 
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;

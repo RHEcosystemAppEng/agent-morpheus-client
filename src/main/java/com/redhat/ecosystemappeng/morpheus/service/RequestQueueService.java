@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.client.MorpheusService;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
+import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
 
 import io.quarkus.scheduler.Scheduled;
 import jakarta.annotation.PostConstruct;

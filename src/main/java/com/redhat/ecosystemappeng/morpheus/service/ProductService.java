@@ -5,6 +5,7 @@ import java.util.List;
 import org.jboss.logging.Logger;
 
 import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

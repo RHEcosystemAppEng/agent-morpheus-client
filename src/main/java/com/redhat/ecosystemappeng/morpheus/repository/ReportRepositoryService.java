@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.service;
+package com.redhat.ecosystemappeng.morpheus.repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
+import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -86,7 +87,7 @@ public class ReportRepositoryService {
   public Map<String, String> extractMetadata(Document doc) {
     var metadata = new HashMap<String, String>();
     var metadataField = doc.get("metadata", Document.class);
-    if (metadataField != null) {
+    if (Objects.nonNull(metadataField)) {
       metadataField.keySet().forEach(key -> {
         if (METADATA_DATES.contains(key)) {
           Date date = metadataField.getDate(key);
@@ -218,7 +219,7 @@ public class ReportRepositoryService {
     var error = new Document("type", errorType).append("message", errorMessage);
     getCollection().updateOne(new Document(RepositoryConstants.ID_KEY, new ObjectId(id)), Updates.set("error", error));
     
-    if (productId != null) {
+    if (Objects.nonNull(productId)) {
       checkAndStoreProductCompletion(productId);
     }
   }
@@ -261,7 +262,7 @@ public class ReportRepositoryService {
 
   public String findById(String id) {
     var result = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, new ObjectId(id))).first();
-    if (result == null) {
+    if (Objects.isNull(result)) {
       return null;
     }
     // Return raw JSON without modification
@@ -290,7 +291,7 @@ public class ReportRepositoryService {
     sortFields.forEach(sf -> {
        {
           var fieldName = SORT_MAPPINGS.get(sf.field());
-          if (fieldName != null) {
+          if (Objects.nonNull(fieldName)) {
             if (SortType.ASC.equals(sf.type())) {
               sorts.add(Sorts.ascending(fieldName));
             } else {
@@ -319,7 +320,7 @@ public class ReportRepositoryService {
       .distinct("metadata." + PRODUCT_ID, filter, String.class)
       .iterator()
       .forEachRemaining(pid -> {
-        if (pid != null && !pid.isEmpty()) {
+        if (Objects.nonNull(pid) && !pid.isEmpty()) {
           productIds.add(pid);
         }
       });
@@ -345,11 +346,11 @@ public class ReportRepositoryService {
         if (analysisObj instanceof List<?> analysisList && !analysisList.isEmpty()) {
           // Only look at the first analysis entry (index 0)
           Object firstAnalysis = analysisList.get(0);
-          if (firstAnalysis instanceof org.bson.Document analysisDoc) {
+            if (firstAnalysis instanceof org.bson.Document analysisDoc) {
             Object justificationObj = analysisDoc.get("justification");
             if (justificationObj instanceof org.bson.Document justificationDoc) {
               String status = justificationDoc.getString("status");
-              if (status != null && !status.isEmpty()) {
+              if (Objects.nonNull(status) && !status.isEmpty()) {
                 // Count all statuses from the first analysis entry of each report
                 // This fixes the bug where statuses that weren't in the first report
                 // were not being counted
@@ -552,14 +553,14 @@ public class ReportRepositoryService {
           var statusValues = e.getValue().split(",");
           if (statusValues.length == 1) {
             var statusFilter = STATUS_FILTERS.get(statusValues[0].trim());
-            if (statusFilter != null) {
+            if (Objects.nonNull(statusFilter)) {
               filters.add(statusFilter);
             }
           } else {
             List<Bson> statusFilters = new ArrayList<>();
             for (String statusValue : statusValues) {
               var statusFilter = STATUS_FILTERS.get(statusValue.trim());
-              if (statusFilter != null) {
+              if (Objects.nonNull(statusFilter)) {
                 statusFilters.add(statusFilter);
               }
             }
@@ -612,13 +613,13 @@ public class ReportRepositoryService {
       }
     });
     
-    if (exploitIqStatus != null && !exploitIqStatus.isEmpty()) {
+    if (Objects.nonNull(exploitIqStatus) && !exploitIqStatus.isEmpty()) {
       String[] exploitIqStatusValues = exploitIqStatus.split(",");
       List<Bson> exploitIqStatusFilters = new ArrayList<>();
       
       for (String statusValue : exploitIqStatusValues) {
         String trimmedStatus = statusValue.trim();
-        if (vulnId != null && !vulnId.isEmpty()) {
+        if (Objects.nonNull(vulnId) && !vulnId.isEmpty()) {
           exploitIqStatusFilters.add(Filters.elemMatch("output.analysis", 
             Filters.and(
               Filters.eq("vuln_id", vulnId),
@@ -647,3 +648,4 @@ public class ReportRepositoryService {
 
  
 }
+

@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.service;
+package com.redhat.ecosystemappeng.morpheus.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +21,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
 import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -109,24 +110,17 @@ public class ProductRepositoryService {
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
   }
 
-  public static class ListResult {
-    public final List<Product> products;
-    public final long totalCount;
-
-    public ListResult(List<Product> products, long totalCount) {
-      this.products = products;
-      this.totalCount = totalCount;
-    }
+  public record ListResult(List<Product> products, long totalCount) {
   }
 
   public ListResult list(Integer page, Integer pageSize, String sortField, String sortDirection, String name, String cveId) {
     List<Bson> filters = new ArrayList<>();
     
     // Apply filters
-    if (name != null && !name.isEmpty()) {
+    if (Objects.nonNull(name) && !name.isEmpty()) {
       filters.add(Filters.regex(NAME, name, "i")); // Case-insensitive partial match
     }
-    if (cveId != null && !cveId.isEmpty()) {
+    if (Objects.nonNull(cveId) && !cveId.isEmpty()) {
       filters.add(Filters.regex(CVE_ID, cveId, "i")); // Case-insensitive partial match
     }
     
@@ -139,8 +133,8 @@ public class ProductRepositoryService {
     Bson sort = buildSort(sortField, sortDirection);
     
     // Apply pagination
-    int skip = (page != null && page > 0) ? page * (pageSize != null ? pageSize : 100) : 0;
-    int limit = (pageSize != null && pageSize > 0) ? pageSize : 100;
+    int skip = (Objects.nonNull(page) && page > 0) ? page * (Objects.nonNull(pageSize) ? pageSize : 100) : 0;
+    int limit = (Objects.nonNull(pageSize) && pageSize > 0) ? pageSize : 100;
     
     // Query with pagination and sorting
     List<Product> products = new ArrayList<>();
@@ -167,8 +161,8 @@ public class ProductRepositoryService {
   }
 
   private Bson buildSort(String sortField, String sortDirection) {
-    String field = sortField != null ? sortField : "submittedAt";
-    String direction = sortDirection != null ? sortDirection : "DESC";
+    String field = Objects.nonNull(sortField) ? sortField : "submittedAt";
+    String direction = Objects.nonNull(sortDirection) ? sortDirection : "DESC";
     
     // Map sort field names to database field names
     String dbField;

@@ -11,6 +11,9 @@ import java.util.regex.Pattern;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redhat.ecosystemappeng.morpheus.exception.CveIdValidationException;
+import com.redhat.ecosystemappeng.morpheus.exception.FileValidationException;
+import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,8 +25,12 @@ public class CycloneDxUploadService {
   private static final Logger LOGGER = Logger.getLogger(CycloneDxUploadService.class);
   private static final Pattern CVE_ID_PATTERN = Pattern.compile("^CVE-[0-9]{4}-[0-9]{4,19}$");
 
+  private CycloneDxParsingService cycloneDxParsingService;
+
   @Inject
-  CycloneDxParsingService cycloneDxParsingService;
+  public void setCycloneDxParsingService(CycloneDxParsingService cycloneDxParsingService) {
+    this.cycloneDxParsingService = cycloneDxParsingService;
+  }
 
   /**
    * Validates CVE ID format
@@ -93,19 +100,19 @@ public class CycloneDxUploadService {
     Map<String, String> metadata = new HashMap<>();
     metadata.put("product_id", productId);
     metadata.put("sbom_name", sbomName);
-    if (sbomVersion != null) {
+    if (Objects.nonNull(sbomVersion)) {
       metadata.put("sbom_version", sbomVersion);
     }
-    if (sbomDescription != null) {
+    if (Objects.nonNull(sbomDescription)) {
       metadata.put("sbom_description", sbomDescription);
     }
-    if (sbomType != null) {
+    if (Objects.nonNull(sbomType)) {
       metadata.put("sbom_type", sbomType);
     }
-    if (sbomPurl != null) {
+    if (Objects.nonNull(sbomPurl)) {
       metadata.put("sbom_purl", sbomPurl);
     }
-    if (bomRef != null) {
+    if (Objects.nonNull(bomRef)) {
       metadata.put("sbom_bom_ref", bomRef);
     }
 

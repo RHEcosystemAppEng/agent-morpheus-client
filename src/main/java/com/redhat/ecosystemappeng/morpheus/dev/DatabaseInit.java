@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.bson.Document;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -132,7 +133,7 @@ public class DatabaseInit {
           var doc = Document.parse(Files.readString(f));
           var metadata = doc.get("metadata", Document.class);
           metadata.put("submitted_at", Instant.parse((String) metadata.get("submitted_at")));
-          if (metadata.get("sent_at") != null) {
+          if (Objects.nonNull(metadata.get("sent_at"))) {
             metadata.put("sent_at", Instant.parse((String) metadata.get("sent_at")));
           }
           docs.add(doc);

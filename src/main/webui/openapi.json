@@ -804,10 +804,6 @@
         "description": "Please enter your JWT Token without Bearer",
         "scheme": "bearer",
         "bearerFormat": "jwt"
-      },
-      "SecurityScheme": {
-        "type": "openIdConnect",
-        "description": "Authentication"
       }
     }
   },
@@ -842,11 +838,11 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request"
-          },
           "500": {
             "description": "Internal server error"
+          },
+          "400": {
+            "description": "Bad Request"
           }
         },
         "tags": [
@@ -1016,11 +1012,11 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request"
-          },
           "500": {
             "description": "Internal server error"
+          },
+          "400": {
+            "description": "Bad Request"
           }
         },
         "security": [
@@ -2286,6 +2282,5 @@
   "info": {
     "title": "exploit-iq-client API",
     "version": "1.0.0-SNAPSHOT"
-  },
-  "servers": []
+  }
 }

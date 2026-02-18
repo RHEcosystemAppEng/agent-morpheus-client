@@ -17,7 +17,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
-import com.redhat.ecosystemappeng.morpheus.service.ProductRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
@@ -36,14 +36,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -101,11 +99,11 @@ public class ProductEndpoint {
       var result = reportService.listProductSummaries(page, pageSize, sortField, sortDirection, name, cveId);
       
       // Calculate total pages
-      long totalPages = (result.totalCount + pageSize - 1) / pageSize;
+      long totalPages = (result.totalCount() + pageSize - 1) / pageSize;
       
-      return Response.ok(result.summaries)
+      return Response.ok(result.summaries())
           .header("X-Total-Pages", String.valueOf(totalPages))
-          .header("X-Total-Elements", String.valueOf(result.totalCount))
+          .header("X-Total-Elements", String.valueOf(result.totalCount()))
           .build();
     } catch (Exception e) {
       LOGGER.error("Unable to retrieve products", e);
@@ -236,7 +234,7 @@ public class ProductEndpoint {
           Product product = new Product(
             productId,
             sbomName,
-            sbomVersion != null ? sbomVersion : "",
+            Objects.nonNull(sbomVersion) ? sbomVersion : "",
             Instant.now().toString(),
             1,
             new HashMap<String, String>(), // Explicitly specify HashMap generic types

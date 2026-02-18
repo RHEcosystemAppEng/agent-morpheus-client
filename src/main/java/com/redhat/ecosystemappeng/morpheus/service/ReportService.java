@@ -34,7 +34,6 @@ import com.redhat.ecosystemappeng.morpheus.model.Pagination;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
-import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportReceivedEvent;
@@ -42,6 +41,8 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
+import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
@@ -142,23 +143,7 @@ public class ReportService {
       Integer pageSize) {
     return repository.list(filter, sortBy, new Pagination(page, pageSize));
   }
-
-  public List<ProductSummary> listProductSummaries() {
-    return listProductSummaries(null, null, null, null, null, null).summaries;
-  }
-
-  public List<ProductSummary> listProductSummaries(String cveId) {
-    return listProductSummaries(null, null, null, null, null, cveId).summaries;
-  }
-
-  public static class ProductSummariesResult {
-    public final List<ProductSummary> summaries;
-    public final long totalCount;
-
-    public ProductSummariesResult(List<ProductSummary> summaries, long totalCount) {
-      this.summaries = summaries;
-      this.totalCount = totalCount;
-    }
+  public record ProductSummariesResult(List<ProductSummary> summaries, long totalCount) {
   }
 
   public ProductSummariesResult listProductSummaries(Integer page, Integer pageSize, String sortField, String sortDirection, String name, String cveId) {
@@ -167,12 +152,12 @@ public class ReportService {
     
     // Build ProductSummary for each product
     List<ProductSummary> summaries = new ArrayList<>();
-    for (Product product : listResult.products) {
+    for (Product product : listResult.products()) {
       ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product.id());
       summaries.add(new ProductSummary(product, productReportsSummary));
     }
     
-    return new ProductSummariesResult(summaries, listResult.totalCount);
+    return new ProductSummariesResult(summaries, listResult.totalCount());
   }
 
   public ProductSummary getProductSummary(String productId) {

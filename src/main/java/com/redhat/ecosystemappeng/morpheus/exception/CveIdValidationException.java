@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.service;
+package com.redhat.ecosystemappeng.morpheus.exception;
 
 /**
  * Exception thrown when CVE ID validation fails
