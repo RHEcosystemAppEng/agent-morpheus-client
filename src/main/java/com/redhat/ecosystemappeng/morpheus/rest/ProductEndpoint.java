@@ -37,6 +37,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Instant;
@@ -95,23 +97,15 @@ public class ProductEndpoint {
       @QueryParam("sortDirection") @DefaultValue("DESC") String sortDirection,
       @QueryParam("name") String name,
       @QueryParam("cveId") String cveId) {
-    try {
-      var result = reportService.listProductSummaries(page, pageSize, sortField, sortDirection, name, cveId);
-      
-      // Calculate total pages
-      long totalPages = (result.totalCount() + pageSize - 1) / pageSize;
-      
-      return Response.ok(result.summaries())
-          .header("X-Total-Pages", String.valueOf(totalPages))
-          .header("X-Total-Elements", String.valueOf(result.totalCount()))
-          .build();
-    } catch (Exception e) {
-      LOGGER.error("Unable to retrieve products", e);
-      return Response.serverError()
-          .entity(objectMapper.createObjectNode()
-          .put("error", e.getMessage()))
-          .build();
-    }
+    var result = reportService.listProductSummaries(page, pageSize, sortField, sortDirection, name, cveId);
+    
+    // Calculate total pages
+    long totalPages = (result.totalCount() + pageSize - 1) / pageSize;
+    
+    return Response.ok(result.summaries())
+        .header("X-Total-Pages", String.valueOf(totalPages))
+        .header("X-Total-Elements", String.valueOf(result.totalCount()))
+        .build();
   }
 
   @GET
@@ -141,19 +135,11 @@ public class ProductEndpoint {
       required = true
     )
     @PathParam("id") String id) {
-    try {
-      var summary = reportService.getProductSummary(id);
-      if (summary == null) {
-        return Response.status(Response.Status.NOT_FOUND).build();
-      }
-      return Response.ok(summary).build();
-    } catch (Exception e) {
-      LOGGER.error("Unable to retrieve product", e);
-      return Response.serverError()
-          .entity(objectMapper.createObjectNode()
-              .put("error", e.getMessage()))
-          .build();
+    var summary = reportService.getProductSummary(id);
+    if (summary == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
     }
+    return Response.ok(summary).build();
   }
   
   @DELETE
@@ -203,66 +189,66 @@ public class ProductEndpoint {
   })
   public Response uploadCyclonedx(
       @FormParam("cveId") String cveId,
-      @FormParam("file") FileUpload file) {
-    try {
-      if (file == null || file.uploadedFile() == null) {
-        var errorNode = objectMapper.createObjectNode();
-        var errorsNode = errorNode.putObject("errors");
-        errorsNode.put("file", "File is required");
-        return Response.status(Response.Status.BAD_REQUEST)
-            .entity(errorNode)
-            .build();
-      }
-
-      try (InputStream fileInputStream = Files.newInputStream(file.uploadedFile())) {
-        var reportRequest = cycloneDxUploadService.processUpload(cveId, fileInputStream);
-        
-        // Extract product information from report metadata
-        Map<String, String> reportMetadata = reportRequest.metadata();
-        String productId = reportMetadata.get("product_id");
-        String sbomName = reportMetadata.get("sbom_name");
-        String sbomVersion = reportMetadata.get("sbom_version");
-        
-        // Create and submit the report
-        var reportData = reportService.process(reportRequest);
-        reportService.submit(reportData.reportRequestId().id(), reportData.report());
-
-        // Create product entry after report is successfully created and submitted
-        // Product report is necessary for the UI display of SBOM report list
-        // Use empty string as version fallback when version is not available from SBOM
-        try {
-          Product product = new Product(
-            productId,
-            sbomName,
-            Objects.nonNull(sbomVersion) ? sbomVersion : "",
-            Instant.now().toString(),
-            1,
-            new HashMap<String, String>(), // Explicitly specify HashMap generic types
-            Collections.emptyList(),
-            cveId
-          );
-          productRepository.save(product, userService.getUserName());
-        } catch (Exception e) {
-          // Log error but don't fail the request - product creation failure should not prevent report submission
-          LOGGER.errorf(e, "Failed to create product %s after report creation", productId);
-        }
-
-        return Response.accepted(reportData).build();
-      }
-    } catch (ValidationException e) {
-      var errorNode = objectMapper.createObjectNode();
-      var errorsNode = errorNode.putObject("errors");
-      if (e.getErrors() != null) {
-        e.getErrors().forEach(errorsNode::put);
-      }
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity(errorNode)
-          .build();
-    } catch (Exception e) {
-      LOGGER.error("Unable to process CycloneDX upload", e);
-      return Response.serverError()
-          .entity(objectMapper.createObjectNode()
-              .put("error", e.getMessage()))
-          .build();
+      @FormParam("file") FileUpload file) throws IOException {
+    if (file == null || file.uploadedFile() == null) {
+      throw new ValidationException(Map.of("file", "File is required"));
     }
-  }}
+
+    try (InputStream fileInputStream = Files.newInputStream(file.uploadedFile())) {
+      var reportRequest = cycloneDxUploadService.processUpload(cveId, fileInputStream);
+      
+      // Extract product information from report metadata
+      Map<String, String> reportMetadata = reportRequest.metadata();
+      String productId = reportMetadata.get("product_id");
+      String sbomName = reportMetadata.get("sbom_name");
+      String sbomVersion = reportMetadata.get("sbom_version");
+      
+      // Create and submit the report
+      var reportData = reportService.process(reportRequest);
+      reportService.submit(reportData.reportRequestId().id(), reportData.report());
+
+      // Create product entry after report is successfully created and submitted
+      // Product report is necessary for the UI display of SBOM report list
+      // Use empty string as version fallback when version is not available from SBOM
+      try {
+        Product product = new Product(
+          productId,
+          sbomName,
+          Objects.nonNull(sbomVersion) ? sbomVersion : "",
+          Instant.now().toString(),
+          1,
+          new HashMap<String, String>(), // Explicitly specify HashMap generic types
+          Collections.emptyList(),
+          cveId
+        );
+        productRepository.save(product, userService.getUserName());
+      } catch (Exception e) {
+        // Log error but don't fail the request - product creation failure should not prevent report submission
+        LOGGER.errorf(e, "Failed to create product %s after report creation", productId);
+      }
+
+      return Response.accepted(reportData).build();
+    }
+  }
+
+  @ServerExceptionMapper
+  public Response mapValidationException(ValidationException e) {
+    var errorNode = objectMapper.createObjectNode();
+    var errorsNode = errorNode.putObject("errors");
+    if (e.getErrors() != null) {
+      e.getErrors().forEach(errorsNode::put);
+    }
+    return Response.status(Response.Status.BAD_REQUEST)
+        .entity(errorNode)
+        .build();
+  }
+
+  @ServerExceptionMapper
+  public Response mapException(Exception e) {
+    LOGGER.error("Unexpected error in ProductEndpoint", e);
+    return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+            .put("error", e.getMessage()))
+        .build();
+  }
+}

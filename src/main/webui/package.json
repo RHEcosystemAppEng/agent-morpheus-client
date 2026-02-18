@@ -9,10 +9,10 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "openapi:delete-servers": "jq 'del(.servers)' openapi.json > openapi.json.tmp && mv openapi.json.tmp openapi.json || (echo 'Warning: OpenAPI spec not found. Run openapi:generate first.' && exit 1)",
-    "openapi:generate": "cd ../../.. && ./mvnw clean package -DskipTests -Dquarkus.quinoa.enabled=false && cd src/main/webui && rm -f openapi.yaml && npm run openapi:delete-servers",
+    "openapi:postprocess": "jq 'del(.servers)' ../../../target/generated/openapi/openapi.json > openapi.json.tmp && mv openapi.json.tmp openapi.json || (echo 'Warning: OpenAPI spec not found. Run openapi:generate first.' && exit 1)",
+    "openapi:generate": "cd ../../.. && ./mvnw clean package -DskipTests -Dquarkus.quinoa.enabled=false && cd src/main/webui && npm run openapi:postprocess",
     "openapi:generate-client": "openapi --input openapi.json --output src/generated-client --client fetch --useOptions --useUnionTypes",
-    "openapi:generate-all": "(npm run openapi:generate || true) && (npm run openapi:generate-client || true)"
+    "openapi:generate-all": "(npm run openapi:generate || true) && (npm run openapi:postprocess || true) && npm run openapi:generate-client"
   },
   "dependencies": {
     "@patternfly/react-charts": "^8.4.0",

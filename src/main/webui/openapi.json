@@ -804,6 +804,10 @@
         "description": "Please enter your JWT Token without Bearer",
         "scheme": "bearer",
         "bearerFormat": "jwt"
+      },
+      "SecurityScheme": {
+        "type": "openIdConnect",
+        "description": "Authentication"
       }
     }
   },
