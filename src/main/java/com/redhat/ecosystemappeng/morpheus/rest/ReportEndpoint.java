@@ -20,7 +20,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ClientWebApplicationException;
-
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -685,5 +685,14 @@ public class ReportEndpoint {
     reportService.remove(reportIds);
     productService.remove(id);
     return Response.accepted().build();
+  }
+
+  @ServerExceptionMapper
+  public Response mapException(Exception e) {
+    LOGGER.error("Unexpected error in ReportEndpoint", e);
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .entity(objectMapper.createObjectNode()
+            .put("error", e.getMessage() != null ? e.getMessage() : "An unexpected error occurred"))
+        .build();
   }
 }

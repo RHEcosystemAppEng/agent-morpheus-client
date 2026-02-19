@@ -153,7 +153,6 @@ The following API endpoints are currently mocked:
 - `DELETE /api/reports/product/:id` - Delete product
 - `POST /api/reports/:id/submit` - Submit report to ExploitIQ
 - `POST /api/reports/:id/retry` - Retry report analysis
-- `GET /api/vulnerabilities` - List vulnerabilities
 
 ## Customizing Mock Data
 

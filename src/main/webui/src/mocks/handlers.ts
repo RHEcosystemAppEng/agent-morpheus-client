@@ -963,35 +963,6 @@ export const handlers = [
     return HttpResponse.json("Retry request accepted");
   }),
 
-  // GET /api/vulnerabilities - List vulnerabilities
-  http.get("/api/vulnerabilities", async ({ request }) => {
-    await delay(getMockDelay(request));
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get("page") || "0", 10);
-    const pageSize = parseInt(url.searchParams.get("pageSize") || "1000", 10);
-
-    const mockVulnerabilities = [
-      {
-        id: "CVE-2024-1234",
-        description: "Sample vulnerability description",
-        severity: "HIGH",
-        publishedDate: new Date().toISOString(),
-      },
-      {
-        id: "CVE-2024-5678",
-        description: "Another vulnerability description",
-        severity: "MEDIUM",
-        publishedDate: new Date().toISOString(),
-      },
-    ];
-
-    const start = page * pageSize;
-    const end = start + pageSize;
-    const paginated = mockVulnerabilities.slice(start, end);
-
-    return HttpResponse.json(paginated);
-  }),
-
   // Fallback handler for unhandled requests
   http.all("*", ({ request }) => {
     console.warn(`[MSW] Unhandled request: ${request.method} ${request.url}`);
