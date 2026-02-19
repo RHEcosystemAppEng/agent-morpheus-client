@@ -5,6 +5,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
@@ -38,6 +39,9 @@ public class Eval {
     @NotEmpty
     @JsonProperty(METRIC_VALUE_FIELD_NAME)
     private String metricValue;
+    @JsonProperty(METRIC_REASONING_FIELD_NAME)
+    @Schema(description = "Containing the reasoning for the score that was calculated")
+    private String metricReasoning;
 
 
     public String getJobId() {
@@ -124,5 +128,13 @@ public class Eval {
                 ", metricName='" + metricName + '\'' +
                 ", metricValue='" + metricValue + '\'' +
                 '}';
+    }
+
+    public String getMetricReasoning() {
+        return metricReasoning;
+    }
+
+    public void setMetricReasoning(String metricReasoning) {
+        this.metricReasoning = metricReasoning;
     }
 }

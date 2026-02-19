@@ -27,6 +27,7 @@ public class AuditRepository {
     public static final String LLM_NODE_FIELD_NAME = "llm_node";
     public static final String METRIC_NAME_FIELD_NAME = "metric_name";
     public static final String METRIC_VALUE_FIELD_NAME = "metric_value";
+    public static final String METRIC_REASONING_FIELD_NAME = "metric_reasoning";
     public static final String INTERNAL_COLLECTION_ID = "_id";
     public static final String SPAN_ID_FIELD_NAME = "span_id";
 
