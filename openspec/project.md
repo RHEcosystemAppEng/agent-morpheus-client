@@ -13,7 +13,7 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
 ### Backend
 - **Framework**: Quarkus 3.29.4
 - **Language**: Java 21
-- **Database**: Classic MongoDB Hava client driver
+- **Database**: Classic MongoDB Java client driver
 - **API**: REST (Quarkus REST JAX-RS, Vert.x), API Documentation - OpenAPI/Swagger  
 - **Authentication**: OIDC/OAuth2 (OpenShift integration)
 - **Observability**: Micrometer/Prometheus, OpenTelemetry
