@@ -24,7 +24,6 @@ export type { SbomInfoType } from './models/SbomInfoType';
 export type { SourceInfo } from './models/SourceInfo';
 export type { UserComments } from './models/UserComments';
 export type { ValidationErrorResponse } from './models/ValidationErrorResponse';
-export type { Vulnerability } from './models/Vulnerability';
 export type { VulnResult } from './models/VulnResult';
 
 export { FeedbackResourceService } from './services/FeedbackResourceService';
@@ -33,4 +32,3 @@ export { OverviewMetricsService } from './services/OverviewMetricsService';
 export { PreProcessingEndpointService } from './services/PreProcessingEndpointService';
 export { ProductEndpointService } from './services/ProductEndpointService';
 export { ReportEndpointService } from './services/ReportEndpointService';
-export { VulnerabilityEndpointService } from './services/VulnerabilityEndpointService';
