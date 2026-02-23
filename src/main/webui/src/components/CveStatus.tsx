@@ -1,13 +1,21 @@
 import { Label } from "@patternfly/react-core";
+import type { ReportOutput } from "../types/FullReport";
+import NotAvailable from "./NotAvailable";
 
 interface CveStatusProps {
-  status: string;
+  vuln: ReportOutput;
 }
 
 /**
  * Component to display CVE status based on justification
  */
-const CveStatus: React.FC<CveStatusProps> = ({ status }) => {  
+const CveStatus: React.FC<CveStatusProps> = ({ vuln }) => {
+  const status = vuln?.justification?.status;
+  const label = vuln?.justification?.label;
+
+  if (!status || !label) {
+    return <NotAvailable />;
+  }
 
   const getColor = (
     status: string

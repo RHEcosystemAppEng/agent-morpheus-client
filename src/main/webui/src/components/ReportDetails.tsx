@@ -10,6 +10,7 @@ import {
   GridItem,
   Title,
 } from "@patternfly/react-core";
+import { Link, useParams } from "react-router";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 
 interface ReportDetailsProps {
@@ -17,12 +18,19 @@ interface ReportDetailsProps {
   cveId: string;
 }
 
-const ReportDetails: React.FC<ReportDetailsProps> = ({
-  product,
-  cveId,
-}) => {
+const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId }) => {
   const name = product.data?.name || "";
-  const repositoriesAnalyzed = product.summary?.statusCounts?.["completed"]?.toString() || "0";
+  const repositoriesAnalyzed =
+    product.summary?.statusCounts?.["completed"]?.toString() || "0";
+  const params = useParams<{ productId?: string }>();
+  const { productId } = params;
+
+  const getBreadcrumbState = () => {
+    return {
+      sbomReportId: productId,
+      sbomName: name,
+    };
+  };
 
   return (
     <Card>
@@ -37,7 +45,14 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
             <DescriptionList>
               <DescriptionListGroup>
                 <DescriptionListTerm>CVE Analyzed</DescriptionListTerm>
-                <DescriptionListDescription>{cveId}</DescriptionListDescription>
+                <DescriptionListDescription>
+                  <Link
+                    to={`/reports/cve/${cveId}`}
+                    state={getBreadcrumbState()}
+                  >
+                    {cveId}
+                  </Link>
+                </DescriptionListDescription>
               </DescriptionListGroup>
               <DescriptionListGroup>
                 <DescriptionListTerm>Report name</DescriptionListTerm>
@@ -64,4 +79,3 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({
 };
 
 export default ReportDetails;
-

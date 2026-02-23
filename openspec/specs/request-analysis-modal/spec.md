@@ -12,10 +12,8 @@ The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/a
 - **THEN** the modal validates the CVE ID format matches the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`
 - **AND** creates a multipart form with the CVE ID and file
 - **AND** calls the `/api/v1/products/upload-cyclonedx` API endpoint using the generated OpenAPI client service
-- **AND** displays a loading state (disables submit button) during the API call
-- **AND** upon successful response (HTTP 202), extracts the `reportRequestId.id` field from the `ReportData` response
-- **AND** navigates to the repository report page at `/reports/component/:cveId/:reportId` where `:cveId` is the CVE ID from the form and `:reportId` is the `reportRequestId.id` from the API response
-- **AND** closes the modal
+- **THEN** the modal creates a multipart form with the CVE ID and file
+- **AND** calls the `/api/v1/sbom-reports/upload-cyclonedx` API endpoint using the generated OpenAPI client service
 
 #### Scenario: API field-specific error display
 - **WHEN** a user submits the request analysis modal

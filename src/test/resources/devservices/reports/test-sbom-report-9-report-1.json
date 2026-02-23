@@ -3137,7 +3137,7 @@
         },
         "nvd": {
           "cve_id": "CVE-2024-0406",
-          "cve_description": "A flaw was discovered in the mholt/archiver package. This flaw allows an attacker to create a specially crafted tar file, which, when unpacked, may allow access to restricted files or directories. This issue can allow the creation or overwriting of files with the user's or application's privileges using the library.",
+          "cve_description": "",
           "cvss_vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:L/I:H/A:N",
           "cvss_base_score": 6.1,
           "cvss_severity": "MEDIUM",

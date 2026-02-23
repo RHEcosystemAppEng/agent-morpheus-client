@@ -7,8 +7,8 @@ for sending requests to evaluate vulnerabilities on specific SBOMs.
 
 Check this other documents for:
 
-* [Configuration](./docs/configuration.md)
-* [Development](./docs/development.md)
+- [Configuration](./docs/configuration.md)
+- [Development](./docs/development.md)
 
 ## Using the Application
 
@@ -43,6 +43,16 @@ After submitting the request, you will be redirected to the Report page. Once th
 ![report](./docs/images/report.png)
 
 **Note:** There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after a certain time a callback response is not received, the report will be _expired_ (failed).
+
+### CVE Details Page
+
+By clicking on the CVE link:
+
+![cve_click.png](./docs/images/cve_click.png)
+
+you will navigate to the CVE Details page where you can find details about a specific CVE.
+
+![cve_details_page.png](./docs/images/cve_details_page.png)
 
 ### Reports Page
 
@@ -81,7 +91,6 @@ You will be able to sort, filter, and organize the reports to quickly locate spe
 ### Report
 
 ![report](./docs/images/report.png)
-
 
 ### Download Feature
 

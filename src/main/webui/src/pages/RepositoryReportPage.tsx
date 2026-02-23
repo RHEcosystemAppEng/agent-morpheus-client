@@ -31,7 +31,11 @@ const RepositoryReportPageError: React.FC<RepositoryReportPageErrorProps> = ({
 }) => {
   return (
     <PageSection>
-      <EmptyState headingLevel="h4" icon={ExclamationCircleIcon} titleText={title}>
+      <EmptyState
+        headingLevel="h4"
+        icon={ExclamationCircleIcon}
+        titleText={title}
+      >
         <EmptyStateBody>{message}</EmptyStateBody>
       </EmptyState>
     </PageSection>
@@ -43,10 +47,9 @@ interface RepositoryReportPageApiErrorProps {
   reportId: string;
 }
 
-const RepositoryReportPageApiError: React.FC<RepositoryReportPageApiErrorProps> = ({
-  error,
-  reportId,
-}) => {
+const RepositoryReportPageApiError: React.FC<
+  RepositoryReportPageApiErrorProps
+> = ({ error, reportId }) => {
   const errorStatus = (error as { status?: number })?.status;
   const title =
     errorStatus === 404
@@ -67,7 +70,6 @@ const RepositoryReportPageApiError: React.FC<RepositoryReportPageApiErrorProps> 
   return <RepositoryReportPageError title={title} message={message} />;
 };
 
-
 const RepositoryReportPage: React.FC = () => {
   // Support both new routes: /reports/product/:productId/:cveId/:reportId and /reports/component/:cveId/:reportId
   // Also support legacy route: /reports/:productId/:cveId/:reportId
@@ -76,15 +78,22 @@ const RepositoryReportPage: React.FC = () => {
     cveId: string;
     reportId: string;
   }>();
-  
+
   const { productId, cveId, reportId } = params;
-  const { data: report, status, loading, error } = useRepositoryReport(reportId || "");
+  const {
+    data: report,
+    status,
+    loading,
+    error,
+  } = useRepositoryReport(reportId || "");
 
   if (!cveId) {
-    return <RepositoryReportPageError
-      title="Invalid URL format"
-      message={`URL is invalid. Please use the format /reports/product/:productId/:cveId/:reportId or /reports/component/:cveId/:reportId.`}
-    />;
+    return (
+      <RepositoryReportPageError
+        title="Invalid URL format"
+        message={`URL is invalid. Please use the format /reports/product/:productId/:cveId/:reportId or /reports/component/:cveId/:reportId.`}
+      />
+    );
   }
 
   if (loading) {
@@ -92,7 +101,9 @@ const RepositoryReportPage: React.FC = () => {
   }
 
   if (error) {
-    return <RepositoryReportPageApiError error={error} reportId={reportId || ""} />;
+    return (
+      <RepositoryReportPageApiError error={error} reportId={reportId || ""} />
+    );
   }
 
   if (!report) {
@@ -118,13 +129,13 @@ const RepositoryReportPage: React.FC = () => {
   }
 
   const reportIdDisplay = vuln.vuln_id
-    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}` : ""
+    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
+    : "";
   // Extract product name from metadata, fallback to productId
   const productName = report?.metadata?.product_id;
-  const productCveBreadcrumbText = `${productName}/${cveId || ""}`;
   const output = report.output?.analysis || [];
   const outputVuln = output.find((v) => v.vuln_id === cveId);
-  
+
   const showReport = () => {
     return (
       <Grid hasGutter>
@@ -132,30 +143,45 @@ const RepositoryReportPage: React.FC = () => {
           <Flex
             justifyContent={{ default: "justifyContentSpaceBetween" }}
             alignItems={{ default: "alignItemsCenter" }}
+            wrap={{ default: "nowrap" }}
           >
-            <FlexItem>
+            <FlexItem
+              grow={{ default: "grow" }}
+              style={{ minWidth: 0, flexShrink: 1 }}
+            >
               <Title headingLevel="h1">
                 CVE Repository Report:{" "}
                 <span
                   style={{
                     fontSize: "var(--pf-t--global--font--size--heading--h6)",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
                   }}
                 >
-                  {reportIdDisplay}
+                  <Link
+                    to={`/reports/cve/${cveId}`}
+                    state={{
+                      sbomReportId: productId,
+                      sbomName: productName,
+                      reportId,
+                      reportIdDisplay,
+                      isComponentRoute: !productId,
+                    }}
+                  >
+                    {cveId}
+                  </Link>
+                  {" | "}
+                  {image?.name || ""} | {image?.tag || ""}
                 </span>
               </Title>
             </FlexItem>
-            <FlexItem>
+            <FlexItem style={{ flexShrink: 0 }}>
               <DownloadDropdown report={report} cveId={cveId} />
             </FlexItem>
           </Flex>
         </GridItem>
         <GridItem>
-          <DetailsCard
-            report={report}
-            cveId={cveId}
-            analysisState={status}
-          />
+          <DetailsCard report={report} cveId={cveId} analysisState={status} />
         </GridItem>
         <GridItem>
           <ChecklistCard vuln={outputVuln} />
@@ -177,7 +203,37 @@ const RepositoryReportPage: React.FC = () => {
           {productId && (
             <BreadcrumbItem>
               <Link to={`/reports/product/${productId}/${cveId}`}>
-                {productCveBreadcrumbText}
+                {productName}
+              </Link>
+            </BreadcrumbItem>
+          )}
+          {productId && (
+            <BreadcrumbItem>
+              <Link
+                to={`/reports/cve/${cveId}`}
+                state={{
+                  sbomReportId: productId,
+                  sbomName: productName,
+                  reportId,
+                  reportIdDisplay,
+                  isComponentRoute: false,
+                }}
+              >
+                {cveId}
+              </Link>
+            </BreadcrumbItem>
+          )}
+          {!productId && (
+            <BreadcrumbItem>
+              <Link
+                to={`/reports/cve/${cveId}`}
+                state={{
+                  reportId,
+                  reportIdDisplay,
+                  isComponentRoute: true,
+                }}
+              >
+                {cveId}
               </Link>
             </BreadcrumbItem>
           )}

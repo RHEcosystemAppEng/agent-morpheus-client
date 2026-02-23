@@ -6,10 +6,10 @@ import {
   SeverityModerateIcon,
   SeverityNoneIcon,
 } from "@patternfly/react-icons";
-import t_global_icon_color_status_danger_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_danger_default";
-import t_global_icon_color_status_warning_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_warning_default";
 import t_global_icon_color_status_info_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_info_default";
 import t_global_icon_color_status_success_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_success_default";
+import t_global_icon_color_status_warning_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_warning_default";
+import t_global_icon_color_status_danger_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_danger_default";
 import type { Cvss } from "../types/FullReport";
 import NotAvailable from "./NotAvailable";
 
@@ -18,18 +18,14 @@ interface CvssBannerProps {
 }
 
 /**
- * Component to display CVSS score with severity icon and text
+ * Shared utility function to get CVSS severity, icon, and color from a numeric score
+ * Can be used by both CvssBanner and other components
  */
-const CvssBanner: React.FC<CvssBannerProps> = ({ cvss }) => {
-  if (cvss === null || cvss === undefined || cvss.score === "") {
-    return <NotAvailable />;
-  }
-
-  const score = parseFloat(cvss.score);
-  if (isNaN(score)) {
-    return <span>{cvss.score}</span>;
-  }
-
+export function getCvssSeverityIconAndColor(score: number): {
+  severity: string;
+  Icon: React.ComponentType<{ color?: string }> | null;
+  color: string;
+} {
   let severity = "";
   let Icon: React.ComponentType<{ color?: string }> | null = null;
   let color: string = t_global_icon_color_status_info_default.var; // Default fallback
@@ -56,6 +52,28 @@ const CvssBanner: React.FC<CvssBannerProps> = ({ cvss }) => {
     color = t_global_icon_color_status_danger_default.var;
   }
 
+  return {
+    severity,
+    Icon,
+    color,
+  };
+}
+
+/**
+ * Component to display CVSS score with severity icon and text
+ */
+const CvssBanner: React.FC<CvssBannerProps> = ({ cvss }) => {
+  if (cvss === null || cvss === undefined || cvss.score === "") {
+    return <NotAvailable />;
+  }
+
+  const score = parseFloat(cvss.score);
+  if (isNaN(score)) {
+    return <span>{cvss.score}</span>;
+  }
+
+  const { severity, Icon, color } = getCvssSeverityIconAndColor(score);
+
   if (Icon) {
     return (
       <Flex spaceItems={{ default: "spaceItemsXs" }}>
@@ -76,4 +94,3 @@ const CvssBanner: React.FC<CvssBannerProps> = ({ cvss }) => {
 };
 
 export default CvssBanner;
-
