@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.service;
+package com.redhat.ecosystemappeng.morpheus.exception;
 
 import java.util.Map;
 

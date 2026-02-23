@@ -13,6 +13,7 @@ import org.jboss.logging.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.ecosystemappeng.morpheus.exception.CveIdValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.FileValidationException;
+import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 

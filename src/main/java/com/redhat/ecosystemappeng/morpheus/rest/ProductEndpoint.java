@@ -21,7 +21,7 @@ import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
-import com.redhat.ecosystemappeng.morpheus.service.ValidationException;
+import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;

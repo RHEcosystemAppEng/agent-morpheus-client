@@ -43,6 +43,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Scan;
