@@ -21,10 +21,7 @@ const App: React.FC = () => {
             path="/reports/product/:productId/:cveId/:reportId"
             element={<RepositoryReportPage />}
           />
-          <Route
-            path="/reports/product/:productId/:cveId"
-            element={<ReportPage />}
-          />
+          <Route path="/reports/product/:productId/:cveId" element={<ReportPage />} />
           <Route
             path="/reports/component/:cveId/:reportId"
             element={<RepositoryReportPage />}
