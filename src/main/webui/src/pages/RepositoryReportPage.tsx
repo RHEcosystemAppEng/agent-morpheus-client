@@ -142,12 +142,17 @@ const RepositoryReportPage: React.FC = () => {
         <GridItem>
           <Flex
             justifyContent={{ default: "justifyContentSpaceBetween" }}
-            alignItems={{ default: "alignItemsCenter" }}
-            wrap={{ default: "nowrap" }}
+            alignItems={{ default: "alignItemsFlexStart" }}
+            style={{ width: "100%" }}
           >
             <FlexItem
               grow={{ default: "grow" }}
-              style={{ minWidth: 0, flexShrink: 1 }}
+              style={{
+                minWidth: 0,
+                flexShrink: 1,
+                maxWidth: "calc(100% - 12rem)",
+                paddingRight: "1rem",
+              }}
             >
               <Title headingLevel="h1">
                 CVE Repository Report:{" "}
@@ -156,6 +161,8 @@ const RepositoryReportPage: React.FC = () => {
                     fontSize: "var(--pf-t--global--font--size--heading--h6)",
                     wordBreak: "break-word",
                     overflowWrap: "break-word",
+                    display: "inline-block",
+                    maxWidth: "100%",
                   }}
                 >
                   <Link
@@ -175,7 +182,13 @@ const RepositoryReportPage: React.FC = () => {
                 </span>
               </Title>
             </FlexItem>
-            <FlexItem style={{ flexShrink: 0 }}>
+            <FlexItem
+              style={{
+                flexShrink: 0,
+                flexGrow: 0,
+                alignSelf: "flex-start",
+              }}
+            >
               <DownloadDropdown report={report} cveId={cveId} />
             </FlexItem>
           </Flex>

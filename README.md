@@ -7,8 +7,8 @@ for sending requests to evaluate vulnerabilities on specific SBOMs.
 
 Check this other documents for:
 
-- [Configuration](./docs/configuration.md)
-- [Development](./docs/development.md)
+* [Configuration](./docs/configuration.md)
+* [Development](./docs/development.md)
 
 ## Using the Application
 
