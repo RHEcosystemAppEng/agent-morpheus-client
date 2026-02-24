@@ -1,6 +1,11 @@
-import { List, ListItem } from "@patternfly/react-core";
+import {
+  List,
+  ListItem,
+  EmptyState,
+  EmptyStateBody,
+} from "@patternfly/react-core";
+import { SearchIcon } from "@patternfly/react-icons";
 import type { CveMetadata } from "../hooks/useCveDetails";
-import NotAvailable from "./NotAvailable";
 
 interface CveReferencesCardProps {
   metadata: CveMetadata | null;
@@ -13,7 +18,15 @@ const CveReferencesCard: React.FC<CveReferencesCardProps> = ({ metadata }) => {
   const references = metadata?.references;
 
   if (!references || references.length === 0) {
-    return <NotAvailable />;
+    return (
+      <EmptyState
+        titleText="No references available"
+        headingLevel="h4"
+        icon={SearchIcon}
+      >
+        <EmptyStateBody>No references available for this CVE.</EmptyStateBody>
+      </EmptyState>
+    );
   }
 
   return (

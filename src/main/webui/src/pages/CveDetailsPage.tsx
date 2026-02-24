@@ -1,4 +1,4 @@
-import { useParams, Link, useLocation } from "react-router";
+import { useParams, Link } from "react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,14 +19,6 @@ import CveReferencesCard from "../components/CveReferencesCard";
 import CveVulnerablePackagesCard from "../components/CveVulnerablePackagesCard";
 import CveDescriptionCard from "../components/CveDescriptionCard";
 import SkeletonCard from "../components/SkeletonCard";
-
-interface BreadcrumbContext {
-  sbomReportId?: string;
-  sbomName?: string;
-  reportId?: string;
-  reportIdDisplay?: string;
-  isComponentRoute?: boolean;
-}
 
 interface CveDetailsPageErrorProps {
   title: string;
@@ -51,9 +43,12 @@ const CveDetailsPageError: React.FC<CveDetailsPageErrorProps> = ({
 };
 
 const CveDetailsPage: React.FC = () => {
-  const { cveId } = useParams<{ cveId: string }>();
-  const location = useLocation();
-  const breadcrumbContext = (location.state as BreadcrumbContext) || {};
+  const params = useParams<{
+    productId?: string;
+    cveId: string;
+    reportId?: string;
+  }>();
+  const { productId, cveId, reportId } = params;
 
   if (!cveId) {
     return (
@@ -65,53 +60,40 @@ const CveDetailsPage: React.FC = () => {
   }
 
   const cveIdDisplay = cveId.toUpperCase();
-  const {
-    sbomReportId,
-    sbomName,
-    reportId,
-    reportIdDisplay,
-    isComponentRoute,
-  } = breadcrumbContext;
+  const isComponentRoute = !productId;
 
   const buildBreadcrumb = () => {
-    const hasBreadcrumbContext =
-      (sbomReportId || reportId) && (sbomName || reportIdDisplay);
-
     return (
       <Breadcrumb>
         <BreadcrumbItem>
           <Link to="/reports">Reports</Link>
         </BreadcrumbItem>
-        {hasBreadcrumbContext && (
-          <>
-            {sbomReportId && sbomName && !isComponentRoute && (
-              <BreadcrumbItem>
-                <Link to={`/reports/sbom-report/${sbomReportId}/${cveId}`}>
-                  {`${sbomName}/${cveId}`}
-                </Link>
-              </BreadcrumbItem>
-            )}
-            {reportId && reportIdDisplay && (
-              <BreadcrumbItem>
-                <Link
-                  to={
-                    isComponentRoute
-                      ? `/reports/component/${cveId}/${reportId}`
-                      : `/reports/sbom-report/${sbomReportId}/${cveId}/${reportId}`
-                  }
-                >
-                  {reportIdDisplay}
-                </Link>
-              </BreadcrumbItem>
-            )}
-          </>
+        {productId && (
+          <BreadcrumbItem>
+            <Link to={`/reports/product/${productId}/${cveId}`}>
+              {productId}/{cveId}
+            </Link>
+          </BreadcrumbItem>
+        )}
+        {reportId && (
+          <BreadcrumbItem>
+            <Link
+              to={
+                isComponentRoute
+                  ? `/reports/component/${cveId}/${reportId}`
+                  : `/reports/product/${productId}/${cveId}/${reportId}`
+              }
+            >
+              Report {reportId.substring(0, 8)}...
+            </Link>
+          </BreadcrumbItem>
         )}
         <BreadcrumbItem isActive>CVE Details</BreadcrumbItem>
       </Breadcrumb>
     );
   };
 
-  const { metadata, loading, error } = useCveDetails(cveId);
+  const { metadata, loading, error } = useCveDetails(cveId, reportId);
 
   if (loading) {
     return (
@@ -120,7 +102,7 @@ const CveDetailsPage: React.FC = () => {
           <Grid hasGutter>
             <GridItem>{buildBreadcrumb()}</GridItem>
             <GridItem>
-              <Title headingLevel="h1" size="3xl">
+              <Title headingLevel="h1" size="2xl">
                 <strong>{cveIdDisplay}</strong>
               </Title>
             </GridItem>
@@ -179,7 +161,7 @@ const CveDetailsPage: React.FC = () => {
         <Grid hasGutter>
           <GridItem>{buildBreadcrumb()}</GridItem>
           <GridItem>
-            <Title headingLevel="h1" size="3xl">
+            <Title headingLevel="h1" size="2xl">
               <strong>{cveIdDisplay}</strong>
             </Title>
           </GridItem>

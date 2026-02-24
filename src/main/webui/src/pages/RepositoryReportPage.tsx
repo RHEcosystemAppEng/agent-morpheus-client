@@ -166,14 +166,11 @@ const RepositoryReportPage: React.FC = () => {
                   }}
                 >
                   <Link
-                    to={`/reports/cve/${cveId}`}
-                    state={{
-                      sbomReportId: productId,
-                      sbomName: productName,
-                      reportId,
-                      reportIdDisplay,
-                      isComponentRoute: !productId,
-                    }}
+                    to={
+                      productId
+                        ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                        : `/reports/component/cve/${cveId}/${cveId}/${reportId}`
+                    }
                   >
                     {cveId}
                   </Link>
@@ -223,14 +220,7 @@ const RepositoryReportPage: React.FC = () => {
           {productId && (
             <BreadcrumbItem>
               <Link
-                to={`/reports/cve/${cveId}`}
-                state={{
-                  sbomReportId: productId,
-                  sbomName: productName,
-                  reportId,
-                  reportIdDisplay,
-                  isComponentRoute: false,
-                }}
+                to={`/reports/product/cve/${productId}/${cveId}/${reportId}`}
               >
                 {cveId}
               </Link>
@@ -238,14 +228,7 @@ const RepositoryReportPage: React.FC = () => {
           )}
           {!productId && (
             <BreadcrumbItem>
-              <Link
-                to={`/reports/cve/${cveId}`}
-                state={{
-                  reportId,
-                  reportIdDisplay,
-                  isComponentRoute: true,
-                }}
-              >
+              <Link to={`/reports/component/cve/${cveId}/${cveId}/${reportId}`}>
                 {cveId}
               </Link>
             </BreadcrumbItem>

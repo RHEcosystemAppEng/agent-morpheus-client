@@ -183,73 +183,117 @@ export function extractCveMetadata(
 }
 
 /**
- * Hook to fetch CVE metadata from reports filtered by CVE ID
- * Fetches reports filtered by vulnId, then gets the full report data from the first result
+ * Hook to fetch CVE metadata from a specific report or by filtering reports
+ * If reportId is provided, fetches that specific report directly
+ * Otherwise, fetches reports filtered by CVE ID and uses the first result
  *
  * @param cveId - The CVE ID to fetch metadata for
+ * @param reportId - Optional report ID to fetch directly
  * @returns Object with metadata, loading, and error states
  */
-export function useCveDetails(cveId: string): UseCveDetailsResult {
-  // Step 1: Fetch reports filtered by CVE ID to get report IDs
+export function useCveDetails(
+  cveId: string,
+  reportId?: string
+): UseCveDetailsResult {
+  // If reportId is provided, fetch that specific report directly
+  const {
+    data: directReportWithStatus,
+    loading: directReportLoading,
+    error: directReportError,
+  } = useApi<ReportWithStatus | null>(
+    () => {
+      if (!reportId) {
+        return Promise.resolve(null);
+      }
+      return getRepositoryReport(reportId);
+    },
+    {
+      deps: [reportId],
+    }
+  );
+
+  // Fallback: If no reportId provided, fetch reports filtered by CVE ID
   const {
     data: reports,
     loading: reportsLoading,
     error: reportsError,
   } = usePaginatedApi<Array<Report>>(
-    () => ({
-      method: "GET" as const,
-      url: "/api/v1/reports",
-      query: {
-        page: 0,
-        pageSize: 1, // We only need the first report
-        vulnId: cveId,
-      },
-    }),
+    () => {
+      if (reportId) {
+        // Skip fetching if we have reportId (will use direct fetch)
+        return {
+          method: "GET" as const,
+          url: "/api/v1/reports",
+          query: {},
+        };
+      }
+      return {
+        method: "GET" as const,
+        url: "/api/v1/reports",
+        query: {
+          page: 0,
+          pageSize: 1, // We only need the first report
+          vulnId: cveId,
+        },
+      };
+    },
     {
-      deps: [cveId],
+      deps: [cveId, reportId],
     }
   );
 
-  // Get the first report ID
-  const firstReportId = useMemo(() => {
-    if (!reports || reports.length === 0) {
+  // Get the first report ID from filtered results if no direct reportId
+  const fallbackReportId = useMemo(() => {
+    if (reportId || !reports || reports.length === 0) {
       return null;
     }
     return reports[0]?.id || null;
-  }, [reports]);
+  }, [reportId, reports]);
 
-  // Step 2: Fetch the full report data using the first report ID
-  // Only fetch if we have a report ID
+  // Fetch the full report data using fallback report ID if needed
   const {
-    data: reportWithStatus,
-    loading: fullReportLoading,
-    error: fullReportError,
+    data: fallbackReportWithStatus,
+    loading: fallbackReportLoading,
+    error: fallbackReportError,
   } = useApi<ReportWithStatus | null>(
     () => {
-      if (!firstReportId) {
-        // Return a resolved promise with null if no report ID
-        // This is a valid state (CVE not found in any reports)
+      if (reportId || !fallbackReportId) {
         return Promise.resolve(null);
       }
-      return getRepositoryReport(firstReportId);
+      return getRepositoryReport(fallbackReportId);
     },
     {
-      deps: [firstReportId],
+      deps: [fallbackReportId, reportId],
     }
   );
 
+  // Determine which report data to use
   const fullReport = useMemo(() => {
-    return reportWithStatus?.report || null;
-  }, [reportWithStatus]);
+    if (directReportWithStatus?.report) {
+      return directReportWithStatus.report;
+    }
+    if (fallbackReportWithStatus?.report) {
+      return fallbackReportWithStatus.report;
+    }
+    return null;
+  }, [directReportWithStatus, fallbackReportWithStatus]);
 
   // Extract metadata from the full report
   const metadata = useMemo(() => {
     return extractCveMetadata(fullReport, cveId);
   }, [fullReport, cveId]);
 
+  // Determine loading and error states
+  const loading = reportId
+    ? directReportLoading
+    : reportsLoading || fallbackReportLoading;
+  const error = reportId
+    ? directReportError
+    : reportsError || fallbackReportError;
+
   return {
     metadata,
-    loading: reportsLoading || fullReportLoading,
-    error: reportsError || fullReportError,
+    loading,
+    error,
   };
 }

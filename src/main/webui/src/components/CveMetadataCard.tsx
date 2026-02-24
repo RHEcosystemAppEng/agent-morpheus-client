@@ -3,11 +3,9 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Flex,
-  FlexItem,
 } from "@patternfly/react-core";
 import type { CveMetadata } from "../hooks/useCveDetails";
-import { getCvssSeverityIconAndColor } from "./CvssBanner";
+import CvssBanner from "./CvssBanner";
 import FormattedTimestamp from "./FormattedTimestamp";
 import NotAvailable from "./NotAvailable";
 
@@ -19,29 +17,12 @@ interface CveMetadataCardProps {
  * Component to display CVE metadata in a DescriptionList format
  */
 const CveMetadataCard: React.FC<CveMetadataCardProps> = ({ metadata }) => {
-  // Format CVSS score with icon using shared utility from CvssBanner
-  // Uses PatternFly CSS variables for icon colors
+  // Convert numeric CVSS score to Cvss object format for CvssBanner component
   const cvssDisplay =
     metadata?.cvssScore !== undefined
-      ? (() => {
-          const { severity, Icon, color } = getCvssSeverityIconAndColor(
-            metadata.cvssScore
-          );
-          return (
-            <Flex spaceItems={{ default: "spaceItemsXs" }}>
-              {Icon && (
-                <FlexItem>
-                  <Icon color={color} />
-                </FlexItem>
-              )}
-              <FlexItem>
-                <span>
-                  {severity} ({metadata.cvssScore})
-                </span>
-              </FlexItem>
-            </Flex>
-          );
-        })()
+      ? {
+          score: metadata.cvssScore.toString(),
+        }
       : null;
 
   // Format EPSS score (multiply by 100 and add %)
@@ -55,7 +36,7 @@ const CveMetadataCard: React.FC<CveMetadataCardProps> = ({ metadata }) => {
       <DescriptionListGroup>
         <DescriptionListTerm>CVSS Score</DescriptionListTerm>
         <DescriptionListDescription>
-          {cvssDisplay || <NotAvailable />}
+          {cvssDisplay ? <CvssBanner cvss={cvssDisplay} /> : <NotAvailable />}
         </DescriptionListDescription>
       </DescriptionListGroup>
       <DescriptionListGroup>

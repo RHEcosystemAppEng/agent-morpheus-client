@@ -8,6 +8,7 @@ interface CveStatusProps {
  * Component to display CVE status based on justification
  */
 const CveStatus: React.FC<CveStatusProps> = ({ status }) => {
+
   const getColor = (
     status: string
   ): "red" | "green" | "grey" | "orange" | undefined => {
@@ -17,7 +18,9 @@ const CveStatus: React.FC<CveStatusProps> = ({ status }) => {
     return "orange";
   };
 
-  const getLabel = (status: string): string => {
+  const getLabel = (
+    status: string
+  ): string => {
     if (status === "TRUE" || status === "true") return "Vulnerable";
     if (status === "FALSE" || status === "false") return "Not Vulnerable";
     if (status === "UNKNOWN" || status === "unknown") return "Uncertain";
@@ -28,3 +31,4 @@ const CveStatus: React.FC<CveStatusProps> = ({ status }) => {
 };
 
 export default CveStatus;
+

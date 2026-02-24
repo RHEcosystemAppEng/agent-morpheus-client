@@ -28,7 +28,7 @@ interface DetailsCardProps {
 const DetailsCard: React.FC<DetailsCardProps> = ({
   report,
   cveId,
-  analysisState
+  analysisState,
 }) => {
   const image = report.input?.image;
   const sourceInfo = image?.source_info || [];
@@ -48,21 +48,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   }>();
   const { sbomReportId, productId, reportId } = params;
   const isComponentRoute = !sbomReportId && !productId;
-
-  const productName = report?.metadata?.product_id;
-  const reportIdDisplay = vuln?.vuln_id
-    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
-    : "";
-
-  const getBreadcrumbState = () => {
-    return {
-      sbomReportId: sbomReportId || productId,
-      sbomName: productName,
-      reportId,
-      reportIdDisplay,
-      isComponentRoute,
-    };
-  };
+  const effectiveProductId = sbomReportId || productId;
 
   return (
     <Card>
@@ -86,8 +72,17 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                 <Flex>
                   <FlexItem>
                     <Link
-                      to={`/reports/cve/${cveId}`}
-                      state={getBreadcrumbState()}
+                      to={
+                        isComponentRoute && effectiveProductId
+                          ? `/reports/component/cve/${effectiveProductId}/${cveId}/${
+                              reportId || ""
+                            }`
+                          : effectiveProductId
+                          ? `/reports/product/cve/${effectiveProductId}/${cveId}/${
+                              reportId || ""
+                            }`
+                          : `/reports/product/cve/${cveId}`
+                      }
                     >
                       {vuln.vuln_id}
                     </Link>
@@ -106,11 +101,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListTerm>Repository</DescriptionListTerm>
               <DescriptionListDescription>
                 {codeRepository ? (
-                  <a
-                    href={codeRepository}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a href={codeRepository} target="_blank" rel="noreferrer">
                     {codeRepository}
                   </a>
                 ) : (

@@ -25,13 +25,6 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId }) => {
   const params = useParams<{ productId?: string }>();
   const { productId } = params;
 
-  const getBreadcrumbState = () => {
-    return {
-      sbomReportId: productId,
-      sbomName: name,
-    };
-  };
-
   return (
     <Card>
       <CardTitle>
@@ -46,12 +39,13 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId }) => {
               <DescriptionListGroup>
                 <DescriptionListTerm>CVE Analyzed</DescriptionListTerm>
                 <DescriptionListDescription>
-                  <Link
-                    to={`/reports/cve/${cveId}`}
-                    state={getBreadcrumbState()}
-                  >
-                    {cveId}
-                  </Link>
+                  {productId ? (
+                    <Link to={`/reports/product/cve/${productId}/${cveId}`}>
+                      {cveId}
+                    </Link>
+                  ) : (
+                    cveId
+                  )}
                 </DescriptionListDescription>
               </DescriptionListGroup>
               <DescriptionListGroup>

@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
-import { Content } from "@patternfly/react-core";
+import { Content, EmptyState, EmptyStateBody } from "@patternfly/react-core";
+import { SearchIcon } from "@patternfly/react-icons";
 import type { CveMetadata } from "../hooks/useCveDetails";
-import NotAvailable from "./NotAvailable";
 
 interface CveDescriptionCardProps {
   metadata: CveMetadata | null;
@@ -19,7 +19,15 @@ const CveDescriptionCard: React.FC<CveDescriptionCardProps> = ({
   const descriptionSource = metadata?.descriptionSource;
 
   if (!description) {
-    return <NotAvailable />;
+    return (
+      <EmptyState
+        titleText="No description available"
+        headingLevel="h4"
+        icon={SearchIcon}
+      >
+        <EmptyStateBody>No description available for this CVE.</EmptyStateBody>
+      </EmptyState>
+    );
   }
 
   // Render markdown if source is GHSA, otherwise render as plain text
@@ -31,11 +39,7 @@ const CveDescriptionCard: React.FC<CveDescriptionCardProps> = ({
     );
   }
 
-  return (
-    <Content>
-      {description}
-    </Content>
-  );
+  return <Content>{description}</Content>;
 };
 
 export default CveDescriptionCard;
