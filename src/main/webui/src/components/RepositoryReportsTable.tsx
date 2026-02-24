@@ -1,10 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import {
-  Button,
-  Alert,
-  AlertVariant,
-} from "@patternfly/react-core";
+import { Button, Alert, AlertVariant } from "@patternfly/react-core";
 import {
   Table,
   TableText,
@@ -67,7 +63,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     if (!report.vulns || !cveId) return null;
     const vuln = report.vulns.find((v) => v.vulnId === cveId);
     if (!vuln?.justification?.status) return null;
-    
+
     return <CveStatus status={vuln.justification.status} />;
   };
 
@@ -241,9 +237,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Completed
             </Th>
-            <Th>
-              Analysis state
-            </Th>
+            <Th>Analysis state</Th>
             <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
@@ -253,11 +247,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
               <Td dataLabel="Repository">
                 <TableText wrapModifier="truncate">
                   {report.gitRepo ? (
-                    <a
-                      href={report.gitRepo}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href={report.gitRepo} target="_blank" rel="noreferrer">
                       {report.gitRepo}
                     </a>
                   ) : (
@@ -306,10 +296,11 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
                   <Button
                     variant="primary"
                     onClick={() =>
-                      isComponentRoute ?
-                        navigate(`/reports/component/${cveId}/${report.id}`)
-                      :
-                        navigate(`/reports/product/${productId}/${cveId}/${report.id}`)
+                      isComponentRoute
+                        ? navigate(`/reports/component/${cveId}/${report.id}`)
+                        : navigate(
+                            `/reports/product/${productId}/${cveId}/${report.id}`
+                          )
                     }
                   >
                     View
