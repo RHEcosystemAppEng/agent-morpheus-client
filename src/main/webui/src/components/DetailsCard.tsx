@@ -93,7 +93,11 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     </Link>
                   </FlexItem>
                   <FlexItem>
-                    {outputVuln ? <CveStatus vuln={outputVuln} /> : <NotAvailable />}
+                    {outputVuln?.justification?.status ? (
+                      <CveStatus status={outputVuln.justification.status} />
+                    ) : (
+                      <NotAvailable />
+                    )}
                   </FlexItem>
                 </Flex>
               </DescriptionListDescription>
