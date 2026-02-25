@@ -1,9 +1,7 @@
 import { useMemo } from "react";
-import { usePaginatedApi } from "./usePaginatedApi";
 import { useApi } from "./useApi";
 import { getRepositoryReport } from "../utils/reportApi";
 import type { FullReport } from "../types/FullReport";
-import type { Report } from "../generated-client/models/Report";
 import type { ReportWithStatus } from "../generated-client";
 
 export interface VulnerablePackage {
@@ -46,43 +44,7 @@ export function extractCveMetadata(
     return null;
   }
 
-  const info = report.info as {
-    intel?: Array<{
-      vuln_id?: string;
-      nvd?: {
-        cve_description?: string;
-      };
-      ghsa?: {
-        cvss?: {
-          score?: number;
-        };
-        cwes?: Array<{
-          cwe_id?: string;
-        }>;
-        published_at?: string;
-        updated_at?: string;
-        credits?: Array<{
-          user?: {
-            login?: string;
-            html_url?: string;
-          };
-        }>;
-        references?: string[];
-        vulnerabilities?: Array<{
-          package?: {
-            name?: string;
-            ecosystem?: string;
-          };
-          vulnerable_version_range?: string;
-          first_patched_version?: string;
-        }>;
-        description?: string;
-      };
-      epss?: {
-        percentage?: number;
-      };
-    }>;
-  };
+  const info = report.info;
 
   const intel = info.intel;
   if (!intel || !Array.isArray(intel) || intel.length === 0) {
@@ -183,23 +145,22 @@ export function extractCveMetadata(
 }
 
 /**
- * Hook to fetch CVE metadata from a specific report or by filtering reports
- * If reportId is provided, fetches that specific report directly
- * Otherwise, fetches reports filtered by CVE ID and uses the first result
+ * Hook to fetch CVE metadata from a specific report.
+ * reportId is required and included in the route.
  *
  * @param cveId - The CVE ID to fetch metadata for
- * @param reportId - Optional report ID to fetch directly
+ * @param reportId - Report ID to fetch
  * @returns Object with metadata, loading, and error states
  */
 export function useCveDetails(
   cveId: string,
   reportId?: string
 ): UseCveDetailsResult {
-  // If reportId is provided, fetch that specific report directly
+  // Fetch the specific report directly using reportId from route
   const {
-    data: directReportWithStatus,
-    loading: directReportLoading,
-    error: directReportError,
+    data: reportWithStatus,
+    loading,
+    error,
   } = useApi<ReportWithStatus | null>(
     () => {
       if (!reportId) {
@@ -212,84 +173,15 @@ export function useCveDetails(
     }
   );
 
-  // Fallback: If no reportId provided, fetch reports filtered by CVE ID
-  const {
-    data: reports,
-    loading: reportsLoading,
-    error: reportsError,
-  } = usePaginatedApi<Array<Report>>(
-    () => {
-      if (reportId) {
-        // Skip fetching if we have reportId (will use direct fetch)
-        return {
-          method: "GET" as const,
-          url: "/api/v1/reports",
-          query: {},
-        };
-      }
-      return {
-        method: "GET" as const,
-        url: "/api/v1/reports",
-        query: {
-          page: 0,
-          pageSize: 1, // We only need the first report
-          vulnId: cveId,
-        },
-      };
-    },
-    {
-      deps: [cveId, reportId],
-    }
-  );
-
-  // Get the first report ID from filtered results if no direct reportId
-  const fallbackReportId = useMemo(() => {
-    if (reportId || !reports || reports.length === 0) {
-      return null;
-    }
-    return reports[0]?.id || null;
-  }, [reportId, reports]);
-
-  // Fetch the full report data using fallback report ID if needed
-  const {
-    data: fallbackReportWithStatus,
-    loading: fallbackReportLoading,
-    error: fallbackReportError,
-  } = useApi<ReportWithStatus | null>(
-    () => {
-      if (reportId || !fallbackReportId) {
-        return Promise.resolve(null);
-      }
-      return getRepositoryReport(fallbackReportId);
-    },
-    {
-      deps: [fallbackReportId, reportId],
-    }
-  );
-
-  // Determine which report data to use
+  // Extract the full report from the response
   const fullReport = useMemo(() => {
-    if (directReportWithStatus?.report) {
-      return directReportWithStatus.report;
-    }
-    if (fallbackReportWithStatus?.report) {
-      return fallbackReportWithStatus.report;
-    }
-    return null;
-  }, [directReportWithStatus, fallbackReportWithStatus]);
+    return reportWithStatus?.report || null;
+  }, [reportWithStatus]);
 
   // Extract metadata from the full report
   const metadata = useMemo(() => {
     return extractCveMetadata(fullReport, cveId);
   }, [fullReport, cveId]);
-
-  // Determine loading and error states
-  const loading = reportId
-    ? directReportLoading
-    : reportsLoading || fallbackReportLoading;
-  const error = reportId
-    ? directReportError
-    : reportsError || fallbackReportError;
 
   return {
     metadata,

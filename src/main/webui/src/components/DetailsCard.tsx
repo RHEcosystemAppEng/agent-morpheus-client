@@ -71,21 +71,21 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    <Link
-                      to={
-                        isComponentRoute && effectiveProductId
-                          ? `/reports/component/cve/${effectiveProductId}/${cveId}/${
-                              reportId || ""
-                            }`
-                          : effectiveProductId
-                          ? `/reports/product/cve/${effectiveProductId}/${cveId}/${
-                              reportId || ""
-                            }`
-                          : `/reports/product/cve/${cveId}`
-                      }
-                    >
-                      {vuln.vuln_id}
-                    </Link>
+                    {reportId ? (
+                      <Link
+                        to={
+                          isComponentRoute && effectiveProductId
+                            ? `/reports/component/cve/${effectiveProductId}/${cveId}/${reportId}`
+                            : effectiveProductId
+                            ? `/reports/product/cve/${effectiveProductId}/${cveId}/${reportId}`
+                            : "#"
+                        }
+                      >
+                        {vuln.vuln_id}
+                      </Link>
+                    ) : (
+                      vuln.vuln_id
+                    )}
                   </FlexItem>
                   <FlexItem>
                     {outputVuln?.justification?.status ? (

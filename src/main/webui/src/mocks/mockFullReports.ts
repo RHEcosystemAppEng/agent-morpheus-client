@@ -1,6 +1,6 @@
 /**
  * Mock FullReport data for MSW
- * 
+ *
  * These are detailed report structures that match the FullReport TypeScript type.
  * Used for mocking the GET /api/reports/:id endpoint.
  */
@@ -14,8 +14,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-1",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1001",
@@ -64,20 +68,24 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Verify if the vulnerable package is being used",
-              response: "The package is confirmed to be in use based on dependency analysis.",
+              response:
+                "The package is confirmed to be in use based on dependency analysis.",
               intermediate_steps: null,
             },
             {
               input: "Assess the impact of the vulnerability",
-              response: "The vulnerability has a high severity score and could lead to remote code execution.",
+              response:
+                "The vulnerability has a high severity score and could lead to remote code execution.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is exploitable. The application uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
+          summary:
+            "The CVE is exploitable. The application uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
           justification: {
             status: "TRUE",
             label: "vulnerable",
-            reason: "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context.",
+            reason:
+              "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context.",
           },
           intel_score: 85,
           cvss: {
@@ -101,7 +109,7 @@ export const mockFullReports: Record<string, FullReport> = {
       productId: "product-1",
       environment: "production",
       team: "security",
-    }
+    },
   },
   "report-2": {
     _id: "report-2",
@@ -109,8 +117,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-2",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1003",
@@ -183,8 +195,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-3",
         type: "image",
-        started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1002",
@@ -224,15 +240,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Check if the vulnerability affects this version",
-              response: "The vulnerability does not affect this version of the package.",
+              response:
+                "The vulnerability does not affect this version of the package.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is not exploitable. The application uses a patched version that is not affected by this vulnerability.",
+          summary:
+            "The CVE is not exploitable. The application uses a patched version that is not affected by this vulnerability.",
           justification: {
             status: "FALSE",
             label: "not_vulnerable",
-            reason: "The package version in use has been patched and is not vulnerable to this CVE.",
+            reason:
+              "The package version in use has been patched and is not vulnerable to this CVE.",
           },
           intel_score: 10,
           cvss: {
@@ -256,12 +275,17 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product2-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1001",
-            description: "Sample Product B vulnerability - Critical security issue in dependency",
+            description:
+              "Sample Product B vulnerability - Critical security issue in dependency",
             score: 8.5,
             severity: "HIGH",
             published_date: "2024-01-15",
@@ -306,20 +330,24 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Verify if the vulnerable package is being used",
-              response: "The package vulnerable-package version 1.2.3 is confirmed to be in use in this repository.",
+              response:
+                "The package vulnerable-package version 1.2.3 is confirmed to be in use in this repository.",
               intermediate_steps: null,
             },
             {
               input: "Assess the impact of the vulnerability",
-              response: "The vulnerability has a high severity score (8.5) and could lead to remote code execution in the production environment.",
+              response:
+                "The vulnerability has a high severity score (8.5) and could lead to remote code execution in the production environment.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is exploitable. Sample Product B repository 1 uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
+          summary:
+            "The CVE is exploitable. Sample Product B repository 1 uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
           justification: {
             status: "TRUE",
             label: "vulnerable",
-            reason: "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context. Immediate action is required.",
+            reason:
+              "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context. Immediate action is required.",
           },
           intel_score: 90,
           cvss: {
@@ -351,12 +379,17 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product2-cve1001-2",
         type: "image",
-        started_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 4 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1002",
-            description: "Sample Product B vulnerability - Medium security issue",
+            description:
+              "Sample Product B vulnerability - Medium security issue",
             score: 5.5,
             severity: "MEDIUM",
             published_date: "2024-01-20",
@@ -425,8 +458,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product3-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 4 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1004",
@@ -499,8 +536,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product3-cve1001-2",
         type: "image",
-        started_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 6 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1005",
@@ -573,8 +614,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product4-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 6 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1006",
@@ -647,8 +692,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product4-cve1001-2",
         type: "image",
-        started_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 8 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1007",
@@ -721,8 +770,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product5-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 9 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 8 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1008",
@@ -795,8 +848,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product5-cve1001-2",
         type: "image",
-        started_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 10 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 9 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1009",
@@ -869,8 +926,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product6-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 11 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 10 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1010",
@@ -943,8 +1004,12 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product7-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 12 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 11 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1011",
@@ -1017,12 +1082,17 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-product1-cve1001-1",
         type: "image",
-        started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        completed_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-1001",
-            description: "Sample Product A vulnerability - Critical security issue in dependency",
+            description:
+              "Sample Product A vulnerability - Critical security issue in dependency",
             score: 8.5,
             severity: "HIGH",
             published_date: "2024-01-15",
@@ -1067,20 +1137,24 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Verify if the vulnerable package is being used",
-              response: "The package vulnerable-package version 1.2.3 is confirmed to be in use in this repository.",
+              response:
+                "The package vulnerable-package version 1.2.3 is confirmed to be in use in this repository.",
               intermediate_steps: null,
             },
             {
               input: "Assess the impact of the vulnerability",
-              response: "The vulnerability has a high severity score (8.5) and could lead to remote code execution in the production environment.",
+              response:
+                "The vulnerability has a high severity score (8.5) and could lead to remote code execution in the production environment.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is exploitable. Sample Product A repository 1 uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
+          summary:
+            "The CVE is exploitable. Sample Product A repository 1 uses the vulnerable package version and the vulnerability has been confirmed through analysis.",
           justification: {
             status: "TRUE",
             label: "vulnerable",
-            reason: "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context. Immediate action is required.",
+            reason:
+              "The analysis confirms that the vulnerable package is in use and the vulnerability is exploitable in this context. Immediate action is required.",
           },
           intel_score: 90,
           cvss: {
@@ -1113,7 +1187,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-1",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: new Date().toISOString(), // completed state
         vulns: [
           {
@@ -1163,15 +1239,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Verify if the vulnerable package is being used",
-              response: "The package is confirmed to be in use based on dependency analysis.",
+              response:
+                "The package is confirmed to be in use based on dependency analysis.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is not exploitable. This is a demo report showing not vulnerable status (green).",
+          summary:
+            "The CVE is not exploitable. This is a demo report showing not vulnerable status (green).",
           justification: {
             status: "FALSE",
             label: "not_vulnerable",
-            reason: "The package version in use has been patched and is not vulnerable to this CVE.",
+            reason:
+              "The package version in use has been patched and is not vulnerable to this CVE.",
           },
           intel_score: 85,
           cvss: {
@@ -1203,7 +1282,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-2",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // queued state
         vulns: [
           {
@@ -1271,7 +1352,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-3",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // sent state
         vulns: [
           {
@@ -1339,7 +1422,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-4",
         type: "image",
-        started_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+        started_at: new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString(), // 30 days ago
         completed_at: "", // expired state
         vulns: [
           {
@@ -1415,7 +1500,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-safe-1",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // queued state - not completed yet
         vulns: [
           {
@@ -1465,15 +1552,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Check if the vulnerability affects this version",
-              response: "The vulnerability does not affect this version of the package.",
+              response:
+                "The vulnerability does not affect this version of the package.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is not exploitable. This is a demo report showing not vulnerable status (green).",
+          summary:
+            "The CVE is not exploitable. This is a demo report showing not vulnerable status (green).",
           justification: {
             status: "FALSE",
             label: "not_vulnerable",
-            reason: "The package version in use has been patched and is not vulnerable to this CVE.",
+            reason:
+              "The package version in use has been patched and is not vulnerable to this CVE.",
           },
           intel_score: 10,
           cvss: {
@@ -1505,12 +1595,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-safe-2",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: new Date().toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product (not vulnerable)",
+            description:
+              "Demo vulnerability for All Colors product (not vulnerable)",
             score: 5.5,
             severity: "MEDIUM",
             published_date: "2024-01-15",
@@ -1555,15 +1648,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Check if the vulnerability affects this version",
-              response: "The vulnerability does not affect this version of the package. The package has been updated to a patched version.",
+              response:
+                "The vulnerability does not affect this version of the package. The package has been updated to a patched version.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is not exploitable. This is a demo report showing not vulnerable status (green) with medium CVSS score.",
+          summary:
+            "The CVE is not exploitable. This is a demo report showing not vulnerable status (green) with medium CVSS score.",
           justification: {
             status: "FALSE",
             label: "not_vulnerable",
-            reason: "The package version in use has been patched and is not vulnerable to this CVE.",
+            reason:
+              "The package version in use has been patched and is not vulnerable to this CVE.",
           },
           intel_score: 15,
           cvss: {
@@ -1595,12 +1691,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-safe-3",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: new Date().toISOString(),
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product (not vulnerable)",
+            description:
+              "Demo vulnerability for All Colors product (not vulnerable)",
             score: 7.8,
             severity: "HIGH",
             published_date: "2024-01-15",
@@ -1645,15 +1744,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Check if the vulnerability affects this version",
-              response: "The vulnerability does not affect this version of the package. The package has been updated to a patched version that addresses this CVE.",
+              response:
+                "The vulnerability does not affect this version of the package. The package has been updated to a patched version that addresses this CVE.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is not exploitable. This is a demo report showing not vulnerable status (green) with high CVSS score.",
+          summary:
+            "The CVE is not exploitable. This is a demo report showing not vulnerable status (green) with high CVSS score.",
           justification: {
             status: "FALSE",
             label: "not_vulnerable",
-            reason: "The package version in use has been patched and is not vulnerable to this CVE, despite the high CVSS score.",
+            reason:
+              "The package version in use has been patched and is not vulnerable to this CVE, despite the high CVSS score.",
           },
           intel_score: 20,
           cvss: {
@@ -1685,7 +1787,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-unknown-1",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // queued state - not completed yet
         vulns: [
           {
@@ -1735,15 +1839,18 @@ export const mockFullReports: Record<string, FullReport> = {
           checklist: [
             {
               input: "Assess the vulnerability status",
-              response: "Unable to determine with certainty whether the vulnerability affects this version.",
+              response:
+                "Unable to determine with certainty whether the vulnerability affects this version.",
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE status is uncertain. This is a demo report showing uncertain status (gray).",
+          summary:
+            "The CVE status is uncertain. This is a demo report showing uncertain status (gray).",
           justification: {
             status: "UNKNOWN",
             label: "uncertain",
-            reason: "Insufficient information to determine vulnerability status.",
+            reason:
+              "Insufficient information to determine vulnerability status.",
           },
           intel_score: 50,
           cvss: {
@@ -1775,7 +1882,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-5",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // failed state
         vulns: [
           {
@@ -1851,7 +1960,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-6",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // pending state
         vulns: [
           {
@@ -1927,7 +2038,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-7",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: new Date().toISOString(), // completed state
         vulns: [
           {
@@ -1981,11 +2094,13 @@ export const mockFullReports: Record<string, FullReport> = {
               intermediate_steps: null,
             },
           ],
-          summary: "The CVE is exploitable with medium severity. CVSS score: 5.8",
+          summary:
+            "The CVE is exploitable with medium severity. CVSS score: 5.8",
           justification: {
             status: "TRUE",
             label: "vulnerable",
-            reason: "The analysis confirms that the vulnerable package is in use.",
+            reason:
+              "The analysis confirms that the vulnerable package is in use.",
           },
           intel_score: 58,
           cvss: {
@@ -2017,7 +2132,9 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-completed-8",
         type: "image",
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "", // queued state
         vulns: [
           {
@@ -2093,12 +2210,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-expired-1",
         type: "image",
-        started_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "",
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product - Expired state",
+            description:
+              "Demo vulnerability for All Colors product - Expired state",
             score: 9.1,
             severity: "CRITICAL",
             published_date: "2024-01-15",
@@ -2154,12 +2274,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-failed-1",
         type: "image",
-        started_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "",
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product - Failed state",
+            description:
+              "Demo vulnerability for All Colors product - Failed state",
             score: 5.5,
             severity: "MEDIUM",
             published_date: "2024-01-15",
@@ -2215,12 +2338,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-queued-1",
         type: "image",
-        started_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "",
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product - Queued state",
+            description:
+              "Demo vulnerability for All Colors product - Queued state",
             score: 7.5,
             severity: "HIGH",
             published_date: "2024-01-15",
@@ -2276,12 +2402,15 @@ export const mockFullReports: Record<string, FullReport> = {
       scan: {
         id: "scan-all-colors-sent-1",
         type: "image",
-        started_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         completed_at: "",
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product - Sent state",
+            description:
+              "Demo vulnerability for All Colors product - Sent state",
             score: 4.0,
             severity: "MEDIUM",
             published_date: "2024-01-15",
@@ -2342,7 +2471,8 @@ export const mockFullReports: Record<string, FullReport> = {
         vulns: [
           {
             vuln_id: "CVE-2024-DEMO",
-            description: "Demo vulnerability for All Colors product - Pending state",
+            description:
+              "Demo vulnerability for All Colors product - Pending state",
             score: 2.5,
             severity: "LOW",
             published_date: "2024-01-15",
@@ -2393,4 +2523,3 @@ export const mockFullReports: Record<string, FullReport> = {
     },
   },
 };
-

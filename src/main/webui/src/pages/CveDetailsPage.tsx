@@ -18,7 +18,7 @@ import CveMetadataCard from "../components/CveMetadataCard";
 import CveReferencesCard from "../components/CveReferencesCard";
 import CveVulnerablePackagesCard from "../components/CveVulnerablePackagesCard";
 import CveDescriptionCard from "../components/CveDescriptionCard";
-import SkeletonCard from "../components/SkeletonCard";
+import CveDetailsPageSkeleton from "../components/CveDetailsPageSkeleton";
 
 interface CveDetailsPageErrorProps {
   title: string;
@@ -96,52 +96,7 @@ const CveDetailsPage: React.FC = () => {
   const { metadata, loading, error } = useCveDetails(cveId, reportId);
 
   if (loading) {
-    return (
-      <>
-        <PageSection>
-          <Grid hasGutter>
-            <GridItem>{buildBreadcrumb()}</GridItem>
-            <GridItem>
-              <Title headingLevel="h1" size="2xl">
-                <strong>{cveIdDisplay}</strong>
-              </Title>
-            </GridItem>
-          </Grid>
-        </PageSection>
-        <PageSection>
-          <Grid hasGutter>
-            <GridItem span={6}>
-              <SkeletonCard
-                lines={3}
-                widths={["40%", "60%", "45%"]}
-                screenreaderText="Loading details card"
-              />
-            </GridItem>
-            <GridItem span={6}>
-              <SkeletonCard
-                lines={6}
-                widths={["35%", "50%", "45%", "40%", "45%", "50%"]}
-                screenreaderText="Loading metadata card"
-              />
-            </GridItem>
-            <GridItem span={6}>
-              <SkeletonCard
-                lines={3}
-                widths={["50%", "65%", "55%"]}
-                screenreaderText="Loading vulnerable packages card"
-              />
-            </GridItem>
-            <GridItem span={6}>
-              <SkeletonCard
-                lines={3}
-                widths={["45%", "60%", "50%"]}
-                screenreaderText="Loading references card"
-              />
-            </GridItem>
-          </Grid>
-        </PageSection>
-      </>
-    );
+    return <CveDetailsPageSkeleton />;
   }
 
   if (error) {
@@ -172,9 +127,8 @@ const CveDetailsPage: React.FC = () => {
           <GridItem span={6}>
             <Card
               style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
+                height: "32rem",
+                overflowY: "auto",
               }}
             >
               <CardTitle>
@@ -182,7 +136,7 @@ const CveDetailsPage: React.FC = () => {
                   Description
                 </Title>
               </CardTitle>
-              <CardBody style={{ flex: 1 }}>
+              <CardBody>
                 <CveDescriptionCard metadata={metadata} />
               </CardBody>
             </Card>
@@ -190,9 +144,8 @@ const CveDetailsPage: React.FC = () => {
           <GridItem span={6}>
             <Card
               style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
+                height: "32rem",
+                overflowY: "auto",
               }}
             >
               <CardTitle>
@@ -200,13 +153,18 @@ const CveDetailsPage: React.FC = () => {
                   Metadata
                 </Title>
               </CardTitle>
-              <CardBody style={{ flex: 1 }}>
+              <CardBody>
                 <CveMetadataCard metadata={metadata} />
               </CardBody>
             </Card>
           </GridItem>
           <GridItem span={6}>
-            <Card>
+            <Card
+              style={{
+                height: "32rem",
+                overflowY: "auto",
+              }}
+            >
               <CardTitle>
                 <Title headingLevel="h4" size="xl">
                   Vulnerable Packages
@@ -218,7 +176,12 @@ const CveDetailsPage: React.FC = () => {
             </Card>
           </GridItem>
           <GridItem span={6}>
-            <Card>
+            <Card
+              style={{
+                height: "32rem",
+                overflowY: "auto",
+              }}
+            >
               <CardTitle>
                 <Title headingLevel="h4" size="xl">
                   References

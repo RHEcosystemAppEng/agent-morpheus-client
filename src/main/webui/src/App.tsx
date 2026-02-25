@@ -34,10 +34,6 @@ const App: React.FC = () => {
             element={<CveDetailsPage />}
           />
           <Route
-            path="/reports/product/cve/:productId/:cveId"
-            element={<CveDetailsPage />}
-          />
-          <Route
             path="/reports/component/cve/:productId/:cveId/:reportId"
             element={<CveDetailsPage />}
           />

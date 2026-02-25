@@ -141,51 +141,23 @@ const RepositoryReportPage: React.FC = () => {
       <Grid hasGutter>
         <GridItem>
           <Flex
-            justifyContent={{ default: "justifyContentSpaceBetween" }}
             alignItems={{ default: "alignItemsFlexStart" }}
-            style={{ width: "100%" }}
+            flexWrap={{ default: "nowrap" }}
+            justifyContent={{ default: "justifyContentSpaceBetween" }}
           >
-            <FlexItem
-              grow={{ default: "grow" }}
-              style={{
-                minWidth: 0,
-                flexShrink: 1,
-                maxWidth: "calc(100% - 12rem)",
-                paddingRight: "1rem",
-              }}
-            >
+            <FlexItem>
               <Title headingLevel="h1">
                 CVE Repository Report:{" "}
                 <span
                   style={{
                     fontSize: "var(--pf-t--global--font--size--heading--h6)",
-                    wordBreak: "break-word",
-                    overflowWrap: "break-word",
-                    display: "inline-block",
-                    maxWidth: "100%",
                   }}
                 >
-                  <Link
-                    to={
-                      productId
-                        ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
-                        : `/reports/component/cve/${cveId}/${cveId}/${reportId}`
-                    }
-                  >
-                    {cveId}
-                  </Link>
-                  {" | "}
-                  {image?.name || ""} | {image?.tag || ""}
+                  {cveId} | {image?.name || ""} | {image?.tag || ""}
                 </span>
               </Title>
             </FlexItem>
-            <FlexItem
-              style={{
-                flexShrink: 0,
-                flexGrow: 0,
-                alignSelf: "flex-start",
-              }}
-            >
+            <FlexItem>
               <DownloadDropdown report={report} cveId={cveId} />
             </FlexItem>
           </Flex>
@@ -214,22 +186,6 @@ const RepositoryReportPage: React.FC = () => {
             <BreadcrumbItem>
               <Link to={`/reports/product/${productId}/${cveId}`}>
                 {productName}
-              </Link>
-            </BreadcrumbItem>
-          )}
-          {productId && (
-            <BreadcrumbItem>
-              <Link
-                to={`/reports/product/cve/${productId}/${cveId}/${reportId}`}
-              >
-                {cveId}
-              </Link>
-            </BreadcrumbItem>
-          )}
-          {!productId && (
-            <BreadcrumbItem>
-              <Link to={`/reports/component/cve/${cveId}/${cveId}/${reportId}`}>
-                {cveId}
               </Link>
             </BreadcrumbItem>
           )}

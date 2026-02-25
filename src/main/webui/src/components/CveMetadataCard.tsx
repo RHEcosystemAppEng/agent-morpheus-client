@@ -5,6 +5,7 @@ import {
   DescriptionListDescription,
 } from "@patternfly/react-core";
 import type { CveMetadata } from "../hooks/useCveDetails";
+import type { Cvss } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import FormattedTimestamp from "./FormattedTimestamp";
 import NotAvailable from "./NotAvailable";
@@ -18,10 +19,11 @@ interface CveMetadataCardProps {
  */
 const CveMetadataCard: React.FC<CveMetadataCardProps> = ({ metadata }) => {
   // Convert numeric CVSS score to Cvss object format for CvssBanner component
-  const cvssDisplay =
+  const cvssDisplay: Cvss | null =
     metadata?.cvssScore !== undefined
       ? {
           score: metadata.cvssScore.toString(),
+          vector_string: "", // Not used by CvssBanner but required by Cvss type
         }
       : null;
 

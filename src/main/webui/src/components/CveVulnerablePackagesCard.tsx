@@ -1,12 +1,12 @@
 import {
-  DescriptionList,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  DescriptionListDescription,
+  List,
+  ListItem,
   Title,
+  EmptyState,
+  EmptyStateBody,
 } from "@patternfly/react-core";
+import { SearchIcon } from "@patternfly/react-icons";
 import type { CveMetadata } from "../hooks/useCveDetails";
-import NotAvailable from "./NotAvailable";
 
 interface CveVulnerablePackagesCardProps {
   metadata: CveMetadata | null;
@@ -21,44 +21,36 @@ const CveVulnerablePackagesCard: React.FC<CveVulnerablePackagesCardProps> = ({
   const vulnerablePackages = metadata?.vulnerablePackages;
 
   if (!vulnerablePackages || vulnerablePackages.length === 0) {
-    return <NotAvailable />;
+    return (
+      <EmptyState
+        titleText="No vulnerable packages available"
+        headingLevel="h4"
+        icon={SearchIcon}
+      >
+        <EmptyStateBody>
+          No vulnerable packages available for this CVE.
+        </EmptyStateBody>
+      </EmptyState>
+    );
   }
 
   return (
-    <>
+    <List>
       {vulnerablePackages.map((pkg, index) => (
-        <div
-          key={index}
-          style={{
-            marginBottom: index < vulnerablePackages.length - 1 ? "1.5rem" : 0,
-          }}
-        >
+        <ListItem key={index}>
           <Title headingLevel="h5" size="md" style={{ marginBottom: "0.5rem" }}>
             <strong>{pkg.name}</strong>
           </Title>
-          <DescriptionList>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Ecosystem</DescriptionListTerm>
-              <DescriptionListDescription>
-                {pkg.ecosystem || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Vulnerable Version</DescriptionListTerm>
-              <DescriptionListDescription>
-                {pkg.vulnerableVersionRange || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>First patched Version</DescriptionListTerm>
-              <DescriptionListDescription>
-                {pkg.firstPatchedVersion || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          </DescriptionList>
-        </div>
+          <div>Ecosystem : {pkg.ecosystem || "Not Available"}</div>
+          <div>
+            Vulnerable Version : {pkg.vulnerableVersionRange || "Not Available"}
+          </div>
+          <div>
+            First patched Version : {pkg.firstPatchedVersion || "Not Available"}
+          </div>
+        </ListItem>
       ))}
-    </>
+    </List>
   );
 };
 
