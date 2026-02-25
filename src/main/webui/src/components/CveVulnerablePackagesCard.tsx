@@ -35,7 +35,7 @@ const CveVulnerablePackagesCard: React.FC<CveVulnerablePackagesCardProps> = ({
   }
 
   return (
-    <List>
+    <List isPlain={true}>
       {vulnerablePackages.map((pkg, index) => (
         <ListItem key={index}>
           <Title headingLevel="h5" size="md" style={{ marginBottom: "0.5rem" }}>

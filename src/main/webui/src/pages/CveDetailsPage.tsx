@@ -14,13 +14,10 @@ import {
   Label,
   Flex,
   FlexItem,
-  Popover,
   Icon,
+  Popover,
 } from "@patternfly/react-core";
-import {
-  ExclamationCircleIcon,
-  OutlinedQuestionCircleIcon,
-} from "@patternfly/react-icons";
+import { ExclamationCircleIcon, InfoCircleIcon } from "@patternfly/react-icons";
 import { useCveDetails } from "../hooks/useCveDetails";
 import CveMetadataCard from "../components/CveMetadataCard";
 import CveReferencesCard from "../components/CveReferencesCard";
@@ -139,61 +136,38 @@ const CveDetailsPage: React.FC = () => {
                   alignItems={{ default: "alignItemsCenter" }}
                 >
                   <FlexItem>
-                    <Label color="blue">
-                      Sources: National Vulnerability Database (NVD), GitHub
-                      Security Advisory (GHSA), Exploit Prediction Scoring
-                      System (EPSS)
-                    </Label>
+                    <Label color="blue">GHSA</Label>
+                  </FlexItem>
+                  <FlexItem>
+                    <Label color="purple">NVD</Label>
+                  </FlexItem>
+                  <FlexItem>
+                    <Label color="grey">EPSS</Label>
                   </FlexItem>
                   <FlexItem>
                     <Popover
-                      triggerAction="hover"
-                      aria-label="Data sources information"
+                      triggerAction="click"
+                      aria-label="Vulnerability data sources information"
                       bodyContent={
                         <div>
-                          <p>
-                            This page aggregates vulnerability data from
-                            multiple sources:
-                          </p>
-                          <p>
-                            <strong>
-                              National Vulnerability Database (NVD):
-                            </strong>
-                            <br />
-                            Provides the vulnerability description.
-                          </p>
-                          <p>
-                            <strong>GitHub Security Advisory (GHSA):</strong>
-                            <br />
-                            Provides CVSS score, CWE identifier, publication and
-                            update dates, credits, references, and vulnerable
-                            package information.
-                            <br />
-                            The description is used as a fallback when no NVD
-                            description is available.
-                          </p>
-                          <p>
-                            <strong>
-                              Exploit Prediction Scoring System (EPSS):
-                            </strong>
-                            <br />
-                            Provides the EPSS score, which indicates the
-                            probability of exploitability.
-                          </p>
+                          <Title headingLevel="h6" className="pf-v6-u-mb-sm">
+                            Vulnerability data sources
+                          </Title>
+                          <div>
+                            This information is aggregated from multiple
+                            security advisories including National Vulnerability
+                            Database (NVD), GitHub Security Advisory (GHSA), and
+                            Exploit Prediction Scoring System (EPSS).
+                          </div>
                         </div>
                       }
                     >
                       <Icon
                         role="button"
                         tabIndex={0}
-                        aria-label="Data sources help"
-                        style={{
-                          cursor: "help",
-                          color: "var(--pf-v6-global--Color--200)",
-                          flexShrink: 0,
-                        }}
+                        aria-label="Vulnerability data sources information"
                       >
-                        <OutlinedQuestionCircleIcon />
+                        <InfoCircleIcon />
                       </Icon>
                     </Popover>
                   </FlexItem>
