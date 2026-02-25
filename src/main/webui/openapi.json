@@ -2,6 +2,152 @@
   "openapi": "3.1.0",
   "components": {
     "schemas": {
+      "Batch": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "string"
+          },
+          "execution_start_timestamp": {
+            "$ref": "#/components/schemas/LocalDateTime"
+          },
+          "execution_end_timestamp": {
+            "$ref": "#/components/schemas/LocalDateTime"
+          },
+          "batch_type": {
+            "$ref": "#/components/schemas/BatchType"
+          },
+          "app_language": {
+            "type": "string",
+            "pattern": "go|python|c|javascript|java|all"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "total_number_of_executed_jobs": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "agent_git_commit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent_git_tag": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent_config_b64": {
+            "type": "string",
+            "minLength": 1
+          },
+          "env_vars": {
+            "type": "string",
+            "description": "comma delimited key=value pairs",
+            "minLength": 1
+          },
+          "confusion_matrix_accuracy": {
+            "type": "number",
+            "format": "float",
+            "maximum": 1.00,
+            "minimum": 0.00
+          },
+          "confusion_matrix_precision": {
+            "type": "number",
+            "format": "float",
+            "maximum": 1.00,
+            "minimum": 0.00
+          },
+          "confusion_matrix_f1_score": {
+            "type": "number",
+            "format": "float",
+            "maximum": 1.00,
+            "minimum": 0.00
+          },
+          "confusion_matrix_recall": {
+            "type": "number",
+            "format": "float",
+            "maximum": 1.00,
+            "minimum": 0.00
+          },
+          "total_number_of_failures": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "regressive_jobs_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          },
+          "number_of_regressive_jobs_ids": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "agent_git_commit",
+          "agent_git_tag",
+          "agent_config_b64",
+          "env_vars",
+          "regressive_jobs_ids"
+        ]
+      },
+      "BatchType": {
+        "type": "string",
+        "enum": [
+          "INTEGRATION_TESTS",
+          "CONFUSION_MATRIX"
+        ]
+      },
+      "Eval": {
+        "type": "object",
+        "required": [
+          "job_id",
+          "cve",
+          "component",
+          "component_version",
+          "metric_value"
+        ],
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "execution_start_timestamp": {
+            "$ref": "#/components/schemas/LocalDateTime"
+          },
+          "trace_id": {
+            "type": "string"
+          },
+          "cve": {
+            "type": "string",
+            "pattern": "CVE-\\d{4}-\\d{4,7}",
+            "minLength": 1
+          },
+          "component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "component_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "llm_node": {
+            "$ref": "#/components/schemas/LLMStage"
+          },
+          "metric_name": {
+            "$ref": "#/components/schemas/MetricName"
+          },
+          "metric_value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
       "FailedComponent": {
         "description": "Metadata of submitted components failed to be processed for scanning",
         "type": "object",
@@ -113,6 +259,66 @@
           }
         }
       },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          },
+          "execution_start_timestamp": {
+            "$ref": "#/components/schemas/LocalDateTime"
+          },
+          "duration_in_seconds": {
+            "type": "string"
+          },
+          "cve": {
+            "type": "string",
+            "pattern": "CVE-\\d{4}-\\d{4,7}"
+          },
+          "app_language": {
+            "type": "string",
+            "pattern": "go|python|c|javascript|java|all|\\s*"
+          },
+          "component": {
+            "type": "string"
+          },
+          "component_version": {
+            "type": "string"
+          },
+          "agent_git_commit": {
+            "type": "string"
+          },
+          "agent_git_tag": {
+            "type": "string"
+          },
+          "agent_config_b64": {
+            "type": "string"
+          },
+          "concrete_intel_sources_b64": {
+            "type": "string"
+          },
+          "executed_from_background_process": {
+            "type": "boolean"
+          },
+          "batch_id": {
+            "type": "string"
+          },
+          "success_status": {
+            "type": "boolean"
+          },
+          "env_vars": {
+            "type": "string",
+            "description": "comma delimited key=value pairs"
+          },
+          "job_output": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "env_vars"
+        ]
+      },
       "Justification": {
         "description": "Analysis justification for a vulnerability",
         "type": "object",
@@ -130,6 +336,44 @@
             "description": "Justification label"
           }
         }
+      },
+      "LLMStage": {
+        "type": "string",
+        "enum": [
+          "CALCULATE_CVE_SCORE",
+          "CHECKLIST_GENERATION",
+          "AGENT_LOOP",
+          "SUMMARIZE",
+          "JUSTIFICATION",
+          "CVSS_CALCULATION"
+        ]
+      },
+      "LocalDateTime": {
+        "type": "string",
+        "format": "date-time",
+        "examples": [
+          "2022-03-10T12:15:50"
+        ]
+      },
+      "MetricName": {
+        "type": "string",
+        "enum": [
+          "CHECKLIST_PROMPT_ALIGNMENT",
+          "CHECKLIST_CVE_RELEVANCY",
+          "CHECKLIST_VULNERABILITY_COMPLETENESS",
+          "CHECKLIST_ACTIONABILITY",
+          "CHECKLIST_PRIORITIZATION",
+          "AGENT_ANSWER_QUALITY",
+          "AGENT_REASONING_QUALITY",
+          "AGENT_TOOL_SELECTION_QUALITY",
+          "SUMMARY_STRUCTURE",
+          "SUMMARY_VERDICT_ACCURACY",
+          "SUMMARY_EVIDENCE_CITATION",
+          "SUMMARY_FAITHFULNESS",
+          "JUSTIFICATION_LABEL_SUMMARY_CONSISTENCY",
+          "JUSTIFICATION_REASON_SUMMARY_CONSISTENCY",
+          "JUSTIFICATION_LABEL_REASON_CONSISTENCY"
+        ]
       },
       "OverviewMetrics": {
         "description": "Metrics for the home page calculated from data in the last week",
@@ -645,6 +889,44 @@
           }
         }
       },
+      "Trace": {
+        "type": "object",
+        "properties": {
+          "format_version": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "job_id": {
+            "type": "string",
+            "description": "The job run id in which the trace and spans were instrumented",
+            "minLength": 1
+          },
+          "execution_start_timestamp": {
+            "$ref": "#/components/schemas/LocalDateTime"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "The id corresponding to one agent stage, grouping underneath all spans of sub-tasks embedded in the agent stage",
+            "minLength": 1
+          },
+          "span_id": {
+            "type": "string",
+            "description": "The id corresponding to one sub task inside one agent stage.",
+            "minLength": 1
+          },
+          "span_payload": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "free style span payload without restrictions, containing all span metadata and istrumentation data"
+          }
+        },
+        "required": [
+          "job_id",
+          "trace_id",
+          "span_id"
+        ]
+      },
       "UserComments": {
         "description": "User provided comments on a vulnerability",
         "type": "object",
@@ -794,6 +1076,705 @@
     }
   },
   "paths": {
+    "/api/v1/batch": {
+      "post": {
+        "summary": "Create one Batch containing metadata of multiple analysis jobs runs",
+        "description": "Creates 1 batch audit data",
+        "tags": [
+          "ML-OPS Audit 1 - Batch Resource"
+        ],
+        "requestBody": {
+          "description": "Batch of jobs analysis runs metadata",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Batch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Batch creation succeeded"
+          },
+          "400": {
+            "description": "Invalid request data in request body - validation error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/batch/all": {
+      "get": {
+        "summary": "Get Batch documents containing metadata of jobs analysis runs ",
+        "description": "Retrieves a list of audit metadata Batches documents by several filtering combinations, by specific Language or not (mixed batch languages), or just all batches regardless of the languageor all documents if none of the query-parameters are supplied",
+        "tags": [
+          "ML-OPS Audit 1 - Batch Resource"
+        ],
+        "parameters": [
+          {
+            "description": "if supplied, fetch batches documents of the given language or mixed languages batches documents",
+            "name": "language",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "go|python|c|javascript|java|all|\\s*",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batches retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Wrong assignment of query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/batch/latest": {
+      "get": {
+        "summary": "Get recent batch run metadata of batch based on specific language or mixed languages batches.",
+        "description": "Retrieves the most recent batch run metadata according to specific language or not",
+        "tags": [
+          "ML-OPS Audit 1 - Batch Resource"
+        ],
+        "parameters": [
+          {
+            "description": "the Batch type of the batch run, for returning the recent batch run of mixed languages batches",
+            "required": true,
+            "name": "batch_type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BatchType"
+            }
+          },
+          {
+            "description": "the language of the batch run, for returning the recent batch run of mixed languages batches, pass 'all'",
+            "required": true,
+            "name": "language",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "go|python|c|javascript|java|all|\\s*"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batch_id": {
+                      "type": "string"
+                    },
+                    "execution_start_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "execution_end_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "batch_type": {
+                      "$ref": "#/components/schemas/BatchType"
+                    },
+                    "app_language": {
+                      "type": "string",
+                      "pattern": "go|python|c|javascript|java|all"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "total_number_of_executed_jobs": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    },
+                    "agent_git_commit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "agent_git_tag": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "agent_config_b64": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "env_vars": {
+                      "type": "string",
+                      "description": "comma delimited key=value pairs",
+                      "minLength": 1
+                    },
+                    "confusion_matrix_accuracy": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_precision": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_f1_score": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_recall": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "total_number_of_failures": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    },
+                    "regressive_jobs_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 0
+                    },
+                    "number_of_regressive_jobs_ids": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "agent_git_commit",
+                    "agent_git_tag",
+                    "agent_config_b64",
+                    "env_vars",
+                    "regressive_jobs_ids"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/batch/{id}": {
+      "delete": {
+        "summary": "Delete batch document metadata",
+        "description": "Deletes a specific batch of jobs analysis runs metadata by Internal DB id",
+        "tags": [
+          "ML-OPS Audit 1 - Batch Resource"
+        ],
+        "parameters": [
+          {
+            "description": "Batch id to delete (unique batch identifier of the multiple jobs analysis runs )",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Batch deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Get Batch of jobs run metadata",
+        "description": "Retrieves a specific batch of jobs runs metadata by batchId",
+        "tags": [
+          "ML-OPS Audit 1 - Batch Resource"
+        ],
+        "parameters": [
+          {
+            "description": "Batch ID to get",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batch_id": {
+                      "type": "string"
+                    },
+                    "execution_start_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "execution_end_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "batch_type": {
+                      "$ref": "#/components/schemas/BatchType"
+                    },
+                    "app_language": {
+                      "type": "string",
+                      "pattern": "go|python|c|javascript|java|all"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "total_number_of_executed_jobs": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    },
+                    "agent_git_commit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "agent_git_tag": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "agent_config_b64": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "env_vars": {
+                      "type": "string",
+                      "description": "comma delimited key=value pairs",
+                      "minLength": 1
+                    },
+                    "confusion_matrix_accuracy": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_precision": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_f1_score": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "confusion_matrix_recall": {
+                      "type": "number",
+                      "format": "float",
+                      "maximum": 1.00,
+                      "minimum": 0.00
+                    },
+                    "total_number_of_failures": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    },
+                    "regressive_jobs_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "minItems": 0
+                    },
+                    "number_of_regressive_jobs_ids": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "agent_git_commit",
+                    "agent_git_tag",
+                    "agent_config_b64",
+                    "env_vars",
+                    "regressive_jobs_ids"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evals": {
+      "post": {
+        "summary": "Create List of new evals metrics data of certain stages in certain analysis job runs ",
+        "description": "Creates multiple jobs containing audit metadata about analysis runs",
+        "tags": [
+          "ML-OPS Audit 4 - Eval Resource"
+        ],
+        "requestBody": {
+          "description": "Eval Metric data of a certain LLM Stage of single Analysis run",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Eval"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "jobs creation accepted"
+          },
+          "400": {
+            "description": "Invalid request data in request body - validation error"
+          },
+          "422": {
+            "description": "Evals objects are unprocessable - Cannot insert Evals objects to DB due to existence of at least one jobId that doesn't exists in DB"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evals/all": {
+      "get": {
+        "summary": "Get eval metrics data documents containing metrics score of llm stages in  ",
+        "description": "Retrieves a list of eval metrics documents with data and scores of llm stages in jobs runs by several filtering combinations, by jobId, by traceId,or all eval documents if none of the query-parameters are supplied",
+        "tags": [
+          "ML-OPS Audit 4 - Eval Resource"
+        ],
+        "parameters": [
+          {
+            "description": "If supplied , fetch eval metrics documents of analysis runs of the given jobId",
+            "name": "jobId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, returns only eval metrics of analysis run for a given traceId ( only one stage at the job pipeline)",
+            "name": "traceId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evals retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Eval"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Wrong assignment of query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evals/{cveId}": {
+      "get": {
+        "summary": "Get all eval metrics data documents containing metrics score of all jobs runs and all their llm stages for a given application version and vulnerability combination ",
+        "description": "Retrieves a list of audit metadata jobs documents by several filtering combinations, by jobId, by traceId,or all documents if none of the query-parameters are supplied",
+        "tags": [
+          "ML-OPS Audit 4 - Eval Resource"
+        ],
+        "parameters": [
+          {
+            "name": "cveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "CVE-\\d{4}-\\d{4,7}",
+              "minLength": 1
+            }
+          },
+          {
+            "description": "If supplied, return all  with the given Application name or project name which is inspected in the analysis run",
+            "required": true,
+            "name": "component",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, return jobs with the given Application version which is  inspected in the analysis run",
+            "required": true,
+            "name": "componentVersion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, return only evals data documents of the specific metric name",
+            "name": "metricName",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Eval"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Wrong assignment of query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/evals/{jobId}": {
+      "delete": {
+        "summary": "Delete all eval metrics data of a certain jobId, or metadata",
+        "description": "Deletes a specific analysis job metadata by jobId and optional traceId",
+        "tags": [
+          "ML-OPS Audit 4 - Eval Resource"
+        ],
+        "parameters": [
+          {
+            "description": "job id to delete its evals (unique scan_id identifier of the analysis run)",
+            "required": true,
+            "name": "jobId",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "description": "If supplied, trace_id to delete only metrics of one llm stage",
+            "name": "traceId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Report deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
     "/api/v1/feedback": {
       "post": {
         "summary": "Submit user feedback for an AI response",
@@ -944,6 +1925,432 @@
         ],
         "tags": [
           "Generate Sbom Endpoint"
+        ]
+      }
+    },
+    "/api/v1/jobs": {
+      "post": {
+        "summary": "Create List of new jobs containing metadata of executions of analysis",
+        "description": "Creates multiple jobs containing audit metadata about analysis runs",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "requestBody": {
+          "description": "Job Analysis run metadata",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "jobs creation accepted"
+          },
+          "400": {
+            "description": "Invalid request data in request body - validation error"
+          },
+          "422": {
+            "description": "Jobs objects are unprocessable - Cannot insert Job objects to DB due to existence of at least one batchId of a single job object that doesn't exists in batches DB"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete multiple analysis reports",
+        "description": "Deletes multiple analysis job runs metadata by job ids",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "parameters": [
+          {
+            "description": "List of report IDs to delete (24-character hexadecimal MongoDB ObjectId format)",
+            "name": "jobsIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Reports deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Get job run data by jobId",
+        "description": "Retrieves a specific job run metadata by job identifier(scan_id)",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "parameters": [
+          {
+            "description": "Job ID to get (unique id (scan_id) of the job to be fetched )",
+            "required": true,
+            "name": "jobId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    },
+                    "execution_start_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "duration_in_seconds": {
+                      "type": "string"
+                    },
+                    "cve": {
+                      "type": "string",
+                      "pattern": "CVE-\\d{4}-\\d{4,7}"
+                    },
+                    "app_language": {
+                      "type": "string",
+                      "pattern": "go|python|c|javascript|java|all|\\s*"
+                    },
+                    "component": {
+                      "type": "string"
+                    },
+                    "component_version": {
+                      "type": "string"
+                    },
+                    "agent_git_commit": {
+                      "type": "string"
+                    },
+                    "agent_git_tag": {
+                      "type": "string"
+                    },
+                    "agent_config_b64": {
+                      "type": "string"
+                    },
+                    "concrete_intel_sources_b64": {
+                      "type": "string"
+                    },
+                    "executed_from_background_process": {
+                      "type": "boolean"
+                    },
+                    "batch_id": {
+                      "type": "string"
+                    },
+                    "success_status": {
+                      "type": "boolean"
+                    },
+                    "env_vars": {
+                      "type": "string",
+                      "description": "comma delimited key=value pairs"
+                    },
+                    "job_output": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "env_vars"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/jobs/all": {
+      "get": {
+        "summary": "Get jobs documents containing metadata of analysis runs ",
+        "description": "Retrieves a list of audit metadata jobs documents by several filtering combinations, by batchId, by cveId, by cveId, componentName, componentVersion or all documents if none of the query-parameters are supplied",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "parameters": [
+          {
+            "description": "if supplied, fetch jobs documents of the given batchId'",
+            "name": "batchId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, return jobs with the given Application name or project name which is inspected in the analysis run",
+            "name": "component",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, return jobs with the given Application version which is  inspected in the analysis run",
+            "name": "componentVersion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, fetch jobs documents of analysis runs of the given vulnerability",
+            "name": "cveId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Wrong assignment of query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/jobs/one": {
+      "post": {
+        "summary": "Create one job containing metadata of one execution of analysis",
+        "description": "Creates 1 jobs audit data",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "requestBody": {
+          "description": "Job Analysis run metadata",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Job"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "job creation succeeded"
+          },
+          "400": {
+            "description": "Invalid request data in request body - validation error"
+          },
+          "422": {
+            "description": "Job object is unprocessable - Cannot insert Job object to DB due to the fact that related batchId doesn't exists in DB"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/jobs/{id}": {
+      "delete": {
+        "summary": "Delete analysis job metadata",
+        "description": "Deletes a specific analysis job metadata by Internal DB id",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "parameters": [
+          {
+            "description": "job id to delete (unique scan_id identifier of the analysis run)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Report deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "Get job run data",
+        "description": "Retrieves a specific job run data by internal DB Id",
+        "tags": [
+          "ML-OPS Audit 2 - Job Resource"
+        ],
+        "parameters": [
+          {
+            "description": "Job ID to get (24-character hexadecimal MongoDB ObjectId format)",
+            "required": true,
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string"
+                    },
+                    "execution_start_timestamp": {
+                      "$ref": "#/components/schemas/LocalDateTime"
+                    },
+                    "duration_in_seconds": {
+                      "type": "string"
+                    },
+                    "cve": {
+                      "type": "string",
+                      "pattern": "CVE-\\d{4}-\\d{4,7}"
+                    },
+                    "app_language": {
+                      "type": "string",
+                      "pattern": "go|python|c|javascript|java|all|\\s*"
+                    },
+                    "component": {
+                      "type": "string"
+                    },
+                    "component_version": {
+                      "type": "string"
+                    },
+                    "agent_git_commit": {
+                      "type": "string"
+                    },
+                    "agent_git_tag": {
+                      "type": "string"
+                    },
+                    "agent_config_b64": {
+                      "type": "string"
+                    },
+                    "concrete_intel_sources_b64": {
+                      "type": "string"
+                    },
+                    "executed_from_background_process": {
+                      "type": "boolean"
+                    },
+                    "batch_id": {
+                      "type": "string"
+                    },
+                    "success_status": {
+                      "type": "boolean"
+                    },
+                    "env_vars": {
+                      "type": "string",
+                      "description": "comma delimited key=value pairs"
+                    },
+                    "job_output": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "env_vars"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
         ]
       }
     },
@@ -1990,9 +3397,183 @@
           "Report Endpoint"
         ]
       }
+    },
+    "/api/v1/traces": {
+      "post": {
+        "summary": "Create List of new traces/spans metrics data of certain stages in certain analysis job runs ",
+        "description": "Creates multiple traces and spans containing telemetry data about certain analysis job runs",
+        "tags": [
+          "ML-OPS Audit 3 - Trace Resource"
+        ],
+        "parameters": [
+          {
+            "name": "Bypass-Referential-Integrity-Check",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "span data of a certain unit of work/function inside a LLM Stage of single job Analysis run",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Trace"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "traces creation accepted"
+          },
+          "400": {
+            "description": "Invalid request data in request body - validation error"
+          },
+          "422": {
+            "description": "Traces objects are unprocessable - Cannot insert Traces objects to DB due to existence of at least one jobId that doesn't exists in DB"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/traces/all": {
+      "get": {
+        "summary": "Get trace + spans data documents containing telemetry data of all stages inside agent job runs ",
+        "description": "Retrieves a list of trace+span documentsby several filtering combinations, by jobId ( all traces and spans of a single job id), by traceId ( all spans of a particular traceId/Pipeline Stageor all eval documents if none of the query-parameters are supplied",
+        "tags": [
+          "ML-OPS Audit 3 - Trace Resource"
+        ],
+        "parameters": [
+          {
+            "description": "If supplied , fetch trace documents of analysis runs of the given jobId",
+            "name": "jobId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          {
+            "description": "If supplied, returns only traces document of analysis run for a given traceId ( only one stage at the job pipeline)",
+            "name": "traceId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Traces retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Trace"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Wrong assignment of query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "object"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/traces/{jobId}": {
+      "delete": {
+        "summary": "Delete all traces and spans data of a certain jobId",
+        "description": "Deletes a specific job traces and spans by jobId and optional traceId ( to delete only one agent stage spans",
+        "tags": [
+          "ML-OPS Audit 3 - Trace Resource"
+        ],
+        "parameters": [
+          {
+            "description": "job id to delete its traces (unique scan_id identifier of the analysis run)",
+            "required": true,
+            "name": "jobId",
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "description": "If supplied, trace_id to delete only spans of one agent/llm stage",
+            "name": "traceId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Report deletion request accepted"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
     }
   },
   "tags": [
+    {
+      "name": "ML-OPS Audit 1 - Batch Resource",
+      "description": "resource related to ML-OPS audit batch metadata and data, with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 2 - Job Resource",
+      "description": "resource related to ML-OPS audit job runs metadata and data, with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 3 - Trace Resource",
+      "description": "resource related to ML-OPS traces and span entries created in agent job runs and with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 4 - Eval Resource",
+      "description": "resource related to ML-OPS audit curated evaluation metrics recorded scores of a job run' LLM Stages with its respective operations"
+    },
     {
       "name": "Overview Metrics"
     }
