@@ -18,12 +18,14 @@ import org.jboss.logging.Logger;
 import com.mongodb.client.MongoClient;
 
 import io.quarkus.arc.profile.IfBuildProfile;
+import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.runtime.Startup;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 @Singleton
 @IfBuildProfile("dev")
+@IfBuildProperty(name = "morpheus.database.init.enabled", stringValue = "true")
 public class DatabaseInit {
 
   private static final Logger LOGGER = Logger.getLogger(DatabaseInit.class);
