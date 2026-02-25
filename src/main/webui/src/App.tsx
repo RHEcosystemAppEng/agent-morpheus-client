@@ -34,7 +34,7 @@ const App: React.FC = () => {
             element={<CveDetailsPage />}
           />
           <Route
-            path="/reports/component/cve/:productId/:cveId/:reportId"
+            path="/reports/component/cve/:cveId/:reportId"
             element={<CveDetailsPage />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />

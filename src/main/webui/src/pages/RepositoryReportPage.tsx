@@ -163,7 +163,13 @@ const RepositoryReportPage: React.FC = () => {
           </Flex>
         </GridItem>
         <GridItem>
-          <DetailsCard report={report} cveId={cveId} analysisState={status} />
+          <DetailsCard
+            report={report}
+            cveId={cveId}
+            reportId={reportId || ""}
+            productId={productId}
+            analysisState={status}
+          />
         </GridItem>
         <GridItem>
           <ChecklistCard vuln={outputVuln} />

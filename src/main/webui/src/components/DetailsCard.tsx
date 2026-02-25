@@ -10,7 +10,7 @@ import {
   Flex,
   FlexItem,
 } from "@patternfly/react-core";
-import { Link, useParams } from "react-router";
+import { Link } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import CveStatus from "./CveStatus";
@@ -21,6 +21,8 @@ import ReportStatusLabel from "./ReportStatusLabel";
 interface DetailsCardProps {
   report: FullReport;
   cveId: string;
+  reportId: string;
+  productId?: string;
   analysisState?: string;
   analysisStateLoading?: boolean;
 }
@@ -28,6 +30,8 @@ interface DetailsCardProps {
 const DetailsCard: React.FC<DetailsCardProps> = ({
   report,
   cveId,
+  reportId,
+  productId,
   analysisState,
 }) => {
   const image = report.input?.image;
@@ -40,15 +44,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
   const outputVuln = output.find((v) => v.vuln_id === cveId);
-
-  const params = useParams<{
-    sbomReportId?: string;
-    productId?: string;
-    reportId?: string;
-  }>();
-  const { sbomReportId, productId, reportId } = params;
-  const isComponentRoute = !sbomReportId && !productId;
-  const effectiveProductId = sbomReportId || productId;
 
   return (
     <Card>
@@ -71,21 +66,15 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    {reportId ? (
-                      <Link
-                        to={
-                          isComponentRoute && effectiveProductId
-                            ? `/reports/component/cve/${effectiveProductId}/${cveId}/${reportId}`
-                            : effectiveProductId
-                            ? `/reports/product/cve/${effectiveProductId}/${cveId}/${reportId}`
-                            : "#"
-                        }
-                      >
-                        {vuln.vuln_id}
-                      </Link>
-                    ) : (
-                      vuln.vuln_id
-                    )}
+                    <Link
+                      to={
+                        productId
+                          ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                          : `/reports/component/cve/${cveId}/${reportId}`
+                      }
+                    >
+                      {vuln.vuln_id}
+                    </Link>
                   </FlexItem>
                   <FlexItem>
                     {outputVuln?.justification?.status ? (
