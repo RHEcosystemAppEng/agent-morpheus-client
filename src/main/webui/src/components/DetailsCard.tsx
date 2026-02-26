@@ -10,6 +10,7 @@ import {
   Flex,
   FlexItem,
 } from "@patternfly/react-core";
+import { Link } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import CveStatus from "./CveStatus";
@@ -20,6 +21,8 @@ import ReportStatusLabel from "./ReportStatusLabel";
 interface DetailsCardProps {
   report: FullReport;
   cveId: string;
+  reportId: string;
+  productId?: string;
   analysisState?: string;
   analysisStateLoading?: boolean;
 }
@@ -27,7 +30,9 @@ interface DetailsCardProps {
 const DetailsCard: React.FC<DetailsCardProps> = ({
   report,
   cveId,
-  analysisState
+  reportId,
+  productId,
+  analysisState,
 }) => {
   const image = report.input?.image;
   const sourceInfo = image?.source_info || [];
@@ -38,7 +43,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   const codeTag = codeSource?.ref;
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
-  const outputVuln = output.find((v) => v.vuln_id === cveId);``
+  const outputVuln = output.find((v) => v.vuln_id === cveId);
 
   return (
     <Card>
@@ -61,7 +66,15 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListDescription>
                 <Flex>
                   <FlexItem>
-                    {vuln.vuln_id}
+                    <Link
+                      to={
+                        productId
+                          ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                          : `/reports/component/cve/${cveId}/${reportId}`
+                      }
+                    >
+                      {vuln.vuln_id}
+                    </Link>
                   </FlexItem>
                   <FlexItem>
                     {outputVuln?.justification?.status ? (
@@ -77,11 +90,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListTerm>Repository</DescriptionListTerm>
               <DescriptionListDescription>
                 {codeRepository ? (
-                  <a
-                    href={codeRepository}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a href={codeRepository} target="_blank" rel="noreferrer">
                     {codeRepository}
                   </a>
                 ) : (
@@ -141,4 +150,3 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
 };
 
 export default DetailsCard;
-

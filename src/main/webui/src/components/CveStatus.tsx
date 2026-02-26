@@ -7,7 +7,7 @@ interface CveStatusProps {
 /**
  * Component to display CVE status based on justification
  */
-const CveStatus: React.FC<CveStatusProps> = ({ status }) => {  
+const CveStatus: React.FC<CveStatusProps> = ({ status }) => {
 
   const getColor = (
     status: string

@@ -62,4 +62,3 @@ export function useReport(productId: string | undefined): UseReportResult {
 
   return { data: data || null, loading, error };
 }
-

@@ -44,6 +44,16 @@ After submitting the request, you will be redirected to the Report page. Once th
 
 **Note:** There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after a certain time a callback response is not received, the report will be _expired_ (failed).
 
+### CVE Details Page
+
+By clicking on the CVE link:
+
+![cve_click.png](./docs/images/cve_click.png)
+
+you will navigate to the CVE Details page where you can find details about a specific CVE.
+
+![cve_details_page.png](./docs/images/cve_details_page.png)
+
 ### Reports Page
 
 On this page, you will find a table containing all reports.
@@ -81,7 +91,6 @@ You will be able to sort, filter, and organize the reports to quickly locate spe
 ### Report
 
 ![report](./docs/images/report.png)
-
 
 ### Download Feature
 

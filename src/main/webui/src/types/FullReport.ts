@@ -4,6 +4,8 @@
  * that comes from MongoDB as raw JSON.
  */
 
+import type { IntelEntry } from "./Intel";
+
 /**
  * A single checklist item in the vulnerability analysis
  */
@@ -122,6 +124,21 @@ export interface FullReportOutput {
 }
 
 /**
+ * Report information structure containing VDB, intel, and potentially other fields
+ * Supports both new format (intel as IntelEntry[]) and legacy format (intel as object with score)
+ */
+export interface FullReportInfo {
+  /** VDB (Vulnerability Database) information */
+  vdb?: {
+    version?: string;
+  };
+  /** Intel information - can be array of IntelEntry (new format) or legacy object format */
+  intel?: IntelEntry[] | { score?: number } | Record<string, unknown>;
+  /** Additional fields that may exist in info */
+  [key: string]: unknown;
+}
+
+/**
  * Complete analysis report with all fields from MongoDB
  * This type provides full type safety and autocomplete for report data
  */
@@ -133,8 +150,7 @@ export interface FullReport {
   /** Report output data containing vulnerability analysis results and VEX */
   output?: FullReportOutput;
   /** Report information including VDB, intel, and SBOM data */
-  info?: Record<string, unknown>;
+  info?: FullReportInfo;
   /** User provided metadata for the report */
   metadata?: Record<string, string>;
 }
-
