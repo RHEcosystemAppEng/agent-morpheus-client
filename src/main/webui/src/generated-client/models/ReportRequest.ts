@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { InlineCredential } from './InlineCredential';
 import type { SourceInfo } from './SourceInfo';
 /**
  * A single report request
@@ -52,6 +53,10 @@ export type ReportRequest = {
          */
         sbom_info?: Record<string, any>;
     };
+    /**
+     * Credential for private repository access (optional, required only for private repository access)
+     */
+    credential?: InlineCredential;
     /**
      * SBOM data (required if image is not provided)
      */

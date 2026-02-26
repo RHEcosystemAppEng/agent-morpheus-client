@@ -10,6 +10,8 @@ import com.redhat.ecosystemappeng.morpheus.model.morpheus.SbomInfoType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.validation.Valid;
+
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 
 @Schema(name = "ReportRequest", description = "A single report request")
@@ -23,6 +25,9 @@ public record ReportRequest(
     Collection<String> vulnerabilities, 
     @Schema(description = "Image data (required if SBOM is not provided)", type = SchemaType.OBJECT, implementation = Image.class)
     JsonNode image,
+    @Schema(description = "Credential for private repository access (optional, required only for private repository access)")
+    @Valid
+    InlineCredential credential,
     @Schema(
         description = "SBOM data (required if image is not provided)",
         type = SchemaType.OBJECT,
@@ -59,4 +64,29 @@ public record ReportRequest(
     @Schema(description = "Manifest file path")
     String manifestPath) {
 
+    /**
+     * Creates a copy of this request without the credential field.
+     * Used to prevent credentials from being persisted in MongoDB.
+     *
+     * @return new ReportRequest with credential set to null, or this instance if credential is already null
+     */
+    public ReportRequest withoutCredential() {
+        if (credential == null) {
+            return this;
+        }
+        return new ReportRequest(
+            id,
+            analysisType,
+            vulnerabilities,
+            image,
+            null,
+            sbom,
+            sbomInfoType,
+            metadata,
+            sourceRepo,
+            commitId,
+            ecosystem,
+            manifestPath
+        );
+    }
 }

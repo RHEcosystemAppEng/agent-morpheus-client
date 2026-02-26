@@ -24,9 +24,12 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
+import com.redhat.ecosystemappeng.morpheus.service.CredentialProcessingService;
+import com.redhat.ecosystemappeng.morpheus.service.CredentialStorageException;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
@@ -51,6 +54,7 @@ import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.core.Response.Status;
 
@@ -84,6 +88,12 @@ public class ReportEndpoint {
   @Inject
   ObjectMapper objectMapper;
 
+  @Inject
+  CredentialProcessingService credentialProcessingService;
+
+  @Context
+  SecurityContext securityContext;
+
   @POST
   @Path("/new")
   @Operation(
@@ -114,7 +124,7 @@ public class ReportEndpoint {
     @Parameter(
       description = "Whether to submit to ExploitIQ for analysis"
     )
-    @QueryParam("submit") @DefaultValue("true") boolean sendToMorpheus, 
+    @QueryParam("submit") @DefaultValue("true") boolean sendToMorpheus,
     @RequestBody(
       description = "Analysis report request data",
       required = true,
@@ -122,7 +132,30 @@ public class ReportEndpoint {
     )
     ReportRequest request) {
     try {
-      ReportData res = reportService.process(request);
+      String credentialId = null;
+      if (request.credential() != null) {
+        try {
+          String userId = securityContext.getUserPrincipal().getName();
+          credentialId = credentialProcessingService.processAndStoreCredential(
+            request.credential(), userId);
+        } catch (IllegalArgumentException | CredentialStorageException e) {
+          LOGGER.warnf(e, "Failed to process credential for report request");
+          return Response.status(Status.BAD_REQUEST)
+            .entity(objectMapper.createObjectNode()
+            .put("error", "Credential error: " + e.getMessage()))
+            .build();
+        }
+      }
+
+      ReportRequest requestWithoutCredential = request.credential() != null
+        ? request.withoutCredential()
+        : request;
+
+      ReportData res = reportService.process(requestWithoutCredential);
+
+      if (credentialId != null && res.report() != null) {
+        credentialProcessingService.injectCredentialId(res.report(), credentialId);
+      }
 
       if (sendToMorpheus) {
         reportService.submit(res.reportRequestId().id(), res.report());

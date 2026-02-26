@@ -150,7 +150,8 @@ public class ReportRepositoryService {
         ref = selectedSourceInfo.getString("ref");
       }
     }
-    LOGGER.infof("gitRepo: %s, ref: %s", gitRepo, ref);
+    // TODO: Rollback this
+    // LOGGER.infof("gitRepo: %s, ref: %s", gitRepo, ref);
     return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
         scan.getString("started_at"),
         scan.getString("completed_at"),
