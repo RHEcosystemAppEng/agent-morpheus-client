@@ -5,6 +5,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
@@ -36,8 +37,17 @@ public class Eval {
     @JsonProperty(METRIC_NAME_FIELD_NAME)
     private MetricName metricName;
     @NotEmpty
-    @JsonProperty(METRIC_VALUE_FIELD_NAME)
-    private String metricValue;
+    @JsonProperty(METRIC_SCORE_FIELD_NAME)
+    private String metricScore;
+    @JsonProperty(METRIC_REASONING_FIELD_NAME)
+    @Schema(description = "Containing the reasoning for the score that was calculated")
+    private String metricReasoning;
+    @JsonProperty(MODEL_INPUT)
+    @Schema(description = "Containing the concrete Input to the agent model That is being evaluated")
+    private String modelInput;
+    @JsonProperty(MODEL_OUTPUT)
+    @Schema(description = "Containing the concrete Output produced by the Agent' Model which is being evaluated")
+    private String modelOutput;
 
 
     public String getJobId() {
@@ -88,12 +98,12 @@ public class Eval {
         this.metricName = metricName;
     }
 
-    public String getMetricValue() {
-        return metricValue;
+    public String getMetricScore() {
+        return metricScore;
     }
 
-    public void setMetricValue(String metricValue) {
-        this.metricValue = metricValue;
+    public void setMetricScore(String metricScore) {
+        this.metricScore = metricScore;
     }
 
     public LLMStage getLlmNode() {
@@ -122,7 +132,31 @@ public class Eval {
                 ", componentVersion='" + componentVersion + '\'' +
                 ", llmNode=" + llmNode +
                 ", metricName='" + metricName + '\'' +
-                ", metricValue='" + metricValue + '\'' +
+                ", metricScore='" + metricScore + '\'' +
                 '}';
+    }
+
+    public String getMetricReasoning() {
+        return metricReasoning;
+    }
+
+    public void setMetricReasoning(String metricReasoning) {
+        this.metricReasoning = metricReasoning;
+    }
+
+    public String getModelInput() {
+        return modelInput;
+    }
+
+    public void setModelInput(String modelInput) {
+        this.modelInput = modelInput;
+    }
+
+    public String getModelOutput() {
+        return modelOutput;
+    }
+
+    public void setModelOutput(String modelOutput) {
+        this.modelOutput = modelOutput;
     }
 }
