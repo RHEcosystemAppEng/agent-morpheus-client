@@ -13,10 +13,16 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
+import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
+import com.redhat.ecosystemappeng.morpheus.service.CredentialProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
+import com.redhat.ecosystemappeng.morpheus.service.CredentialStoreService;
+import com.redhat.ecosystemappeng.morpheus.service.CredentialStorageException;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
@@ -34,8 +40,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.SecurityContext;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import java.io.IOException;
@@ -46,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
@@ -72,6 +82,15 @@ public class ProductEndpoint {
 
   @Inject
   ObjectMapper objectMapper;
+
+  @Inject
+  CredentialStoreService credentialStoreService;
+
+  @Inject
+  CredentialProcessingService credentialProcessingService;
+
+  @Context
+  SecurityContext securityContext;
 
   @GET
   @Operation(
@@ -169,7 +188,7 @@ public class ProductEndpoint {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Operation(
     summary = "Upload CycloneDX file for analysis",
-    description = "Accepts a CVE ID and CycloneDX JSON file, validates them, and queues the report for analysis")
+    description = "Accepts a CVE ID and CycloneDX JSON file with optional credentials for private repository access, validates them, and queues the report for analysis")
   @APIResponses({
     @APIResponse(
       responseCode = "202",
@@ -189,22 +208,48 @@ public class ProductEndpoint {
   })
   public Response uploadCyclonedx(
       @FormParam("cveId") String cveId,
-      @FormParam("file") FileUpload file) throws IOException {
+      @FormParam("file") FileUpload file,
+      @FormParam("secretValue") String secretValue,
+      @FormParam("username") String username) throws IOException {
     if (file == null || file.uploadedFile() == null) {
       throw new ValidationException(Map.of("file", "File is required"));
     }
 
     try (InputStream fileInputStream = Files.newInputStream(file.uploadedFile())) {
       var reportRequest = cycloneDxUploadService.processUpload(cveId, fileInputStream);
-      
-      // Extract product information from report metadata
+
+      String credentialId = null;
+      if (secretValue != null && !secretValue.isBlank()) {
+        try {
+          InlineCredential credential = new InlineCredential(secretValue, username);
+          String userId = securityContext.getUserPrincipal().getName();
+          credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);
+        } catch (IllegalArgumentException e) {
+          LOGGER.warnf(e, "Credential validation failed");
+          return Response.status(Status.BAD_REQUEST)
+            .entity(objectMapper.createObjectNode()
+            .put("error", e.getMessage()))
+            .build();
+        } catch (CredentialStorageException e) {
+          LOGGER.errorf(e, "Failed to store credential");
+          return Response.status(Status.INTERNAL_SERVER_ERROR)
+            .entity(objectMapper.createObjectNode()
+            .put("error", "Failed to store credential: " + e.getMessage()))
+            .build();
+        }
+      }
+
       Map<String, String> reportMetadata = reportRequest.metadata();
       String productId = reportMetadata.get("product_id");
       String sbomName = reportMetadata.get("sbom_name");
       String sbomVersion = reportMetadata.get("sbom_version");
-      
-      // Create and submit the report
+
       var reportData = reportService.process(reportRequest);
+
+      if (credentialId != null && reportData.report() != null) {
+        credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
+      }
+
       reportService.submit(reportData.reportRequestId().id(), reportData.report());
 
       // Create product entry after report is successfully created and submitted

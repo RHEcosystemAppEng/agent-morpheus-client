@@ -296,7 +296,8 @@ public class ReportService {
     var created = repository.save(report.toPrettyString());
     var reportRequestId = new ReportRequestId(created.id(), scan.id());
     LOGGER.infof("Successfully processed request ID: %s", created.id());
-    LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
+    // TODO: Rollback this
+    // LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
     return new ReportData(reportRequestId, report);
   }
 
