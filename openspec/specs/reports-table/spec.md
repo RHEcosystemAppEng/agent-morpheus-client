@@ -123,3 +123,86 @@ When a product has exactly one submitted report (`submittedCount === 1`), clicki
 - **AND** the loading indicator is removed once navigation occurs or the fallback behavior is triggered
 - **AND** only the clicked row shows the loading indicator (other rows remain unchanged)
 
+### Requirement: Reports Table Finding Column
+
+The reports table SHALL display a "Finding" column that shows a single prioritized finding for each product. The finding SHALL be determined using priority-based logic and SHALL display one of five possible states: Vulnerable, Uncertain, In progress, Not vulnerable, or Failed. The column header SHALL be labeled "Finding". Counts SHALL be displayed for Vulnerable, Not vulnerable, and Uncertain findings.
+
+#### Scenario: Column header displays "Finding"
+- **WHEN** a user views the reports table
+- **THEN** the column header displays "Finding"
+- **AND** a help icon with popover is displayed next to the column header
+- **AND** the popover explains the finding priority logic and available states
+
+#### Scenario: Vulnerable finding priority
+- **WHEN** a product has one or more repositories with vulnerable status
+- **THEN** the finding displays "Vulnerable" with the count (e.g., "3 Vulnerable")
+- **AND** the label uses red color (PatternFly danger color)
+- **AND** this finding takes priority over all other findings
+
+#### Scenario: Uncertain finding priority
+- **WHEN** a product has zero vulnerable repositories
+- **AND** the product has one or more repositories with uncertain status
+- **THEN** the finding displays "Uncertain" with the count (e.g., "2 Uncertain")
+- **AND** the label uses orange color (PatternFly warning color)
+- **AND** this finding takes priority over In progress, Not vulnerable, and Failed findings
+
+#### Scenario: In progress finding
+- **WHEN** a product has zero vulnerable repositories
+- **AND** the product has zero uncertain repositories
+- **AND** the analysis state is "analysing" (one or more reports are in pending, queued, sent, or analysing state)
+- **THEN** the finding displays "In progress"
+- **AND** the label uses outlined grey style (PatternFly non-status grey, outlined variant)
+- **AND** the label includes an InProgressIcon from PatternFly icons
+- **AND** no count is displayed for In progress finding
+
+#### Scenario: Not vulnerable finding
+- **WHEN** a product has zero vulnerable repositories
+- **AND** the product has zero uncertain repositories
+- **AND** the analysis state is "completed" (100% of reports are in completed state)
+- **AND** the product has one or more repositories with not vulnerable status
+- **THEN** the finding displays "Not vulnerable" with the count (e.g., "5 Not vulnerable")
+- **AND** the label uses green color (PatternFly success color)
+- **AND** this finding takes priority over Failed finding when all reports are completed
+
+#### Scenario: Failed finding - all reports failed
+- **WHEN** a product has zero vulnerable repositories
+- **AND** the product has zero uncertain repositories
+- **AND** 100% of reports are in failed or expired state (no completed reports)
+- **THEN** the finding displays "Failed"
+- **AND** the label uses filled grey style with danger icon (PatternFly grey filled variant with ExclamationCircleIcon)
+- **AND** no count is displayed for Failed finding
+
+#### Scenario: Failed finding - mixed failed and not vulnerable
+- **WHEN** a product has zero vulnerable repositories
+- **AND** the product has zero uncertain repositories
+- **AND** some reports are in failed or expired state
+- **AND** the remaining reports are in completed state with not vulnerable status
+- **THEN** the finding displays "Failed"
+- **AND** the label uses filled grey style with danger icon (PatternFly grey filled variant with ExclamationCircleIcon)
+- **AND** no count is displayed for Failed finding
+
+#### Scenario: Single finding display
+- **WHEN** a product has multiple possible findings (e.g., both vulnerable and uncertain repositories)
+- **THEN** only the highest priority finding is displayed
+- **AND** only one finding label is shown per row
+- **AND** the priority order is: Vulnerable > Uncertain > In progress > Not vulnerable > Failed
+
+#### Scenario: Finding display during analysis
+- **WHEN** a product is in analysis state (analysing)
+- **AND** the product has zero vulnerable and zero uncertain repositories
+- **THEN** the finding displays "In progress" with outlined grey label and icon
+- **AND** the finding is visible even when analysis is not yet completed
+
+#### Scenario: Finding display when analysis completed
+- **WHEN** a product analysis is completed (all reports in completed state)
+- **AND** the product has zero vulnerable and zero uncertain repositories
+- **AND** the product has one or more not vulnerable repositories
+- **THEN** the finding displays "Not vulnerable" with count and green label
+- **AND** the finding is visible and shows the count
+
+#### Scenario: Finding display for failed analysis
+- **WHEN** a product has all reports in failed or expired state
+- **OR** a product has some failed/expired reports and remaining reports are completed with not vulnerable status
+- **THEN** the finding displays "Failed" with filled grey label and danger icon
+- **AND** the finding is visible regardless of analysis completion state
+
