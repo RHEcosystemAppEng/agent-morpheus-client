@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type React from "react";
 import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
@@ -21,6 +22,7 @@ export interface ReportRow {
   analysisState: string;
   productStatus: ProductStatus;
   submittedCount?: number;
+  statusCounts: Record<string, number>;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -46,54 +48,96 @@ export interface UseReportsTableResult {
 }
 
 /**
- * Pure function to check if analysis is completed
+ * function to check if analysis is completed
  */
 export function isAnalysisCompleted(analysisState: string): boolean {
   return analysisState === "completed";
 }
 
 /**
- * Status item with count and color
+ * Finding type for single prioritized finding display
  */
-export type StatusItem = {
-  count: number;
+export type Finding = {
+  type: "vulnerable" | "uncertain" | "in-progress" | "not-vulnerable" | "failed";
   label: string;
-  color: "red" | "green" | "orange";
+  count?: number;
+  color?: "red" | "green" | "orange" | "grey";
+  variant?: "filled" | "outline";
+  icon?: React.ReactNode;
 };
 
-/**
- * Pure function to get status items with their colors
- * Returns an array of status items, each with its own color
- * Always shows all three statuses (vulnerable, not vulnerable, uncertain) if their count > 0
- */
-export function getStatusItems(productStatus: ProductStatus): StatusItem[] {
-  const items: StatusItem[] = [];
-
+export function getFinding(
+  productStatus: ProductStatus,
+  analysisState: string,
+  statusCounts: Record<string, number>
+): Finding | null {
+  // Priority 1: Vulnerable (1 or more repos are vulnerable)
   if (productStatus.vulnerableCount > 0) {
-    items.push({
-      count: productStatus.vulnerableCount,
+    return {
+      type: "vulnerable",
       label: "Vulnerable",
+      count: productStatus.vulnerableCount,
       color: "red",
-    });
+    };
   }
 
-  if (productStatus.notVulnerableCount > 0) {
-    items.push({
-      count: productStatus.notVulnerableCount,
-      label: "Not Vulnerable",
-      color: "green",
-    });
-  }
-
+  // Priority 2: Uncertain (0 vulnerable, 1 or more uncertain)
   if (productStatus.uncertainCount > 0) {
-    items.push({
-      count: productStatus.uncertainCount,
+    return {
+      type: "uncertain",
       label: "Uncertain",
+      count: productStatus.uncertainCount,
       color: "orange",
-    });
+    };
   }
 
-  return items;
+  // Priority 3: In progress (0 vulnerable, 0 uncertain, has queued/sent/pending states)
+  const inProgressStates = ["queued", "sent", "pending"];
+  const hasInProgress = inProgressStates.some(
+    (state) => (statusCounts[state] || 0) > 0
+  );
+  if (hasInProgress) {
+    return {
+      type: "in-progress",
+      label: "In progress",
+      variant: "outline",
+      color: "grey",
+    };
+  }
+
+  // Calculate counts for failed/expired and completed states
+  const failedCount = (statusCounts["failed"] || 0) + (statusCounts["expired"] || 0);
+  const completedCount = statusCounts["completed"] || 0;
+  const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+
+  // Priority 4: Not vulnerable (100% analyzed, 0 vulnerable, 0 uncertain, 1+ not vulnerable, no failed)
+  if (analysisState === "completed" && productStatus.notVulnerableCount > 0 && failedCount === 0) {
+    // Only show "Not vulnerable" if all reports are completed (no failed/expired)
+    if (completedCount === totalCount && totalCount > 0) {
+      return {
+        type: "not-vulnerable",
+        label: "Not vulnerable",
+        count: productStatus.notVulnerableCount,
+        color: "green",
+      };
+    }
+  }
+
+  // Priority 5: Failed (100% failed/expired OR some failed and rest not vulnerable)
+  if (failedCount > 0) {
+    // All failed/expired OR some failed and rest completed with not vulnerable
+    if (failedCount === totalCount || (failedCount > 0 && completedCount > 0 && productStatus.notVulnerableCount > 0)) {
+      return {
+        type: "failed",
+        label: "Failed",
+        variant: "filled",
+        color: "grey",
+      };
+    }
+  }
+
+  // Default: return null if no finding can be determined
+  return null;
 }
 
 /**
@@ -184,6 +228,7 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
     analysisState,
     productStatus,
     submittedCount: product.submittedCount,
+    statusCounts,
   };
 }
 

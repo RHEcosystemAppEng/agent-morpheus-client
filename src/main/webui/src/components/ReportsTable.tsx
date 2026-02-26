@@ -12,15 +12,14 @@ import {
   Icon,
   Spinner,
 } from "@patternfly/react-core";
-import { OutlinedQuestionCircleIcon } from "@patternfly/react-icons";
+import { OutlinedQuestionCircleIcon, ExclamationCircleIcon, InProgressIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td, TableText } from "@patternfly/react-table";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import {
   useReportsTableData,
   SortDirection,
   SortColumn,
-  getStatusItems,
-  isAnalysisCompleted,
+  getFinding,
 } from "../hooks/useReportsTableData";
 import ReportsToolbar from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
@@ -123,7 +122,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     productName: "SBOM Name",
     cveId: "CVE ID",
     repositoriesAnalyzed: "Repos Analyzed",
-    exploitIqStatus: "ExploitIQ Status",
+    finding: "Finding",
     submittedAt: "Submitted Date",
     completedAt: "Completion Date",
   };
@@ -235,7 +234,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           "SBOM Name",
           "CVE ID",
           "Repos Analyzed",
-          "ExploitIQ Status",
+          "Finding",
           "Submitted Date",
           "Completion Date",
         ]}
@@ -345,26 +344,22 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
               >
                 
                 <FlexItem>                  
-                    {columnNames.exploitIqStatus}                  
+                    {columnNames.finding}                  
                 </FlexItem>
                 <FlexItem>
                   <Popover
                     triggerAction="hover"
-                    aria-label="ExploitIQ Status information"
+                    aria-label="Finding information"
                     bodyContent={
                       <div>
-                        The status shows repository-level counts for this CVE.
-                        All status types are displayed with their counts:
-                        Vulnerable (red), Not Vulnerable (green), and Uncertain
-                        (orange). Any status with a count of 0 is hidden. The
-                        status is blank during analysis.
+                        This status indicates the highest risk level detected across all repositories analyzed. Not Vulnerable appears only when every repository is analyzed and found to be not vulnerable.
                       </div>
                     }
                   >
                     <Icon
                       role="button"
                       tabIndex={0}
-                      aria-label="ExploitIQ Status help"
+                      aria-label="Finding help"
                       style={{
                         cursor: "help",
                         color: "var(--pf-v6-global--Color--200)",
@@ -413,7 +408,6 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             </Tr>
           ) : (
             rows.map((row, index) => {
-              const isCompleted = isAnalysisCompleted(row.analysisState);
               return (
                 <Tr key={`${row.productId}-${row.cveId}-${index}`}>
                   <Td
@@ -442,25 +436,43 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                   <Td dataLabel={columnNames.repositoriesAnalyzed}>
                     {row.repositoriesAnalyzed}
                   </Td>
-                  <Td dataLabel={columnNames.exploitIqStatus}>
-                    {isCompleted
-                      ? (() => {
-                          const statusItems = getStatusItems(row.productStatus);
-                          return statusItems.length > 0 ? (
-                            <Flex gap={{ default: "gapXs" }}>
-                              {statusItems.map((item, index) => (
-                                <FlexItem key={index}>
-                                  <Label color={item.color}>
-                                    {item.count} {item.label}
-                                  </Label>
-                                </FlexItem>
-                              ))}
-                            </Flex>
-                          ) : (
-                            ""
-                          );
-                        })()
-                      : ""}
+                  <Td dataLabel={columnNames.finding}>
+                    {(() => {
+                      const finding = getFinding(row.productStatus, row.analysisState, row.statusCounts);
+                      if (!finding) {
+                        return "";
+                      }
+
+                      // Build label text with count if applicable
+                      const labelText = finding.count !== undefined 
+                        ? `${finding.count} ${finding.label}`
+                        : finding.label;
+
+                      // Determine label props based on finding type
+                      const labelProps: {
+                        color?: "red" | "green" | "orange" | "grey";
+                        variant?: "filled" | "outline";
+                        icon?: React.ReactNode;
+                      } = {};
+
+                      if (finding.color) {
+                        labelProps.color = finding.color;
+                      }
+                      if (finding.variant) {
+                        labelProps.variant = finding.variant;
+                      }
+                      if (finding.type === "in-progress") {
+                        labelProps.icon = <InProgressIcon />;
+                      } else if (finding.type === "failed") {
+                        labelProps.icon = <ExclamationCircleIcon />;
+                      }
+
+                      return (
+                        <Label {...labelProps}>
+                          {labelText}
+                        </Label>
+                      );
+                    })()}
                   </Td>
                   <Td dataLabel={columnNames.submittedAt}>
                     {row.submittedAt ? (
