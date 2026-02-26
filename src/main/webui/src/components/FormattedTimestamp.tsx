@@ -21,14 +21,21 @@ const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
 
   try {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    
+
     // Check if date is valid
     if (isNaN(dateObj.getTime())) {
       return <></>;
     }
 
     return (
-      <Timestamp date={dateObj} customFormat={customFormat} is12Hour />
+      // Override PatternFly's default font size so the timestamp inherits the font size
+      // from its parent context, ensuring it matches the surrounding text
+      <Timestamp
+        date={dateObj}
+        customFormat={customFormat}
+        is12Hour
+        style={{ fontSize: "unset" }}
+      />
     );
   } catch {
     return <></>;
@@ -36,4 +43,3 @@ const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
 };
 
 export default FormattedTimestamp;
-
