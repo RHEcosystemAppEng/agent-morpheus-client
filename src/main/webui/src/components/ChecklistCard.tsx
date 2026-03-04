@@ -8,7 +8,9 @@ import {
   AccordionItem,
   AccordionToggle,
   AccordionContent,
+  Content,
 } from "@patternfly/react-core";
+import ReactMarkdown from "react-markdown";
 import type { ReportOutput } from "../types/FullReport";
 
 interface ChecklistCardProps {
@@ -78,7 +80,9 @@ const ChecklistCard: React.FC<ChecklistCardProps> = ({ vuln }) => {
                     </span>
                   </AccordionToggle>
                   <AccordionContent id={`content_${key}`}>
-                    <p>{item.response}</p>
+                    <Content>
+                      <ReactMarkdown>{item.response}</ReactMarkdown>
+                    </Content>
                   </AccordionContent>
                 </AccordionItem>
               );
