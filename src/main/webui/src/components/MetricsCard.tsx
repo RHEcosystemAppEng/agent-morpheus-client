@@ -48,7 +48,7 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
     <GridItem span={4}>
       <Card ouiaId="BasicCard">
         <CardBody>
-          <Stack style={{ textAlign: "center" }}>
+          <Stack hasGutter style={{ textAlign: "center" }}>
             <FlexItem>
               <Icon
                 status={iconStatus}
@@ -59,19 +59,23 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
               </Icon>
             </FlexItem>
             <FlexItem>
-              {loading ? (
-                <Skeleton
-                  width="60%"
-                  height="2.5rem"
-                  screenreaderText="Loading metric value"
-                />
-              ) : (
-                <Title headingLevel="h2" size="3xl">
-                  {value}
-                </Title>
-              )}
+              <Stack style={{ gap: "0.25rem" }}>
+                <FlexItem>
+                  {loading ? (
+                    <Skeleton
+                      width="60%"
+                      height="2.5rem"
+                      screenreaderText="Loading metric value"
+                    />
+                  ) : (
+                    <Title headingLevel="h2" size="3xl">
+                      {value}
+                    </Title>
+                  )}
+                </FlexItem>
+                <FlexItem>{label}</FlexItem>
+              </Stack>
             </FlexItem>
-            <FlexItem>{label}</FlexItem>
           </Stack>
         </CardBody>
       </Card>
@@ -113,7 +117,7 @@ const MetricsCard: React.FC = () => {
     <Card>
       <CardTitle>
         <Title headingLevel="h2" size="lg">
-          Last Week Metrics
+          Last 7 Days Metrics
         </Title>
       </CardTitle>
       <CardBody>
@@ -168,8 +172,7 @@ const MetricsCard: React.FC = () => {
       </CardBody>
       <Divider />
       <CardFooter className="pf-m-center" style={{ textAlign: "center" }}>
-        {" "}
-        Based on the data from the last week. These metrics help identify false
+        Based on the data from the last 7 days. These metrics help identify false
         positives by tracking the percentage of analysis results that are
         correctly identified as not vulnerable.
       </CardFooter>
