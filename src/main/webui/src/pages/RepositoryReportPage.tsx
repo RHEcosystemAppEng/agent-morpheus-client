@@ -10,6 +10,7 @@ import {
   EmptyStateBody,
   Flex,
   FlexItem,
+  Alert,
 } from "@patternfly/react-core";
 import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useRepositoryReport } from "../hooks/useRepositoryReport";
@@ -161,6 +162,15 @@ const RepositoryReportPage: React.FC = () => {
               <DownloadDropdown report={report} cveId={cveId} />
             </FlexItem>
           </Flex>
+        </GridItem>
+        <GridItem>
+          <Alert
+            title="AI usage notice"
+            variant="warning"
+            isInline
+          >
+            Always review AI generated content prior to use.
+          </Alert>
         </GridItem>
         <GridItem>
           <DetailsCard

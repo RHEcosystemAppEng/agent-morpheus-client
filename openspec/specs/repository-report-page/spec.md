@@ -1,5 +1,8 @@
 # repository-report-page Specification
 
+## Description
+A detailed view page that displays comprehensive information about a specific repository report, including vulnerability analysis results, analysis state, and download options for VEX and report data.
+
 ## Purpose
 View individual repository report details for a specific CVE, image, and tag combination within an SBOM report or as a standalone component report.
 ## Requirements
@@ -61,6 +64,8 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 
 ### Requirement: Repository Report Page Content
 The repository report page SHALL display report details in a structured layout with cards showing different aspects of the repository report, including the analysis state of the report.
+
+The repository report page SHALL display an inline warning alert with the title "AI usage notice" and the message "Always review AI generated content prior to use." The alert SHALL be positioned below the page title and above the report detail cards to remind users to review AI-generated content.
 
 The repository report page SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/reports/{id}` endpoint, but only when the report status is not "completed" or "failed". When the report status is "completed" or "failed", auto-refresh SHALL stop.
 
