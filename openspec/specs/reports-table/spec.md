@@ -123,3 +123,17 @@ When a product has exactly one submitted report (`submittedCount === 1`), clicki
 - **AND** the loading indicator is removed once navigation occurs or the fallback behavior is triggered
 - **AND** only the clicked row shows the loading indicator (other rows remain unchanged)
 
+### Requirement: Reports Table Finding Column
+
+The reports table SHALL display a "Finding" column with one finding per product. Five states, in priority order: Vulnerable > Uncertain > In progress > Failed > Not vulnerable. Only the highest-priority finding is shown per row. Counts for Vulnerable and Uncertain only; no count for In progress, Not vulnerable, or Failed.
+
+#### Scenario: Finding column header
+- **WHEN** a user views the reports table
+- **THEN** the column header is "Finding" with a help icon and popover explaining priority and states
+
+#### Scenario: Finding by priority
+- **WHEN** a product has one or more vulnerable repositories → display "Vulnerable" + count, red (danger) label
+- **WHEN** a product has zero vulnerable and one or more uncertain → display "Uncertain" + count, orange (warning) label
+- **WHEN** a product has zero vulnerable, zero uncertain, and any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon
+- **WHEN** a product has zero vulnerable, zero uncertain, no in-progress reports, and any failed or expired report → display "Failed", no count, filled grey label and ExclamationCircleIcon
+- **WHEN** 100% of reports are completed and 100% are not vulnerable → display "Not vulnerable", no count, green (success) label
