@@ -7,6 +7,7 @@ import {
   GridItem,
   Title,
   Stack,
+  StackItem,
   FlexItem,
   Icon,
   Divider,
@@ -59,8 +60,8 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
               </Icon>
             </FlexItem>
             <FlexItem>
-              <Stack style={{ gap: "0.25rem" }}>
-                <FlexItem>
+              <Stack style={{ gap: "var(--pf-t--global--spacer--xs)" }}>
+                <StackItem>
                   {loading ? (
                     <Skeleton
                       width="60%"
@@ -72,8 +73,8 @@ const MetricsStatItem: React.FC<MetricsStatItemProps> = ({
                       {value}
                     </Title>
                   )}
-                </FlexItem>
-                <FlexItem>{label}</FlexItem>
+                </StackItem>
+                <StackItem>{label}</StackItem>
               </Stack>
             </FlexItem>
           </Stack>
