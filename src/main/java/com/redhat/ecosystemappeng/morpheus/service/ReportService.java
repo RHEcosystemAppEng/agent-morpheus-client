@@ -56,7 +56,8 @@ import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduler;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.NotFoundException;
+import org.jboss.resteasy.reactive.ClientWebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import static com.redhat.ecosystemappeng.morpheus.tracing.TextMapPropagatorImpl.getTraceIdFromContext;
 
@@ -296,7 +297,8 @@ public class ReportService {
     var created = repository.save(report.toPrettyString());
     var reportRequestId = new ReportRequestId(created.id(), scan.id());
     LOGGER.infof("Successfully processed request ID: %s", created.id());
-    LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
+    // TODO: Rollback this
+    // LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
     return new ReportData(reportRequestId, report);
   }
 
@@ -374,7 +376,16 @@ public class ReportService {
     }
     Set<String> languages;
     if (sourceLocation.contains(HOSTED_GITHUB_COM)) {
-      languages = getGitHubLanguages(sourceLocation);
+      var credential = request.credential();
+      if (Objects.nonNull(credential) && Objects.nonNull(credential.userName())) {
+        languages = getGitHubLanguages(sourceLocation, "Bearer " + credential.secretValue());
+      } else {
+        languages = getGitHubLanguages(sourceLocation);
+      }
+      if (languages.isEmpty() && Objects.nonNull(request.ecosystem()) && !request.ecosystem().trim().isEmpty()) {
+        LOGGER.infof("No languages detected from GitHub for %s, using ecosystem: %s", sourceLocation, request.ecosystem());
+        languages = buildLanguagesExtensions(request.ecosystem());
+      }
     }
     else {
       languages = buildLanguagesExtensions(request.ecosystem());
@@ -498,11 +509,31 @@ public class ReportService {
   private Set<String> getGitHubLanguages(String repository) {
     var repoName = repository.replace("https://github.com/", "");
     try {
-      LOGGER.debugf("looking for programming languages for repository %s", repoName);
+      LOGGER.debugf("looking for programming languages for repository %s (using system token)", repoName);
       return gitHubService.getLanguages(repoName).keySet();
-    } catch (NotFoundException e) {
-      LOGGER.infof(e, "Unable to retrieve languages for repository %s", repoName);
-      return Collections.emptySet();
+    } catch (ClientWebApplicationException e) {
+      int status = e.getResponse().getStatus();
+      if (status == Response.Status.NOT_FOUND.getStatusCode()) {
+        LOGGER.infof("Repository not found or is private (no user token provided): %s", repoName);
+        return Collections.emptySet();
+      }
+      if (status == Response.Status.UNAUTHORIZED.getStatusCode() || status == Response.Status.FORBIDDEN.getStatusCode()) {
+        LOGGER.infof("Insufficient permissions to access repository: %s (status=%d)", repoName, status);
+        return Collections.emptySet();
+      }
+      LOGGER.error("Unable to retrieve programming languages", e);
+      throw e;
+    } catch (Exception e) {
+      LOGGER.error("Unable to retrieve programming languages", e);
+      throw e;
+    }
+  }
+
+  private Set<String> getGitHubLanguages(String repository, String authorization) {
+    var repoName = repository.replace("https://github.com/", "");
+    try {
+      LOGGER.debugf("looking for programming languages for repository %s (with user token)", repoName);
+      return gitHubService.getLanguages(repoName, authorization).keySet();
     } catch (Exception e) {
       LOGGER.error("Unable to retrieve programming languages", e);
       throw e;

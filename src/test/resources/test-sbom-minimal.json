@@ -1,0 +1,13 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "name": "test-component",
+      "version": "1.0.0",
+      "type": "application"
+    }
+  },
+  "components": []
+}

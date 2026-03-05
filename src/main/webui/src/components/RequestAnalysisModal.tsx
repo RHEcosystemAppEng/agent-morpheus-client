@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   ModalBody,
@@ -18,8 +18,14 @@ import {
   FormHelperText,
   HelperText,
   HelperTextItem,
+  Switch,
+  Label,
+  Popover,
+  FormGroupLabelHelp,
+  Card,
+  CardBody,
 } from "@patternfly/react-core";
-import { UploadIcon } from "@patternfly/react-icons";
+import { UploadIcon, KeyIcon, SecurityIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router";
 import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
@@ -39,6 +45,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
+  const labelHelpRef = useRef<HTMLButtonElement>(null);
   const [cveId, setCveId] = useState("");
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
   const [showStatus, setShowStatus] = useState(false);
@@ -46,6 +53,11 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [cveIdError, setCveIdError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [isAuthenticationSecretChecked, setIsAuthenticationSecretChecked] = useState(false);
+  const [authenticationSecret, setAuthenticationSecret] = useState("");
+  const [authenticationSecretError, setAuthenticationSecretError] = useState<string | null>(null);
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState<string | null>(null);
 
   /**
    * Validates CVE ID format using the official CVE regex pattern
@@ -60,6 +72,23 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return "CVE ID format is invalid. Must match the official CVE pattern CVE-YYYY-NNNN+";
     }
     return null;
+  };
+
+  /**
+   * Auto-detects credential type based on content.
+   * Matches backend logic in InlineCredential.detectType()
+   * @param secret Secret value to analyze
+   * @returns "SSH_KEY" | "PAT" | null
+   */
+  const detectCredentialType = (secret: string): "SSH_KEY" | "PAT" | null => {
+    if (!secret || secret.trim() === "") {
+      return null;
+    }
+    // SSH key detection: starts with "-----BEGIN" and contains "-----END"
+    if (secret.startsWith("-----BEGIN") && secret.includes("-----END")) {
+      return "SSH_KEY";
+    }
+    return "PAT";
   };
 
   const handleCveIdChange = (
@@ -92,6 +121,54 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   };
 
+  const handlePrivateRepoSwitchChange = (
+    _event: React.FormEvent<HTMLInputElement>,
+    checked: boolean
+  ) => {
+    setIsAuthenticationSecretChecked(checked);
+    if (!checked) {
+      setAuthenticationSecret("");
+      setAuthenticationSecretError(null);
+      setUsername("");
+      setUsernameError(null);
+    }
+  };
+
+  const handleAuthenticationSecretChange = (
+    _event: React.FormEvent<HTMLInputElement>,
+    value: string
+  ) => {
+    setAuthenticationSecret(value);
+    if (authenticationSecretError) {
+      setAuthenticationSecretError(null);
+    }
+  };
+
+  const handleAuthenticationSecretBlur = () => {
+    const trimmedSecret = authenticationSecret.trim();
+    if (isAuthenticationSecretChecked && trimmedSecret === "") {
+      setAuthenticationSecretError("Required");
+    }
+  };
+
+  const handleUsernameChange = (
+    _event: React.FormEvent<HTMLInputElement>,
+    value: string
+  ) => {
+    setUsername(value);
+    if (usernameError) {
+      setUsernameError(null);
+    }
+  };
+
+  const handleUsernameBlur = () => {
+    const credentialType = detectCredentialType(authenticationSecret);
+    const trimmedUsername = username.trim();
+    if (credentialType === "PAT" && trimmedUsername === "") {
+      setUsernameError("Username is required for Personal Access Token authentication");
+    }
+  };
+
   // Show status once a file has been uploaded
   useEffect(() => {
     if (!showStatus && currentFiles.length > 0) {
@@ -99,7 +176,8 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   }, [currentFiles.length, showStatus]);
 
-  // Note: Submit button is only disabled during submission progress, not based on form validation
+  // Submit button is only disabled during submission or when private repo is enabled with empty auth secret
+  const isSubmitDisabled = isSubmitting || (isAuthenticationSecretChecked && authenticationSecret.trim() === "");
 
   /**
    * Handles errors from the API submission, setting field-specific or generic error messages
@@ -136,6 +214,8 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     setError(null);
     setCveIdError(null);
     setFileError(null);
+    setAuthenticationSecretError(null);
+    setUsernameError(null);
 
     // Validate required fields
     const trimmedCveId = cveId.trim();
@@ -158,6 +238,25 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       hasValidationErrors = true;
     }
 
+    // Validate authentication credentials if checkbox is checked
+    if (isAuthenticationSecretChecked) {
+      const trimmedSecret = authenticationSecret.trim();
+      if (trimmedSecret === "") {
+        setAuthenticationSecretError("Required");
+        hasValidationErrors = true;
+      } else {
+        const credentialType = detectCredentialType(trimmedSecret);
+        // Validate username for PAT
+        if (credentialType === "PAT") {
+          const trimmedUsername = username.trim();
+          if (trimmedUsername === "") {
+            setUsernameError("Username is required for Personal Access Token authentication");
+            hasValidationErrors = true;
+          }
+        }
+      }
+    }
+
     // Prevent API call if validation fails
     if (hasValidationErrors) {
       return;
@@ -166,11 +265,25 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const file = currentFiles[0];
-      const formData = {
+      const file = currentFiles[0]!;
+      const formData: {
+        cveId: string;
+        file: File;
+        secretValue?: string;
+        username?: string;
+      } = {
         cveId: cveId.trim(),
         file: file,
       };
+
+      // Add credentials if provided
+      if (isAuthenticationSecretChecked && authenticationSecret.trim() !== "") {
+        formData.secretValue = authenticationSecret.trim();
+        const credentialType = detectCredentialType(authenticationSecret);
+        if (credentialType === "PAT" && username.trim() !== "") {
+          formData.username = username.trim();
+        }
+      }
 
       const response: ReportData = await ProductEndpointService.postApiV1ProductsUploadCyclonedx({
         formData,
@@ -231,24 +344,20 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       <ModalHeader
         title="Request Analysis"
         labelId="request-analysis-modal-title"
-      />      
+      />
       <ModalBody>
         {error && (
           <Alert
             variant="danger"
             title="Error submitting analysis request"
             isInline
-            style={{ marginBottom: "var(--pf-v5-global--spacer--md)" }}
+            style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
           >
             {error}
           </Alert>
         )}
         <Form>
-          <FormGroup 
-            label="CVE ID" 
-            isRequired 
-            fieldId="cve-id"
-          >
+          <FormGroup label="CVE ID" isRequired fieldId="cve-id">
             <TextInput
               isRequired
               type="text"
@@ -267,16 +376,14 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
                 {cveIdError ? (
                   <HelperTextItem variant="error">{cveIdError}</HelperTextItem>
                 ) : (
-                  <HelperTextItem>Enter the CVE identifier to analyze (e.g. CVE-2024-50602)</HelperTextItem>
+                  <HelperTextItem>
+                    Enter the CVE identifier to analyze (e.g. CVE-2024-50602)
+                  </HelperTextItem>
                 )}
               </HelperText>
             </FormHelperText>
           </FormGroup>
-          <FormGroup 
-            label="SBOM file" 
-            isRequired 
-            fieldId="sbom-file"
-          >
+          <FormGroup label="SBOM file" isRequired fieldId="sbom-file">
             <MultipleFileUpload
               onFileDrop={handleFileDrop}
               dropzoneProps={{
@@ -323,6 +430,101 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
               </FormHelperText>
             )}
           </FormGroup>
+          <Switch
+            id="private-repo-switch"
+            label="Private repository"
+            isChecked={isAuthenticationSecretChecked}
+            onChange={handlePrivateRepoSwitchChange}
+            isDisabled={isSubmitting}
+          />
+          {isAuthenticationSecretChecked && (
+            <Card
+              variant="secondary"
+            >
+              <CardBody>
+                <FormGroup
+                  label="Authentication secret"
+                  isRequired
+                  fieldId="authentication-secret"
+                  labelHelp={
+                    <Popover
+                      triggerRef={labelHelpRef}
+                      bodyContent="Provide an SSH private key or Personal Access Token to authenticate with the private repository."
+                    >
+                      <FormGroupLabelHelp
+                        ref={labelHelpRef}
+                        aria-label="More info about authentication secret"
+                      />
+                    </Popover>
+                  }
+                >
+                  <TextInput
+                    isRequired
+                    type="password"
+                    id="authentication-secret"
+                    name="authentication-secret"
+                    value={authenticationSecret}
+                    onChange={handleAuthenticationSecretChange}
+                    onBlur={handleAuthenticationSecretBlur}
+                    isDisabled={isSubmitting}
+                    validated={authenticationSecretError ? "error" : "default"}
+                  />
+                  <FormHelperText>
+                    <HelperText>
+                      {authenticationSecretError ? (
+                        <HelperTextItem variant="error">
+                          {authenticationSecretError}
+                        </HelperTextItem>
+                      ) : (
+                        <HelperTextItem>
+                          Accepts SSH private keys or Personal Access Tokens. Type will be auto-detected.
+                        </HelperTextItem>
+                      )}
+                    </HelperText>
+                  </FormHelperText>
+                  {detectCredentialType(authenticationSecret) === "SSH_KEY" && (
+                    <Label color="purple" icon={<KeyIcon />} style={{ marginTop: "var(--pf-t--global--spacer--sm)" }}>
+                      SSH key detected
+                    </Label>
+                  )}
+                  {detectCredentialType(authenticationSecret) === "PAT" && (
+                    <Label color="teal" icon={<SecurityIcon />} style={{ marginTop: "var(--pf-t--global--spacer--sm)" }}>
+                      Personal access token detected
+                    </Label>
+                  )}
+                </FormGroup>
+                {detectCredentialType(authenticationSecret) === "PAT" && (
+                  <FormGroup
+                    label="Username"
+                    isRequired
+                    fieldId="username"
+                    style={{ marginTop: "var(--pf-t--global--spacer--md)" }}
+                  >
+                    <TextInput
+                      isRequired
+                      type="text"
+                      id="username"
+                      name="username"
+                      value={username}
+                      onChange={handleUsernameChange}
+                      onBlur={handleUsernameBlur}
+                      isDisabled={isSubmitting}
+                      validated={usernameError ? "error" : "default"}
+                    />
+                    {usernameError && (
+                      <FormHelperText>
+                        <HelperText>
+                          <HelperTextItem variant="error">
+                            {usernameError}
+                          </HelperTextItem>
+                        </HelperText>
+                      </FormHelperText>
+                    )}
+                  </FormGroup>
+                )}
+              </CardBody>
+            </Card>
+          )}
         </Form>
       </ModalBody>
       <ModalFooter>
@@ -330,7 +532,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           key="submit"
           variant="primary"
           onClick={handleSubmit}
-          isDisabled={isSubmitting}
+          isDisabled={isSubmitDisabled}
           isLoading={isSubmitting}
         >
           {isSubmitting ? "Submitting..." : "Submit Analysis Request"}

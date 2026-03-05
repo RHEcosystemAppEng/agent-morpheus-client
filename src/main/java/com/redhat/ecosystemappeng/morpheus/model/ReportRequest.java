@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.SbomInfoType;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.validation.Valid;
+
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 
 @Schema(name = "ReportRequest", description = "A single report request")
@@ -23,6 +26,10 @@ public record ReportRequest(
     Collection<String> vulnerabilities, 
     @Schema(description = "Image data (required if SBOM is not provided)", type = SchemaType.OBJECT, implementation = Image.class)
     JsonNode image,
+    @Schema(description = "Credential for private repository access (optional, required only for private repository access)")
+    @Valid
+    @JsonView(Views.Private.class)
+    InlineCredential credential,
     @Schema(
         description = "SBOM data (required if image is not provided)",
         type = SchemaType.OBJECT,
@@ -58,5 +65,4 @@ public record ReportRequest(
     String ecosystem,
     @Schema(description = "Manifest file path")
     String manifestPath) {
-
 }

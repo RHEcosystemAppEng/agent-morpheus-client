@@ -55,6 +55,15 @@ public class CycloneDxUploadService {
    * @return ReportRequest ready for processing
    * @throws ValidationException if validation fails (contains field-specific error messages)
    * @throws IOException if file cannot be read
+   *
+   * TODO: Add SPDX SBOM format support
+   * Currently only CycloneDX format is supported. SPDX is another widely-used SBOM standard.
+   * When adding SPDX support, consider:
+   * - SPDX JSON format parsing (different structure than CycloneDX)
+   * - SPDX → CycloneDX conversion (or add parallel SPDX processing pipeline)
+   * - Update ProductEndpoint API documentation to reflect both formats
+   * - Update RequestAnalysisModal UI helper text to mention SPDX support
+   * - Consider credential handling for SPDX SBOMs with private repository references
    */
   public ReportRequest processUpload(String cveId, InputStream fileInputStream) throws IOException {
     LOGGER.info("Processing CycloneDX file upload for CVE: " + cveId);
@@ -146,6 +155,7 @@ public class CycloneDxUploadService {
       "image", // analysisType
       java.util.Collections.singletonList(cveId), // vulnerabilities
       null, // image
+      null, // credential
       sbomJson, // sbom
       com.redhat.ecosystemappeng.morpheus.model.morpheus.SbomInfoType.MANUAL, // sbomInfoType
       metadata, // metadata with product_id and sbom_name

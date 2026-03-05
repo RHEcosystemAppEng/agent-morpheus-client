@@ -47,7 +47,7 @@ export class ProductEndpointService {
     }
     /**
      * Upload CycloneDX file for analysis
-     * Accepts a CVE ID and CycloneDX JSON file, validates them, and queues the report for analysis
+     * Accepts a CVE ID and CycloneDX JSON file with optional credentials for private repository access, validates them, and queues the report for analysis
      * @returns ReportData File uploaded and queued for analysis
      * @throws ApiError
      */
@@ -57,6 +57,8 @@ export class ProductEndpointService {
         formData: {
             cveId?: string;
             file?: Blob;
+            secretValue?: string;
+            username?: string;
         },
     }): CancelablePromise<ReportData> {
         return __request(OpenAPI, {

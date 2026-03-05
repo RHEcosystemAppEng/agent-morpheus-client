@@ -1,10 +1,10 @@
 # request-analysis-modal Specification
 
 ## Purpose
-TBD - created by archiving change connect-request-analysis-modal-to-upload-api. Update Purpose after archive.
+Provides a modal interface for users to request analysis of CycloneDX Software Bill of Materials (SBOM) files with CVE ID validation and optional private repository authentication credentials.
 ## Requirements
 ### Requirement: Request Analysis Modal Submission
-The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/api/v1/products/upload-cyclonedx` API endpoint and navigate to the repository report page upon successful submission. When validation errors occur, the modal SHALL display field-specific error messages under the corresponding form fields. The modal SHALL validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$` when the field loses focus (blur event), when the user presses Enter in the field, or when the user clicks submit, and display an error message if the format is invalid. When the user clicks submit, the modal SHALL validate that both CVE ID and file fields are provided and display "Required" error messages under any empty fields. The modal SHALL prevent the API call when CVE ID format is invalid or required fields are missing. The submit button SHALL only be disabled during submission progress, not based on form validation state.
+The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/api/v1/products/upload-cyclonedx` API endpoint and navigate to the repository report page upon successful submission. When validation errors occur, the modal SHALL display field-specific error messages under the corresponding form fields. The modal SHALL validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$` when the field loses focus (blur event), when the user presses Enter in the field, or when the user clicks submit, and display an error message if the format is invalid. When the user clicks submit, the modal SHALL validate that both CVE ID and file fields are provided and display "Required" error messages under any empty fields. The modal SHALL prevent the API call when CVE ID format is invalid or required fields are missing. The submit button SHALL be disabled during submission progress or when the private repository switch is on and the authentication secret is empty.
 
 #### Scenario: Successful submission and navigation
 - **WHEN** a user fills in a valid CVE ID and selects a valid CycloneDX file in the request analysis modal
@@ -68,8 +68,63 @@ The request analysis modal SHALL submit the CVE ID and CycloneDX file to the `/a
 
 #### Scenario: Submit button and validation behavior
 - **WHEN** the request analysis modal is displayed
-- **THEN** the submit button is enabled regardless of form field values
-- **AND** the submit button is only disabled when submission is in progress (`isSubmitting` state is true)
+- **THEN** the submit button is enabled regardless of CVE ID and file field values
+- **AND** the submit button is disabled when submission is in progress (`isSubmitting` state is true)
+- **AND** the submit button is disabled when the private repository switch is on and the authentication secret field is empty
 - **AND** CVE ID format validation errors are shown on blur, Enter key press, or submit click
 - **AND** required field validation errors are shown when the user clicks submit
+
+### Requirement: Private Repository Authentication
+The request analysis modal SHALL provide optional authentication credentials for private repository access. When the "Private repository" switch is toggled on, the modal SHALL display an authentication secret field inside a secondary Card. The modal SHALL automatically detect the credential type (SSH private key or Personal Access Token) based on the secret value content and display a colored Label indicator showing the detected type. For Personal Access Token credentials, the modal SHALL display a username field. The modal SHALL validate that the authentication secret is provided when the switch is on, and that the username is provided when a Personal Access Token is detected. The submit button SHALL be disabled when the switch is on and the authentication secret is empty. All credential fields and errors SHALL be cleared when the switch is toggled off.
+
+#### Scenario: Private repository switch
+- **WHEN** a user toggles the "Private repository" switch on in the request analysis modal
+- **THEN** the modal displays an authentication secret field (password input type) inside a secondary Card
+- **AND** the authentication secret field is marked as required
+- **AND** the authentication secret field has a label help popover explaining "Provide an SSH private key or Personal Access Token to authenticate with the private repository."
+- **AND** helper text below the field reads "Accepts SSH private keys or Personal Access Tokens. Type will be auto-detected."
+- **AND** the submit button is disabled until the authentication secret is provided
+
+#### Scenario: Auto-detect SSH private key
+- **WHEN** a user enters a value in the authentication secret field that starts with "-----BEGIN" and contains "-----END"
+- **THEN** the modal automatically detects the credential type as SSH private key
+- **AND** displays a purple Label with a key icon below the field showing "SSH key detected"
+- **AND** does NOT display the username field (username is not required for SSH keys)
+
+#### Scenario: Auto-detect Personal Access Token
+- **WHEN** a user enters a value in the authentication secret field that does NOT start with "-----BEGIN"
+- **THEN** the modal automatically detects the credential type as Personal Access Token
+- **AND** displays a teal Label with a security icon below the field showing "Personal access token detected"
+- **AND** displays a username field below the authentication secret field
+- **AND** the username field is marked as required
+
+#### Scenario: Authentication secret validation
+- **WHEN** the "Private repository" switch is on
+- **AND** the user clicks submit without entering an authentication secret
+- **THEN** the modal displays a "Required" error message under the authentication secret field
+- **AND** prevents the API call from being made
+- **AND** the modal remains open with form data preserved
+
+#### Scenario: Username validation for PAT
+- **WHEN** the "Private repository" switch is on
+- **AND** the user enters a Personal Access Token (detected type is PAT)
+- **AND** the user clicks submit without entering a username
+- **THEN** the modal displays an error message "Username is required for Personal Access Token authentication" under the username field
+- **AND** prevents the API call from being made
+- **AND** the modal remains open with form data preserved
+
+#### Scenario: Clear credentials on switch off
+- **WHEN** the "Private repository" switch is on
+- **AND** the user has entered values in the authentication secret field and/or username field
+- **AND** the user toggles the "Private repository" switch off
+- **THEN** the authentication secret value is cleared
+- **AND** the username value is cleared
+- **AND** all authentication-related error messages are cleared
+- **AND** the authentication secret and username fields are no longer displayed
+
+#### Scenario: Clear authentication errors on field modification
+- **WHEN** a user has an authentication secret error or username error displayed
+- **AND** the user modifies the corresponding field (enters text in authentication secret or username field)
+- **THEN** the error message for that field is cleared
+- **AND** the error message no longer displays under the modified field
 
