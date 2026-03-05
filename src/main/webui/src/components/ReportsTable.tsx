@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import {
   Label,
+  LabelProps,
   Flex,
   FlexItem,
   Alert,
@@ -449,11 +450,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                         : finding.label;
 
                       // Determine label props based on finding type
-                      const labelProps: {
-                        color?: "red" | "green" | "orange" | "grey";
-                        variant?: "filled" | "outline";
-                        icon?: React.ReactNode;
-                      } = {};
+                      const labelProps: Partial<LabelProps> = {};
 
                       if (finding.color) {
                         labelProps.color = finding.color;

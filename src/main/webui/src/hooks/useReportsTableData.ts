@@ -110,20 +110,7 @@ export function getFinding(
   const completedCount = statusCounts["completed"] || 0;
   const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
 
-  // Priority 4: Not vulnerable (100% analyzed, 0 vulnerable, 0 uncertain, 1+ not vulnerable, no failed)
-  if (analysisState === "completed" && productStatus.notVulnerableCount > 0 && failedCount === 0) {
-    // Only show "Not vulnerable" if all reports are completed (no failed/expired)
-    if (completedCount === totalCount && totalCount > 0) {
-      return {
-        type: "not-vulnerable",
-        label: "Not vulnerable",
-        count: productStatus.notVulnerableCount,
-        color: "green",
-      };
-    }
-  }
-
-  // Priority 5: Failed (100% failed/expired OR some failed and rest not vulnerable)
+  // Priority 4: Failed (100% failed/expired OR some failed and rest not vulnerable)
   if (failedCount > 0) {
     // All failed/expired OR some failed and rest completed with not vulnerable
     if (failedCount === totalCount || (failedCount > 0 && completedCount > 0 && productStatus.notVulnerableCount > 0)) {
@@ -136,13 +123,26 @@ export function getFinding(
     }
   }
 
+  // Priority 5: Not vulnerable (100% complete AND 100% not vulnerable)
+  if (
+    analysisState === "completed" &&
+    totalCount > 0 &&
+    productStatus.notVulnerableCount === totalCount
+  ) {
+    return {
+      type: "not-vulnerable",
+      label: "Not vulnerable",
+      color: "green",
+    };
+  }
+
   // Default: return null if no finding can be determined
   return null;
 }
 
 /**
  * Pure function to determine analysis state from statusCounts
- * Returns "completed" if all reports are completed, "analysing" otherwise
+ * Returns "completed" if all reports are completed, "in-progress" when any report is pending, queued, or sent
  */
 export function getAnalysisStateFromStatusCounts(
   statusCounts: Record<string, number>
@@ -158,13 +158,13 @@ export function getAnalysisStateFromStatusCounts(
     return "completed";
   }
 
-  // Check for analysing states
-  const analysingStates = ["pending", "queued", "sent", "analysing"];
-  const hasAnalysing = analysingStates.some(
+  // In-progress states: pending, queued, sent
+  const inProgressStates = ["pending", "queued", "sent"];
+  const hasInProgress = inProgressStates.some(
     (state) => (statusCounts[state] || 0) > 0
   );
 
-  return hasAnalysing ? "analysing" : "completed";
+  return hasInProgress ? "in-progress" : "completed";
 }
 
 /**
