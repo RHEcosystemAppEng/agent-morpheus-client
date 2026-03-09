@@ -582,6 +582,11 @@ public class ReportRepositoryService {
           handleMultipleValues(e.getValue(), (value) -> 
             Filters.eq("metadata.product_id", value), filters);
           break;
+        case "withoutProduct":
+          if (Boolean.TRUE.toString().equalsIgnoreCase(e.getValue())) {
+            filters.add(Filters.exists("metadata." + PRODUCT_ID, false));
+          }
+          break;
         case "gitRepo":
           var gitRepoValues = e.getValue().split(",");
           if (gitRepoValues.length == 1) {

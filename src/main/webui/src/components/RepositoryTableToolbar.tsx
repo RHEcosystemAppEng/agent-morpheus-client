@@ -44,7 +44,7 @@ interface RepositoryTableToolbarProps {
 type ActiveAttribute =
   | "Repository Name"
   | "Analysis State"
-  | "ExploitIQ Status";
+  | "Finding";
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   repositorySearchValue,
@@ -116,7 +116,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
                 attributes={[
                   "Repository Name",
                   "Analysis State",
-                  "ExploitIQ Status",
+                  "Finding",
                 ]}
                 onAttributeChange={(attr) =>
                   setActiveAttribute(attr as ActiveAttribute)
@@ -154,12 +154,12 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               labels={exploitIqStatusFilter}
               deleteLabel={handleExploitIqStatusFilterDelete}
               deleteLabelGroup={handleFilterDeleteGroup}
-              categoryName="ExploitIQ Status"
-              showToolbarItem={activeAttribute === "ExploitIQ Status"}
+              categoryName="Finding"
+              showToolbarItem={activeAttribute === "Finding"}
             >
               <CheckboxFilter
-                id="exploit-iq-status-menu"
-                label="Filter by ExploitIQ Status"
+                id="finding-menu"
+                label="Filter by Finding"
                 options={ALL_EXPLOIT_IQ_STATUS_OPTIONS}
                 selected={exploitIqStatusFilter}
                 onSelect={onExploitIqStatusFilterChange}

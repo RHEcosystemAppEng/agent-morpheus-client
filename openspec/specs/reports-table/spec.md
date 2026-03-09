@@ -137,3 +137,22 @@ The reports table SHALL display a "Finding" column with one finding per product.
 - **WHEN** a product has zero vulnerable, zero uncertain, and any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon
 - **WHEN** a product has zero vulnerable, zero uncertain, no in-progress reports, and any failed or expired report → display "Failed", no count, filled grey label and ExclamationCircleIcon
 - **WHEN** 100% of reports are completed and 100% are not vulnerable → display "Not vulnerable", no count, green (success) label
+
+### Requirement: Reports Page Tabs and Single Repositories
+The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Repositories**. Selecting a tab SHALL switch content and update the URL: `/reports` for SBOMs, `/reports/single-repositories` for Single Repositories. Direct navigation to either URL SHALL show the corresponding tab. Spacing between tab bar and content SHALL use PatternFly Stack/StackItem with the standard spacer.
+
+#### Scenario: Tabs and URL
+- **WHEN** a user is on the Reports page
+- **THEN** two tabs are shown; SBOMs tab shows the product-level reports table (filtering, sorting, pagination as in Reports Table Display/Filtering); Single Repositories tab shows a table of reports without `report.metadata.product_id`
+- **AND** clicking a tab navigates to its URL; browser Back/Forward SHALL switch tabs correctly
+
+#### Scenario: Single Repositories table
+- **WHEN** the Single Repositories tab is active
+- **THEN** a table is shown with columns: Repository, Commit ID, Finding, Completed, Analysis state, CVE Repository Report; structure and toolbar match `RepositoryReportsTable`
+- **AND** data is from `/api/v1/reports` with a parameter returning only reports where `report.metadata.product_id` is absent; pagination, sorting, and filtering are server-side
+- **AND** "View" navigates to `/reports/component/:cveId/:reportId`; empty and error states are displayed when applicable
+
+#### Scenario: Implementation and test data
+- **WHEN** implementing the feature
+- **THEN** Single Repositories tab content SHALL live in a dedicated component (e.g. `SingleRepositoriesTable.tsx`) reusing patterns from `RepositoryReportsTable`
+- **AND** devservices/test data SHALL include at least one report without `report.metadata.product_id` (e.g. under `src/test/resources/devservices/reports/`) for verification

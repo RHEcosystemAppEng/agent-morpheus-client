@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import {
   Label,
   LabelProps,
@@ -12,6 +12,11 @@ import {
   Popover,
   Icon,
   Spinner,
+  Tabs,
+  Tab,
+  TabTitleText,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
 import { OutlinedQuestionCircleIcon, ExclamationCircleIcon, InProgressIcon } from "@patternfly/react-icons";
 import { Table, Thead, Tr, Th, Tbody, Td, TableText } from "@patternfly/react-table";
@@ -29,6 +34,7 @@ import TableEmptyState from "./TableEmptyState";
 import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
 import type { Report } from "../generated-client/models/Report";
 import { useExecuteApi } from "../hooks/useExecuteApi";
+import SingleRepositoriesTable from "./SingleRepositoriesTable";
 
 const PER_PAGE = 10;
 
@@ -62,6 +68,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   onSortChange,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const activeTabKey = location.pathname === "/reports/single-repositories" ? 1 : 0;
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<SortColumn>(
     propSortColumn || "submittedAt"
@@ -226,32 +234,83 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
   const activeSortIndex = getColumnIndex(sortColumn);
   const activeSortDirection = sortDirection;
 
+  const handleTabClick = (
+    _event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>,
+    tabIndex: string | number
+  ) => {
+    if (tabIndex === 0) {
+      navigate("/reports");
+    } else if (tabIndex === 1) {
+      navigate("/reports/single-repositories");
+    }
+  };
+
   if (loading) {
     return (
-      <SkeletonTable
-        rowsCount={10}
-        columns={[
-          "Report ID",
-          "SBOM Name",
-          "CVE ID",
-          "Repos Analyzed",
-          "Finding",
-          "Submitted Date",
-          "Completion Date",
-        ]}
-      />
+      <Tabs
+        activeKey={activeTabKey}
+        onSelect={handleTabClick}
+        aria-label="Reports view tabs"
+        role="region"
+      >
+        <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl))" }}>
+            <SkeletonTable
+            rowsCount={10}
+            columns={[
+              "Report ID",
+              "SBOM Name",
+              "CVE ID",
+              "Repos Analyzed",
+              "Finding",
+              "Submitted Date",
+              "Completion Date",
+            ]}
+          />
+            </StackItem>
+          </Stack>
+        </Tab>
+        <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl))" }}>
+              <SingleRepositoriesTable />
+            </StackItem>
+          </Stack>
+        </Tab>
+      </Tabs>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardBody>
-          <Alert variant={AlertVariant.danger} title="Error loading reports">
-            {getErrorMessage(error)}
-          </Alert>
-        </CardBody>
-      </Card>
+      <Tabs
+        activeKey={activeTabKey}
+        onSelect={handleTabClick}
+        aria-label="Reports view tabs"
+        role="region"
+      >
+        <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm))" }}>
+          <Card>
+            <CardBody>
+              <Alert variant={AlertVariant.danger} title="Error loading reports">
+                {getErrorMessage(error)}
+              </Alert>
+            </CardBody>
+          </Card>
+            </StackItem>
+          </Stack>
+        </Tab>
+        <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
+              <SingleRepositoriesTable />
+            </StackItem>
+          </Stack>
+        </Tab>
+      </Tabs>
     );
   }
 
@@ -259,7 +318,57 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
 
   if (rows.length === 0 && !loading) {
     return (
-      <>
+      <Tabs
+        activeKey={activeTabKey}
+        onSelect={handleTabClick}
+        aria-label="Reports view tabs"
+        role="region"
+      >
+        <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
+          <ReportsToolbar
+            searchValue={searchValue}
+            cveSearchValue={cveSearchValue}
+            filters={filters}
+            activeAttribute={activeAttribute}
+            onSearchChange={onSearchChange}
+            onCveSearchChange={onCveSearchChange}
+            onFiltersChange={onFiltersChange}
+            onActiveAttributeChange={onActiveAttributeChange}
+            onClearFilters={onClearFilters}
+            pagination={{
+              itemCount: totalItems,
+              page,
+              perPage: PER_PAGE,
+              onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
+            }}
+          />
+          <TableEmptyState columnCount={7} titleText="No reports found" />
+            </StackItem>
+          </Stack>
+        </Tab>
+        <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
+          <Stack hasGutter>
+            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
+              <SingleRepositoriesTable />
+            </StackItem>
+          </Stack>
+        </Tab>
+      </Tabs>
+    );
+  }
+
+  return (
+    <Tabs
+      activeKey={activeTabKey}
+      onSelect={handleTabClick}
+      aria-label="Reports view tabs"
+      role="region"
+    >
+      <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
+        <Stack hasGutter>
+          <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
         <ReportsToolbar
           searchValue={searchValue}
           cveSearchValue={cveSearchValue}
@@ -277,31 +386,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
             onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
           }}
         />
-        <TableEmptyState columnCount={7} titleText="No reports found" />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <ReportsToolbar
-        searchValue={searchValue}
-        cveSearchValue={cveSearchValue}
-        filters={filters}
-        activeAttribute={activeAttribute}
-        onSearchChange={onSearchChange}
-        onCveSearchChange={onCveSearchChange}
-        onFiltersChange={onFiltersChange}
-        onActiveAttributeChange={onActiveAttributeChange}
-        onClearFilters={onClearFilters}
-        pagination={{
-          itemCount: totalItems,
-          page,
-          perPage: PER_PAGE,
-          onSetPage: (_event: unknown, newPage: number) => setPage(newPage),
-        }}
-      />
-      <Table aria-label="Reports table">
+        <Table aria-label="Reports table">
         <Thead>
           <Tr>
             <Th width={10}>
@@ -491,7 +576,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
           )}
         </Tbody>
       </Table>
-    </>
+          </StackItem>
+        </Stack>
+      </Tab>
+      <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
+        <Stack hasGutter>
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm))" }}>
+            <SingleRepositoriesTable />
+          </StackItem>
+        </Stack>
+      </Tab>
+    </Tabs>
   );
 };
 

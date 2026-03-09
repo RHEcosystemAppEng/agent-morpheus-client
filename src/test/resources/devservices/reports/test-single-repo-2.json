@@ -1,0 +1,59 @@
+{
+  "_id": {
+    "$oid": "507f1f77bcf86cd79943909a"
+  },
+  "input": {
+    "scan": {
+      "id": "test-single-repo-2",
+      "type": null,
+      "started_at": "2026-03-07T10:00:00.000000",
+      "completed_at": "2026-03-08T10:00:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-88888",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "single-repo-image-2",
+      "tag": "v1.0.0",
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/single-repo-app-b",
+          "ref": "def5678"
+        }
+      ]
+    }
+  },
+  "output": {
+    "analysis": [
+      {
+        "vuln_id": "CVE-2024-88888",
+        "intel_score": 0,
+        "justification": {
+          "status": "FALSE",
+          "label": "not vulnerable"
+        }
+      }
+    ],
+    "vex": null
+  },
+  "metadata": {
+    "submitted_at": "2026-03-07T09:00:00.000000Z",
+    "sent_at": "2026-03-07T09:00:00.000000Z",
+    "user": "test@example.com"
+  },
+  "info": {}
+}

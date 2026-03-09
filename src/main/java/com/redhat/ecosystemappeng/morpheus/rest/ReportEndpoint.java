@@ -332,6 +332,10 @@ public class ReportEndpoint {
       )
       @QueryParam("productId") String productId,
       @Parameter(
+        description = "When true, return only reports that have no metadata.product_id (single repositories not part of a product)"
+      )
+      @QueryParam("withoutProduct") @DefaultValue("false") String withoutProduct,
+      @Parameter(
         description = "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN"
       )
       @QueryParam("exploitIqStatus") String exploitIqStatus) {

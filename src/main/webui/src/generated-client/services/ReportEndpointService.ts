@@ -76,6 +76,7 @@ export class ReportEndpointService {
         sortBy,
         status,
         vulnId,
+        withoutProduct,
     }: {
         /**
          * Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN
@@ -117,6 +118,10 @@ export class ReportEndpointService {
          * Filter by vulnerability ID (CVE ID)
          */
         vulnId?: string,
+        /**
+         * When true, return only reports that have no metadata.product_id (single repositories not part of a product)
+         */
+        withoutProduct?: boolean,
     }): CancelablePromise<Array<Report>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -132,6 +137,7 @@ export class ReportEndpointService {
                 'sortBy': sortBy,
                 'status': status,
                 'vulnId': vulnId,
+                'withoutProduct': withoutProduct,
             },
             errors: {
                 500: `Internal server error`,

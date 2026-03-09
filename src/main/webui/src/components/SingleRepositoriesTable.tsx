@@ -1,10 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Button,
   Alert,
   AlertVariant,
+  Bullseye,
+  EmptyState,
+  EmptyStateVariant,
 } from "@patternfly/react-core";
+import { SearchIcon } from "@patternfly/react-icons";
 import {
   Table,
   TableText,
@@ -15,36 +19,38 @@ import {
   Td,
 } from "@patternfly/react-table";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
-import { Report } from "../generated-client";
-import type { ProductSummary } from "../generated-client/models/ProductSummary";
+import type { Report } from "../generated-client/models/Report";
 import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
-import TableEmptyState from "./TableEmptyState";
 import ReportStatusLabel from "./ReportStatusLabel";
 import CveStatus from "./CveStatus";
-import { useRepositoryReports } from "../hooks/useRepositoryReports";
+import { useSingleRepositoryReports } from "../hooks/useSingleRepositoryReports";
 
 const PER_PAGE = 10;
+const SCAN_STATE_OPTIONS = [
+  "completed",
+  "failed",
+  "queued",
+  "sent",
+  "pending",
+  "expired",
+];
 
 type SortColumn = "gitRepo" | "completedAt" | "state";
 type SortDirection = "asc" | "desc";
 
-// Shared CSS class for table cells with ellipsis truncation
-// Using PF6 TableText component with wrapModifier="truncate" is preferred
-
-interface RepositoryReportsTableProps {
-  productId: string;
-  cveId: string;
-  product: ProductSummary;
+function renderFinding(report: Report): React.ReactNode {
+  const firstVuln = report.vulns?.[0];
+  if (!firstVuln?.justification?.status) return null;
+  return <CveStatus status={firstVuln.justification.status} />;
 }
 
-const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
-  productId,
-  cveId,
-  product,
-}) => {
-  const isComponentRoute = !product?.data?.id; // Component route doesn't have productId
+function getCveIdForReport(report: Report): string | undefined {
+  return report.vulns?.[0]?.vulnId;
+}
+
+const SingleRepositoriesTable: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
@@ -54,32 +60,14 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
     []
   );
-  const [repositorySearchValue, setRepositorySearchValue] =
-    useState<string>("");
+  const [repositorySearchValue, setRepositorySearchValue] = useState<string>("");
 
-  const scanStateOptions = useMemo(() => {
-    const statusCounts = product.summary?.statusCounts || {};
-    return Object.keys(statusCounts).sort();
-  }, [product.summary?.statusCounts]);
-
-  // Render ExploitIQ status using CveStatus component
-  const renderExploitIqStatus = (report: Report) => {
-    if (!report.vulns || !cveId) return null;
-    const vuln = report.vulns.find((v) => v.vulnId === cveId);
-    if (!vuln?.justification?.status) return null;
-    
-    return <CveStatus status={vuln.justification.status} />;
-  };
-
-  // Use the dedicated hook for repository reports with auto-refresh
   const {
     data: reports,
     loading,
     error,
     pagination,
-  } = useRepositoryReports({
-    productId,
-    cveId,
+  } = useSingleRepositoryReports({
     page,
     perPage,
     sortColumn,
@@ -87,7 +75,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     scanStateFilter,
     exploitIqStatusFilter,
     repositorySearchValue,
-    product,
   });
 
   const displayReports = reports || [];
@@ -134,7 +121,6 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     setPage(1);
   };
 
-  // Map sort columns to their column indices
   const getColumnIndex = (column: SortColumn): number => {
     switch (column) {
       case "gitRepo":
@@ -148,17 +134,15 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     }
   };
 
-  // Get the current sort index and direction for PatternFly
   const activeSortIndex = getColumnIndex(sortColumn);
   const activeSortDirection = sortDirection;
-  // Use ReportStatusLabel component instead of reimplementing
 
   const toolbar = (
     <RepositoryTableToolbar
       repositorySearchValue={repositorySearchValue}
       onRepositorySearchChange={handleRepositorySearchChange}
       scanStateFilter={scanStateFilter}
-      scanStateOptions={scanStateOptions}
+      scanStateOptions={SCAN_STATE_OPTIONS}
       exploitIqStatusFilter={exploitIqStatusFilter}
       loading={loading}
       onScanStateFilterChange={handleScanStateFilterChange}
@@ -188,7 +172,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   }
 
-  let content;
+  let content: React.ReactNode;
   if (loading) {
     content = (
       <SkeletonTable
@@ -204,14 +188,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     );
   } else if (!reports || reports.length === 0) {
     content = (
-      <TableEmptyState
-        columnCount={6}
-        titleText="No repository reports found"
-      />
-    );
-  } else {
-    content = (
-      <Table>
+      <Table aria-label="Single repositories table">
         <Thead>
           <Tr>
             <Th
@@ -241,83 +218,134 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
             >
               Completed
             </Th>
-            <Th>
-              Analysis state
-            </Th>
+            <Th>Analysis state</Th>
             <Th>CVE Repository Report</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {displayReports.map((report) => (
-            <Tr key={report.id}>
-              <Td dataLabel="Repository">
-                <TableText wrapModifier="truncate">
-                  {report.gitRepo ? (
-                    <a
-                      href={report.gitRepo}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {report.gitRepo}
-                    </a>
-                  ) : (
-                    <span>{report.gitRepo || ""}</span>
-                  )}
-                </TableText>
-              </Td>
-              <Td dataLabel="Commit ID">
-                <TableText wrapModifier="truncate">
-                  {report.gitRepo && report.ref ? (
-                    <a
-                      href={`${
-                        report.gitRepo.endsWith("/")
-                          ? report.gitRepo.slice(0, -1)
-                          : report.gitRepo
-                      }/commit/${report.ref}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {report.ref.substring(0, 7)}
-                    </a>
-                  ) : (
-                    <span>{report.ref ? report.ref.substring(0, 7) : ""}</span>
-                  )}
-                </TableText>
-              </Td>
-              <Td dataLabel="Finding" style={{ width: "10%" }}>
-                {renderExploitIqStatus(report)}
-              </Td>
-              <Td
-                dataLabel="Completed"
-                style={{
-                  width: "22%",
-                  paddingLeft: "0.5rem",
-                }}
-              >
-                <TableText wrapModifier="truncate">
-                  <FormattedTimestamp date={report.completedAt} />
-                </TableText>
-              </Td>
-              <Td dataLabel="Analysis state">
-                <ReportStatusLabel state={report.state} />
-              </Td>
-              <Td dataLabel="CVE Repository Report">
-                <TableText>
-                  <Button
-                    variant="primary"
-                    onClick={() =>
-                      isComponentRoute ?
+          <Tr>
+            <Td colSpan={6}>
+              <Bullseye>
+                <EmptyState
+                  headingLevel="h2"
+                  titleText="No single repository reports found"
+                  icon={SearchIcon}
+                  variant={EmptyStateVariant.sm}
+                />
+              </Bullseye>
+            </Td>
+          </Tr>
+        </Tbody>
+      </Table>
+    );
+  } else {
+    content = (
+      <Table aria-label="Single repositories table">
+        <Thead>
+          <Tr>
+            <Th
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("gitRepo"),
+                columnIndex: 0,
+              }}
+            >
+              Repository
+            </Th>
+            <Th>Commit ID</Th>
+            <Th style={{ width: "10%" }}>Finding</Th>
+            <Th
+              style={{ width: "22%", paddingLeft: "0.5rem" }}
+              sort={{
+                sortBy: {
+                  index: activeSortIndex,
+                  direction: activeSortDirection,
+                },
+                onSort: () => handleSortToggle("completedAt"),
+                columnIndex: 3,
+              }}
+            >
+              Completed
+            </Th>
+            <Th>Analysis state</Th>
+            <Th>CVE Repository Report</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {displayReports.map((report) => {
+            const cveId = getCveIdForReport(report);
+            return (
+              <Tr key={report.id}>
+                <Td dataLabel="Repository">
+                  <TableText wrapModifier="truncate">
+                    {report.gitRepo ? (
+                      <a
+                        href={report.gitRepo}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {report.gitRepo}
+                      </a>
+                    ) : (
+                      <span>{report.gitRepo || ""}</span>
+                    )}
+                  </TableText>
+                </Td>
+                <Td dataLabel="Commit ID">
+                  <TableText wrapModifier="truncate">
+                    {report.gitRepo && report.ref ? (
+                      <a
+                        href={`${
+                          report.gitRepo.endsWith("/")
+                            ? report.gitRepo.slice(0, -1)
+                            : report.gitRepo
+                        }/commit/${report.ref}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {report.ref.substring(0, 7)}
+                      </a>
+                    ) : (
+                      <span>{report.ref ? report.ref.substring(0, 7) : ""}</span>
+                    )}
+                  </TableText>
+                </Td>
+                <Td dataLabel="Finding" style={{ width: "10%" }}>
+                  {renderFinding(report)}
+                </Td>
+                <Td
+                  dataLabel="Completed"
+                  style={{
+                    width: "22%",
+                    paddingLeft: "0.5rem",
+                  }}
+                >
+                  <TableText wrapModifier="truncate">
+                    <FormattedTimestamp date={report.completedAt} />
+                  </TableText>
+                </Td>
+                <Td dataLabel="Analysis state">
+                  <ReportStatusLabel state={report.state} />
+                </Td>
+                <Td dataLabel="CVE Repository Report">
+                  <TableText>
+                    <Button
+                      variant="primary"
+                      onClick={() =>
+                        cveId &&
                         navigate(`/reports/component/${cveId}/${report.id}`)
-                      :
-                        navigate(`/reports/product/${productId}/${cveId}/${report.id}`)
-                    }
-                  >
-                    View
-                  </Button>
-                </TableText>
-              </Td>
-            </Tr>
-          ))}
+                      }
+                    >
+                      View
+                    </Button>
+                  </TableText>
+                </Td>
+              </Tr>
+            );
+          })}
         </Tbody>
       </Table>
     );
@@ -331,4 +359,4 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   );
 };
 
-export default RepositoryReportsTable;
+export default SingleRepositoriesTable;
