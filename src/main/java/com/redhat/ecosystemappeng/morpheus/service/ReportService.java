@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,7 @@ import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.config.AppConfig;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
@@ -43,6 +45,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
@@ -155,7 +158,7 @@ public class ReportService {
     // Build ProductSummary for each product
     List<ProductSummary> summaries = new ArrayList<>();
     for (Product product : listResult.products()) {
-      ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product.id());
+      ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product.id(), product.submissionFailures(), product.submittedCount());
       summaries.add(new ProductSummary(product, productReportsSummary));
     }
     
@@ -165,7 +168,7 @@ public class ReportService {
   public ProductSummary getProductSummary(String productId) {
     Product product = productService.get(productId);
 
-    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId);
+    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId, product.submissionFailures(), product.submittedCount());
     
     return new ProductSummary(
       product, 
@@ -284,8 +287,16 @@ public class ReportService {
     return new ReportRequestId(id, scanId);
   }
 
-  public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
-    LOGGER.info("Processing request for Agent Morpheus");
+  /**
+   * Generate report data from a request without saving to repository.
+   * 
+   * @param request The report request
+   * @return ReportData containing the generated report
+   * @throws JsonProcessingException if JSON processing fails
+   * @throws IOException if I/O operations fail
+   */
+  public ReportData generateReport(ReportRequest request) throws JsonProcessingException, IOException {
+    LOGGER.info("Generating report data for Agent Morpheus");
 
     var scan = buildScan(request);
     var image = buildImage(request);
@@ -294,12 +305,42 @@ public class ReportService {
     var report = objectMapper.createObjectNode();
     report.set("input", objectMapper.convertValue(input, JsonNode.class));
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
-    var created = repository.save(report.toPrettyString());
-    var reportRequestId = new ReportRequestId(created.id(), scan.id());
-    LOGGER.infof("Successfully processed request ID: %s", created.id());
-    // TODO: Rollback this
-    // LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
+    
+    // Create ReportRequestId with scan.id() as reportId - the database id will be set when saved
+    var reportRequestId = new ReportRequestId(null, scan.id());
     return new ReportData(reportRequestId, report);
+  }
+
+  /**
+   * Save a report to the repository.
+   * Updates the ReportData with the actual report ID from the saved report.
+   * 
+   * @param reportData The report data to save
+   * @return ReportData with updated report ID
+   * @throws JsonProcessingException if JSON processing fails
+   * @throws IOException if I/O operations fail
+   */
+  public ReportData saveReport(ReportData reportData) throws JsonProcessingException, IOException {
+    LOGGER.info("Saving report to repository");
+    
+    var created = repository.save(reportData.report().toPrettyString());
+    var reportRequestId = new ReportRequestId(created.id(), reportData.reportRequestId().reportId());
+    LOGGER.infof("Successfully saved report ID: %s", created.id());
+    return new ReportData(reportRequestId, reportData.report());
+  }
+
+  /**
+   * Process a request: generate and save the report.
+   * This is a convenience method that calls generateReport and saveReport.
+   * 
+   * @param request The report request
+   * @return ReportData containing the created and saved report
+   * @throws JsonProcessingException if JSON processing fails
+   * @throws IOException if I/O operations fail
+   */
+  public ReportData process(ReportRequest request) throws JsonProcessingException, IOException {
+    var reportData = generateReport(request);
+    return saveReport(reportData);
   }
 
   public void submit(String id, JsonNode report) throws JsonProcessingException, IOException {
@@ -326,6 +367,10 @@ public class ReportService {
     var id = request.id();
     if (Objects.isNull(id)) {
       id = getTraceIdFromContext(Context.current());
+      // If no trace ID is available from context, generate a unique ID
+      if (Objects.isNull(id)) {
+        id = UUID.randomUUID().toString();
+      }
     }
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
   }
@@ -412,25 +457,50 @@ public class ReportService {
       }
     }
 
-  private String getSourceLocationFromMetadataLabels(Map<String, String> properties) {
-    return appConfig.image().source().locationKeys().stream()
-        .map(String::trim)
-        .map(properties::get)
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElseThrow(() -> new ValidationException(
-            Map.of("file", "SBOM is missing required field. Checked keys: " + appConfig.image().source().locationKeys())));
+  private static final String SYFT_IMAGE_LABELS_PREFIX = "syft:image:labels:";
+
+  /**
+   * Gets value from properties for the given config key. When the SBOM comes from Syft (e.g. SPDX
+   * component processing), labels may be stored with or without the syft:image:labels: prefix.
+   * Tries the key as-is, then with the prefix, then without the prefix, so matching works either way.
+   */
+  private String getPropertyIgnoringSyftPrefix(Map<String, String> properties, String configKey) {
+    String key = configKey != null ? configKey.trim() : null;
+    if (key == null) {
+      return null;
+    }
+    String value = properties.get(key);
+    if (value != null) {
+      return value;
+    }
+    if (!key.startsWith(SYFT_IMAGE_LABELS_PREFIX)) {
+      value = properties.get(SYFT_IMAGE_LABELS_PREFIX + key);
+      if (value != null) {
+        return value;
+      }
+    }
+    if (key.startsWith(SYFT_IMAGE_LABELS_PREFIX)) {
+      return properties.get(key.substring(SYFT_IMAGE_LABELS_PREFIX.length()));
+    }
+    return null;
   }
 
+  private String getSourceLocationFromMetadataLabels(Map<String, String> properties) {
+    return appConfig.image().source().locationKeys().stream()
+        .map(key -> getPropertyIgnoringSyftPrefix(properties, key))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElseThrow(() -> new SbomValidationException(
+            "SBOM is missing required field. Checked keys: " + appConfig.image().source().locationKeys() + " existing labels: " + properties.toString()));
+  }
 
   private String getCommitIdFromMetadataLabels(HashMap<String, String> properties) {
     return appConfig.image().source().commitIdKeys().stream()
-        .map(String::trim)
-        .map(properties::get)
+        .map(key -> getPropertyIgnoringSyftPrefix(properties, key))
         .filter(Objects::nonNull)
         .findFirst()
-        .orElseThrow(() -> new ValidationException(
-            Map.of("file", "SBOM is missing required field. Checked keys: " + appConfig.image().source().commitIdKeys())));
+        .orElseThrow(() -> new SbomValidationException(
+            "SBOM is missing required field. Checked keys: " + appConfig.image().source().commitIdKeys() + " existing labels: " + properties.toString()));
   }
 
   private JsonNode buildSbomInfo(ReportRequest request) {
@@ -508,6 +578,9 @@ public class ReportService {
 
   private Set<String> getGitHubLanguages(String repository) {
     var repoName = repository.replace("https://github.com/", "");
+    if (repoName.endsWith(".git")) {
+      repoName = repoName.substring(0, repoName.length() - 4);
+    }
     try {
       LOGGER.debugf("looking for programming languages for repository %s (using system token)", repoName);
       return gitHubService.getLanguages(repoName).keySet();
@@ -535,9 +608,58 @@ public class ReportService {
       LOGGER.debugf("looking for programming languages for repository %s (with user token)", repoName);
       return gitHubService.getLanguages(repoName, authorization).keySet();
     } catch (Exception e) {
-      LOGGER.error("Unable to retrieve programming languages", e);
-      throw e;
+      LOGGER.errorf(e, "Unable to retrieve programming languages for repository %s", repository);
+      throw new IllegalArgumentException("Unable to retrieve programming languages for repository " + repository);
     }
+  }
+
+  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId) throws JsonProcessingException, IOException {
+    // All validations passed, proceed with processing
+    JsonNode sbomJson = parsedCycloneDx.sbomJson();
+    // Create metadata with product_id, sbom_name, sbom_version, and additional SBOM metadata fields
+    Map<String, String> metadata = new HashMap<>();
+    metadata.put("product_id", productId);
+    metadata.put("sbom_name", parsedCycloneDx.sbomName());
+    if (Objects.nonNull(parsedCycloneDx.sbomVersion())) {
+      metadata.put("sbom_version", parsedCycloneDx.sbomVersion());
+    }
+    if (Objects.nonNull(parsedCycloneDx.sbomDescription())) {
+      metadata.put("sbom_description", parsedCycloneDx.sbomDescription());
+    }
+    if (Objects.nonNull(parsedCycloneDx.sbomType())) {
+      metadata.put("sbom_type", parsedCycloneDx.sbomType());
+    }
+    if (Objects.nonNull(parsedCycloneDx.sbomPurl())) {
+      metadata.put("sbom_purl", parsedCycloneDx.sbomPurl());
+    }
+    if (Objects.nonNull(parsedCycloneDx.bomRef())) {
+      metadata.put("sbom_bom_ref", parsedCycloneDx.bomRef());
+    }
+    // Create and return ReportRequest
+    ReportRequest reportRequest = new ReportRequest(
+      null, // id - auto-generated
+      "image", // analysisType
+      java.util.Collections.singletonList(cveId), // vulnerabilities
+      null, // image
+      null, // credential
+      sbomJson, // sbom
+      com.redhat.ecosystemappeng.morpheus.model.morpheus.SbomInfoType.MANUAL, // sbomInfoType
+      metadata, // metadata with product_id and sbom_name
+      null, // sourceRepo
+      null, // commitId
+      null, // ecosystem
+      null // manifestPath
+    );
+    // Only generate report data, don't save it yet - saving happens in ComponentProcessingService
+    return this.generateReport(reportRequest);
+  }
+
+  public ReportData submitCycloneDx(ParsedCycloneDx parsedCycloneDx, String productId, String cveId) throws JsonProcessingException, IOException {
+    var reportData = this.createCycloneDxReportData(parsedCycloneDx, productId, cveId);
+    // Save the report before submitting (submit() requires the report to exist in the repository)
+    var savedReportData = this.saveReport(reportData);
+    this.submit(savedReportData.reportRequestId().id(), savedReportData.report());
+    return savedReportData;
   }
 
 }

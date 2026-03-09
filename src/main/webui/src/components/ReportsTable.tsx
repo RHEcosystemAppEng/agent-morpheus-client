@@ -20,7 +20,6 @@ import {
   useReportsTableData,
   SortDirection,
   SortColumn,
-  getFinding,
 } from "../hooks/useReportsTableData";
 import ReportsToolbar from "./ReportsToolbar";
 import { getErrorMessage } from "../utils/errorHandling";
@@ -438,38 +437,18 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
                     {row.repositoriesAnalyzed}
                   </Td>
                   <Td dataLabel={columnNames.finding}>
-                    {(() => {
-                      const finding = getFinding(row.productStatus, row.analysisState, row.statusCounts);
-                      if (!finding) {
-                        return "";
-                      }
-
-                      // Build label text with count if applicable
-                      const labelText = finding.count !== undefined 
+                    {row.finding ? (() => {
+                      const finding = row.finding;
+                      const labelText = finding.count !== undefined
                         ? `${finding.count} ${finding.label}`
                         : finding.label;
-
-                      // Determine label props based on finding type
                       const labelProps: Partial<LabelProps> = {};
-
-                      if (finding.color) {
-                        labelProps.color = finding.color;
-                      }
-                      if (finding.variant) {
-                        labelProps.variant = finding.variant;
-                      }
-                      if (finding.type === "in-progress") {
-                        labelProps.icon = <InProgressIcon />;
-                      } else if (finding.type === "failed") {
-                        labelProps.icon = <ExclamationCircleIcon />;
-                      }
-
-                      return (
-                        <Label {...labelProps}>
-                          {labelText}
-                        </Label>
-                      );
-                    })()}
+                      if (finding.color) labelProps.color = finding.color;
+                      if (finding.variant) labelProps.variant = finding.variant;
+                      if (finding.type === "in-progress") labelProps.icon = <InProgressIcon />;
+                      else if (finding.type === "failed") labelProps.icon = <ExclamationCircleIcon />;
+                      return <Label {...labelProps}>{labelText}</Label>;
+                    })() : ""}
                   </Td>
                   <Td dataLabel={columnNames.submittedAt}>
                     {row.submittedAt ? (

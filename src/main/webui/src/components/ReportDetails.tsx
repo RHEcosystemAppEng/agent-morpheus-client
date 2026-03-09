@@ -10,20 +10,30 @@ import {
   GridItem,
   Title,
 } from "@patternfly/react-core";
+import { Link } from "react-router";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
+import { getRepositoriesAnalyzedFromProduct } from "../utils/repositoriesAnalyzed";
 
 interface ReportDetailsProps {
   product: ProductSummary;
   cveId: string;
+  cardHeight: string;
 }
 
-const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId }) => {
+const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId, cardHeight }) => {
   const name = product.data?.name || "";
-  const repositoriesAnalyzed =
-    product.summary?.statusCounts?.["completed"]?.toString() || "0";
+  const { getDisplay, submittedCount } = getRepositoriesAnalyzedFromProduct(product);
+  const repositoriesAnalyzed = getDisplay();
+  const numExcluded =
+    product.summary?.statusCounts?.["excluded"] ??
+    product.data?.submissionFailures?.length ??
+    0;
+  const numSubmitted = submittedCount;
+  const excludedValue = `${numExcluded}/${numSubmitted}`;
+  const productId = product.data?.id;
 
   return (
-    <Card>
+    <Card style={{ height: cardHeight, overflowY: "auto" }}>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
           Report Details
@@ -51,6 +61,18 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId }) => {
                 </DescriptionListTerm>
                 <DescriptionListDescription>
                   {repositoriesAnalyzed}
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>Excluded components</DescriptionListTerm>
+                <DescriptionListDescription>
+                  {productId && numExcluded > 0 ? (
+                    <Link to={`/reports/product/excluded-components/${productId}/${cveId}`}>
+                      {excludedValue}
+                    </Link>
+                  ) : (
+                    excludedValue
+                  )}
                 </DescriptionListDescription>
               </DescriptionListGroup>
             </DescriptionList>

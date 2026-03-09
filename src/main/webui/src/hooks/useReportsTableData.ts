@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type React from "react";
 import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
-import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
+import { getRepositoriesAnalyzedFromProduct } from "../utils/repositoriesAnalyzed";
 import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 
@@ -19,10 +19,8 @@ export interface ReportRow {
   repositoriesAnalyzed: string;
   submittedAt: string;
   completedAt: string;
-  analysisState: string;
-  productStatus: ProductStatus;
   submittedCount?: number;
-  statusCounts: Record<string, number>;
+  finding: Finding | null;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -58,7 +56,7 @@ export function isAnalysisCompleted(analysisState: string): boolean {
  * Finding type for single prioritized finding display
  */
 export type Finding = {
-  type: "vulnerable" | "uncertain" | "in-progress" | "not-vulnerable" | "failed";
+  type: "vulnerable" | "uncertain" | "in-progress" | "not-vulnerable" | "failed" | "excluded";
   label: string;
   count?: number;
   color?: "red" | "green" | "orange" | "grey";
@@ -91,12 +89,8 @@ export function getFinding(
     };
   }
 
-  // Priority 3: In progress (0 vulnerable, 0 uncertain, has queued/sent/pending states)
-  const inProgressStates = ["queued", "sent", "pending"];
-  const hasInProgress = inProgressStates.some(
-    (state) => (statusCounts[state] || 0) > 0
-  );
-  if (hasInProgress) {
+  // Priority 3: In progress (analysis state is not completed)
+  if (!isAnalysisCompleted(analysisState)) {
     return {
       type: "in-progress",
       label: "In progress",
@@ -123,7 +117,18 @@ export function getFinding(
     }
   }
 
-  // Priority 5: Not vulnerable (100% complete AND 100% not vulnerable)
+  // Priority 5: Excluded (one or more components excluded from analysis, e.g. submission failures)
+  const excludedCount = statusCounts["excluded"] || 0;
+  if (excludedCount > 0) {
+    return {
+      type: "excluded",
+      label: "Excluded",
+      count: excludedCount,
+      color: "grey",
+    };
+  }
+
+  // Priority 6: Not vulnerable (100% complete AND 100% not vulnerable)
   if (
     analysisState === "completed" &&
     totalCount > 0 &&
@@ -139,50 +144,6 @@ export function getFinding(
   // Default: return null if no finding can be determined
   return null;
 }
-
-/**
- * Pure function to determine analysis state from statusCounts
- * Returns "completed" if all reports are completed, "in-progress" when any report is pending, queued, or sent
- */
-export function getAnalysisStateFromStatusCounts(
-  statusCounts: Record<string, number>
-): string {
-  const completedCount = statusCounts["completed"] || 0;
-  const totalCount = Object.values(statusCounts).reduce(
-    (sum, count) => sum + count,
-    0
-  );
-
-  // If all reports are completed, state is "completed"
-  if (completedCount === totalCount && totalCount > 0) {
-    return "completed";
-  }
-
-  // In-progress states: pending, queued, sent
-  const inProgressStates = ["pending", "queued", "sent"];
-  const hasInProgress = inProgressStates.some(
-    (state) => (statusCounts[state] || 0) > 0
-  );
-
-  return hasInProgress ? "in-progress" : "completed";
-}
-
-/**
- * Pure function to calculate repositories analyzed from statusCounts
- * Uses the "completed" count from statusCounts as analyzedCount
- * and total count as submittedCount
- */
-export function calculateRepositoriesFromStatusCounts(
-  statusCounts: Record<string, number>
-): { analyzedCount: number; submittedCount: number } {
-  const analyzedCount = statusCounts["completed"] || 0;
-  const submittedCount = Object.values(statusCounts).reduce(
-    (sum, count) => sum + count,
-    0
-  );
-  return { analyzedCount, submittedCount };
-}
-
 /**
  * Pure function to transform ProductSummary to ReportRow
  */
@@ -198,15 +159,11 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
 
   // Calculate analysis state from statusCounts
   const statusCounts = summary.statusCounts || {};
-  const analysisState = getAnalysisStateFromStatusCounts(statusCounts);
+  const analysisState = productSummary.summary.productState;
 
-  // Calculate repositories analyzed from statusCounts
-  const { analyzedCount, submittedCount } =
-    calculateRepositoriesFromStatusCounts(statusCounts);
-  const repositoriesAnalyzed = formatRepositoriesAnalyzed(
-    analyzedCount,
-    submittedCount
-  );
+  // Repositories analyzed from shared utility (completed + data.submittedCount, "analyzed" suffix)
+  const { getDisplay } = getRepositoriesAnalyzedFromProduct(productSummary);
+  const repositoriesAnalyzed = getDisplay("analyzed");
 
   // Calculate product status from justificationStatusCounts
   const justificationStatusCounts = summary.justificationStatusCounts || {};
@@ -218,6 +175,8 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
       justificationStatusCounts["UNKNOWN"] || justificationStatusCounts["unknown"] || 0,
   };
 
+  const finding = getFinding(productStatus, analysisState, statusCounts);
+
   return {
     productId,
     productName,
@@ -225,10 +184,8 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
     repositoriesAnalyzed,
     submittedAt,
     completedAt,
-    analysisState,
-    productStatus,
     submittedCount: product.submittedCount,
-    statusCounts,
+    finding,
   };
 }
 
