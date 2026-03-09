@@ -197,22 +197,27 @@
         "description": "Metadata of submitted components failed to be processed for scanning",
         "type": "object",
         "required": [
-          "imageName",
-          "imageVersion",
+          "name",
+          "version",
+          "image",
           "error"
         ],
         "properties": {
-          "imageName": {
+          "name": {
             "type": "string",
             "description": "Component name"
           },
-          "imageVersion": {
+          "version": {
             "type": "string",
             "description": "Component version"
           },
+          "image": {
+            "type": "string",
+            "description": "Component image"
+          },
           "error": {
             "type": "string",
-            "description": "Reason of failure"
+            "description": "Error message"
           }
         }
       },
@@ -2000,73 +2005,6 @@
         ]
       }
     },
-    "/api/v1/generate-sbom": {
-      "post": {
-        "summary": "Generate SBOM",
-        "description": "Generates a Software Bill of Materials (SBOM) for a container image",
-        "requestBody": {
-          "description": "Container image name and tag",
-          "content": {
-            "text/plain": {
-              "examples": {
-                "nginx:latest": {
-                  "value": "nginx:latest"
-                }
-              },
-              "schema": {
-                "type": "string"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "SBOM generated successfully",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "CycloneDX SBOM": {
-                    "value": {
-                      "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
-                      "bomFormat": "CycloneDX",
-                      "specVersion": "1.6",
-                      "serialNumber": "generated UUID",
-                      "version": 1,
-                      "metadata": {
-                        "timestamp": "current timestamp",
-                        "tools": [],
-                        "component": {},
-                        "properties": []
-                      },
-                      "components": [],
-                      "dependencies": []
-                    }
-                  }
-                },
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Image has not been provided"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Generate Sbom Endpoint"
-        ]
-      }
-    },
     "/api/v1/jobs": {
       "post": {
         "summary": "Create List of new jobs containing metadata of executions of analysis",
@@ -2685,6 +2623,63 @@
           },
           "400": {
             "description": "Validation error with field-specific error messages"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Product Endpoint"
+        ]
+      }
+    },
+    "/api/v1/products/upload-spdx": {
+      "post": {
+        "summary": "Create new product from SPDX SBOM",
+        "description": "Uploads an SPDX SBOM file, parses it, creates a product, and starts async processing. Requires a vulnerability ID to include in all component reports. Accepts optional credentials for private repository access.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cveId": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "secretValue": {
+                    "type": "string"
+                  },
+                  "userName": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Product creation request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid SPDX file, missing required data, missing CVE ID, or credential validation error"
           },
           "500": {
             "description": "Internal server error"

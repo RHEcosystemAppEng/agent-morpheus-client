@@ -14,6 +14,9 @@ import type { ValidationErrorResponse } from "../generated-client/models/Validat
  */
 export function getErrorMessage(error: unknown, defaultMessage: string = "An error occurred"): string {
   // Handle ApiError instances with specific status codes
+  if (error instanceof ApiError && "error" in error.body && typeof error.body.error === "string") {
+    return error.body.error;
+  }
   if (error instanceof ApiError) {
     if (error.status === 429) {
       return "Request queue exceeded. Please try again later.";

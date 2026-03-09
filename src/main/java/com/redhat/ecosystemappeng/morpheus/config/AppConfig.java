@@ -20,12 +20,12 @@ public interface AppConfig {
         Source source();
         interface Source {
             @WithName("location-keys")
-            @WithDefault("image.source-location,org.opencontainers.image.source,syft:image:labels:io.openshift.build.source-location")
+            @WithDefault("image.source-location,org.opencontainers.image.source,syft:image:labels:io.openshift.build.source-location,upstream-source-url")
             @Size(min = 1, max = 10)
             List<@NotBlank @Pattern(regexp = "^[a-zA-Z0-9.:_/-]+$", message = "Invalid key format") String> locationKeys();
 
             @WithName("commit-id-keys")
-            @WithDefault("image.source.commit-id,org.opencontainers.image.revision,syft:image:labels:io.openshift.build.commit.id")
+            @WithDefault("image.source.commit-id,org.opencontainers.image.revision,syft:image:labels:io.openshift.build.commit.id,upstream-source-ref")
             @Size(min = 1, max = 10)
             List<@NotBlank @Pattern(regexp = "^[a-zA-Z0-9.:_/-]+$", message = "Invalid key format") String> commitIdKeys();
         }

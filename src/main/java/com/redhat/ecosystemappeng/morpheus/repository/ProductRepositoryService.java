@@ -110,8 +110,21 @@ public class ProductRepositoryService {
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
   }
 
-  public record ListResult(List<Product> products, long totalCount) {
+  public void addSubmissionFailure(String id, FailedComponent failure) {
+    Document failureDoc = new Document()
+        .append("name", failure.name())
+        .append("version", failure.version())
+        .append("image", failure.image())
+        .append("error", failure.error());
+    
+    getCollection().updateOne(
+        Filters.eq(RepositoryConstants.ID_KEY, id),
+        Updates.push(SUBMISSION_FAILURES, failureDoc)
+    );
+    LOGGER.debugf("Added submission failure to product %s: %s/%s", id, failure.name(), failure.version());
   }
+
+  public static record ListResult(List<Product> products, long totalCount) {}
 
   public ListResult list(Integer page, Integer pageSize, String sortField, String sortDirection, String name, String cveId) {
     List<Bson> filters = new ArrayList<>();
@@ -196,8 +209,9 @@ public class ProductRepositoryService {
     if (Objects.nonNull(failuresDocs)) {
       for (Document failureDoc : failuresDocs) {
         submissionFailures.add(new FailedComponent(
-          failureDoc.getString("imageName"),
-          failureDoc.getString("imageVersion"),
+          failureDoc.getString("name"),
+          failureDoc.getString("version"),
+          failureDoc.getString("image"),
           failureDoc.getString("error")
         ));
       }

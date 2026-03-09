@@ -47,3 +47,11 @@ The application SHALL provide consistent navigation routes using lowercase paths
 - **WHEN** the application performs redirects to the reports page
 - **THEN** redirects use `/reports` (lowercase) instead of `/Reports` (capitalized)
 
+### Requirement: Excluded components route
+The application SHALL provide a lowercase route `/reports/product/excluded-components/:productId/:cveId` for the Excluded components page, consistent with other report routes.
+
+#### Scenario: Excluded components route uses lowercase
+- **WHEN** a user navigates to the Excluded components page for a product
+- **THEN** the route uses `/reports/product/excluded-components/:productId/:cveId` (lowercase)
+- **AND** links to the Excluded components page use the same lowercase path
+

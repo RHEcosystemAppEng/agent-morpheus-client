@@ -2,6 +2,7 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 
 import static org.hamcrest.Matchers.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.Assertions;
@@ -10,91 +11,91 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 /**
- * End-to-end test for the SBOM reports API endpoint.
- * 
- * This test assumes the service is running in a separate process.
- * Set the BASE_URL environment variable to point to the running service,
- * e.g., BASE_URL=http://localhost:8080
- * 
- * If BASE_URL is not set, tests will be skipped.
+ * End-to-end tests for product summaries exposed under the reports API
+ * ({@code GET /api/v1/reports/product} and {@code GET /api/v1/reports/product/{id}}).
+ * <p>
+ * Historically this class targeted a removed {@code /api/v1/sbom-reports} surface; it now
+ * validates the consolidated product summary endpoints.
+ * <p>
+ * Requires a running service and seed data. Set {@code BASE_URL}, e.g.
+ * {@code BASE_URL=http://localhost:8080}. If unset, tests are skipped.
  */
 @EnabledIfEnvironmentVariable(named = "BASE_URL", matches = ".*")
-class SbomReportsEndpointTest {
+class GetProductsEndpointTest {
 
     private static final String BASE_URL = System.getenv("BASE_URL");
     private static final String API_BASE = BASE_URL != null ? BASE_URL : "http://localhost:8080";
 
+    @BeforeEach
+    void setUp() {
+        RestAssured.baseURI = API_BASE;
+    }
+
     @Test
     void testGetSbomReports_ReturnsExpectedStructure() {
-      
         RestAssured.given()
             .when()
             .queryParam("sortField", "submittedAt")
             .queryParam("sortDirection", "DESC")
             .queryParam("page", 0)
             .queryParam("pageSize", 100)
-            .get("/api/v1/sbom-reports")
+            .get("/api/v1/reports/product")
             .then()
-            .body("[0].sbomReportId", equalTo("product-4"))
-            .body("[0].sbomName", equalTo("Product_4"))
-            .body("[0].cveId", equalTo("CVE-2024-1485"))
-            .body("[0].cveStatusCounts", equalTo(java.util.Map.of("FALSE", 1, "UNKNOWN", 1)))
-            .body("[0].statusCounts", equalTo(java.util.Map.of("completed", 2)))
-            .body("[0].completedAt", equalTo("2025-02-24T07:12:15.038386"))
-            .body("[0].submittedAt", equalTo("2025-02-24T07:11:41.123Z"))
-            .body("[0].numReports", equalTo(2))
-            .body("[0].firstReportId", is(notNullValue()));
-        
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .body("$", isA(java.util.List.class))
+            .body("size()", greaterThan(0))
+            .body("find { it.data.id == 'product-1' }.data.id", equalTo("product-1"))
+            .body("find { it.data.id == 'product-1' }.data.name", equalTo("test-sbom-product-1"))
+            .body("find { it.data.id == 'product-1' }.data.cveId", equalTo("CVE-2024-12345"))
+            .body("find { it.data.id == 'product-1' }.summary.statusCounts.completed", equalTo(2))
+            .body("find { it.data.id == 'product-1' }.summary.justificationStatusCounts.TRUE", equalTo(1))
+            .body("find { it.data.id == 'product-1' }.summary.justificationStatusCounts.FALSE", equalTo(1));
     }
 
     @Test
     void testGetSbomReports_WithSortBySubmittedAt() {
-        RestAssured.baseURI = API_BASE;
-        
-        // Test sorting by submittedAt ASC
         var ascResults = RestAssured.given()
             .when()
             .queryParam("sortField", "submittedAt")
             .queryParam("sortDirection", "ASC")
             .queryParam("pageSize", 100)
-            .get("/api/v1/sbom-reports")
+            .get("/api/v1/reports/product")
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("$", isA(java.util.List.class))
             .extract()
             .jsonPath()
-            .getList("submittedAt", String.class);
-        
-        // Verify ASC sorting: each submittedAt should be <= the next one (or nulls at the end)
-        if (ascResults != null && ascResults.size() > 1) {
-            for (int i = 0; i < ascResults.size() - 1; i++) {
-                String current = ascResults.get(i);
-                String next = ascResults.get(i + 1);
-                if (current != null && next != null) {
-                    Assertions.assertTrue(
-                        current.compareTo(next) <= 0,
-                        String.format("ASC sort failed: %s should be <= %s at index %d", current, next, i)
-                    );
-                }
+            .getList("data.submittedAt", String.class);
+
+        Assertions.assertNotNull(ascResults, "ASC results should not be null");
+        Assertions.assertTrue(ascResults.size() > 1, "ASC results should have more than one item");
+        for (int i = 0; i < ascResults.size() - 1; i++) {
+            String current = ascResults.get(i);
+            String next = ascResults.get(i + 1);
+            if (current != null && next != null) {
+                Assertions.assertTrue(
+                    current.compareTo(next) <= 0,
+                    String.format("ASC sort failed: %s should be <= %s at index %d", current, next, i)
+                );
             }
         }
-        
-        // Test sorting by submittedAt DESC
+
         var descResults = RestAssured.given()
             .when()
             .queryParam("sortField", "submittedAt")
             .queryParam("sortDirection", "DESC")
             .queryParam("pageSize", 100)
-            .get("/api/v1/sbom-reports")
+            .get("/api/v1/reports/product")
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("$", isA(java.util.List.class))
             .extract()
             .jsonPath()
-            .getList("submittedAt", String.class);    
-        // Verify DESC sorting: each submittedAt should be >= the next one (or nulls at the end)
+            .getList("data.submittedAt", String.class);
+
         Assertions.assertNotNull(descResults, "DESC results should not be null");
         Assertions.assertTrue(descResults.size() > 1, "DESC results should have at least 2 items");
         for (int i = 0; i < descResults.size() - 1; i++) {
@@ -107,19 +108,15 @@ class SbomReportsEndpointTest {
                 );
             }
         }
-        
     }
-
 
     @Test
     void testGetSbomReports_WithPagination() {
-        // Act & Assert - Test pagination
-        RestAssured.baseURI = API_BASE;
         RestAssured.given()
             .when()
             .queryParam("page", 0)
             .queryParam("pageSize", 5)
-            .get("/api/v1/sbom-reports")
+            .get("/api/v1/reports/product")
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
@@ -129,68 +126,54 @@ class SbomReportsEndpointTest {
             .body("size()", lessThanOrEqualTo(5));
     }
 
- 
     @Test
     void testGetSbomReportById_ReturnsExpectedStructure() {
-        // Arrange - First get a SBOM report ID from the list
-        String sbomReportId = "product-1";
-    
+        String productId = "product-1";
+
         RestAssured.given()
             .when()
-            .get("/api/v1/sbom-reports/{sbomReportId}", sbomReportId)
+            .get("/api/v1/reports/product/{id}", productId)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("sbomReportId", equalTo(sbomReportId))
-            .body("sbomName", equalTo("test-sbom-product-1"))
-            .body("cveId", equalTo("CVE-2024-12345"))
-            .body("cveStatusCounts", equalTo(java.util.Map.of("FALSE", 1, "TRUE", 1)))
-            .body("statusCounts", equalTo(java.util.Map.of("completed", 2)))
-            .body("completedAt", equalTo("2026-01-26T11:05:00.000000") )
-            .body("submittedAt", equalTo("2025-01-15T09:00:00Z"))
-            .body("numReports", equalTo(2))
-            .body("firstReportId", is(notNullValue()));
-    
+            .body("data.id", equalTo(productId))
+            .body("data.name", equalTo("test-sbom-product-1"))
+            .body("data.cveId", equalTo("CVE-2024-12345"))
+            .body("summary.statusCounts", equalTo(java.util.Map.of("completed", 2)))
+            .body("summary.justificationStatusCounts", equalTo(java.util.Map.of("FALSE", 1, "TRUE", 1)));
     }
 
     @Test
     void testGetSbomReportById_NotFound() {
-        // Act & Assert - Test getting a non-existent SBOM report
-        RestAssured.baseURI = API_BASE;
         RestAssured.given()
             .when()
-            .get("/api/v1/sbom-reports/nonexistent-sbom-report-id")
+            .get("/api/v1/reports/product/nonexistent-sbom-report-id")
             .then()
             .statusCode(404);
     }
 
     @Test
     void testFirstReportId_CanBeRetrievedFromDatabase() {
-        // Arrange - Get a SBOM report with firstReportId
-        RestAssured.baseURI = API_BASE;
-        var firstReportId = RestAssured.given()
+        var reportId = RestAssured.given()
             .when()
+            .queryParam("productId", "product-1")
             .queryParam("page", 0)
             .queryParam("pageSize", 1)
-            .get("/api/v1/sbom-reports")
+            .get("/api/v1/reports")
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("$", isA(java.util.List.class))
             .extract()
-            .path("[0].firstReportId");
-        
-        Assertions.assertNotNull(firstReportId, "First report ID should not be null");
-        System.out.println("First report ID: " + firstReportId);
-        // Act & Assert - Verify firstReportId can be used to fetch the report from database
+            .path("[0].id");
+
+        Assertions.assertNotNull(reportId, "Report ID should not be null");
         RestAssured.given()
             .when()
-            .get("/api/v1/reports/" + firstReportId)
+            .get("/api/v1/reports/{id}", reportId)
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body(notNullValue());
-        
     }
 }
-

@@ -28,6 +28,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
+import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Justification;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
@@ -329,7 +330,7 @@ public class ReportRepositoryService {
     return productIds;
   }
 
-  public ProductReportsSummary getProductSummaryData(String productId) {
+  public ProductReportsSummary getProductSummaryData(String productId, List<FailedComponent> submissionFailures, int submittedCount) {
     Bson productFilter = Filters.eq("metadata." + PRODUCT_ID, productId);
     Map<String, Integer> statusCounts = new HashMap<>();
     Map<String, Integer> justificationStatusCounts = new HashMap<>();
@@ -362,12 +363,21 @@ public class ReportRepositoryService {
           }
         }
       });
+    
+    int excludedCount = submissionFailures != null ? submissionFailures.size() : 0;
+    if (excludedCount > 0) {
+      statusCounts.put("excluded", excludedCount);
+    }
 
-    if (statusCounts.containsKey("pending") || statusCounts.containsKey("queued") || statusCounts.containsKey("sent")) {
+    int totalReports = statusCounts.values().stream().mapToInt(Integer::intValue).sum();
+    if (totalReports < submittedCount) {
+      productState = "processing";
+    } else if (statusCounts.containsKey("pending") || statusCounts.containsKey("queued") || statusCounts.containsKey("sent")) {
       productState = "analysing";
     } else {
       productState = "completed";
     }
+
 
     return new ProductReportsSummary(
       productState,

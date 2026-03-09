@@ -18,6 +18,8 @@ import RepositoryReportsTable from "../components/RepositoryReportsTable";
 import ReportPageSkeleton from "../components/ReportPageSkeleton";
 import { getErrorMessage } from "../utils/errorHandling";
 
+const REPORT_CARD_HEIGHT = "15rem";
+
 const ReportPage: React.FC = () => {
   const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
 
@@ -81,20 +83,20 @@ const ReportPage: React.FC = () => {
       <PageSection>
         <Grid hasGutter>
           <GridItem span={6}>
-            <ReportDetails product={data} cveId={cveId} />
+            <ReportDetails product={data} cveId={cveId} cardHeight={REPORT_CARD_HEIGHT} />
           </GridItem>
           <GridItem span={6}>
-            <ReportAdditionalDetails product={data} />
+            <ReportAdditionalDetails product={data} cardHeight={REPORT_CARD_HEIGHT} />
           </GridItem>
         </Grid>
       </PageSection>
       <PageSection>
         <Grid hasGutter>
           <GridItem span={6}>
-            <ReportComponentStatesPieChart product={data} />
+            <ReportComponentStatesPieChart product={data} cardHeight={REPORT_CARD_HEIGHT} />
           </GridItem>
           <GridItem span={6}>
-            <ReportCveStatusPieChart product={data} cveId={cveId} />
+            <ReportCveStatusPieChart product={data} cveId={cveId} cardHeight={REPORT_CARD_HEIGHT} />
           </GridItem>
         </Grid>
       </PageSection>
