@@ -1,16 +1,18 @@
 import { useMemo } from "react";
-import type React from "react";
 import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
 import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-
-export type ProductStatus = {
-  vulnerableCount: number;
-  notVulnerableCount: number;
-  uncertainCount: number;
-};
+import type { Finding } from "../utils/findingDisplay";
+import {
+  getProductFinding,
+  type ProductStatus,
+} from "../utils/findingDisplay";
+import {
+  getJustificationCount,
+  JUSTIFICATION_API,
+} from "../utils/justificationStatus";
 
 export interface ReportRow {
   productId: string;
@@ -19,10 +21,8 @@ export interface ReportRow {
   repositoriesAnalyzed: string;
   submittedAt: string;
   completedAt: string;
-  analysisState: string;
-  productStatus: ProductStatus;
+  finding: Finding | null;
   submittedCount?: number;
-  statusCounts: Record<string, number>;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -52,92 +52,6 @@ export interface UseReportsTableResult {
  */
 export function isAnalysisCompleted(analysisState: string): boolean {
   return analysisState === "completed";
-}
-
-/**
- * Finding type for single prioritized finding display
- */
-export type Finding = {
-  type: "vulnerable" | "uncertain" | "in-progress" | "not-vulnerable" | "failed";
-  label: string;
-  count?: number;
-  color?: "red" | "green" | "orange" | "grey";
-  variant?: "filled" | "outline";
-  icon?: React.ReactNode;
-};
-
-export function getFinding(
-  productStatus: ProductStatus,
-  analysisState: string,
-  statusCounts: Record<string, number>
-): Finding | null {
-  // Priority 1: Vulnerable (1 or more repos are vulnerable)
-  if (productStatus.vulnerableCount > 0) {
-    return {
-      type: "vulnerable",
-      label: "Vulnerable",
-      count: productStatus.vulnerableCount,
-      color: "red",
-    };
-  }
-
-  // Priority 2: Uncertain (0 vulnerable, 1 or more uncertain)
-  if (productStatus.uncertainCount > 0) {
-    return {
-      type: "uncertain",
-      label: "Uncertain",
-      count: productStatus.uncertainCount,
-      color: "orange",
-    };
-  }
-
-  // Priority 3: In progress (0 vulnerable, 0 uncertain, has queued/sent/pending states)
-  const inProgressStates = ["queued", "sent", "pending"];
-  const hasInProgress = inProgressStates.some(
-    (state) => (statusCounts[state] || 0) > 0
-  );
-  if (hasInProgress) {
-    return {
-      type: "in-progress",
-      label: "In progress",
-      variant: "outline",
-      color: "grey",
-    };
-  }
-
-  // Calculate counts for failed/expired and completed states
-  const failedCount = (statusCounts["failed"] || 0) + (statusCounts["expired"] || 0);
-  const completedCount = statusCounts["completed"] || 0;
-  const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
-
-  // Priority 4: Failed (100% failed/expired OR some failed and rest not vulnerable)
-  if (failedCount > 0) {
-    // All failed/expired OR some failed and rest completed with not vulnerable
-    if (failedCount === totalCount || (failedCount > 0 && completedCount > 0 && productStatus.notVulnerableCount > 0)) {
-      return {
-        type: "failed",
-        label: "Failed",
-        variant: "filled",
-        color: "grey",
-      };
-    }
-  }
-
-  // Priority 5: Not vulnerable (100% complete AND 100% not vulnerable)
-  if (
-    analysisState === "completed" &&
-    totalCount > 0 &&
-    productStatus.notVulnerableCount === totalCount
-  ) {
-    return {
-      type: "not-vulnerable",
-      label: "Not vulnerable",
-      color: "green",
-    };
-  }
-
-  // Default: return null if no finding can be determined
-  return null;
 }
 
 /**
@@ -208,15 +122,28 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
     submittedCount
   );
 
-  // Calculate product status from justificationStatusCounts
   const justificationStatusCounts = summary.justificationStatusCounts || {};
   const productStatus: ProductStatus = {
-    vulnerableCount: justificationStatusCounts["TRUE"] || justificationStatusCounts["true"] || 0,
-    notVulnerableCount:
-      justificationStatusCounts["FALSE"] || justificationStatusCounts["false"] || 0,
-    uncertainCount:
-      justificationStatusCounts["UNKNOWN"] || justificationStatusCounts["unknown"] || 0,
+    vulnerableCount: getJustificationCount(
+      justificationStatusCounts,
+      JUSTIFICATION_API.VULNERABLE
+    ),
+    notVulnerableCount: getJustificationCount(
+      justificationStatusCounts,
+      JUSTIFICATION_API.NOT_VULNERABLE
+    ),
+    uncertainCount: getJustificationCount(
+      justificationStatusCounts,
+      JUSTIFICATION_API.UNCERTAIN
+    ),
   };
+
+  const finding = getProductFinding(
+    productStatus,
+    analysisState,
+    statusCounts,
+    product.submittedCount
+  );
 
   return {
     productId,
@@ -225,10 +152,8 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
     repositoriesAnalyzed,
     submittedAt,
     completedAt,
-    analysisState,
-    productStatus,
+    finding,
     submittedCount: product.submittedCount,
-    statusCounts,
   };
 }
 
@@ -254,14 +179,11 @@ export function compareStrings(
  */
 export function mapSortColumnToApiField(sortColumn: SortColumn): string {
   switch (sortColumn) {
-    case "name":
-      return "name";
-    case "submittedAt":
-      return "submittedAt";
-    case "completedAt":
-      return "completedAt";
+    case "name":      
+    case "submittedAt":      
+    case "completedAt":      
     case "cveId":
-      return "cveId";
+      return sortColumn;
     default:
       return "submittedAt";
   }

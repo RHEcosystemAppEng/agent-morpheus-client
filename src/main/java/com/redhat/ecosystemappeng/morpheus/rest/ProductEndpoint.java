@@ -210,7 +210,7 @@ public class ProductEndpoint {
       @FormParam("cveId") String cveId,
       @FormParam("file") FileUpload file,
       @FormParam("secretValue") String secretValue,
-      @FormParam("username") String username) throws IOException {
+      @FormParam("userName") String userName) throws IOException {
     if (Objects.isNull(file) || Objects.isNull(file.uploadedFile())) {
       throw new ValidationException(Map.of("file", "File is required"));
     }
@@ -221,7 +221,7 @@ public class ProductEndpoint {
       String credentialId = null;
       if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {
         try {
-          InlineCredential credential = new InlineCredential(secretValue, username);
+          InlineCredential credential = new InlineCredential(secretValue, userName);
           String userId = securityContext.getUserPrincipal().getName();
           credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);
         } catch (IllegalArgumentException e) {

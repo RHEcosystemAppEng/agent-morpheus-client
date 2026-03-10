@@ -1,23 +1,18 @@
 import type { Report } from "../generated-client/models/Report";
-import type { ReactNode } from "react";
-import CveStatus from "./CveStatus";
 import RepositoryReportsTableContent from "./RepositoryReportsTableContent";
-import { useSingleRepositoryReports } from "../hooks/useSingleRepositoryReports";
 import { useRepositoryReportsTableState } from "../hooks/useRepositoryReportsTableState";
+import Finding from "./Finding";
+import { getFindingForReportRow } from "../utils/findingDisplay";
+import { useRepositoryReports } from "../hooks/useRepositoryReports";
+import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 
-const SCAN_STATE_OPTIONS = [
-  "completed",
-  "failed",
-  "queued",
-  "sent",
-  "pending",
-  "expired",
-];
-
-function renderFindingCell(report: Report): ReactNode {
-  const firstVuln = report.vulns?.[0];
-  if (!firstVuln?.justification?.status) return null;
-  return <CveStatus status={firstVuln.justification.status} />;
+function renderFindingCell(report: Report) {
+  const justificationStatus = report.vulns?.[0]?.justification?.status;
+  return (
+    <Finding
+      finding={getFindingForReportRow(report.state, justificationStatus)}
+    />
+  );
 }
 
 function getCveIdForReport(report: Report): string | undefined {
@@ -32,19 +27,19 @@ const SingleRepositoriesTable: React.FC = () => {
     loading,
     error,
     pagination,
-  } = useSingleRepositoryReports({
+  } = useRepositoryReports({    
+    pollInterval: REPORTS_TABLE_POLL_INTERVAL_MS,
     page: tableState.page,
     perPage: tableState.perPage,
     sortColumn: tableState.sortColumn,
     sortDirection: tableState.sortDirection,
-    scanStateFilter: tableState.scanStateFilter,
-    exploitIqStatusFilter: tableState.exploitIqStatusFilter,
+    findingFilter: tableState.findingFilter,
     repositorySearchValue: tableState.repositorySearchValue,
   });
 
   const getViewPath = (report: Report) => {
     const cveId = getCveIdForReport(report);
-    return cveId ? `/reports/component/${cveId}/${report.id}` : undefined;
+    return cveId ? `/reports/component/${cveId}/${report.id}` : '/reports/single-repositories';
   };
 
   return (
@@ -54,10 +49,10 @@ const SingleRepositoriesTable: React.FC = () => {
       error={error}
       pagination={pagination}
       tableState={tableState}
-      scanStateOptions={SCAN_STATE_OPTIONS}
       emptyStateTitle="No single repository reports found"
       renderFindingCell={renderFindingCell}
       getViewPath={getViewPath}
+      showCveIdColumn={true}
       ariaLabel="Single repositories table"
     />
   );

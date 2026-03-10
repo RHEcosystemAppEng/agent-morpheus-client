@@ -1,10 +1,11 @@
-import { useMemo } from "react";
 import type { Report } from "../generated-client/models/Report";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-import CveStatus from "./CveStatus";
 import RepositoryReportsTableContent from "./RepositoryReportsTableContent";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
+import { POLL_INTERVAL_MS } from "../utils/polling";
 import { useRepositoryReportsTableState } from "../hooks/useRepositoryReportsTableState";
+import Finding from "./Finding";
+import { getFindingForReportRow } from "../utils/findingDisplay";
 
 interface RepositoryReportsTableProps {
   productId: string;
@@ -19,11 +20,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
 }) => {
   const tableState = useRepositoryReportsTableState();
 
-  const scanStateOptions = useMemo(() => {
-    const statusCounts = product.summary?.statusCounts || {};
-    return Object.keys(statusCounts).sort();
-  }, [product.summary?.statusCounts]);
-
+  
   const {
     data: reports,
     loading,
@@ -32,23 +29,28 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   } = useRepositoryReports({
     productId,
     cveId,
-    product,
+    shouldContinuePolling: () =>
+      product.summary?.productState !== "completed",
+    pollInterval: POLL_INTERVAL_MS,
     page: tableState.page,
     perPage: tableState.perPage,
     sortColumn: tableState.sortColumn,
     sortDirection: tableState.sortDirection,
-    scanStateFilter: tableState.scanStateFilter,
-    exploitIqStatusFilter: tableState.exploitIqStatusFilter,
+    findingFilter: tableState.findingFilter,
     repositorySearchValue: tableState.repositorySearchValue,
   });
 
   const isComponentRoute = !product?.data?.id;
 
   const renderFindingCell = (report: Report) => {
-    if (!report.vulns || !cveId) return null;
-    const vuln = report.vulns.find((v) => v.vulnId === cveId);
-    if (!vuln?.justification?.status) return null;
-    return <CveStatus status={vuln.justification.status} />;
+    const justificationStatus = report.vulns?.find(
+      (v) => v.vulnId === cveId
+    )?.justification?.status;
+    return (
+      <Finding
+        finding={getFindingForReportRow(report.state, justificationStatus)}
+      />
+    );
   };
 
   const getViewPath = (report: Report) =>
@@ -63,10 +65,10 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       error={error}
       pagination={pagination}
       tableState={tableState}
-      scanStateOptions={scanStateOptions}
       emptyStateTitle="No repository reports found"
       renderFindingCell={renderFindingCell}
       getViewPath={getViewPath}
+      showCveIdColumn={false}
       ariaLabel="Repository reports table"
     />
   );

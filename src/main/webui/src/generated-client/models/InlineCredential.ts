@@ -13,6 +13,6 @@ export type InlineCredential = {
     /**
      * Git username (required for PAT authentication, ignored for SSH keys)
      */
-    username?: string;
+    userName?: string;
 };
 

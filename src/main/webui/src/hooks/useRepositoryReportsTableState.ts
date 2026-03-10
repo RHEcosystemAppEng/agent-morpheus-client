@@ -3,38 +3,22 @@
  * Use with RepositoryReportsTableContent and either useRepositoryReports or useSingleRepositoryReports.
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
-export type SortColumn = "gitRepo" | "completedAt" | "state";
+export type SortColumn = "gitRepo" | "submittedAt" | "completedAt";
 export type SortDirection = "asc" | "desc";
 
 const PER_PAGE = 10;
-
-function getColumnIndex(column: SortColumn): number {
-  switch (column) {
-    case "gitRepo":
-      return 0;
-    case "completedAt":
-      return 3;
-    case "state":
-      return 4;
-    default:
-      return 0;
-  }
-}
 
 export interface RepositoryReportsTableState {
   page: number;
   perPage: number;
   sortColumn: SortColumn;
   sortDirection: SortDirection;
-  scanStateFilter: string[];
-  exploitIqStatusFilter: string[];
-  repositorySearchValue: string;
-  activeSortIndex: number;
+  findingFilter: string[];
+  repositorySearchValue: string;  
   activeSortDirection: SortDirection;
-  handleScanStateFilterChange: (filters: string[]) => void;
-  handleExploitIqStatusFilterChange: (filters: string[]) => void;
+  handleFindingFilterChange: (filters: string[]) => void;
   handleRepositorySearchChange: (value: string) => void;
   onSetPage: (
     _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
@@ -51,21 +35,13 @@ export interface RepositoryReportsTableState {
 export function useRepositoryReportsTableState(): RepositoryReportsTableState {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(PER_PAGE);
-  const [sortColumn, setSortColumn] = useState<SortColumn>("state");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  const [scanStateFilter, setScanStateFilter] = useState<string[]>([]);
-  const [exploitIqStatusFilter, setExploitIqStatusFilter] = useState<string[]>(
-    []
-  );
+  const [sortColumn, setSortColumn] = useState<SortColumn>("submittedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [findingFilter, setFindingFilter] = useState<string[]>([]);
   const [repositorySearchValue, setRepositorySearchValue] = useState<string>("");
 
-  const handleScanStateFilterChange = useCallback((filters: string[]) => {
-    setScanStateFilter(filters);
-    setPage(1);
-  }, []);
-
-  const handleExploitIqStatusFilterChange = useCallback((filters: string[]) => {
-    setExploitIqStatusFilter(filters);
+  const handleFindingFilterChange = useCallback((filters: string[]) => {
+    setFindingFilter(filters);
     setPage(1);
   }, []);
 
@@ -108,10 +84,6 @@ export function useRepositoryReportsTableState(): RepositoryReportsTableState {
     setPage(1);
   }, []);
 
-  const activeSortIndex = useMemo(
-    () => getColumnIndex(sortColumn),
-    [sortColumn]
-  );
   const activeSortDirection = sortDirection;
 
   return {
@@ -119,13 +91,10 @@ export function useRepositoryReportsTableState(): RepositoryReportsTableState {
     perPage,
     sortColumn,
     sortDirection,
-    scanStateFilter,
-    exploitIqStatusFilter,
+    findingFilter,
     repositorySearchValue,
-    activeSortIndex,
     activeSortDirection,
-    handleScanStateFilterChange,
-    handleExploitIqStatusFilterChange,
+    handleFindingFilterChange,
     handleRepositorySearchChange,
     onSetPage,
     onPerPageSelect,

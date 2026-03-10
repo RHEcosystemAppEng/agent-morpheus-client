@@ -76,7 +76,7 @@ export class ReportEndpointService {
         sortBy,
         status,
         vulnId,
-        withoutProduct,
+        withoutProduct = 'false',
     }: {
         /**
          * Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN
@@ -121,7 +121,7 @@ export class ReportEndpointService {
         /**
          * When true, return only reports that have no metadata.product_id (single repositories not part of a product)
          */
-        withoutProduct?: boolean,
+        withoutProduct?: string,
     }): CancelablePromise<Array<Report>> {
         return __request(OpenAPI, {
             method: 'GET',

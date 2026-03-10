@@ -7,8 +7,8 @@ The reports table displays vulnerability analysis reports in a tabular format, a
 The reports table SHALL support sorting by the following columns:
 - **SBOM Name**: Sortable (maps to product name)
 - **CVE ID**: Sortable (maps to product CVE ID)
-- **Submitted Date**: Sortable (maps to submittedAt timestamp)
-- **Completion Date**: Sortable (maps to completedAt timestamp)
+- **Date Requested**: Sortable (maps to submittedAt timestamp)
+- **Date Completed**: Sortable (maps to completedAt timestamp)
 
 **Note**: Report ID column is NOT sortable - it is displayed as a clickable link for navigation purposes only.
 
@@ -16,7 +16,7 @@ The reports table SHALL support sorting by the following columns:
 - **WHEN** a user first views the reports table
 - **THEN** the table is sorted by submittedAt in descending order (newest products first, oldest products last) using server-side sorting
 - **AND** the sorting is performed by the `/api/v1/reports/product` API endpoint with `sortField=submittedAt` and `sortDirection=DESC`
-- **AND** the SBOM Name, CVE ID, Submitted Date, and Completion Date columns are sortable by the user (ascending/descending)
+- **AND** the SBOM Name, CVE ID, Date Requested, and Date Completed columns are sortable by the user (ascending/descending)
 - **AND** the Report ID column is NOT sortable (it is a clickable link for navigation only)
 
 ### Requirement: Reports Table Filtering
@@ -148,7 +148,7 @@ The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Reposi
 
 #### Scenario: Single Repositories table
 - **WHEN** the Single Repositories tab is active
-- **THEN** a table is shown with columns: Repository, Commit ID, Finding, Completed, Analysis state, CVE Repository Report; structure and toolbar match `RepositoryReportsTable`
+- **THEN** a table is shown that conforms to the **repository-reports-table** specification (columns, Finding column logic, shared InProgressStatus/FailedStatus, single Finding filter, pagination, loading and empty/error behavior)
 - **AND** data is from `/api/v1/reports` with a parameter returning only reports where `report.metadata.product_id` is absent; pagination, sorting, and filtering are server-side
 - **AND** "View" navigates to `/reports/component/:cveId/:reportId`; empty and error states are displayed when applicable
 
@@ -156,3 +156,4 @@ The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Reposi
 - **WHEN** implementing the feature
 - **THEN** Single Repositories tab content SHALL live in a dedicated component (e.g. `SingleRepositoriesTable.tsx`) reusing patterns from `RepositoryReportsTable`
 - **AND** devservices/test data SHALL include at least one report without `report.metadata.product_id` (e.g. under `src/test/resources/devservices/reports/`) for verification
+
