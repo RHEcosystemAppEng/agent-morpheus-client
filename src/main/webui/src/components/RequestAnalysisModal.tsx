@@ -24,16 +24,26 @@ import {
   FormGroupLabelHelp,
   Card,
   CardBody,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@patternfly/react-core";
 import { UploadIcon, KeyIcon, SecurityIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router";
 import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
+import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
-import { getErrorMessage, isValidationError } from "../utils/errorHandling";
+import { parseRequestAnalysisSubmissionError } from "../utils/errorHandling";
+import { InlineCredential } from "../generated-client/models/InlineCredential";
+import { ReportRequest } from "../generated-client";
 
 const FALLBACK_ERROR_MESSAGE = "An error occurred while submitting the analysis request.";
 // CVE ID pattern matching backend validation: ^CVE-[0-9]{4}-[0-9]{4,19}$
 const CVE_ID_PATTERN = /^CVE-[0-9]{4}-[0-9]{4,19}$/;
+// Repository URL: HTTP/HTTPS only (git: and git@ are not accepted)
+const REPO_URL_HTTP_HTTPS = /^https?:\/\/.+/;
+
+export type RequestAnalysisMode = "sbom" | "single-repository";
+
 interface RequestAnalysisModalProps {
   onClose: () => void;
 }
@@ -46,9 +56,14 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const labelHelpRef = useRef<HTMLButtonElement>(null);
+  const [mode, setMode] = useState<RequestAnalysisMode>("sbom");
   const [cveId, setCveId] = useState("");
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
   const [showStatus, setShowStatus] = useState(false);
+  const [sourceRepo, setSourceRepo] = useState("");
+  const [commitId, setCommitId] = useState("");
+  const [sourceRepoError, setSourceRepoError] = useState<string | null>(null);
+  const [commitIdError, setCommitIdError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cveIdError, setCveIdError] = useState<string | null>(null);
@@ -58,7 +73,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const [authenticationSecretError, setAuthenticationSecretError] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState<string | null>(null);
-
   /**
    * Validates CVE ID format using the official CVE regex pattern
    * @param cveId CVE ID to validate
@@ -72,6 +86,34 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return "CVE ID format is invalid. Must match the official CVE pattern CVE-YYYY-NNNN+";
     }
     return null;
+  };
+
+  /**
+   * Validates Source Repository URL format (HTTP/HTTPS only; git: and git@ are rejected).
+   * @returns Error message if invalid, null if valid or empty (empty handled as "Required")
+   */
+  const validateSourceRepoUrl = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (trimmed === "") return null;
+    if (!REPO_URL_HTTP_HTTPS.test(trimmed)) {
+      return "Source Repository must be a valid HTTP or HTTPS URL (e.g. https://github.com/org/repo)";
+    }
+    try {
+      new URL(trimmed);
+      return null;
+    } catch {
+      return "Source Repository must be a valid HTTP or HTTPS URL (e.g. https://github.com/org/repo)";
+    }
+  };
+
+  const handleModeChange = (newMode: RequestAnalysisMode) => {
+    setError(null);
+    setFileError(null);
+    setSourceRepoError(null);
+    setCommitIdError(null);
+    setAuthenticationSecretError(null);
+    setUsernameError(null);
+    setMode(newMode);
   };
 
   /**
@@ -89,6 +131,21 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return "SSH_KEY";
     }
     return "PAT";
+  };
+
+  /** Optional credential for submit (private repo on + secret present); includes userName only for PAT. */
+  const getCredentialForSubmit = (): InlineCredential | undefined => {
+    if (!isAuthenticationSecretChecked || !authenticationSecret.trim()) {
+      return undefined;
+    }
+    const secretValue = authenticationSecret.trim();
+    const credentialType = detectCredentialType(authenticationSecret);
+    return {
+      secretValue,
+      ...(credentialType === "PAT" && username.trim() !== ""
+        ? { userName: username.trim() }
+        : {}),
+    };
   };
 
   const handleCveIdChange = (
@@ -176,48 +233,31 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   }, [currentFiles.length, showStatus]);
 
-  // Submit button is only disabled during submission or when private repo is enabled with empty auth secret
-  const isSubmitDisabled = isSubmitting || (isAuthenticationSecretChecked && authenticationSecret.trim() === "");
-
   /**
-   * Handles errors from the API submission, setting field-specific or generic error messages
-   * @param err The error caught from the API call
+   * Handles errors from the API submission using the shared error parsing utility.
+   * Sets field-level and generic error state without API-specific logic in the component.
    */
   const handleSubmitError = (err: unknown): void => {
-    // Handle field-specific validation errors (400)
-    if (isValidationError(err)) {
-      // TypeScript now knows err.body is ValidationErrorResponse
-        let hasFieldErrors = false;
-        
-        // Set field-specific errors
-        if (err.body.errors?.cveId) {
-          setCveIdError(err.body.errors.cveId);
-          hasFieldErrors = true;
-        }
-        if (err.body.errors?.file) {
-          setFileError(err.body.errors.file);
-          hasFieldErrors = true;
-        }
-        // If validation errors exist but don't match known fields, show generic error
-        if (!hasFieldErrors) {
-          setError("Invalid request data. Please check your inputs.");
-        }     
-    } else {
-      // Handle non-validation errors (429, 500, network, etc.)
-      const errorMessage = getErrorMessage(err, FALLBACK_ERROR_MESSAGE);
-      setError(errorMessage);
-    }
+    const { fieldErrors, genericMessage } = parseRequestAnalysisSubmissionError(
+      err,
+      FALLBACK_ERROR_MESSAGE
+    );
+    setCveIdError(fieldErrors.cveId ?? null);
+    setFileError(fieldErrors.file ?? null);
+    setSourceRepoError(fieldErrors.sourceRepo ?? null);
+    setCommitIdError(fieldErrors.commitId ?? null);
+    setError(genericMessage);
   };
 
   const handleSubmit = async () => {
-    // Clear previous errors
     setError(null);
     setCveIdError(null);
     setFileError(null);
+    setSourceRepoError(null);
+    setCommitIdError(null);
     setAuthenticationSecretError(null);
     setUsernameError(null);
 
-    // Validate required fields
     const trimmedCveId = cveId.trim();
     let hasValidationErrors = false;
 
@@ -225,7 +265,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       setCveIdError("Required");
       hasValidationErrors = true;
     } else {
-      // Validate CVE ID format
       const formatError = validateCveIdFormat(trimmedCveId);
       if (formatError) {
         setCveIdError(formatError);
@@ -233,12 +272,29 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       }
     }
 
-    if (currentFiles.length === 0) {
-      setFileError("Required");
-      hasValidationErrors = true;
+    if (mode === "sbom") {
+      if (currentFiles.length === 0) {
+        setFileError("Required");
+        hasValidationErrors = true;
+      }
+    } else {
+      const trimmedSourceRepo = sourceRepo.trim();
+      if (trimmedSourceRepo === "") {
+        setSourceRepoError("Required");
+        hasValidationErrors = true;
+      } else {
+        const urlError = validateSourceRepoUrl(trimmedSourceRepo);
+        if (urlError) {
+          setSourceRepoError(urlError);
+          hasValidationErrors = true;
+        }
+      }
+      if (commitId.trim() === "") {
+        setCommitIdError("Required");
+        hasValidationErrors = true;
+      }
     }
 
-    // Validate authentication credentials if checkbox is checked
     if (isAuthenticationSecretChecked) {
       const trimmedSecret = authenticationSecret.trim();
       if (trimmedSecret === "") {
@@ -246,7 +302,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
         hasValidationErrors = true;
       } else {
         const credentialType = detectCredentialType(trimmedSecret);
-        // Validate username for PAT
         if (credentialType === "PAT") {
           const trimmedUsername = username.trim();
           if (trimmedUsername === "") {
@@ -257,7 +312,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       }
     }
 
-    // Prevent API call if validation fails
     if (hasValidationErrors) {
       return;
     }
@@ -265,38 +319,42 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const file = currentFiles[0]!;
-      const formData: {
-        cveId: string;
-        file: File;
-        secretValue?: string;
-        username?: string;
-      } = {
-        cveId: cveId.trim(),
-        file: file,
-      };
-
-      // Add credentials if provided
-      if (isAuthenticationSecretChecked && authenticationSecret.trim() !== "") {
-        formData.secretValue = authenticationSecret.trim();
-        const credentialType = detectCredentialType(authenticationSecret);
-        if (credentialType === "PAT" && username.trim() !== "") {
-          formData.username = username.trim();
-        }
+      const credential = getCredentialForSubmit();
+      if (mode === "single-repository") {        
+        const requestBody: ReportRequest = {
+          analysisType: "source",
+          vulnerabilities: [trimmedCveId],
+          metadata: {},
+          sourceRepo: sourceRepo.trim(),
+          commitId: commitId.trim(),
+          credential,
+        };
+        const response: ReportData = await ReportEndpointService.postApiV1ReportsNew({
+          requestBody,
+          submit: true,
+        });
+        const reportId = response.reportRequestId.id;
+        navigate(`/reports/component/${trimmedCveId}/${reportId}`);
+        onClose();
+      } else {
+        const file = currentFiles[0]!;
+        const formData: {
+          cveId: string;
+          file: File;
+          secretValue?: string;
+          userName?: string;
+        } = {
+          cveId: trimmedCveId,
+          file,
+          ...credential,
+        };
+        const response: ReportData = await ProductEndpointService.postApiV1ProductsUploadCyclonedx({
+          formData,
+        });
+        const reportId = response.reportRequestId.id;
+        navigate(`/reports/component/${trimmedCveId}/${reportId}`);
+        onClose();
       }
-
-      const response: ReportData = await ProductEndpointService.postApiV1ProductsUploadCyclonedx({
-        formData,
-      });
-
-      // Extract report ID from response
-      const reportId = response.reportRequestId.id;
-
-      // Navigate to repository report page
-      navigate(`/reports/component/${cveId.trim()}/${reportId}`);
-
-      // Close modal
-      onClose();
     } catch (err: unknown) {
       handleSubmitError(err);
     } finally {
@@ -357,6 +415,23 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           </Alert>
         )}
         <Form>
+          <ToggleGroup
+            aria-label="Input type"
+            areAllGroupsDisabled={isSubmitting}
+          >
+            <ToggleGroupItem
+              text="SBOM"
+              buttonId="mode-sbom"
+              isSelected={mode === "sbom"}
+              onChange={() => handleModeChange("sbom")}
+            />
+            <ToggleGroupItem
+              text="Single Repository"
+              buttonId="mode-single-repository"
+              isSelected={mode === "single-repository"}
+              onChange={() => handleModeChange("single-repository")}
+            />
+          </ToggleGroup>
           <FormGroup label="CVE ID" isRequired fieldId="cve-id">
             <TextInput
               isRequired
@@ -367,69 +442,127 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
               onChange={handleCveIdChange}
               onBlur={handleCveIdBlur}
               onKeyDown={handleCveIdKeyDown}
-              placeholder="Enter CVE ID"
               isDisabled={isSubmitting}
               validated={cveIdError ? "error" : "default"}
+              placeholder="e.g. CVE-2024-50602"
             />
             <FormHelperText>
               <HelperText>
-                {cveIdError ? (
+                {cveIdError && (
                   <HelperTextItem variant="error">{cveIdError}</HelperTextItem>
-                ) : (
-                  <HelperTextItem>
-                    Enter the CVE identifier to analyze (e.g. CVE-2024-50602)
-                  </HelperTextItem>
                 )}
               </HelperText>
             </FormHelperText>
           </FormGroup>
-          <FormGroup label="SBOM file" isRequired fieldId="sbom-file">
-            <MultipleFileUpload
-              onFileDrop={handleFileDrop}
-              dropzoneProps={{
-                accept: {
-                  "application/json": [".json"],
-                  "application/xml": [".xml"],
-                  "text/xml": [".xml"],
-                },
-                disabled: isSubmitting,
-                multiple: false,
-              }}
-            >
-              <MultipleFileUploadMain
-                titleIcon={<UploadIcon />}
-                titleText="Drag and drop file here"
-                titleTextSeparator="or"
-                infoText="Accepted file types: CycloneDX 1.6 JSON"
-              />
-              {showStatus && (
-                <MultipleFileUploadStatus
-                  statusToggleText={`${currentFiles.length} file${
-                    currentFiles.length !== 1 ? "s" : ""
-                  } uploaded`}
-                  statusToggleIcon="success"
-                  aria-label="Current uploads"
-                >
-                  {currentFiles.map((file) => (
-                    <MultipleFileUploadStatusItem
-                      file={file}
-                      key={file.name}
-                      onClearClick={() => removeFiles([file.name])}
-                      onReadSuccess={handleReadSuccess}
-                      onReadFail={handleReadFail}
-                    />
-                  ))}
-                </MultipleFileUploadStatus>
+          {mode === "sbom" && (
+            <FormGroup label="SBOM file" isRequired fieldId="sbom-file">
+              <MultipleFileUpload
+                onFileDrop={handleFileDrop}
+                dropzoneProps={{
+                  accept: {
+                    "application/json": [".json"],
+                    "application/xml": [".xml"],
+                    "text/xml": [".xml"],
+                  },
+                  disabled: isSubmitting,
+                  multiple: false,
+                }}
+              >
+                <MultipleFileUploadMain
+                  titleIcon={<UploadIcon />}
+                  titleText="Drag and drop file here"
+                  titleTextSeparator="or"
+                  infoText="Accepted file types: CycloneDX 1.6 JSON"
+                />
+                {showStatus && (
+                  <MultipleFileUploadStatus
+                    statusToggleText={`${currentFiles.length} file${
+                      currentFiles.length !== 1 ? "s" : ""
+                    } uploaded`}
+                    statusToggleIcon="success"
+                    aria-label="Current uploads"
+                  >
+                    {currentFiles.map((file) => (
+                      <MultipleFileUploadStatusItem
+                        file={file}
+                        key={file.name}
+                        onClearClick={() => removeFiles([file.name])}
+                        onReadSuccess={handleReadSuccess}
+                        onReadFail={handleReadFail}
+                      />
+                    ))}
+                  </MultipleFileUploadStatus>
+                )}
+              </MultipleFileUpload>
+              {fileError && (
+                <FormHelperText>
+                  <HelperText>
+                    <HelperTextItem variant="error">{fileError}</HelperTextItem>
+                  </HelperText>
+                </FormHelperText>
               )}
-            </MultipleFileUpload>
-            {fileError && (
-              <FormHelperText>
-                <HelperText>
-                  <HelperTextItem variant="error">{fileError}</HelperTextItem>
-                </HelperText>
-              </FormHelperText>
-            )}
-          </FormGroup>
+            </FormGroup>
+          )}
+          {mode === "single-repository" && (
+            <>
+              <FormGroup
+                label="Source Repository"
+                isRequired
+                fieldId="source-repo"
+              >
+                <TextInput
+                  isRequired
+                  type="text"
+                  id="source-repo"
+                  name="source-repo"
+                  value={sourceRepo}
+                  onChange={(_e, value) => {
+                    setSourceRepo(value);
+                    if (sourceRepoError) setSourceRepoError(null);
+                  }}
+                  onBlur={() => {
+                    if (sourceRepo.trim() !== "") {
+                      const urlError = validateSourceRepoUrl(sourceRepo);
+                      setSourceRepoError(urlError);
+                    }
+                  }}
+                  placeholder="e.g. https://github.com/org/repo"
+                  isDisabled={isSubmitting}
+                  validated={sourceRepoError ? "error" : "default"}
+                />
+                <FormHelperText>
+                  <HelperText>
+                    {sourceRepoError && (
+                      <HelperTextItem variant="error">{sourceRepoError}</HelperTextItem>
+                    )}
+                  </HelperText>
+                </FormHelperText>
+              </FormGroup>
+              <FormGroup label="Commit ID" isRequired fieldId="commit-id">
+                <TextInput
+                  isRequired
+                  type="text"
+                  id="commit-id"
+                  name="commit-id"
+                  value={commitId}
+                  onChange={(_e, value) => {
+                    setCommitId(value);
+                    if (commitIdError) setCommitIdError(null);
+                  }}
+                  placeholder="e.g. v1.0.0, f76b3537930637666e7be8000008f69731ea642d"
+                  isDisabled={isSubmitting}
+                  validated={commitIdError ? "error" : "default"}
+                />
+                <FormHelperText>
+                  <HelperText>
+                    {commitIdError && (
+                      <HelperTextItem variant="error">{commitIdError}</HelperTextItem>
+                    )}
+                  </HelperText>
+                </FormHelperText>
+              </FormGroup>
+            </>
+          )}
           <Switch
             id="private-repo-switch"
             label="Private repository"
@@ -532,7 +665,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           key="submit"
           variant="primary"
           onClick={handleSubmit}
-          isDisabled={isSubmitDisabled}
+          isDisabled={isSubmitting}
           isLoading={isSubmitting}
         >
           {isSubmitting ? "Submitting..." : "Submit Analysis Request"}

@@ -150,8 +150,8 @@ public class ReportRepositoryService {
         ref = selectedSourceInfo.getString("ref");
       }
     }
-    // TODO: Rollback this
-    // LOGGER.infof("gitRepo: %s, ref: %s", gitRepo, ref);
+
+    String submittedAt = Objects.nonNull(metadata) ? metadata.get(SUBMITTED_AT) : null;
     return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
         scan.getString("started_at"),
         scan.getString("completed_at"),
@@ -161,7 +161,8 @@ public class ReportRepositoryService {
         vulnIds,
         metadata,
         gitRepo,
-        ref);
+        ref,
+        submittedAt);
   }
 
   public String getStatus(Document doc, Map<String, String> metadata) {
@@ -547,8 +548,8 @@ public class ReportRepositoryService {
             Filters.eq("input.scan.id", value), filters);
           break;
         case "vulnId":
-          handleMultipleValues(e.getValue(), (value) -> 
-            Filters.elemMatch("input.scan.vulns", Filters.eq("vuln_id", value)), filters);
+          handleMultipleValues(e.getValue(), (value) ->
+              Filters.elemMatch("input.scan.vulns", Filters.regex("vuln_id", value, "i")), filters);
           break;
         case "status":
           var statusValues = e.getValue().split(",");
@@ -626,9 +627,9 @@ public class ReportRepositoryService {
       for (String statusValue : exploitIqStatusValues) {
         String trimmedStatus = statusValue.trim();
         if (Objects.nonNull(vulnId) && !vulnId.isEmpty()) {
-          exploitIqStatusFilters.add(Filters.elemMatch("output.analysis", 
+          exploitIqStatusFilters.add(Filters.elemMatch("output.analysis",
             Filters.and(
-              Filters.eq("vuln_id", vulnId),
+              Filters.regex("vuln_id", vulnId, "i"),
               Filters.eq("justification.status", trimmedStatus)
             )
           ));

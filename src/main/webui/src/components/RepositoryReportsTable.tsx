@@ -1,28 +1,28 @@
-import { useMemo } from "react";
 import type { Report } from "../generated-client/models/Report";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-import CveStatus from "./CveStatus";
 import RepositoryReportsTableContent from "./RepositoryReportsTableContent";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
-import { useRepositoryReportsTableState } from "../hooks/useRepositoryReportsTableState";
+import { POLL_INTERVAL_MS } from "../utils/polling";
+import { useTableParams } from "../hooks/useTableParams";
+import {
+  REPOSITORY_REPORTS_VALID_SORT_COLUMNS,
+  REPOSITORY_REPORTS_VALID_FILTER_KEYS,
+} from "../hooks/repositoryReportsTableParams";
 
 interface RepositoryReportsTableProps {
-  productId: string;
   cveId: string;
   product: ProductSummary;
 }
 
 const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
-  productId,
   cveId,
   product,
 }) => {
-  const tableState = useRepositoryReportsTableState();
-
-  const scanStateOptions = useMemo(() => {
-    const statusCounts = product.summary?.statusCounts || {};
-    return Object.keys(statusCounts).sort();
-  }, [product.summary?.statusCounts]);
+  const productId = product.data.id;
+  const params = useTableParams({
+    validSortColumns: REPOSITORY_REPORTS_VALID_SORT_COLUMNS,
+    validFilterKeys: REPOSITORY_REPORTS_VALID_FILTER_KEYS,
+  });
 
   const {
     data: reports,
@@ -30,31 +30,16 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     error,
     pagination,
   } = useRepositoryReports({
+    tableData: params.data,
     productId,
     cveId,
-    product,
-    page: tableState.page,
-    perPage: tableState.perPage,
-    sortColumn: tableState.sortColumn,
-    sortDirection: tableState.sortDirection,
-    scanStateFilter: tableState.scanStateFilter,
-    exploitIqStatusFilter: tableState.exploitIqStatusFilter,
-    repositorySearchValue: tableState.repositorySearchValue,
+    shouldContinuePolling: () =>
+      product.summary?.productState !== "completed",
+    pollInterval: POLL_INTERVAL_MS,
   });
 
-  const isComponentRoute = !product?.data?.id;
 
-  const renderFindingCell = (report: Report) => {
-    if (!report.vulns || !cveId) return null;
-    const vuln = report.vulns.find((v) => v.vulnId === cveId);
-    if (!vuln?.justification?.status) return null;
-    return <CveStatus status={vuln.justification.status} />;
-  };
-
-  const getViewPath = (report: Report) =>
-    isComponentRoute
-      ? `/reports/component/${cveId}/${report.id}`
-      : `/reports/product/${productId}/${cveId}/${report.id}`;
+  const getViewPath = (report: Report) => `/reports/product/${productId}/${cveId}/${report.id}`;
 
   return (
     <RepositoryReportsTableContent
@@ -62,11 +47,9 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
       loading={loading}
       error={error}
       pagination={pagination}
-      tableState={tableState}
-      scanStateOptions={scanStateOptions}
-      emptyStateTitle="No repository reports found"
-      renderFindingCell={renderFindingCell}
+      tableParams={params}
       getViewPath={getViewPath}
+      showCveIdColumn={false}
       ariaLabel="Repository reports table"
     />
   );

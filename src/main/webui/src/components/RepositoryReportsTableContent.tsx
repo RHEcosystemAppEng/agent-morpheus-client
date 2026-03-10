@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router";
-import { Button, Alert, AlertVariant } from "@patternfly/react-core";
+import { useMemo } from "react";
+import { Link } from "react-router";
 import {
   Table,
   TableText,
@@ -8,34 +8,59 @@ import {
   Th,
   Tbody,
   Td,
+  ThProps,
 } from "@patternfly/react-table";
 import SkeletonTable from "@patternfly/react-component-groups/dist/dynamic/SkeletonTable";
 import type { Report } from "../generated-client/models/Report";
-import { getErrorMessage } from "../utils/errorHandling";
 import FormattedTimestamp from "./FormattedTimestamp";
+import Finding from "./Finding";
 import RepositoryTableToolbar from "./RepositoryTableToolbar";
+import { getFindingForReportRow } from "../utils/findingDisplay";
 import TableEmptyState from "./TableEmptyState";
-import ReportStatusLabel from "./ReportStatusLabel";
-import type { RepositoryReportsTableState } from "../hooks/useRepositoryReportsTableState";
+import type { UseTableParamsResult } from "../hooks/useTableParams";
+import type { SortColumn, RepoFilterKey } from "../hooks/repositoryReportsTableParams";
+import TableErrorState from "./TableErrorState";
 
-const SKELETON_COLUMNS = [
-  "Repository",
-  "Commit ID",
-  "Finding",
-  "Completed",
-  "Analysis state",
+type ColumnKey =
+  | "id"
+  | "gitRepo"
+  | "commitId"
+  | "cveId"
+  | "finding"
+  | "submittedAt"
+  | "completedAt";
+
+interface ColumnDef {
+  key: ColumnKey;
+  label: string;
+  sortable?: boolean;
+  width?: ThProps["width"];
+}
+
+const REPOSITORY_REPORTS_COLUMNS: ColumnDef[] = [
+  { key: "id", label: "ID", width: 10 },
+  { key: "gitRepo", label: "Repository", sortable: true, width: 25 },
+  { key: "commitId", label: "Commit ID", width: 10 },
+  { key: "cveId", label: "CVE ID" },
+  { key: "finding", label: "Finding", width: 10 },
+  { key: "submittedAt", label: "Date Requested", sortable: true, width: 15 },
+  { key: "completedAt", label: "Date Completed", sortable: true, width: 15 },
 ];
+
+function isSortableColumn(key: ColumnKey): key is SortColumn {
+  const col = REPOSITORY_REPORTS_COLUMNS.find((c) => c.key === key);
+  return col?.sortable === true;
+}
 
 export interface RepositoryReportsTableContentProps {
   reports: Report[] | null;
   loading: boolean;
   error: Error | null;
   pagination: { totalElements: number; totalPages: number } | null;
-  tableState: RepositoryReportsTableState;
-  scanStateOptions: string[];
-  emptyStateTitle: string;
-  renderFindingCell: (report: Report) => React.ReactNode;
-  getViewPath: (report: Report) => string | undefined;
+  tableParams: UseTableParamsResult<SortColumn, RepoFilterKey>;
+  getViewPath: (report: Report) => string;
+  /** When true, show CVE ID column and CVE ID filter (Single Repositories only). */
+  showCveIdColumn?: boolean;
   ariaLabel?: string;
 }
 
@@ -46,199 +71,147 @@ const RepositoryReportsTableContent: React.FC<
   loading,
   error,
   pagination,
-  tableState,
-  scanStateOptions,
-  emptyStateTitle,
-  renderFindingCell,
+  tableParams,
   getViewPath,
+  showCveIdColumn = false,
   ariaLabel = "Repository reports table",
 }) => {
-  const navigate = useNavigate();
+  const showCveIdFilter = showCveIdColumn;
   const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;
-
-  const {
-    page,
-    perPage,
-    scanStateFilter,
-    exploitIqStatusFilter,
-    repositorySearchValue,
-    activeSortIndex,
-    activeSortDirection,
-    handleRepositorySearchChange,
-    handleScanStateFilterChange,
-    handleExploitIqStatusFilterChange,
-    onSetPage,
-    onPerPageSelect,
-    handleSortToggle,
-  } = tableState;
+  const visibleColumns = REPOSITORY_REPORTS_COLUMNS.filter(
+    (col) => col.key !== "cveId" || (col.key === "cveId" && showCveIdColumn)
+  );
+  const sortColumn = tableParams.data.sortColumn ?? "submittedAt";
+  const sortDirection = tableParams.data.sortDirection ?? "desc";
+  const activeSortIndex = useMemo(
+    () =>
+      Math.max(
+        0,
+        visibleColumns.findIndex((c) => c.key === sortColumn)
+      ),
+    [visibleColumns, sortColumn]
+  );
 
   const toolbar = (
     <RepositoryTableToolbar
-      repositorySearchValue={repositorySearchValue}
-      onRepositorySearchChange={handleRepositorySearchChange}
-      scanStateFilter={scanStateFilter}
-      scanStateOptions={scanStateOptions}
-      exploitIqStatusFilter={exploitIqStatusFilter}
+      tableParams={tableParams}
       loading={loading}
-      onScanStateFilterChange={handleScanStateFilterChange}
-      onExploitIqStatusFilterChange={handleExploitIqStatusFilterChange}
-      pagination={
-        pagination
-          ? {
-              itemCount: pagination.totalElements ?? totalFilteredCount,
-              page,
-              perPage,
-              onSetPage,
-              onPerPageSelect,
-            }
-          : undefined
-      }
+      showCveIdFilter={showCveIdFilter}
+      itemCount={pagination?.totalElements ?? totalFilteredCount}
     />
   );
 
-  if (error) {
-    return (
-      <>
-        {toolbar}
-        <Alert variant={AlertVariant.danger} title="Error loading reports">
-          {getErrorMessage(error)}
-        </Alert>
-      </>
-    );
-  }
+  const renderCell = (report: Report, col: ColumnDef) => {
+    switch (col.key) {
+      case "id":
+        return (
+          <TableText wrapModifier="truncate">
+            <Link to={getViewPath(report)}>{report.id}</Link>
+          </TableText>
+        );
+      case "gitRepo":
+        return (
+          <TableText wrapModifier="truncate">{report.gitRepo || ""}</TableText>
+        );
+      case "commitId":
+        return (
+          <TableText wrapModifier="truncate">{report.ref}</TableText>
+        );
+      case "cveId":
+        return (
+          <TableText wrapModifier="truncate">
+            {report.vulns?.[0]?.vulnId ?? ""}
+          </TableText>
+        );
+      case "finding": {
+        const justificationStatus = report.vulns?.[0]?.justification?.status;
+        return (
+          <Finding
+            finding={getFindingForReportRow(report.state, justificationStatus)}
+          />
+        );
+      }
+      case "submittedAt":
+        return (
+          <TableText wrapModifier="truncate">
+            <FormattedTimestamp date={report.submittedAt} />
+          </TableText>
+        );
+      case "completedAt":
+        return (
+          <TableText wrapModifier="truncate">
+            <FormattedTimestamp date={report.completedAt} />
+          </TableText>
+        );
+    }
+  };
 
-  if (loading) {
-    return (
-      <>
-        {toolbar}
+  const getTable = () => (
+    <Table aria-label={ariaLabel}>
+      <Thead>
+        <Tr>
+          {visibleColumns.map((col, index) => (
+            <Th
+              key={col.key}
+              width={col.width}
+              sort={
+                isSortableColumn(col.key)
+                  ? {
+                      sortBy: {
+                        index: activeSortIndex,
+                        direction: sortDirection,
+                      },
+                      onSort: () =>
+                        tableParams.handlers.handleSortToggle(col.key as SortColumn),
+                      columnIndex: index,
+                    }
+                  : undefined
+              }
+            >
+              {col.label}
+            </Th>
+          ))}
+        </Tr>
+      </Thead>
+      <Tbody>
+        {displayReports.map((report) => (
+          <Tr key={report.id}>
+            {visibleColumns.map((col) => (
+              <Td key={col.key} dataLabel={col.label}>
+                {renderCell(report, col)}
+              </Td>
+            ))}
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  );
+
+  const renderContent = () => {
+    if (error)
+      return (
+        <TableErrorState
+          columnNames={visibleColumns.map((c) => c.label)}
+          error={error}
+        />
+      );
+    if (loading)
+      return (
         <SkeletonTable
           rowsCount={10}
-          columns={[...SKELETON_COLUMNS, "CVE Repository Report"]}
+          columns={visibleColumns.map((c) => c.label)}
         />
-      </>
-    );
-  }
-
-  if (!reports || reports.length === 0) {
-    return (
-      <>
-        {toolbar}
-        <TableEmptyState columnCount={6} titleText={emptyStateTitle} />
-      </>
-    );
-  }
+      );
+    if (!reports || reports.length === 0)
+      return <TableEmptyState columnCount={visibleColumns.length} />;
+    return getTable();
+  };
 
   return (
     <>
       {toolbar}
-      <Table aria-label={ariaLabel}>
-        <Thead>
-          <Tr>
-            <Th
-              style={{ width: "28%" }}
-              sort={{
-                sortBy: {
-                  index: activeSortIndex,
-                  direction: activeSortDirection,
-                },
-                onSort: () => handleSortToggle("gitRepo"),
-                columnIndex: 0,
-              }}
-            >
-              Repository
-            </Th>
-            <Th style={{ width: "8%" }}>Commit ID</Th>
-            <Th style={{ width: "10%" }}>Finding</Th>
-            <Th
-              style={{ width: "22%", paddingLeft: "0.5rem" }}
-              sort={{
-                sortBy: {
-                  index: activeSortIndex,
-                  direction: activeSortDirection,
-                },
-                onSort: () => handleSortToggle("completedAt"),
-                columnIndex: 3,
-              }}
-            >
-              Completed
-            </Th>
-            <Th style={{ width: "14%" }}>Analysis state</Th>
-            <Th style={{ width: "1%", whiteSpace: "nowrap" }}>
-              CVE Repository Report
-            </Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {displayReports.map((report) => {
-            const viewPath = getViewPath(report);
-            return (
-              <Tr key={report.id}>
-                <Td dataLabel="Repository" style={{ width: "28%" }}>
-                  <TableText wrapModifier="truncate">
-                    {report.gitRepo ? (
-                      <a href={report.gitRepo} target="_blank" rel="noreferrer">
-                        {report.gitRepo}
-                      </a>
-                    ) : (
-                      <span>{report.gitRepo || ""}</span>
-                    )}
-                  </TableText>
-                </Td>
-                <Td dataLabel="Commit ID" style={{ width: "8%" }}>
-                  <TableText wrapModifier="truncate">
-                    {report.gitRepo && report.ref ? (
-                      <a
-                        href={`${
-                          report.gitRepo.endsWith("/")
-                            ? report.gitRepo.slice(0, -1)
-                            : report.gitRepo
-                        }/commit/${report.ref}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {report.ref.substring(0, 7)}
-                      </a>
-                    ) : (
-                      <span>
-                        {report.ref ? report.ref.substring(0, 7) : ""}
-                      </span>
-                    )}
-                  </TableText>
-                </Td>
-                <Td dataLabel="Finding" style={{ width: "10%" }}>
-                  {renderFindingCell(report)}
-                </Td>
-                <Td
-                  dataLabel="Completed"
-                  style={{
-                    width: "22%",
-                    paddingLeft: "0.5rem",
-                  }}
-                >
-                  <TableText wrapModifier="truncate">
-                    <FormattedTimestamp date={report.completedAt} />
-                  </TableText>
-                </Td>
-                <Td dataLabel="Analysis state" style={{ width: "9%" }}>
-                  <ReportStatusLabel state={report.state} />
-                </Td>
-                <Td dataLabel="CVE Repository Report" style={{ width: "13%" }}>
-                  <TableText>
-                    <Button
-                      variant="primary"
-                      onClick={() => viewPath && navigate(viewPath)}
-                      isDisabled={!viewPath}
-                    >
-                      View
-                    </Button>
-                  </TableText>
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
+      {renderContent()}
     </>
   );
 };

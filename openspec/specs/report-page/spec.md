@@ -13,7 +13,7 @@ The application SHALL provide navigation from the reports table to a report page
   - Otherwise, navigate to `/reports/product/:productId/:cveId` where `:productId` is `SbomReport.productId` and `:cveId` is the CVE ID
 
 ### Requirement: Report Details Display
-The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST"), including the day, full month name, year, time with seconds, AM/PM indicator, and timezone abbreviation.
+The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM"), including the day, full month name, year, and time with seconds and AM/PM indicator.
 
 The report page SHALL automatically refresh data every 5 seconds using `useReport` hook with polling, but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop (see `api-hooks` specification for `useReport` and polling behavior).
 
@@ -25,11 +25,11 @@ The report page SHALL use the `shouldUpdate` option to prevent unnecessary reren
 - **AND** the left card (Details card) displays report information in two columns:
   - Left column: CVE Analyzed (the specified CVE ID as plain text, not a clickable link) and Report name (from `sbomReport.sbomName`)
   - Right column: Number of repositories analyzed (showing the count of repositories with "completed" state from `sbomReport.statusCounts["completed"]`)
-- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or "-" when no completion date is available)
+- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM") when available, or "-" when no Date Completed is available)
 - **AND** the CVE data displayed corresponds to the CVE ID from the route parameters
 
-#### Scenario: Completion date field always displayed
-- **WHEN** a user views the report page AND the report has no completion date
+#### Scenario: Date Completed field always displayed
+- **WHEN** a user views the report page AND the report has no Date Completed
 - **THEN** the Additional Details card displays the Completed field with value "-"
 
 #### Scenario: Report details loading state
@@ -45,7 +45,7 @@ The report page SHALL display a donut chart summarizing CVE vulnerability status
 
 #### Scenario: CVE status donut chart displays
 - **WHEN** a user views the report page with report data loaded and a specific CVE ID in the route
-- **THEN** a donut chart displays with slices for vulnerable (red), not_vulnerable (green), and uncertain (gray) statuses
+- **THEN** a donut chart displays with slices for vulnerable (red), not_vulnerable (green), and uncertain (orange) statuses
 - **AND** each slice shows the count aggregated from `sbomReport.cveStatusCounts` where status values are mapped: "TRUE" -> vulnerable, "FALSE" -> not_vulnerable, all other values -> uncertain
 - **AND** the chart includes a legend showing status labels and counts
 - **AND** all three statuses are always displayed, even if count is 0
@@ -94,53 +94,15 @@ The report page SHALL display a donut chart summarizing component scan states fr
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Repository Reports Table
-The report page SHALL display an embedded table listing all repository reports (CVE + component combinations) for the components in the SBOM, filtered by both the report's SBOM report ID and the CVE ID from the route parameters. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST").
+The report page SHALL display an embedded repository reports table that conforms to the **repository-reports-table** specification. The table SHALL list repository reports filtered by both the report's SBOM report ID and the CVE ID from the route parameters. The table SHALL automatically refresh data every 5 seconds using `usePaginatedApi` with polling, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue auto-refreshing (see `api-hooks` specification for polling behavior). The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
-The repository reports table SHALL automatically refresh data every 5 seconds using `usePaginatedApi` with polling, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue auto-refreshing (see `api-hooks` specification for polling behavior).
-
-The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
-
-The repository reports table SHALL display a loading skeleton only on the initial load when first entering the report page. When users change sort order or filters, the existing table data SHALL remain visible while new data loads in the background. The table SHALL update with new data once the API call completes, without showing the skeleton. This prevents visual disruption and table jumping during user interactions.
-
-#### Scenario: Repository reports table displays
+#### Scenario: Repository reports table displays on report page
 - **WHEN** a user views the report page with a specific CVE ID in the route
-- **THEN** a table displays with columns: Repository, Commit ID, ExploitIQ Status, Completed (displaying dates in the format "DD Month YYYY, HH:MM:SS AM/PM TZ"), and Scan state
+- **THEN** a repository reports table displays per the repository-reports-table specification
 - **AND** the table shows only repository reports for the current SBOM report and CVE (filtered by both SBOM report ID and CVE ID from route parameters)
 - **AND** the table is embedded in the page under the donut charts
 
-#### Scenario: Repository reports table pagination
-- **WHEN** a user views the repository reports table
-- **THEN** the table displays pagination controls
-- **AND** pagination uses backend pagination support via `/api/v1/reports` endpoint with `page` and `pageSize` query parameters
-- **AND** users can navigate between pages of repository reports
-
-#### Scenario: Loading skeleton on initial page load
-- **WHEN** a user first views the report page with the repository reports table
-- **THEN** a loading skeleton is displayed while the initial data is being fetched
-- **AND** the skeleton shows placeholder rows matching the table structure
-- **AND** once data is loaded, the skeleton is replaced with the actual table data
-
-#### Scenario: No skeleton on sort change
-- **WHEN** a user changes the sort order in the repository reports table (e.g., clicks a column header to sort)
-- **THEN** the existing table data remains visible
-- **AND** the table updates with sorted data once the API call completes
-- **AND** no loading skeleton is displayed during the sort operation
-
-#### Scenario: No skeleton on filter change
-- **WHEN** a user changes a filter value in the repository reports table (e.g., selects scan state filter, exploitIQ status filter, or enters repository search text)
-- **THEN** the existing table data remains visible
-- **AND** the table updates with filtered data once the API call completes
-- **AND** no loading skeleton is displayed during the filter operation
-
-#### Scenario: Repository reports table error state
-- **WHEN** reports data fetch fails
-- **THEN** the table displays an error message
-
-#### Scenario: Repository reports table empty state
-- **WHEN** no repository reports are found for the SBOM report and CVE combination
-- **THEN** the table displays an empty state message
-
-#### Scenario: Repository reports table auto-refresh
+#### Scenario: Repository reports table auto-refresh on report page
 - **WHEN** a user views the report page with a repository reports table
 - **AND** some analysis states in `sbomReport.statusCounts` (from the parent report page) are not "failed" or "completed"
 - **THEN** the repository reports table automatically refreshes data every 5 seconds using `usePaginatedApi` with polling (see `api-hooks` specification)
@@ -148,6 +110,14 @@ The repository reports table SHALL display a loading skeleton only on the initia
 - **AND** the auto-refresh preserves current pagination, sorting, and filter settings
 - **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", auto-refresh stops
 - **AND** the auto-refresh prevents unnecessary rerenders when data hasn't changed (see `api-hooks` specification for `shouldUpdate` behavior)
+
+#### Scenario: Repository reports table error state on report page
+- **WHEN** reports data fetch fails for the repository reports table on the report page
+- **THEN** the table displays an error message
+
+#### Scenario: Repository reports table empty state on report page
+- **WHEN** no repository reports are found for the SBOM report and CVE combination
+- **THEN** the table displays an empty state message
 
 ### Requirement: Report Page Layout
 The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation and page title at the top of the page.

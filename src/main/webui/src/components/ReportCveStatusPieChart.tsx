@@ -5,6 +5,10 @@ import t_global_color_nonstatus_gray_300 from "@patternfly/react-tokens/dist/esm
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import DonutChartWrapper from "./DonutChartWrapper";
 import t_global_color_nonstatus_red_400 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_red_400";
+import {
+  getJustificationCount,
+  JUSTIFICATION_API,
+} from "../utils/justificationStatus";
 
 interface ReportCveStatusPieChartProps {
   product: ProductSummary;
@@ -17,28 +21,22 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
 }) => {
   const chartData = useMemo(() => {
     const statusCounts = product.summary?.justificationStatusCounts || {};
-
-    let vulnerableCount = 0;
-    let notVulnerableCount = 0;
-    let unknownCount = 0;
-
-    Object.entries(statusCounts).forEach(([statusKey, count]) => {
-      const normalizedKey = statusKey.toUpperCase();
-      const countValue = count as number;
-      if (normalizedKey === "TRUE") {
-        vulnerableCount += countValue;
-      } else if (normalizedKey === "FALSE") {
-        notVulnerableCount += countValue;
-      } else {
-        unknownCount += countValue;
-      }
-    });
-
-    // Always include all 3 statuses, even if count is 0
+    const vulnerableCount = getJustificationCount(
+      statusCounts,
+      JUSTIFICATION_API.VULNERABLE
+    );
+    const notVulnerableCount = getJustificationCount(
+      statusCounts,
+      JUSTIFICATION_API.NOT_VULNERABLE
+    );
+    const uncertainCount = getJustificationCount(
+      statusCounts,
+      JUSTIFICATION_API.UNCERTAIN
+    );
     return [
       { x: "vulnerable", y: vulnerableCount },
       { x: "not_vulnerable", y: notVulnerableCount },
-      { x: "uncertain", y: unknownCount },
+      { x: "uncertain", y: uncertainCount },
     ];
   }, [product, cveId]);
 

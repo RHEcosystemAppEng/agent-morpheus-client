@@ -4,15 +4,6 @@ interface FormattedTimestampProps {
   date: string | Date | null | undefined;
 }
 
-const customFormat = {
-  day: "2-digit" as const,
-  month: "long" as const,
-  year: "numeric" as const,
-  hour: "2-digit" as const,
-  minute: "2-digit" as const,
-  second: "2-digit" as const,
-  timeZoneName: "short" as const,
-};
 
 const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
   if (!date) {
@@ -32,7 +23,13 @@ const FormattedTimestamp: React.FC<FormattedTimestampProps> = ({ date }) => {
       // from its parent context, ensuring it matches the surrounding text
       <Timestamp
         date={dateObj}
-        customFormat={customFormat}
+        customFormat={{
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }}
         is12Hour
         style={{ fontSize: "unset" }}
       />

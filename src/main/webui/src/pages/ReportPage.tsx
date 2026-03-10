@@ -99,7 +99,7 @@ const ReportPage: React.FC = () => {
         </Grid>
       </PageSection>
       <PageSection>
-        <RepositoryReportsTable productId={productId} cveId={cveId} product={data} />
+        <RepositoryReportsTable cveId={cveId} product={data} />
       </PageSection>
     </>
   );

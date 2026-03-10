@@ -5,32 +5,10 @@ import {
   MenuList,
   MenuItem,
   MenuToggle,
-  Badge,
   Popper,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
 
-export const ALL_EXPLOIT_IQ_STATUS_OPTIONS = [
-  "Vulnerable",
-  "Not Vulnerable",
-  "Uncertain",
-];
-
-/**
- * Maps display label to API value for ExploitIQ status
- */
-export function mapDisplayLabelToApiValue(displayLabel: string): string {
-  switch (displayLabel) {
-    case "Vulnerable":
-      return "TRUE";
-    case "Not Vulnerable":
-      return "FALSE";
-    case "Uncertain":
-      return "UNKNOWN";
-    default:
-      return displayLabel.toLowerCase().replace(/\s+/g, "_");
-  }
-}
 
 /**
  * Hook for managing menu open/close state with keyboard and click outside handlers
@@ -166,115 +144,84 @@ export function AttributeSelector<T extends string>({
   );
 }
 
+
 /**
- * Generic checkbox filter component for dynamic options
+ * Single-select filter: PatternFly Menu with one selectable option at a time.
+ * Clearing is done by the parent (e.g. toolbar chip); this component only sets a value when the user picks an option.
  */
-export interface CheckboxFilterProps {
+export interface SingleSelectFilterProps {
   id: string;
   label: string;
   options: string[];
-  selected: string[];
-  onSelect: (selected: string[]) => void;
+  selected: string | undefined;
+  onSelect: (value: string) => void;
   loading?: boolean;
-  singleSelect?: boolean;
-  isDisabled?: boolean;
 }
 
-export function CheckboxFilter({
+export function SingleSelectFilter({
   id,
   label,
   options,
   selected,
   onSelect,
   loading = false,
-  singleSelect = false,
-  isDisabled = false,
-}: CheckboxFilterProps) {
+}: SingleSelectFilterProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const toggleRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useMenuHandlers(isMenuOpen, setIsMenuOpen, menuRef, toggleRef, containerRef);
 
-  const onToggleClick = (ev: React.MouseEvent) => {
-    ev.stopPropagation();
-    setTimeout(() => {
-      if (menuRef.current) {
-        const firstElement = menuRef.current.querySelector(
-          "li > button:not(:disabled)"
-        );
-        firstElement && (firstElement as HTMLElement).focus();
-      }
-    }, 0);
-    setIsMenuOpen((prev) => !prev);
-  };
-
   const handleSelect = (
-    _event: React.MouseEvent | undefined,
+    _event: React.MouseEvent<Element, MouseEvent> | undefined,
     itemId: string | number | undefined
   ) => {
-    if (typeof itemId === "undefined") return;
-    const itemStr = itemId.toString();
-    const isSelected = selected.includes(itemStr);
-
-    if (singleSelect) {
-      // Single selection: replace current selection with new one, or clear if clicking the same
-      onSelect(isSelected ? [] : [itemStr]);
+    if (itemId != null) {
+      onSelect(String(itemId));
       setIsMenuOpen(false);
-    } else {
-      // Multiple selection: toggle the item
-      onSelect(
-        isSelected
-          ? selected.filter((v) => v !== itemStr)
-          : [...selected, itemStr]
-      );
     }
   };
-
-  const toggle = (
-    <MenuToggle
-      ref={toggleRef}
-      onClick={onToggleClick}
-      isExpanded={isMenuOpen}
-      {...(!singleSelect &&
-        selected.length > 0 && {
-          badge: <Badge isRead>{selected.length}</Badge>,
-        })}
-      style={{ width: "200px" } as React.CSSProperties}
-      isDisabled={loading || isDisabled}
-    >
-      {singleSelect && selected.length > 0 ? `${label}: ${selected[0]}` : label}
-    </MenuToggle>
-  );
-
-  const menu = (
-    <Menu ref={menuRef} id={id} onSelect={handleSelect}>
-      <MenuContent>
-        <MenuList>
-          {options.map((option) => (
-            <MenuItem
-              hasCheckbox
-              key={option}
-              itemId={option}
-              isSelected={selected.includes(option)}
-            >
-              {option}
-            </MenuItem>
-          ))}
-        </MenuList>
-      </MenuContent>
-    </Menu>
-  );
 
   return (
     <div ref={containerRef}>
       <Popper
-        trigger={toggle}
+        trigger={
+          <MenuToggle
+            ref={toggleRef}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            isExpanded={isMenuOpen}
+            isDisabled={loading}
+            style={{ width: "200px" } as React.CSSProperties}
+          >
+            {selected != null ? `${label}: ${selected}` : label}
+          </MenuToggle>
+        }
         triggerRef={toggleRef}
-        popper={menu}
+        popper={
+          <Menu
+            ref={menuRef}
+            id={id}
+            onSelect={handleSelect}
+            selected={selected ?? undefined}
+          >
+            <MenuContent>
+              <MenuList>
+                {options.map((option) => (
+                  <MenuItem
+                    key={option}
+                    itemId={option}
+                    isSelected={selected === option}
+                  >
+                    {option}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </MenuContent>
+          </Menu>
+        }
         popperRef={menuRef}
-        appendTo={containerRef.current || undefined}
+        appendTo={containerRef.current ?? undefined}
         isVisible={isMenuOpen}
       />
     </div>

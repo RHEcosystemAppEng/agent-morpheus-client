@@ -11,6 +11,7 @@ import {
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
 import { AttributeSelector } from "./Filtering";
+import { PER_PAGE_OPTIONS } from "../constants/pagination";
 
 export interface ReportsToolbarFilters {}
 
@@ -29,6 +30,11 @@ interface ReportsToolbarProps {
     page: number;
     perPage: number;
     onSetPage: (event: unknown, newPage: number) => void;
+    onPerPageSelect: (
+      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+      newPerPage: number,
+      newPage: number
+    ) => void;
   };
 }
 
@@ -113,8 +119,8 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
                 page={pagination.page}
                 perPage={pagination.perPage}
                 onSetPage={pagination.onSetPage}
-                onPerPageSelect={() => {}}
-                perPageOptions={[]}
+                onPerPageSelect={pagination.onPerPageSelect}
+                perPageOptions={PER_PAGE_OPTIONS}
               />
             </ToolbarItem>
           </ToolbarGroup>

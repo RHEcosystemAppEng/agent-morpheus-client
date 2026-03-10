@@ -10,102 +10,87 @@ import {
   Pagination,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
-import {
-  AttributeSelector,
-  CheckboxFilter,
-  ALL_EXPLOIT_IQ_STATUS_OPTIONS,
-} from "./Filtering";
+import { AttributeSelector, SingleSelectFilter } from "./Filtering";
+import { PER_PAGE_OPTIONS } from "../constants/pagination";
+import type { UseTableParamsResult } from "../hooks/useTableParams";
+import type { SortColumn, RepoFilterKey } from "../hooks/repositoryReportsTableParams";
+
+const FINDING_FILTER_OPTIONS = [
+  "Vulnerable",
+  "Not Vulnerable",
+  "Uncertain",
+  "In progress",
+  "Failed",
+];
+
+const DEFAULT_PER_PAGE = 10;
 
 interface RepositoryTableToolbarProps {
-  repositorySearchValue: string;
-  onRepositorySearchChange: (value: string) => void;
-  scanStateFilter: string[];
-  scanStateOptions: string[];
-  exploitIqStatusFilter: string[];
+  tableParams: UseTableParamsResult<SortColumn, RepoFilterKey>;
   loading: boolean;
-  onScanStateFilterChange: (filters: string[]) => void;
-  onExploitIqStatusFilterChange: (filters: string[]) => void;
-  pagination?: {
-    itemCount: number;
-    page: number;
-    perPage: number;
-    onSetPage: (
-      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
-      newPage: number
-    ) => void;
-    onPerPageSelect?: (
-      event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
-      newPerPage: number,
-      newPage: number
-    ) => void;
-  };
+  /** When true, show CVE ID filter (Single Repositories only). */
+  showCveIdFilter?: boolean;
+  itemCount?: number;
 }
 
-type ActiveAttribute =
-  | "Repository Name"
-  | "Analysis State"
-  | "Finding";
+type ActiveAttribute = "Repository Name" | "CVE ID" | "Finding";
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
-  repositorySearchValue,
-  onRepositorySearchChange,
-  scanStateFilter,
-  scanStateOptions,
-  exploitIqStatusFilter,
+  tableParams,
   loading,
-  onScanStateFilterChange,
-  onExploitIqStatusFilterChange,
-  pagination,
+  showCveIdFilter = false,
+  itemCount,
 }) => {
   const [activeAttribute, setActiveAttribute] =
     useState<ActiveAttribute>("Repository Name");
 
-  const handleScanStateFilterDelete = (
-    _category: string | unknown,
-    label: string | unknown
-  ) => {
-    if (typeof label === "string") {
-      onScanStateFilterChange(scanStateFilter.filter((fil) => fil !== label));
-    }
-  };
+  const { data, handlers } = tableParams;
+  const repositorySearchValue = data.getFilterValue("gitRepo") ?? "";
+  const findingFilter = data.getFilterValue("finding") ?? undefined;
+  const cveIdFilterValue = data.getFilterValue("cveId") ?? "";
+  const page = data.page ?? 1;
+  const perPage = data.perPage ?? DEFAULT_PER_PAGE;
 
-  const handleExploitIqStatusFilterDelete = (
-    _category: string | unknown,
-    label: string | unknown
-  ) => {
-    if (typeof label === "string") {
-      onExploitIqStatusFilterChange(
-        exploitIqStatusFilter.filter((fil) => fil !== label)
-      );
-    }
+  const handleFindingFilterDelete = () => {
+    handlers.setFilterValue("finding", "");
   };
 
   const handleFilterDeleteGroup = () => {
-    onRepositorySearchChange("");
-    onScanStateFilterChange([]);
-    onExploitIqStatusFilterChange([]);
+    handlers.setFilterValue("gitRepo", "");
+    handlers.setFilterValue("finding", "");
+    handlers.setFilterValue("cveId", "");
   };
+
+  const attributes: ActiveAttribute[] = ["Repository Name", ...(showCveIdFilter ? (["CVE ID"] as const) : []), "Finding"];
+  const hasActiveFilters =
+    repositorySearchValue !== "" ||
+    findingFilter != null ||
+    (showCveIdFilter && cveIdFilterValue !== "");
 
   const repositorySearchInput = (
     <SearchInput
       aria-label="Search by repository name"
       placeholder="Search by Repository Name"
       value={repositorySearchValue}
-      onChange={(_event, value) => onRepositorySearchChange(value)}
-      onClear={() => onRepositorySearchChange("")}
+      onChange={(_event, value) => handlers.setFilterValue("gitRepo", value)}
+      onClear={() => handlers.setFilterValue("gitRepo", "")}
     />
   );
+
+  const cveIdSearchInput = showCveIdFilter ? (
+    <SearchInput
+      aria-label="Filter by CVE ID"
+      placeholder="Filter by CVE ID"
+      value={cveIdFilterValue}
+      onChange={(_event, value) => handlers.setFilterValue("cveId", value)}
+      onClear={() => handlers.setFilterValue("cveId", "")}
+    />
+  ) : null;
 
   return (
     <Toolbar
       id="repository-reports-toolbar"
-      clearAllFilters={
-        repositorySearchValue !== "" ||
-        scanStateFilter.length > 0 ||
-        exploitIqStatusFilter.length > 0
-          ? handleFilterDeleteGroup
-          : undefined
-      }
+      clearAllFilters={hasActiveFilters ? handleFilterDeleteGroup : undefined}
     >
       <ToolbarContent>
         <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
@@ -113,11 +98,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={[
-                  "Repository Name",
-                  "Analysis State",
-                  "Finding",
-                ]}
+                attributes={attributes}
                 onAttributeChange={(attr) =>
                   setActiveAttribute(attr as ActiveAttribute)
                 }
@@ -127,62 +108,63 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               labels={
                 repositorySearchValue !== "" ? [repositorySearchValue] : []
               }
-              deleteLabel={() => onRepositorySearchChange("")}
-              deleteLabelGroup={() => onRepositorySearchChange("")}
+              deleteLabel={() => handlers.setFilterValue("gitRepo", "")}
+              deleteLabelGroup={() => handlers.setFilterValue("gitRepo", "")}
               categoryName="Repository Name"
               showToolbarItem={activeAttribute === "Repository Name"}
             >
               {repositorySearchInput}
             </ToolbarFilter>
+            {showCveIdFilter && (
+              <ToolbarFilter
+                labels={cveIdFilterValue !== "" ? [cveIdFilterValue] : []}
+                deleteLabel={() => handlers.setFilterValue("cveId", "")}
+                deleteLabelGroup={() => handlers.setFilterValue("cveId", "")}
+                categoryName="CVE ID"
+                showToolbarItem={activeAttribute === "CVE ID"}
+              >
+                {cveIdSearchInput}
+              </ToolbarFilter>
+            )}
             <ToolbarFilter
-              labels={scanStateFilter}
-              deleteLabel={handleScanStateFilterDelete}
-              deleteLabelGroup={handleFilterDeleteGroup}
-              categoryName="Analysis State"
-              showToolbarItem={activeAttribute === "Analysis State"}
-            >
-              <CheckboxFilter
-                id="scan-state-menu"
-                label="Filter by Analysis State"
-                options={scanStateOptions}
-                selected={scanStateFilter}
-                onSelect={onScanStateFilterChange}
-                loading={loading}
-              />
-            </ToolbarFilter>
-            <ToolbarFilter
-              labels={exploitIqStatusFilter}
-              deleteLabel={handleExploitIqStatusFilterDelete}
+              labels={findingFilter != null ? [findingFilter] : []}
+              deleteLabel={handleFindingFilterDelete}
               deleteLabelGroup={handleFilterDeleteGroup}
               categoryName="Finding"
               showToolbarItem={activeAttribute === "Finding"}
             >
-              <CheckboxFilter
-                id="finding-menu"
+              <SingleSelectFilter
+                id="finding-single-select-menu"
                 label="Filter by Finding"
-                options={ALL_EXPLOIT_IQ_STATUS_OPTIONS}
-                selected={exploitIqStatusFilter}
-                onSelect={onExploitIqStatusFilterChange}
+                options={FINDING_FILTER_OPTIONS}
+                selected={findingFilter}
+                onSelect={(value) =>
+                  handlers.setFilterValue("finding", value ?? "")
+                }
                 loading={loading}
               />
             </ToolbarFilter>
           </ToolbarGroup>
         </ToolbarToggleGroup>
-        {pagination && (
+        {itemCount != null && (
           <ToolbarGroup align={{ default: "alignEnd" }}>
             <ToolbarItem>
               <Pagination
-                itemCount={pagination.itemCount}
-                page={pagination.page}
-                perPage={pagination.perPage}
-                onSetPage={pagination.onSetPage}
-                onPerPageSelect={pagination.onPerPageSelect || (() => {})}
-                perPageOptions={[
-                  { title: "10", value: 10 },
-                  { title: "20", value: 20 },
-                  { title: "50", value: 50 },
-                  { title: "100", value: 100 },
-                ]}
+                itemCount={itemCount}
+                page={page}
+                perPage={perPage}
+                onSetPage={(
+                  _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+                  newPage: number
+                ) => handlers.setPage(newPage)}
+                onPerPageSelect={(
+                  _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+                  newPerPage: number,
+                  newPage: number
+                ) => {
+                  handlers.setPagination(newPerPage, newPage);
+                }}
+                perPageOptions={PER_PAGE_OPTIONS}
               />
             </ToolbarItem>
           </ToolbarGroup>

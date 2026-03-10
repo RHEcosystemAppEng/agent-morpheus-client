@@ -103,6 +103,39 @@
           "CONFUSION_MATRIX"
         ]
       },
+      "CredentialData": {
+        "type": "object",
+        "properties": {
+          "encryptedSecretValue": {
+            "type": "string"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "credentialType": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "description": "Standard error response",
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message describing what went wrong"
+          }
+        }
+      },
       "Eval": {
         "type": "object",
         "required": [
@@ -110,7 +143,7 @@
           "cve",
           "component",
           "component_version",
-          "metric_value"
+          "metric_score"
         ],
         "properties": {
           "job_id": {
@@ -142,9 +175,21 @@
           "metric_name": {
             "$ref": "#/components/schemas/MetricName"
           },
-          "metric_value": {
+          "metric_score": {
             "type": "string",
             "minLength": 1
+          },
+          "metric_reasoning": {
+            "type": "string",
+            "description": "Containing the reasoning for the score that was calculated"
+          },
+          "model_input": {
+            "type": "string",
+            "description": "Containing the concrete Input to the agent model That is being evaluated"
+          },
+          "model_output": {
+            "type": "string",
+            "description": "Containing the concrete Output produced by the Agent' Model which is being evaluated"
           }
         }
       },
@@ -259,6 +304,24 @@
           }
         }
       },
+      "InlineCredential": {
+        "description": "Inline credential for private repository access",
+        "type": "object",
+        "required": [
+          "secretValue"
+        ],
+        "properties": {
+          "secretValue": {
+            "type": "string",
+            "description": "The secret value to be encrypted and stored",
+            "pattern": "\\S"
+          },
+          "userName": {
+            "type": "string",
+            "description": "Git username (required for PAT authentication, ignored for SSH keys)"
+          }
+        }
+      },
       "Job": {
         "type": "object",
         "properties": {
@@ -358,21 +421,15 @@
       "MetricName": {
         "type": "string",
         "enum": [
+          "INTEL_SCORE_FIDELITY",
+          "JUSTIFICATION_QUALITY",
+          "SUMMARY_QUALITY",
+          "AGENT_LOOP_TOOL_SELECTION_QUALITY",
+          "AGENT_LOOP_TOOL_CALL_INTEGRITY",
+          "AGENT_LOOP_REASONING_QUALITY",
+          "AGENT_LOOP_ANSWER_QUALITY",
           "CHECKLIST_PROMPT_ALIGNMENT",
-          "CHECKLIST_CVE_RELEVANCY",
-          "CHECKLIST_VULNERABILITY_COMPLETENESS",
-          "CHECKLIST_ACTIONABILITY",
-          "CHECKLIST_PRIORITIZATION",
-          "AGENT_ANSWER_QUALITY",
-          "AGENT_REASONING_QUALITY",
-          "AGENT_TOOL_SELECTION_QUALITY",
-          "SUMMARY_STRUCTURE",
-          "SUMMARY_VERDICT_ACCURACY",
-          "SUMMARY_EVIDENCE_CITATION",
-          "SUMMARY_FAITHFULNESS",
-          "JUSTIFICATION_LABEL_SUMMARY_CONSISTENCY",
-          "JUSTIFICATION_REASON_SUMMARY_CONSISTENCY",
-          "JUSTIFICATION_LABEL_REASON_CONSISTENCY"
+          "CHECKLIST_QUALITY"
         ]
       },
       "OverviewMetrics": {
@@ -650,6 +707,10 @@
           "ref": {
             "type": "string",
             "description": "Git reference (commit hash, tag, or branch) from source_info"
+          },
+          "submittedAt": {
+            "type": "string",
+            "description": "Submitted at timestamp from metadata.submitted_at"
           }
         }
       },
@@ -746,6 +807,11 @@
                 "type": "object"
               }
             }
+          },
+          "credential": {
+            "description": "Credential for private repository access (optional, required only for private repository access)",
+            "type": "object",
+            "$ref": "#/components/schemas/InlineCredential"
           },
           "sbom": {
             "description": "SBOM data (required if image is not provided)",
@@ -1075,6 +1141,31 @@
       }
     }
   },
+  "tags": [
+    {
+      "name": "ML-OPS Audit 1 - Batch Resource",
+      "description": "resource related to ML-OPS audit batch metadata and data, with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 2 - Job Resource",
+      "description": "resource related to ML-OPS audit job runs metadata and data, with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 3 - Trace Resource",
+      "description": "resource related to ML-OPS traces and span entries created in agent job runs and with its respective operations"
+    },
+    {
+      "name": "ML-OPS Audit 4 - Eval Resource",
+      "description": "resource related to ML-OPS audit curated evaluation metrics recorded scores of a job run' LLM Stages with its respective operations"
+    },
+    {
+      "name": "Overview Metrics"
+    },
+    {
+      "name": "credentials",
+      "description": "Credential retrieval operations for Agent callback"
+    }
+  ],
   "paths": {
     "/api/v1/batch": {
       "post": {
@@ -1529,6 +1620,54 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ]
+      }
+    },
+    "/api/v1/credentials/{credentialId}": {
+      "get": {
+        "summary": "Retrieve credential for ExploitIQ Agent",
+        "description": "Single-use retrieval of decrypted credential. Credential is deleted after retrieval.",
+        "tags": [
+          "credentials"
+        ],
+        "parameters": [
+          {
+            "name": "credentialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Credential retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid credentialId format"
+          },
+          "401": {
+            "description": "Authentication required (missing or invalid JWT)"
+          },
+          "404": {
+            "description": "Credential not found or expired"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         },
         "security": [
@@ -2507,7 +2646,7 @@
     "/api/v1/products/upload-cyclonedx": {
       "post": {
         "summary": "Upload CycloneDX file for analysis",
-        "description": "Accepts a CVE ID and CycloneDX JSON file, validates them, and queues the report for analysis",
+        "description": "Accepts a CVE ID and CycloneDX JSON file with optional credentials for private repository access, validates them, and queues the report for analysis",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -2520,6 +2659,12 @@
                   "file": {
                     "type": "string",
                     "format": "binary"
+                  },
+                  "secretValue": {
+                    "type": "string"
+                  },
+                  "userName": {
+                    "type": "string"
                   }
                 }
               }
@@ -2789,6 +2934,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "When true, return only reports that have no metadata.product_id (single repositories not part of a product)",
+            "name": "withoutProduct",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "false"
             }
           }
         ],
@@ -3557,27 +3711,6 @@
       }
     }
   },
-  "tags": [
-    {
-      "name": "ML-OPS Audit 1 - Batch Resource",
-      "description": "resource related to ML-OPS audit batch metadata and data, with its respective operations"
-    },
-    {
-      "name": "ML-OPS Audit 2 - Job Resource",
-      "description": "resource related to ML-OPS audit job runs metadata and data, with its respective operations"
-    },
-    {
-      "name": "ML-OPS Audit 3 - Trace Resource",
-      "description": "resource related to ML-OPS traces and span entries created in agent job runs and with its respective operations"
-    },
-    {
-      "name": "ML-OPS Audit 4 - Eval Resource",
-      "description": "resource related to ML-OPS audit curated evaluation metrics recorded scores of a job run' LLM Stages with its respective operations"
-    },
-    {
-      "name": "Overview Metrics"
-    }
-  ],
   "info": {
     "title": "exploit-iq-client API",
     "version": "1.0.0-SNAPSHOT"

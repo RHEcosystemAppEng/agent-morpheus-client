@@ -9,6 +9,8 @@ import {
   Content,
   ContentVariants,
   Icon,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
 import { PlusIcon, ChartLineIcon, BookOpenIcon } from "@patternfly/react-icons";
 import { createUseStyles } from "react-jss";
@@ -35,33 +37,50 @@ const GetStartedCard: FunctionComponent = () => {
   const cards = [
     <Card isFullHeight isPlain key="card-1">
       <CardHeader>
-        <Content component={ContentVariants.h2} style={{ fontSize: "1.2rem" }} >
+        <Content
+          component={ContentVariants.h2}
+          style={{ fontSize: "1.2rem", color: "black" }}
+        >
           Get started with ExploitIQ
         </Content>
       </CardHeader>
       <CardBody>
-        <Content
-          className={css(
-            classes.action,
-            "pf-v6-u-font-weight-bold",
-            "pf-v6-u-mb-md"
-          )}
-          style={{ fontSize: "1.1rem" }}
-        >
-          <Icon size="lg" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
-            <PlusIcon className={classes.actionIcon} />
-          </Icon>
-          Request analysis
-        </Content>
-        <Content className="pf-v6-u-font-size-md">
-           Submit an exploitability analysis request with an SBOM file to
-          generate a VEX status report.
-        </Content>
+        <Stack>
+          <StackItem>
+            <Icon
+              size="xl"
+              className={css("pf-v6-u-pl-sm", "pf-v6-u-pr-md")}
+            >
+              <PlusIcon className={classes.actionIcon} />
+            </Icon>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xs)" }}>
+            </StackItem>  
+          </StackItem>
+          <StackItem>
+            <Content
+              className={css(
+                classes.action,
+                "pf-v6-u-font-weight-bold",
+                "pf-v6-u-mb-xs",
+              )}
+              style={{ fontSize: "1.1rem", color: "black" }}
+            >
+              Request Exploitability Analysis
+            </Content>
+          </StackItem>
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm)" }}>
+            </StackItem>  
+          <StackItem>
+            <Content className="pf-v6-u-font-size-md">
+              Submit an exploitability analysis request with an SBOM file to
+              generate a VEX status report.
+            </Content>
+          </StackItem>
+        </Stack>
       </CardBody>
       <CardFooter>
         <Button
-          variant="link"
-          isInline
+          variant="secondary"
           onClick={() => setIsRequestAnalysisModalOpen(true)}
         >
           Request Analysis →
@@ -71,26 +90,41 @@ const GetStartedCard: FunctionComponent = () => {
     <Card isFullHeight isPlain key="card-2">
       <CardHeader style={{ visibility: "hidden" }}>-</CardHeader>
       <CardBody>
-        <Content
-          className={css(
-            classes.action,
-            "pf-v6-u-font-weight-bold",
-            "pf-v6-u-mb-md"
-          )}
-          style={{ fontSize: "1.1rem" }}
-        >
-          <Icon size="lg" style={{ marginRight: "9px" }}className="pf-v6-u-pl-sm pf-v6-u-pr-md">
-            <ChartLineIcon className={classes.actionIcon} />
-          </Icon>
-          View Reports
-        </Content>
-        <Content className="pf-v6-u-font-size-md">
-          Explore comprehensive product report with detailed CVE analysis
-          results, exploitability assessments, and VEX status.
-        </Content>
+        <Stack>
+          <StackItem>
+            <Icon
+              size="xl"
+              className={css("pf-v6-u-pl-sm", "pf-v6-u-pr-md")}
+            >
+              <ChartLineIcon className={classes.actionIcon} />
+            </Icon>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xs)" }}>
+            </StackItem>  
+          </StackItem>
+          <StackItem>
+            <Content
+              className={css(
+                classes.action,
+                "pf-v6-u-font-weight-bold",
+                "pf-v6-u-mb-xs",
+              )}
+              style={{ fontSize: "1.1rem", color: "black" }}
+            >
+              View Reports
+            </Content>
+          </StackItem>
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm)" }}>
+            </StackItem>  
+          <StackItem>
+            <Content className="pf-v6-u-font-size-md">
+              Explore comprehensive product report with detailed CVE analysis
+              results, exploitability assessments, and VEX status.
+            </Content>
+          </StackItem>
+        </Stack>
       </CardBody>
       <CardFooter>
-        <Button variant="link" isInline onClick={() => navigate("/reports")}>
+        <Button variant="secondary" onClick={() => navigate("/reports")}>
           View Reports →
         </Button>
       </CardFooter>
@@ -98,35 +132,48 @@ const GetStartedCard: FunctionComponent = () => {
     <Card isFullHeight isPlain key="card-3">
       <CardHeader style={{ visibility: "hidden" }}>-</CardHeader>
       <CardBody>
-        <Content
-          className={css(
-            classes.action,
-            "pf-v6-u-font-weight-bold",
-            "pf-v6-u-mb-md"
-          )}
-          style={{ fontSize: "1.1rem" }}
-        >
-          <Icon size="lg" style={{ marginRight: "9px" }} className="pf-v6-u-pl-sm pf-v6-u-pr-md">
-            <BookOpenIcon className={classes.actionIcon} />
-          </Icon>
-          Learn more
-        </Content>
-        <Content className="pf-v6-u-font-size-md">
-          Discover how ExploitIQ helps identify false positives and provides
-          accurate vulnerability exploitability assessments.
-        </Content>
+        <Stack>
+          <StackItem>
+            <Icon
+              size="xl"
+              className={css("pf-v6-u-pl-sm", "pf-v6-u-pr-md")}
+            >
+              <BookOpenIcon className={classes.actionIcon} />
+            </Icon>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xs)" }}>
+            </StackItem>  
+          </StackItem>
+          <StackItem>
+            <Content
+              className={css(
+                classes.action,
+                "pf-v6-u-font-weight-bold",
+                "pf-v6-u-mb-xs",
+              )}
+              style={{ fontSize: "1.1rem", color: "black" }}
+            >
+              Learn more
+            </Content>
+          </StackItem>
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm)" }}>
+            </StackItem>  
+          <StackItem>
+            <Content className="pf-v6-u-font-size-md">
+              Discover how ExploitIQ helps identify false positives and provides
+              accurate vulnerability exploitability assessments.
+            </Content>
+          </StackItem>
+        </Stack>
       </CardBody>
       <CardFooter>
-        <Button variant="link" isInline>
-          View Documentation →
-        </Button>
+        <Button variant="secondary">View Documentation →</Button>
       </CardFooter>
     </Card>,
   ];
 
   return (
     <>
-      <MultiContentCard cards={cards} />
+      <MultiContentCard cards={cards} withDividers />
       {isRequestAnalysisModalOpen && (
         <RequestAnalysisModal
           onClose={() => setIsRequestAnalysisModalOpen(false)}

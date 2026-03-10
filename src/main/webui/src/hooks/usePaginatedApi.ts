@@ -262,6 +262,7 @@ export function usePaginatedApi<T>(
         setError(err instanceof Error ? err : new Error(String(err)));
         initialFetchCompleteRef.current = true;
       }
+      console.error("Error in usePaginatedApi", err);
     } finally {
       abortControllerRef.current = null;
       setLoading(false);
