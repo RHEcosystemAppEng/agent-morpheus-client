@@ -136,6 +136,7 @@ const RepositoryReportsTableContent: React.FC<
         <Thead>
           <Tr>
             <Th
+              style={{ width: "28%" }}
               sort={{
                 sortBy: {
                   index: activeSortIndex,
@@ -147,7 +148,7 @@ const RepositoryReportsTableContent: React.FC<
             >
               Repository
             </Th>
-            <Th>Commit ID</Th>
+            <Th style={{ width: "8%" }}>Commit ID</Th>
             <Th style={{ width: "10%" }}>Finding</Th>
             <Th
               style={{ width: "22%", paddingLeft: "0.5rem" }}
@@ -162,8 +163,10 @@ const RepositoryReportsTableContent: React.FC<
             >
               Completed
             </Th>
-            <Th>Analysis state</Th>
-            <Th>CVE Repository Report</Th>
+            <Th style={{ width: "14%" }}>Analysis state</Th>
+            <Th style={{ width: "1%", whiteSpace: "nowrap" }}>
+              CVE Repository Report
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -171,14 +174,10 @@ const RepositoryReportsTableContent: React.FC<
             const viewPath = getViewPath(report);
             return (
               <Tr key={report.id}>
-                <Td dataLabel="Repository">
+                <Td dataLabel="Repository" style={{ width: "28%" }}>
                   <TableText wrapModifier="truncate">
                     {report.gitRepo ? (
-                      <a
-                        href={report.gitRepo}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
+                      <a href={report.gitRepo} target="_blank" rel="noreferrer">
                         {report.gitRepo}
                       </a>
                     ) : (
@@ -186,7 +185,7 @@ const RepositoryReportsTableContent: React.FC<
                     )}
                   </TableText>
                 </Td>
-                <Td dataLabel="Commit ID">
+                <Td dataLabel="Commit ID" style={{ width: "8%" }}>
                   <TableText wrapModifier="truncate">
                     {report.gitRepo && report.ref ? (
                       <a
@@ -221,10 +220,10 @@ const RepositoryReportsTableContent: React.FC<
                     <FormattedTimestamp date={report.completedAt} />
                   </TableText>
                 </Td>
-                <Td dataLabel="Analysis state">
+                <Td dataLabel="Analysis state" style={{ width: "9%" }}>
                   <ReportStatusLabel state={report.state} />
                 </Td>
-                <Td dataLabel="CVE Repository Report">
+                <Td dataLabel="CVE Repository Report" style={{ width: "13%" }}>
                   <TableText>
                     <Button
                       variant="primary"

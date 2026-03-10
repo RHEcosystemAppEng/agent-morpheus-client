@@ -33,8 +33,6 @@ export interface RepositoryReportsTableState {
   repositorySearchValue: string;
   activeSortIndex: number;
   activeSortDirection: SortDirection;
-  setPage: (page: number) => void;
-  setPerPage: (perPage: number) => void;
   handleScanStateFilterChange: (filters: string[]) => void;
   handleExploitIqStatusFilterChange: (filters: string[]) => void;
   handleRepositorySearchChange: (value: string) => void;
@@ -126,8 +124,6 @@ export function useRepositoryReportsTableState(): RepositoryReportsTableState {
     repositorySearchValue,
     activeSortIndex,
     activeSortDirection,
-    setPage,
-    setPerPage,
     handleScanStateFilterChange,
     handleExploitIqStatusFilterChange,
     handleRepositorySearchChange,

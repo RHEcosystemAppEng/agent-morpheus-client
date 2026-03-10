@@ -273,8 +273,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
           <Stack hasGutter>
-            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl))" }}>
-              <SingleRepositoriesTable />
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
+              {activeTabKey === 1 && <SingleRepositoriesTable />}
             </StackItem>
           </Stack>
         </Tab>
@@ -292,7 +292,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       >
         <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
           <Stack hasGutter>
-            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm))" }}>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
           <Card>
             <CardBody>
               <Alert variant={AlertVariant.danger} title="Error loading reports">
@@ -305,8 +305,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
           <Stack hasGutter>
-            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
-              <SingleRepositoriesTable />
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
+              {activeTabKey === 1 && <SingleRepositoriesTable />}
             </StackItem>
           </Stack>
         </Tab>
@@ -326,7 +326,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       >
         <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
           <Stack hasGutter>
-            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
           <ReportsToolbar
             searchValue={searchValue}
             cveSearchValue={cveSearchValue}
@@ -350,8 +350,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
           <Stack hasGutter>
-            <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
-              <SingleRepositoriesTable />
+            <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
+              {activeTabKey === 1 && <SingleRepositoriesTable />}
             </StackItem>
           </Stack>
         </Tab>
@@ -368,7 +368,7 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
     >
       <Tab eventKey={0} title={<TabTitleText>SBOMs</TabTitleText>} aria-label="SBOMs table">
         <Stack hasGutter>
-          <StackItem style={{ paddingTop: "calc(4 * var(--pf-t--global--spacer--sm))" }}>
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
         <ReportsToolbar
           searchValue={searchValue}
           cveSearchValue={cveSearchValue}
@@ -581,8 +581,8 @@ const ReportsTable: React.FC<ReportsTableProps> = ({
       </Tab>
       <Tab eventKey={1} title={<TabTitleText>Single Repositories</TabTitleText>} aria-label="Single Repositories">
         <Stack hasGutter>
-          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--sm))" }}>
-            <SingleRepositoriesTable />
+          <StackItem style={{ paddingTop: "var(--pf-t--global--spacer--xl)" }}>
+            {activeTabKey === 1 && <SingleRepositoriesTable />}
           </StackItem>
         </Stack>
       </Tab>
