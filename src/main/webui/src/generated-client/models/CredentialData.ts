@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CredentialData = {
-    secretValue?: string;
+    encryptedSecretValue?: string;
+    iv?: string;
     username?: string;
     credentialType?: string;
     userId?: string;

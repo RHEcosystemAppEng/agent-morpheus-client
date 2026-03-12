@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Modal,
   ModalBody,
@@ -8,13 +8,11 @@ import {
   Form,
   FormGroup,
   TextInput,
-  MultipleFileUpload,
-  MultipleFileUploadMain,
-  MultipleFileUploadStatus,
-  MultipleFileUploadStatusItem,
+  FileUpload,
   DropEvent,
   Button,
   Alert,
+  AlertVariant,
   FormHelperText,
   HelperText,
   HelperTextItem,
@@ -25,7 +23,7 @@ import {
   Card,
   CardBody,
 } from "@patternfly/react-core";
-import { UploadIcon, KeyIcon, SecurityIcon } from "@patternfly/react-icons";
+import { KeyIcon, SecurityIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router";
 import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
@@ -34,6 +32,17 @@ import { getErrorMessage, isValidationError } from "../utils/errorHandling";
 const FALLBACK_ERROR_MESSAGE = "An error occurred while submitting the analysis request.";
 // CVE ID pattern matching backend validation: ^CVE-[0-9]{4}-[0-9]{4,19}$
 const CVE_ID_PATTERN = /^CVE-[0-9]{4}-[0-9]{4,19}$/;
+
+// SBOM format constants
+const SPDX_VERSION = "2.3" as const;
+const CYCLONEDX_VERSION = "1.6" as const;
+
+// SBOM format enum
+enum SbomFormat {
+  SPDX = "SPDX",
+  CycloneDX = "CycloneDX",
+}
+
 interface RequestAnalysisModalProps {
   onClose: () => void;
 }
@@ -47,8 +56,9 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const navigate = useNavigate();
   const labelHelpRef = useRef<HTMLButtonElement>(null);
   const [cveId, setCveId] = useState("");
-  const [currentFiles, setCurrentFiles] = useState<File[]>([]);
-  const [showStatus, setShowStatus] = useState(false);
+  const [fileValue, setFileValue] = useState("");
+  const [filename, setFilename] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cveIdError, setCveIdError] = useState<string | null>(null);
@@ -91,6 +101,30 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     return "PAT";
   };
 
+  /**
+   * Detects SBOM format by parsing the file content
+   * @param file The file to check
+   * @returns SbomFormat if recognized, null if valid JSON but unsupported format
+   * @throws Error if file is not valid JSON
+   */
+  const detectSbomFormat = async (file: File): Promise<SbomFormat | null> => {    
+    try {
+      let text = await file.text();
+      let json = JSON.parse(text);
+      // Check for SPDX format
+      if (json.SPDXID && json.spdxVersion === `SPDX-${SPDX_VERSION}`) {
+        return SbomFormat.SPDX;
+      }
+      // Check for CycloneDX format
+      if (json.bomFormat === SbomFormat.CycloneDX && json.specVersion === CYCLONEDX_VERSION) {
+        return SbomFormat.CycloneDX;
+      }    
+      return null;      
+    } catch (e) {
+      // If file is not valid JSON, throw error
+      throw new Error("File is not valid JSON");
+    }    
+  };
   const handleCveIdChange = (
     _event: React.FormEvent<HTMLInputElement>,
     value: string
@@ -169,16 +203,6 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   };
 
-  // Show status once a file has been uploaded
-  useEffect(() => {
-    if (!showStatus && currentFiles.length > 0) {
-      setShowStatus(true);
-    }
-  }, [currentFiles.length, showStatus]);
-
-  // Submit button is only disabled during submission or when private repo is enabled with empty auth secret
-  const isSubmitDisabled = isSubmitting || (isAuthenticationSecretChecked && authenticationSecret.trim() === "");
-
   /**
    * Handles errors from the API submission, setting field-specific or generic error messages
    * @param err The error caught from the API call
@@ -209,13 +233,72 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
-    // Clear previous errors
+  /**
+   * Clears all form error states
+   */
+  const clearAllErrors = () => {
     setError(null);
     setCveIdError(null);
     setFileError(null);
     setAuthenticationSecretError(null);
     setUsernameError(null);
+  };
+    
+  const createFormData = (cveId: string, file: File) => {
+    const formData: { cveId: string; file: File; secretValue?: string; username?: string } = {
+      cveId: cveId,
+      file: file,
+    };
+    if (isAuthenticationSecretChecked && authenticationSecret.trim() !== "") {
+      formData.secretValue = authenticationSecret.trim();
+      const credentialType = detectCredentialType(authenticationSecret);
+      if (credentialType === "PAT" && username.trim() !== "") {
+        formData.username = username.trim();
+      }
+    }
+    return formData;
+    
+  };
+  /**
+   * Uploads SBOM file and handles response based on format
+   */
+  const uploadSbomFile = async (
+    file: File,
+    cveId: string,
+    sbomFormat: SbomFormat
+  ): Promise<void> => {
+    // Determine API function and navigation path based on format
+    let apiCall: () => Promise<any>;
+    let getNavigationPath: (response: any) => string;
+
+    const formData = createFormData(cveId, file);
+    if (sbomFormat === SbomFormat.SPDX) {
+      // Build form data for SPDX with CVE ID and optional credentials      
+      apiCall = () =>
+        ProductEndpointService.postApiV1ProductsUploadSpdx({
+          formData,
+        });
+      getNavigationPath = (response: Record<string, any>) =>
+        `/reports/product/${response.productId}/${cveId}`;
+    } else {      
+            
+      apiCall = () =>
+        ProductEndpointService.postApiV1ProductsUploadCyclonedx({
+          formData,
+        });
+      getNavigationPath = (response: ReportData) =>
+        `/reports/component/${cveId}/${response.reportRequestId.id}`;
+    }
+
+    // Call API and navigate using unified code path
+    const response = await apiCall();
+    const navigationPath = getNavigationPath(response);
+    navigate(navigationPath);
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    clearAllErrors();
 
     // Validate required fields
     const trimmedCveId = cveId.trim();
@@ -225,15 +308,14 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       setCveIdError("Required");
       hasValidationErrors = true;
     } else {
-      // Validate CVE ID format
-      const formatError = validateCveIdFormat(trimmedCveId);
-      if (formatError) {
-        setCveIdError(formatError);
+      const cveFormatError = validateCveIdFormat(trimmedCveId);
+      if (cveFormatError) {
+        setCveIdError(cveFormatError);
         hasValidationErrors = true;
       }
     }
 
-    if (currentFiles.length === 0) {
+    if (!selectedFile || !filename || filename === "") {
       setFileError("Required");
       hasValidationErrors = true;
     }
@@ -262,82 +344,68 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return;
     }
 
+    const file = selectedFile;
+    if (!file) {
+      setFileError("Required");
+      return;
+    }
+
+    
     setIsSubmitting(true);
 
+    let sbomFormat: SbomFormat | null = null;
     try {
-      const file = currentFiles[0]!;
-      const formData: {
-        cveId: string;
-        file: File;
-        secretValue?: string;
-        username?: string;
-      } = {
-        cveId: cveId.trim(),
-        file: file,
-      };
-
-      // Add credentials if provided
-      if (isAuthenticationSecretChecked && authenticationSecret.trim() !== "") {
-        formData.secretValue = authenticationSecret.trim();
-        const credentialType = detectCredentialType(authenticationSecret);
-        if (credentialType === "PAT" && username.trim() !== "") {
-          formData.username = username.trim();
-        }
-      }
-
-      const response: ReportData = await ProductEndpointService.postApiV1ProductsUploadCyclonedx({
-        formData,
-      });
-
-      // Extract report ID from response
-      const reportId = response.reportRequestId.id;
-
-      // Navigate to repository report page
-      navigate(`/reports/component/${cveId.trim()}/${reportId}`);
-
-      // Close modal
-      onClose();
+      sbomFormat = await detectSbomFormat(file);      
     } catch (err: unknown) {
-      handleSubmitError(err);
+      if (err instanceof Error) {
+        setFileError(err.message);
+      } else {        
+        setFileError("An unknown error occurred while detecting the SBOM format");
+        console.error(err);        
+      }      
+      setIsSubmitting(false);
+      return;
+    }
+    if (!sbomFormat) {      
+      setIsSubmitting(false);
+      setFileError(`File format not supported. Please upload an ${SbomFormat.SPDX} ${SPDX_VERSION} or ${SbomFormat.CycloneDX} ${CYCLONEDX_VERSION} file.`);
+      return;
+    }
+    try {
+      // Detect SBOM format                 
+      await uploadSbomFile(file, trimmedCveId, sbomFormat);
+    } catch (err: unknown) {            
+      handleSubmitError(err);      
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const removeFiles = (namesOfFilesToRemove: string[]) => {
-    setCurrentFiles((prevFiles) =>
-      prevFiles.filter((file) => !namesOfFilesToRemove.includes(file.name))
-    );
-    // Clear error when user removes file
+  const handleFileInputChange = (_event: DropEvent, file: File) => {
+    setFilename(file.name);
+    setFileValue(file.name);
+    setSelectedFile(file);
+    // Clear errors when user adds a file
     if (fileError) {
       setFileError(null);
     }
   };
 
-  const handleFileDrop = (_event: DropEvent, droppedFiles: File[]) => {
-    // Only allow 1 file - replace existing file if one is dropped
-    const firstFile = droppedFiles[0];
-    if (firstFile) {
-      setCurrentFiles([firstFile]);
-      // Clear error when user adds a file
-      if (fileError) {
-        setFileError(null);
-      }
+  const handleClear = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setFilename("");
+    setFileValue("");
+    setSelectedFile(null);
+    // Clear errors when user clears file
+    if (fileError) {
+      setFileError(null);
     }
-  };
-
-  const handleReadSuccess = (_data: string, _file: File) => {
-    // File read successfully
-  };
-  const handleReadFail = (_error: DOMException, _file: File) => {
-    // Handle read error if needed
   };
 
   return (
     <Modal
       variant={ModalVariant.medium}
       isOpen={true}
-      onClose={onClose}
+      onClose={isSubmitting ? undefined : onClose}
       aria-labelledby="request-analysis-modal-title"
       aria-describedby="request-analysis-modal-description"
     >
@@ -348,7 +416,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       <ModalBody>
         {error && (
           <Alert
-            variant="danger"
+            variant={AlertVariant.danger}
             title="Error submitting analysis request"
             isInline
             style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
@@ -383,52 +451,33 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
               </HelperText>
             </FormHelperText>
           </FormGroup>
-          <FormGroup label="SBOM file" isRequired fieldId="sbom-file">
-            <MultipleFileUpload
-              onFileDrop={handleFileDrop}
-              dropzoneProps={{
-                accept: {
-                  "application/json": [".json"],
-                  "application/xml": [".xml"],
-                  "text/xml": [".xml"],
-                },
-                disabled: isSubmitting,
-                multiple: false,
-              }}
-            >
-              <MultipleFileUploadMain
-                titleIcon={<UploadIcon />}
-                titleText="Drag and drop file here"
-                titleTextSeparator="or"
-                infoText="Accepted file types: CycloneDX 1.6 JSON"
-              />
-              {showStatus && (
-                <MultipleFileUploadStatus
-                  statusToggleText={`${currentFiles.length} file${
-                    currentFiles.length !== 1 ? "s" : ""
-                  } uploaded`}
-                  statusToggleIcon="success"
-                  aria-label="Current uploads"
-                >
-                  {currentFiles.map((file) => (
-                    <MultipleFileUploadStatusItem
-                      file={file}
-                      key={file.name}
-                      onClearClick={() => removeFiles([file.name])}
-                      onReadSuccess={handleReadSuccess}
-                      onReadFail={handleReadFail}
-                    />
-                  ))}
-                </MultipleFileUploadStatus>
-              )}
-            </MultipleFileUpload>
-            {fileError && (
-              <FormHelperText>
-                <HelperText>
+          <FormGroup 
+            label="SBOM file" 
+            isRequired 
+            fieldId="sbom-file"
+          >
+            <FileUpload
+              id="sbom-file"
+              value={fileValue}
+              filename={filename}
+              filenamePlaceholder="Drag and drop a file or upload one"
+              onFileInputChange={handleFileInputChange}
+              onClearClick={handleClear}
+              browseButtonText="Upload"
+              isDisabled={isSubmitting}
+              accept=".json,.xml"
+            />
+            <FormHelperText>
+              <HelperText>
+                {fileError ? (
                   <HelperTextItem variant="error">{fileError}</HelperTextItem>
-                </HelperText>
-              </FormHelperText>
-            )}
+                ) : (
+                  <HelperTextItem>
+                    Supported formats: JSON {SbomFormat.SPDX} {SPDX_VERSION} and JSON {SbomFormat.CycloneDX} {CYCLONEDX_VERSION}
+                  </HelperTextItem>
+                )}
+              </HelperText>
+            </FormHelperText>
           </FormGroup>
           <Switch
             id="private-repo-switch"
@@ -531,13 +580,12 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
         <Button
           key="submit"
           variant="primary"
-          onClick={handleSubmit}
-          isDisabled={isSubmitDisabled}
+          onClick={handleSubmit}          
           isLoading={isSubmitting}
         >
           {isSubmitting ? "Submitting..." : "Submit Analysis Request"}
         </Button>
-        <Button key="cancel" variant="link" onClick={onClose}>
+        <Button key="cancel" variant="link" onClick={onClose} isDisabled={isSubmitting}>
           Cancel
         </Button>
       </ModalFooter>

@@ -1,6 +1,6 @@
 import { useApi } from "./useApi";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
+import { POLL_INTERVAL_MS, shouldContinuePollingByProductState } from "../utils/polling";
 import { request } from "../generated-client/core/request";
 import { OpenAPI } from "../generated-client/core/OpenAPI";
 import isEqual from "lodash/isEqual";
@@ -53,7 +53,7 @@ export function useReport(productId: string | undefined): UseReportResult {
     {
       deps: [productId],
       pollInterval: POLL_INTERVAL_MS,
-      shouldPoll: (product) => shouldContinuePollingByStatusCounts(product?.summary?.statusCounts),
+      shouldPoll: (product) => product !== null && shouldContinuePollingByProductState(product),
       shouldUpdate: (previousProduct, currentProduct) => {
         return hasProductStatusCountsChanged(previousProduct, currentProduct);
       },

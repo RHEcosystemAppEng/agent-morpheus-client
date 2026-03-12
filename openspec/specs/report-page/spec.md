@@ -1,7 +1,7 @@
 # report-page Specification
 
 ## Purpose
-View SBOM report details
+View SBOM report details: navigation, report and additional details cards, CVE status and component states donut charts, excluded components link, and repository reports table.
 ## Requirements
 ### Requirement: Report Page Navigation
 The application SHALL provide navigation from the reports table to a report page when a user clicks the "SBOM Report ID" link in a table row.
@@ -19,26 +19,45 @@ The report page SHALL automatically refresh data every 5 seconds using `useRepor
 
 The report page SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
+The Details card SHALL display a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` (numExcluded from `sbomReport.statusCounts["excluded"]` or `product.data.submissionFailures.length`, numSubmitted from `product.data.submittedCount`). When numExcluded > 0, the value SHALL be a link that navigates to `/reports/product/excluded-components/:productId/:cveId`. When numExcluded === 0, the value SHALL be `0/<numSubmitted>` displayed as plain text (not a link).
+
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** the page displays two cards side by side using a `Grid` layout at the top of the page
 - **AND** the left card (Details card) displays report information in two columns:
   - Left column: CVE Analyzed (the specified CVE ID as plain text, not a clickable link) and Report name (from `sbomReport.sbomName`)
-  - Right column: Number of repositories analyzed (showing the count of repositories with "completed" state from `sbomReport.statusCounts["completed"]`)
-- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or "-" when no completion date is available)
+  - Right column: Number of repositories analyzed (showing {num completed} / {num submitted}, where num completed is the count from `sbomReport.statusCounts["completed"]` and num submitted is the value from `product.data.submittedCount`)
+- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM TZ" (e.g., "07 July 2025, 10:14:02 PM EST") when available, or `NotAvailable` component when no completion date is available) and Metadata field (displaying metadata key-value pairs from `product.data.metadata` using PatternFly LabelGroup and Label components when metadata exists, or `NotAvailable` component when no metadata is available)
 - **AND** the CVE data displayed corresponds to the CVE ID from the route parameters
+
+#### Scenario: Repositories analyzed shows completed over submitted
+- **WHEN** a user views the report page
+- **THEN** the Details card displays "Number of repositories analyzed" in the form num completed / num submitted (e.g. "5 / 10") using a shared formatter with no suffix
+- **AND** num completed is the value of `sbomReport.statusCounts["completed"]` (or 0 if absent)
+- **AND** num submitted is the value of `product.data.submittedCount`
+
+#### Scenario: Excluded components field with link when excluded present
+- **WHEN** a user views the report page and the product has one or more excluded components (numExcluded > 0, from `sbomReport.statusCounts["excluded"]` or `product.data.submissionFailures.length`)
+- **THEN** the Details card displays a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` (e.g. "3/10") as a clickable link
+- **AND** clicking the link navigates to `/reports/product/excluded-components/:productId/:cveId` where `productId` and `cveId` are from the current report page route
+
+#### Scenario: Excluded components field as plain text when zero excluded
+- **WHEN** a user views the report page and the product has zero excluded components (numExcluded === 0)
+- **THEN** the Details card displays a field with label "Excluded components" and value `0/<numSubmitted>` (e.g. "0/10") as plain text, not a link
 
 #### Scenario: Completion date field always displayed
 - **WHEN** a user views the report page AND the report has no completion date
-- **THEN** the Additional Details card displays the Completed field with value "-"
+- **THEN** the Additional Details card displays the Completed field with `NotAvailable` component
 
-#### Scenario: Report details loading state
-- **WHEN** report data is being fetched
-- **THEN** both cards display a loading spinner
+#### Scenario: Metadata field display with metadata present
+- **WHEN** a user views the report page AND the product has metadata in `product.data.metadata`
+- **THEN** the Additional Details card displays a Metadata field below the Completed field
+- **AND** the Metadata field displays all metadata key-value pairs using PatternFly LabelGroup and Label components
+- **AND** each metadata entry is displayed as a Label with format "key:value"
 
-#### Scenario: Report details error state
-- **WHEN** report data fetch fails
-- **THEN** both cards display an error message
+#### Scenario: Metadata field display with no metadata
+- **WHEN** a user views the report page AND the product has no metadata in `product.data.metadata` (metadata is empty or undefined)
+- **THEN** the Additional Details card displays the Metadata field with `NotAvailable` component
 
 ### Requirement: CVE Status donut Chart
 The report page SHALL display a donut chart summarizing CVE vulnerability statuses (vulnerable, not_vulnerable, uncertain) for the specific CVE ID from the route parameters across all repository reports for the report.

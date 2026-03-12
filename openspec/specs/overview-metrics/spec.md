@@ -1,5 +1,7 @@
-## Overview Metrics
+## Purpose
+Calculate and expose home page dashboard metrics (successfully analyzed count, average reliability score, false positive rate) from completed reports in the last 7 days.
 
+## Requirements
 ### Requirement: Overview Metrics Calculation
 
 The system SHALL calculate three metrics for the home page dashboard based on reports completed in the last 7 days (last week). All metrics SHALL use the same base count of completed reports from the last week, calculated once and reused across all metric calculations.

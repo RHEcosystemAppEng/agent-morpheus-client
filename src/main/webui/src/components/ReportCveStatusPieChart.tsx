@@ -1,5 +1,12 @@
 import { useMemo } from "react";
-import { Card, CardTitle, CardBody, Title } from "@patternfly/react-core";
+import {
+  Card,
+  CardBody,
+  CardTitle,
+  EmptyState,
+  EmptyStateBody,
+  Title,
+} from "@patternfly/react-core";
 import t_global_color_status_success_100 from "@patternfly/react-tokens/dist/esm/t_global_color_status_success_100";
 import t_global_color_nonstatus_gray_300 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_300";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
@@ -9,11 +16,13 @@ import t_global_color_nonstatus_red_400 from "@patternfly/react-tokens/dist/esm/
 interface ReportCveStatusPieChartProps {
   product: ProductSummary;
   cveId: string;
+  cardHeight: string;
 }
 
 const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   product,
   cveId,
+  cardHeight,
 }) => {
   const chartData = useMemo(() => {
     const statusCounts = product.summary?.justificationStatusCounts || {};
@@ -72,23 +81,29 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   );
 
   return (
-    <Card>
+    <Card style={{ height: cardHeight, overflowY: "auto" }}>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
           CVE Status Summary
         </Title>
       </CardTitle>
       <CardBody>
-        <DonutChartWrapper
-          ariaDesc="CVE incidents by status"
-          ariaTitle="CVE incidents by status"
-          data={chartData}
-          colorScale={colors}
-          legendData={legendData}
-          title={`${total}`}
-          subTitle="Statuses"
-          total={total}
-        />
+        {total === 0 ? (
+          <EmptyState>
+            <EmptyStateBody>No completed analysis</EmptyStateBody>
+          </EmptyState>
+        ) : (
+          <DonutChartWrapper
+            ariaDesc="CVE incidents by status"
+            ariaTitle="CVE incidents by status"
+            data={chartData}
+            colorScale={colors}
+            legendData={legendData}
+            title={`${total}`}
+            subTitle="Statuses"
+            total={total}
+          />
+        )}
       </CardBody>
     </Card>
   );

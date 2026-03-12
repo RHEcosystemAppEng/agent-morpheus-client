@@ -39,7 +39,6 @@ export type { VulnResult } from './models/VulnResult';
 
 export { CredentialsService } from './services/CredentialsService';
 export { FeedbackResourceService } from './services/FeedbackResourceService';
-export { GenerateSbomEndpointService } from './services/GenerateSbomEndpointService';
 export { MlOpsAudit1BatchResourceService } from './services/MlOpsAudit1BatchResourceService';
 export { MlOpsAudit2JobResourceService } from './services/MlOpsAudit2JobResourceService';
 export { MlOpsAudit3TraceResourceService } from './services/MlOpsAudit3TraceResourceService';

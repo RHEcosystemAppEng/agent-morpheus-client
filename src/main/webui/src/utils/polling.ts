@@ -2,6 +2,8 @@
  * Shared constants and utilities for polling/auto-refresh functionality
  */
 
+import { ProductSummary } from "../generated-client";
+
 /**
  * Default polling interval for auto-refresh (5 seconds)
  * Used for report pages and repository reports tables
@@ -21,17 +23,9 @@ export const REPORTS_TABLE_POLL_INTERVAL_MS = 15000;
  * @param statusCounts - Record mapping state names to counts
  * @returns true if polling should continue, false otherwise
  */
-export function shouldContinuePollingByStatusCounts(
-  statusCounts: Record<string, number> | null | undefined
+export function shouldContinuePollingByProductState(
+  product: ProductSummary
 ): boolean {
-  if (!statusCounts) {
-    return true; // Continue polling if no data yet
-  }
-  
-  const states = Object.keys(statusCounts);
-  // Check if there are any states that are not "failed" or "completed"
-  return states.some(
-    (state) => state !== "failed" && state !== "completed" && (statusCounts[state] || 0) > 0
-  );
+  return product.summary.productState !== "completed";
 }
 

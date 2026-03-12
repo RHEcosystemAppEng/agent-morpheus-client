@@ -1,5 +1,10 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Map;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -11,23 +16,23 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
-import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductSummary;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
-import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.service.CredentialProcessingService;
-import com.redhat.ecosystemappeng.morpheus.service.CycloneDxUploadService;
 import com.redhat.ecosystemappeng.morpheus.service.CredentialStoreService;
 import com.redhat.ecosystemappeng.morpheus.service.CredentialStorageException;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
+import com.redhat.ecosystemappeng.morpheus.service.SbomReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
-import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -43,19 +48,9 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.SecurityContext;
-import org.jboss.resteasy.reactive.multipart.FileUpload;
-import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
 import java.util.Objects;
-import java.util.UUID;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
 @SecurityRequirement(name = "jwt")
@@ -69,7 +64,7 @@ public class ProductEndpoint {
   ReportService reportService;
 
   @Inject
-  CycloneDxUploadService cycloneDxUploadService;
+  SbomReportService sbomProcessingService;
 
   @Inject
   ProductRepositoryService productRepository;
@@ -216,60 +211,16 @@ public class ProductEndpoint {
     }
 
     try (InputStream fileInputStream = Files.newInputStream(file.uploadedFile())) {
-      var reportRequest = cycloneDxUploadService.processUpload(cveId, fileInputStream);
-
       String credentialId = null;
-      if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {
-        try {
-          InlineCredential credential = new InlineCredential(secretValue, username);
-          String userId = securityContext.getUserPrincipal().getName();
-          credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);
-        } catch (IllegalArgumentException e) {
-          LOGGER.warnf(e, "Credential validation failed");
-          return Response.status(Status.BAD_REQUEST)
-            .entity(objectMapper.createObjectNode()
-            .put("error", e.getMessage()))
-            .build();
-        } catch (CredentialStorageException e) {
-          LOGGER.errorf(e, "Failed to store credential");
-          return Response.status(Status.INTERNAL_SERVER_ERROR)
-            .entity(objectMapper.createObjectNode()
-            .put("error", "Failed to store credential: " + e.getMessage()))
-            .build();
-        }
+      if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {        
+        InlineCredential credential = new InlineCredential(secretValue, username);
+        String userId = securityContext.getUserPrincipal().getName();
+        credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);        
       }
-
-      Map<String, String> reportMetadata = reportRequest.metadata();
-      String productId = reportMetadata.get("product_id");
-      String sbomName = reportMetadata.get("sbom_name");
-      String sbomVersion = reportMetadata.get("sbom_version");
-
-      var reportData = reportService.process(reportRequest);
+      ReportData reportData = sbomProcessingService.submitCycloneDx(cveId, fileInputStream);
 
       if (Objects.nonNull(credentialId) && Objects.nonNull(reportData.report())) {
         credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
-      }
-
-      reportService.submit(reportData.reportRequestId().id(), reportData.report());
-
-      // Create product entry after report is successfully created and submitted
-      // Product report is necessary for the UI display of SBOM report list
-      // Use empty string as version fallback when version is not available from SBOM
-      try {
-        Product product = new Product(
-          productId,
-          sbomName,
-          Objects.nonNull(sbomVersion) ? sbomVersion : "",
-          Instant.now().toString(),
-          1,
-          new HashMap<String, String>(), // Explicitly specify HashMap generic types
-          Collections.emptyList(),
-          cveId
-        );
-        productRepository.save(product, userService.getUserName());
-      } catch (Exception e) {
-        // Log error but don't fail the request - product creation failure should not prevent report submission
-        LOGGER.errorf(e, "Failed to create product %s after report creation", productId);
       }
 
       return Response.accepted(reportData).build();
@@ -289,11 +240,92 @@ public class ProductEndpoint {
   }
 
   @ServerExceptionMapper
+  public Response mapIllegalArgumentException(IllegalArgumentException e) {
+    LOGGER.errorf(e, "Input validation failed");
+    return Response.status(Response.Status.BAD_REQUEST)
+        .entity(objectMapper.createObjectNode()
+            .put("error", e.getMessage()))
+        .build();
+  }
+
+  @ServerExceptionMapper
+  public Response mapCredentialStorageException(CredentialStorageException e) {
+    LOGGER.errorf(e, "Failed to store credential");
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .entity(objectMapper.createObjectNode()
+            .put("error", "Failed to store credential: " + e.getMessage()))
+        .build();
+  }
+
+  @ServerExceptionMapper
+  public Response mapIOException(IOException e) {
+    LOGGER.errorf(e, "I/O error processing request");
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .entity(objectMapper.createObjectNode()
+            .put("error", "Failed to read or process uploaded file"))
+        .build();
+  }
+
+  @ServerExceptionMapper
   public Response mapException(Exception e) {
-    LOGGER.error("Unexpected error in ProductEndpoint", e);
+    LOGGER.error("Unexpected error in ProductEndpoint ", e);
     return Response.serverError()
         .entity(objectMapper.createObjectNode()
             .put("error", e.getMessage()))
         .build();
+  }
+
+  @POST
+  @Path("/upload-spdx")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(
+    summary = "Create new product from SPDX SBOM", 
+    description = "Uploads an SPDX SBOM file, parses it, creates a product, and starts async processing. Requires a vulnerability ID to include in all component reports. Accepts optional credentials for private repository access.")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202", 
+      description = "Product creation request accepted",
+      content = @Content(
+        mediaType = MediaType.APPLICATION_JSON,
+        schema = @Schema(
+          type = SchemaType.OBJECT
+        )
+      )
+    ),
+    @APIResponse(
+      responseCode = "400", 
+      description = "Invalid SPDX file, missing required data, missing CVE ID, or credential validation error"
+    ),
+    @APIResponse(
+      responseCode = "500", 
+      description = "Internal server error"
+    )
+  })
+  public Response newProduct(  
+    @FormParam("cveId") String cveId,
+    @Parameter(
+      description = "SPDX SBOM file to upload",
+      required = true
+    )
+    @FormParam("file") InputStream fileInputStream,
+    @Parameter(
+      description = "Optional authentication secret (SSH private key or Personal Access Token) for private repository access"
+    )
+    @FormParam("secretValue") String secretValue,
+    @Parameter(
+      description = "Optional username for Personal Access Token authentication"
+    )
+    @FormParam("username") String username) throws IOException {
+      // Process credentials if provided (reuse same logic as CycloneDX)
+      String credentialId = null;
+      if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {        
+        InlineCredential credential = new InlineCredential(secretValue, username);
+        String userId = securityContext.getUserPrincipal().getName();
+        credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);        
+      }      
+      String productId = sbomProcessingService.submitSpdx(fileInputStream, cveId, credentialId);
+      JsonNode response = objectMapper.createObjectNode().put("productId", productId);
+      return Response.accepted(response).build();
+    
   }
 }

@@ -24,11 +24,11 @@ import java.nio.file.Path;
  * If BASE_URL is not set, tests will be skipped.
  */
 @EnabledIfEnvironmentVariable(named = "BASE_URL", matches = ".*")
-class ReportUploadEndpointTest {
+class UploadCycloneDxEndpointTest {
 
     private static final String BASE_URL = System.getenv("BASE_URL");
     private static final String API_BASE = BASE_URL != null ? BASE_URL : "http://localhost:8080";
-    private static final String TEST_SBOM_FILE = "src/test/resources/devservices/sboms/nmstate-rhel8-operator.json";
+    private static final String TEST_SBOM_FILE = "src/test/resources/devservices/cyclonedx-sboms/nmstate-rhel8-operator.json";
     private static final String TEST_CVE_ID = "CVE-2021-3121";
 
     private String createInvalidJsonFile() throws IOException {
@@ -209,7 +209,7 @@ class ReportUploadEndpointTest {
 
     @Test
     void testUpload_MongoDbFile() {
-        File mongodbFile = new File("src/test/resources/devservices/sboms/mongodb.json");
+        File mongodbFile = new File("src/test/resources/devservices/cyclonedx-sboms/mongodb.json");
         RestAssured.baseURI = API_BASE;
         
         RestAssured.given()

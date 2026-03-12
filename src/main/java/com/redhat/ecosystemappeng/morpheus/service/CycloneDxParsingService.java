@@ -7,7 +7,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.ecosystemappeng.morpheus.exception.FileValidationException;
+import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,19 +23,19 @@ public class CycloneDxParsingService {
    * Parses and validates CycloneDX JSON file from InputStream
    * @param fileInputStream InputStream containing the CycloneDX JSON file
    * @return ParsedCycloneDx containing the parsed JSON and extracted SBOM metadata
-   * @throws FileValidationException if file is null, not valid JSON, or missing required fields
+   * @throws SbomValidationException if file is null, not valid JSON, or missing required fields
    * @throws IOException if file cannot be read
    */
   public ParsedCycloneDx parseCycloneDxFile(InputStream fileInputStream) throws IOException {
     if (Objects.isNull(fileInputStream)) {
-      throw new FileValidationException("File is required");
+      throw new SbomValidationException("File is required");
     }
 
     JsonNode sbomJson;
     try {
       sbomJson = objectMapper.readTree(fileInputStream);
     } catch (JsonProcessingException e) {
-      throw new FileValidationException("File is not valid JSON: " + e.getMessage(), e);
+      throw new SbomValidationException("File is not valid JSON: " + e.getMessage(), e);
     }
 
     // Get component once to avoid duplication
@@ -53,21 +53,22 @@ public class CycloneDxParsingService {
     return new ParsedCycloneDx(sbomJson, sbomName, sbomVersion, sbomDescription, sbomType, sbomPurl, bomRef);
   }
 
+
   /**
    * Gets the component from metadata.component in the CycloneDX JSON
    * @param sbomJson Parsed CycloneDX JSON
    * @return Component node
-   * @throws FileValidationException if metadata or component is missing
+   * @throws SbomValidationException if metadata or component is missing
    */
   private JsonNode getComponent(JsonNode sbomJson) {
     JsonNode metadata = sbomJson.get("metadata");
     if (Objects.isNull(metadata)) {
-      throw new FileValidationException("SBOM is missing required field: metadata");
+      throw new SbomValidationException("SBOM is missing required field: metadata");
     }
 
     JsonNode component = metadata.get("component");
     if (Objects.isNull(component)) {
-      throw new FileValidationException("SBOM is missing required field: metadata.component");
+      throw new SbomValidationException("SBOM is missing required field: metadata.component");
     }
 
     return component;
@@ -76,12 +77,12 @@ public class CycloneDxParsingService {
   /**
    * Validates that the CycloneDX component contains the required name field
    * @param component Component node from metadata.component
-   * @throws FileValidationException if required fields are missing
+   * @throws SbomValidationException if required fields are missing
    */
   private void validateCycloneDxStructure(JsonNode component) {
     JsonNode componentName = component.get("name");
     if (Objects.isNull(componentName) || componentName.asText().trim().isEmpty()) {
-      throw new FileValidationException("SBOM is missing required field: metadata.component.name");
+      throw new SbomValidationException("SBOM is missing required field: metadata.component.name");
     }
   }
 

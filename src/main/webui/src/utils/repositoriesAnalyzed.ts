@@ -1,21 +1,28 @@
-/**
- * Pure function to calculate repositories analyzed count
- * Returns the count of repositories with "completed" state only
- */
-export function calculateRepositoriesAnalyzed(
-  componentStates: Record<string, number>
-): number {
-  return componentStates["completed"] || 0;
-}
+import type { ProductSummary } from "../generated-client/models/ProductSummary";
 
 /**
- * Pure function to format repositories analyzed display
- * Formats the count as "analyzedCount/totalCount analyzed"
+ * Result of getRepositoriesAnalyzedFromProduct: completed count, submitted count, and a display getter.
  */
-export function formatRepositoriesAnalyzed(
-  analyzedCount: number,
-  totalCount: number
-): string {
-  return `${analyzedCount}/${totalCount} analyzed`;
-}
+export type RepositoriesAnalyzedInfo = {
+  completed: number;
+  submittedCount: number;
+  getDisplay: (suffix?: string) => string;
+};
 
+/**
+ * Shared utility: accepts product (data + summary) and returns repositories-analyzed info.
+ * Completed from summary.statusCounts["completed"], submitted from data.submittedCount.
+ * getDisplay(suffix) returns "{completed}/{submitted}" with optional suffix (e.g. "analyzed").
+ */
+export function getRepositoriesAnalyzedFromProduct(
+  product: ProductSummary
+): RepositoriesAnalyzedInfo {
+  const completed = product.summary?.statusCounts?.["completed"] ?? 0;
+  const submittedCount = product.data?.submittedCount ?? 0;
+  return {
+    completed,
+    submittedCount,
+    getDisplay: (suffix = "") =>
+      suffix ? `${completed}/${submittedCount} ${suffix}` : `${completed}/${submittedCount}`,
+  };
+}

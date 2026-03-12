@@ -5,7 +5,7 @@
 import { useMemo } from "react";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { Report, ProductSummary } from "../generated-client";
-import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
+import { POLL_INTERVAL_MS, shouldContinuePollingByProductState } from "../utils/polling";
 import { mapDisplayLabelToApiValue } from "../components/Filtering";
 import isEqual from "lodash/isEqual";
 
@@ -94,9 +94,7 @@ export function useRepositoryReports(
   }, [scanStateFilter]);
 
   // Determine if auto-refresh should continue based on product statusCounts
-  const shouldContinuePolling = useMemo(() => {
-    return shouldContinuePollingByStatusCounts(product.summary.statusCounts);
-  }, [product.summary.statusCounts]);
+  const shouldContinuePolling = shouldContinuePollingByProductState(product);
 
   const {
     data: reports,

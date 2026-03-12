@@ -7,10 +7,11 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public record FailedComponent(
     @Schema(required = true, description = "Component name")
-    String imageName,
+    String name,
     @Schema(required = true, description = "Component version")
-    String imageVersion,
-    @Schema(required = true, description = "Reason of failure")
+    String version,
+    @Schema(required = true, description = "Component image")
+    String image,
+    @Schema(required = true, description = "Error message")
     String error) {
-
 }
