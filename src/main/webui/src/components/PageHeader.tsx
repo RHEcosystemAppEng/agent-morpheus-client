@@ -28,25 +28,25 @@ import UserAvatarDropdown from './UserAvatarDropdown';
  */
 const Brand: React.FC = () => {
   return (
-    <Flex gap={{ default: "gapSm" }} alignItems={{ default: "alignItemsFlexStart" }}>
+    <Flex gap={{ default: "gapXs" }} alignItems={{ default: "alignItemsFlexStart" }}>
       <FlexItem>
           <img 
             src="/redhat.svg" 
             alt="Red Hat" 
-            style={{ height: "var(--pf-t--global--spacer--xl)" }}
+            style={{ height: "var(--pf-t--global--spacer--lg)" }}
             aria-label="Red Hat logo"
           />
       </FlexItem>          
       <FlexItem>
         <Stack>
           <Title headingLevel="h6" >
-            Red Hat
+          <strong>Red Hat</strong>
           </Title>
           <Title headingLevel="h6">
-            <strong>Trusted Profile Analyzer</strong>
+            Trusted Profile 
           </Title>
           <Title headingLevel="h6">
-            <strong>ExploitIQ</strong>
+            Analyzer ExploitIQ
           </Title>
         </Stack>
       </FlexItem>
