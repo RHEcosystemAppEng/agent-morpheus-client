@@ -4,9 +4,12 @@
 
 import { useMemo } from "react";
 import { usePaginatedApi } from "./usePaginatedApi";
-import { Report, ProductSummary } from "../generated-client";
-import { POLL_INTERVAL_MS, shouldContinuePollingByStatusCounts } from "../utils/polling";
-import { mapDisplayLabelToApiValue } from "../components/Filtering";
+import { Report } from "../generated-client";
+import {
+  POLL_INTERVAL_MS,
+  REPORTS_TABLE_POLL_INTERVAL_MS,
+} from "../utils/polling";
+import { getFindingFilterApiParams } from "../components/Filtering";
 import isEqual from "lodash/isEqual";
 
 /**
@@ -32,16 +35,19 @@ export function hasReportStatesChanged(
 }
 
 export interface UseRepositoryReportsOptions {
-  productId: string;
-  cveId: string;
+  /** When provided, fetches reports for this product and CVE. When omitted, fetches single-repository reports (no product_id). */
+  productId?: string;
+  cveId?: string;
+  /** When provided, polling runs while this returns true. Used e.g. to poll until product analysis is completed. */
+  shouldContinuePolling?: () => boolean;
+  /** Polling interval in ms. When omitted, defaults to 5000 in product context and 15000 for single-repository. */
+  pollInterval?: number;
   page: number;
   perPage: number;
-  sortColumn: "gitRepo" | "completedAt" | "state";
+  sortColumn: "gitRepo" | "submittedAt" | "completedAt";
   sortDirection: "asc" | "desc";
-  scanStateFilter: string[];
-  exploitIqStatusFilter: string[];
+  findingFilter: string[];
   repositorySearchValue: string;
-  product: ProductSummary; // Used for determining polling condition
 }
 
 export interface UseRepositoryReportsResult {
@@ -55,8 +61,8 @@ export interface UseRepositoryReportsResult {
 }
 
 /**
- * Hook to fetch repository reports with server-side pagination, sorting, filtering, and conditional auto-refresh.
- * Auto-refresh continues while analysis states in product.statusCounts are not "failed" or "completed".
+ * Hook to fetch repository reports with server-side pagination, sorting, filtering, and optional auto-refresh.
+ * Use pollInterval to set the refresh interval and shouldContinuePolling to stop when a condition is met.
  */
 export function useRepositoryReports(
   options: UseRepositoryReportsOptions
@@ -68,35 +74,24 @@ export function useRepositoryReports(
     perPage,
     sortColumn,
     sortDirection,
-    scanStateFilter,
-    exploitIqStatusFilter,
+    findingFilter,
     repositorySearchValue,
-    product,
+    shouldContinuePolling,
+    pollInterval: pollIntervalOption,
   } = options;
 
-  // Convert filter array to comma-separated API values
-  const exploitIqStatusApiValue = useMemo(() => {
-    if (exploitIqStatusFilter.length === 0) return undefined;
-    return exploitIqStatusFilter
-      .map((label) => mapDisplayLabelToApiValue(label))
-      .join(",");
-  }, [exploitIqStatusFilter]);
+  const isProductContext = productId != null && cveId != null;
 
-  // Build sortBy parameter for API
+  const pollInterval =
+    pollIntervalOption ??
+    (isProductContext ? POLL_INTERVAL_MS : REPORTS_TABLE_POLL_INTERVAL_MS);
+
+  const { status: statusFilterValue, exploitIqStatus: exploitIqStatusApiValue } =
+    useMemo(() => getFindingFilterApiParams(findingFilter), [findingFilter]);
+
   const sortByParam = useMemo(() => {
     return [`${sortColumn}:${sortDirection.toUpperCase()}`];
   }, [sortColumn, sortDirection]);
-
-  // Build status filter - send all selected status values as comma-separated string
-  const statusFilterValue = useMemo(() => {
-    if (scanStateFilter.length === 0) return undefined;
-    return scanStateFilter.join(",");
-  }, [scanStateFilter]);
-
-  // Determine if auto-refresh should continue based on product statusCounts
-  const shouldContinuePolling = useMemo(() => {
-    return shouldContinuePollingByStatusCounts(product.summary.statusCounts);
-  }, [product.summary.statusCounts]);
 
   const {
     data: reports,
@@ -110,8 +105,9 @@ export function useRepositoryReports(
       query: {
         page: page - 1,
         pageSize: perPage,
-        productId: productId,
-        vulnId: cveId,
+        ...(isProductContext
+          ? { productId, vulnId: cveId }
+          : { withoutProduct: true }),
         sortBy: sortByParam,
         ...(statusFilterValue && { status: statusFilterValue }),
         ...(exploitIqStatusApiValue && {
@@ -124,18 +120,22 @@ export function useRepositoryReports(
       deps: [
         page,
         perPage,
+        isProductContext,
         productId,
         cveId,
         sortByParam,
-        statusFilterValue,
-        exploitIqStatusApiValue,
+        statusFilterValue ?? "",
+        exploitIqStatusApiValue ?? "",
         repositorySearchValue,
+        pollInterval,
       ],
-      pollInterval: POLL_INTERVAL_MS,
-      shouldPoll: () => shouldContinuePolling,
-      shouldUpdate: (previousReports, currentReports) => {
-        return hasReportStatesChanged(previousReports, currentReports);
-      },
+      pollInterval,
+      ...(shouldContinuePolling && {
+        shouldPoll: shouldContinuePolling,
+        shouldUpdate: (previousReports, currentReports) => {
+          return hasReportStatesChanged(previousReports, currentReports);
+        },
+      }),
     }
   );
 

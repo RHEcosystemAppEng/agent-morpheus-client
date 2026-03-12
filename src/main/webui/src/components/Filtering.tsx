@@ -9,27 +9,40 @@ import {
   Popper,
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
-
-export const ALL_EXPLOIT_IQ_STATUS_OPTIONS = [
-  "Vulnerable",
-  "Not Vulnerable",
-  "Uncertain",
-];
+import {
+  displayToApi,
+  JUSTIFICATION_DISPLAY_LABELS,
+} from "../utils/justificationStatus";
 
 /**
- * Maps display label to API value for ExploitIQ status
+ * Maps finding filter selection to API params: status (for In progress / Failed) and exploitIqStatus (for Vulnerable / Not Vulnerable / Uncertain).
  */
-export function mapDisplayLabelToApiValue(displayLabel: string): string {
-  switch (displayLabel) {
-    case "Vulnerable":
-      return "TRUE";
-    case "Not Vulnerable":
-      return "FALSE";
-    case "Uncertain":
-      return "UNKNOWN";
-    default:
-      return displayLabel.toLowerCase().replace(/\s+/g, "_");
+export function getFindingFilterApiParams(findingFilter: string[]): {
+  status?: string;
+  exploitIqStatus?: string;
+} {
+  const statusParts: string[] = [];
+  if (findingFilter.includes("In progress")) {
+    statusParts.push("pending", "queued", "sent");
   }
+  if (findingFilter.includes("Failed")) {
+    statusParts.push("expired", "failed");
+  }
+  const exploitParts = findingFilter
+    .filter((f) =>
+      (JUSTIFICATION_DISPLAY_LABELS as readonly string[]).includes(f)
+    )
+    .map(displayToApi);
+  return {
+    status: statusParts.length > 0 ? statusParts.join(",") : undefined,
+    exploitIqStatus:
+      exploitParts.length > 0 ? exploitParts.join(",") : undefined,
+  };
+}
+
+/** @deprecated Use displayToApi from utils/justificationStatus */
+export function mapDisplayLabelToApiValue(displayLabel: string): string {
+  return displayToApi(displayLabel);
 }
 
 /**

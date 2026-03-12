@@ -14,6 +14,18 @@ export type Eval = {
     component_version: string;
     llm_node?: LLMStage;
     metric_name?: MetricName;
-    metric_value: string;
+    metric_score: string;
+    /**
+     * Containing the reasoning for the score that was calculated
+     */
+    metric_reasoning?: string;
+    /**
+     * Containing the concrete Input to the agent model That is being evaluated
+     */
+    model_input?: string;
+    /**
+     * Containing the concrete Output produced by the Agent' Model which is being evaluated
+     */
+    model_output?: string;
 };
 

@@ -13,18 +13,22 @@ import { FilterIcon } from "@patternfly/react-icons";
 import {
   AttributeSelector,
   CheckboxFilter,
-  ALL_EXPLOIT_IQ_STATUS_OPTIONS,
 } from "./Filtering";
 
+
+const FINDING_FILTER_OPTIONS = [
+  "Vulnerable",
+  "Not Vulnerable",
+  "Uncertain",
+  "In progress",
+  "Failed",
+];
 interface RepositoryTableToolbarProps {
   repositorySearchValue: string;
   onRepositorySearchChange: (value: string) => void;
-  scanStateFilter: string[];
-  scanStateOptions: string[];
-  exploitIqStatusFilter: string[];
+  findingFilter: string[];
   loading: boolean;
-  onScanStateFilterChange: (filters: string[]) => void;
-  onExploitIqStatusFilterChange: (filters: string[]) => void;
+  onFindingFilterChange: (filters: string[]) => void;
   pagination?: {
     itemCount: number;
     page: number;
@@ -41,49 +45,31 @@ interface RepositoryTableToolbarProps {
   };
 }
 
-type ActiveAttribute =
-  | "Repository Name"
-  | "Analysis State"
-  | "ExploitIQ Status";
+type ActiveAttribute = "Repository Name" | "Finding";
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   repositorySearchValue,
   onRepositorySearchChange,
-  scanStateFilter,
-  scanStateOptions,
-  exploitIqStatusFilter,
+  findingFilter,
   loading,
-  onScanStateFilterChange,
-  onExploitIqStatusFilterChange,
+  onFindingFilterChange,
   pagination,
 }) => {
   const [activeAttribute, setActiveAttribute] =
     useState<ActiveAttribute>("Repository Name");
 
-  const handleScanStateFilterDelete = (
+  const handleFindingFilterDelete = (
     _category: string | unknown,
     label: string | unknown
   ) => {
     if (typeof label === "string") {
-      onScanStateFilterChange(scanStateFilter.filter((fil) => fil !== label));
-    }
-  };
-
-  const handleExploitIqStatusFilterDelete = (
-    _category: string | unknown,
-    label: string | unknown
-  ) => {
-    if (typeof label === "string") {
-      onExploitIqStatusFilterChange(
-        exploitIqStatusFilter.filter((fil) => fil !== label)
-      );
+      onFindingFilterChange(findingFilter.filter((fil) => fil !== label));
     }
   };
 
   const handleFilterDeleteGroup = () => {
     onRepositorySearchChange("");
-    onScanStateFilterChange([]);
-    onExploitIqStatusFilterChange([]);
+    onFindingFilterChange([]);
   };
 
   const repositorySearchInput = (
@@ -100,9 +86,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
     <Toolbar
       id="repository-reports-toolbar"
       clearAllFilters={
-        repositorySearchValue !== "" ||
-        scanStateFilter.length > 0 ||
-        exploitIqStatusFilter.length > 0
+        repositorySearchValue !== "" || findingFilter.length > 0
           ? handleFilterDeleteGroup
           : undefined
       }
@@ -113,11 +97,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
             <ToolbarItem>
               <AttributeSelector
                 activeAttribute={activeAttribute}
-                attributes={[
-                  "Repository Name",
-                  "Analysis State",
-                  "ExploitIQ Status",
-                ]}
+                attributes={["Repository Name", "Finding"]}
                 onAttributeChange={(attr) =>
                   setActiveAttribute(attr as ActiveAttribute)
                 }
@@ -135,34 +115,18 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               {repositorySearchInput}
             </ToolbarFilter>
             <ToolbarFilter
-              labels={scanStateFilter}
-              deleteLabel={handleScanStateFilterDelete}
+              labels={findingFilter}
+              deleteLabel={handleFindingFilterDelete}
               deleteLabelGroup={handleFilterDeleteGroup}
-              categoryName="Analysis State"
-              showToolbarItem={activeAttribute === "Analysis State"}
+              categoryName="Finding"
+              showToolbarItem={activeAttribute === "Finding"}
             >
               <CheckboxFilter
-                id="scan-state-menu"
-                label="Filter by Analysis State"
-                options={scanStateOptions}
-                selected={scanStateFilter}
-                onSelect={onScanStateFilterChange}
-                loading={loading}
-              />
-            </ToolbarFilter>
-            <ToolbarFilter
-              labels={exploitIqStatusFilter}
-              deleteLabel={handleExploitIqStatusFilterDelete}
-              deleteLabelGroup={handleFilterDeleteGroup}
-              categoryName="ExploitIQ Status"
-              showToolbarItem={activeAttribute === "ExploitIQ Status"}
-            >
-              <CheckboxFilter
-                id="exploit-iq-status-menu"
-                label="Filter by ExploitIQ Status"
-                options={ALL_EXPLOIT_IQ_STATUS_OPTIONS}
-                selected={exploitIqStatusFilter}
-                onSelect={onExploitIqStatusFilterChange}
+                id="finding-menu"
+                label="Filter by Finding"
+                options={FINDING_FILTER_OPTIONS}
+                selected={findingFilter}
+                onSelect={onFindingFilterChange}
                 loading={loading}
               />
             </ToolbarFilter>

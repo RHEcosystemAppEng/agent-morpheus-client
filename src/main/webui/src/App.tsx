@@ -17,6 +17,7 @@ const App: React.FC = () => {
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/reports/single-repositories" element={<ReportsPage />} />
           <Route
             path="/reports/product/:productId/:cveId/:reportId"
             element={<RepositoryReportPage />}

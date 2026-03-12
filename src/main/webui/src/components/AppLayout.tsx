@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router';
-import { Page, PageSection, PageSidebar } from '@patternfly/react-core';
+import { Page, PageSidebar } from '@patternfly/react-core';
 import PageHeader from './PageHeader';
 import Navigation from './Navigation';
 
@@ -25,9 +25,7 @@ const AppLayout: React.FC = () => {
       masthead={<PageHeader isSidebarOpen={isSidebarOpen} onSidebarToggle={onSidebarToggle} />}
       sidebar={sidebar}
     >
-      <PageSection>
-        <Outlet />
-      </PageSection>
+      <Outlet />
     </Page>
   );
 };

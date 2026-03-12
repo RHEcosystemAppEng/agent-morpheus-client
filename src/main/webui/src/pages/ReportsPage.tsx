@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
-import { Content, PageSection } from "@patternfly/react-core";
-import ReportsTable from "../components/ReportsTable";
+import { PageSection, Title } from "@patternfly/react-core";
+import ReportsPageContent from "../components/ReportsPageContent";
 import type { ReportsToolbarFilters } from "../components/ReportsToolbar";
 import type { SortColumn, SortDirection } from "../hooks/useReportsTableData";
 
@@ -97,28 +97,31 @@ const ReportsPage: React.FC = () => {
 
   return (
     <>
-      <PageSection isWidthLimited aria-labelledby="main-title">
-        <Content>
-          <h1><strong>Reports</strong></h1>
-          <p>View comprehensive report for your product and their security analysis. Reports include CVE exploitability assessments, VEX status justifications, and detailed analysis summaries.</p>
-        </Content>        
+      <PageSection isWidthLimited aria-label="Reports header">
+        <Title headingLevel="h1" size="2xl">
+          Reports
+        </Title>
+        <p className="pf-v6-u-mt-sm">
+          View comprehensive report for your product and their security analysis.
+          Reports include CVE exploitability assessments, VEX status justifications,
+          and detailed analysis summaries.
+        </p>
       </PageSection>
-      <PageSection>
-        <ReportsTable
-          searchValue={searchValue}
-          cveSearchValue={cveSearchValue}
-          filters={filters}
-          activeAttribute={activeAttribute}
-          onSearchChange={handleSearchChange}
-          onCveSearchChange={handleCveSearchChange}
-          onFiltersChange={handleFiltersChange}
-          onActiveAttributeChange={setActiveAttribute}
-          onClearFilters={handleClearFilters}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          onSortChange={handleSortChange}
-        />
-      </PageSection>
+      <ReportsPageContent
+        searchValue={searchValue}
+        cveSearchValue={cveSearchValue}
+        filters={filters}
+        activeAttribute={activeAttribute}
+        onSearchChange={handleSearchChange}
+        onCveSearchChange={handleCveSearchChange}
+        onFiltersChange={handleFiltersChange}
+        onActiveAttributeChange={setActiveAttribute}
+        onClearFilters={handleClearFilters}
+        sortColumn={sortColumn}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
+      />
+    
     </>
   );
 };

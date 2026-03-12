@@ -51,5 +51,9 @@ export type Report = {
      * Git reference (commit hash, tag, or branch) from source_info
      */
     ref?: string;
+    /**
+     * Submitted at timestamp from metadata.submitted_at
+     */
+    submittedAt?: string;
 };
 

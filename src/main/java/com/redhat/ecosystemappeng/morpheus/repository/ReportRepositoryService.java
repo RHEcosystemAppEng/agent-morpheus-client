@@ -150,8 +150,8 @@ public class ReportRepositoryService {
         ref = selectedSourceInfo.getString("ref");
       }
     }
-    // TODO: Rollback this
-    // LOGGER.infof("gitRepo: %s, ref: %s", gitRepo, ref);
+
+    String submittedAt = Objects.nonNull(metadata) ? metadata.get(SUBMITTED_AT) : null;
     return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
         scan.getString("started_at"),
         scan.getString("completed_at"),
@@ -161,7 +161,8 @@ public class ReportRepositoryService {
         vulnIds,
         metadata,
         gitRepo,
-        ref);
+        ref,
+        submittedAt);
   }
 
   public String getStatus(Document doc, Map<String, String> metadata) {
@@ -581,6 +582,11 @@ public class ReportRepositoryService {
         case "productId":
           handleMultipleValues(e.getValue(), (value) -> 
             Filters.eq("metadata.product_id", value), filters);
+          break;
+        case "withoutProduct":
+          if (Boolean.TRUE.toString().equalsIgnoreCase(e.getValue())) {
+            filters.add(Filters.exists("metadata." + PRODUCT_ID, false));
+          }
           break;
         case "gitRepo":
           var gitRepoValues = e.getValue().split(",");

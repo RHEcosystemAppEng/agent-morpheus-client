@@ -31,6 +31,8 @@ public record Report(
     @Schema(description = "Git repository URL from source_info")
     String gitRepo,
     @Schema(description = "Git reference (commit hash, tag, or branch) from source_info")
-    String ref) {
+    String ref,
+    @Schema(description = "Submitted at timestamp from metadata.submitted_at")
+    String submittedAt) {
 
 }

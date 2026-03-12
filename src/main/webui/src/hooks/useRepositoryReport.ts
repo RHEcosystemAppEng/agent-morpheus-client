@@ -33,7 +33,6 @@ export function shouldContinuePollingRepositoryReport(
 ): boolean {
   if (!response) return true; // Continue polling if no data yet
   const status = response.status;
-  console.log("status", status);
   // Continue polling if status is not "completed" or "failed"
   return status !== "completed" && status !== "failed";
 }

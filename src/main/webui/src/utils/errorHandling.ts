@@ -72,4 +72,47 @@ export function isValidationError(
   );
 }
 
+/**
+ * Normalized result for request analysis submission errors (upload-cyclonedx or reports/new).
+ * Components use this to set field-level and generic error state without API-specific parsing.
+ */
+export interface RequestAnalysisSubmissionError {
+  /** Field name to error message (e.g. cveId, file, sourceRepo, commitId) */
+  fieldErrors: Record<string, string>;
+  /** Generic message when no field-specific errors or for non-400 errors */
+  genericMessage: string | null;
+}
 
+const DEFAULT_SUBMISSION_ERROR = "An error occurred while submitting the analysis request.";
+
+/**
+ * Parses errors from request analysis submission (POST upload-cyclonedx or POST reports/new)
+ * into a normalized shape. Use in the request analysis modal to set field errors and alert
+ * without embedding API-specific parsing in the component.
+ */
+export function parseRequestAnalysisSubmissionError(
+  error: unknown,
+  fallbackMessage: string = DEFAULT_SUBMISSION_ERROR
+): RequestAnalysisSubmissionError {
+  if (isValidationError(error)) {
+    const errors = error.body.errors ?? {};
+    const fieldErrors: Record<string, string> = {};
+    for (const [key, value] of Object.entries(errors)) {
+      if (typeof value === "string") fieldErrors[key] = value;
+    }
+    return {
+      fieldErrors,
+      genericMessage: Object.keys(fieldErrors).length === 0 ? "Invalid request data. Please check your inputs." : null,
+    };
+  }
+  if (error instanceof ApiError && error.status === 400 && error.body != null && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if ("error" in body && typeof body.error === "string") {
+      return { fieldErrors: {}, genericMessage: body.error };
+    }
+  }
+  return {
+    fieldErrors: {},
+    genericMessage: getErrorMessage(error, fallbackMessage),
+  };
+}

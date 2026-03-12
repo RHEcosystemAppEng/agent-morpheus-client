@@ -58,7 +58,7 @@ export class ProductEndpointService {
             cveId?: string;
             file?: Blob;
             secretValue?: string;
-            username?: string;
+            userName?: string;
         },
     }): CancelablePromise<ReportData> {
         return __request(OpenAPI, {

@@ -296,9 +296,7 @@ public class ReportService {
     report.set("metadata", objectMapper.convertValue(request.metadata(), JsonNode.class));
     var created = repository.save(report.toPrettyString());
     var reportRequestId = new ReportRequestId(created.id(), scan.id());
-    LOGGER.infof("Successfully processed request ID: %s", created.id());
-    // TODO: Rollback this
-    // LOGGER.debug("Agent Morpheus payload: " + report.toPrettyString());
+    LOGGER.infof("Successfully processed request ID: %s", created.id());    
     return new ReportData(reportRequestId, report);
   }
 
