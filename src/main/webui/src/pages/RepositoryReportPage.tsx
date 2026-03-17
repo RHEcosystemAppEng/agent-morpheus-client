@@ -20,6 +20,8 @@ import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
 import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkeleton";
 import DownloadDropdown from "../components/DownloadVex";
+import FeedbackReportCard from "../components/FeedbackReportCard";
+import { getReportSummaryForFeedback } from "../utils/feedbackReportSummary";
 
 interface RepositoryReportPageErrorProps {
   title: string;
@@ -187,6 +189,14 @@ const RepositoryReportPage: React.FC = () => {
         <GridItem>
           <RepositoryAdditionalDetailsCard report={report} />
         </GridItem>
+        {status === "completed" && (
+          <GridItem>
+            <FeedbackReportCard
+              reportId={reportId || ""}
+              aiResponse={getReportSummaryForFeedback(report)}
+            />
+          </GridItem>
+        )}
       </Grid>
     );
   };
