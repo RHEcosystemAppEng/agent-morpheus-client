@@ -16,7 +16,11 @@ import {
   Button,
   Alert,
   Content,
+  Icon,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
+import { CheckCircleIcon } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
 import { useExecuteApi } from "../hooks/useExecuteApi";
 import { FeedbackResourceService } from "../generated-client";
@@ -121,14 +125,31 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
           </Title>
         </CardTitle>
         <CardBody>
-          <Content style={{ marginBottom: "var(--pf-t--global--spacer--xl)" }}>
+          <Content style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
             Your feedback will be used to improve the accuracy of our AI models.
           </Content>
-          <Content>
-            {previousSubmission
-              ? "Thank you! You already submitted feedback on this report."
-              : "Thank you for your feedback!"}
-          </Content>
+          <Stack
+            hasGutter
+            style={{
+              marginTop: "var(--pf-t--global--spacer--md)",
+              marginBottom: "var(--pf-t--global--spacer--md)",
+              textAlign: "center",
+            }}
+          >
+            <StackItem>
+              <Icon status="success" size="xl">
+                <CheckCircleIcon aria-hidden />
+              </Icon>
+            </StackItem>
+            <StackItem>
+              <Title headingLevel="h4" size="xl">
+                Feedback Sent
+              </Title>
+            </StackItem>
+            <StackItem>
+              <Content>Thank you, we appreciate your feedback.</Content>
+            </StackItem>
+          </Stack>
         </CardBody>
       </Card>
     );
