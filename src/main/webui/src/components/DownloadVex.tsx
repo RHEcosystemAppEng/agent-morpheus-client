@@ -14,6 +14,11 @@ interface DownloadDropdownProps {
   cveId: string;
 }
 
+// Scan ID for filename; falls back to "report" when missing (per FullReport type: input.scan.id is string | undefined).
+function scanIdString(report: FullReport): string {
+  return report.input?.scan?.id ?? "report";
+}
+
 const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
   report,
   cveId,
@@ -47,12 +52,12 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
       return;
     }
 
-    const filename = `vex-${cveId}-${report._id || "report"}.json`;
+    const filename = `${scanIdString(report)}.json`;
     downloadFile(vexData, filename);
   };
 
   const handleDownloadReport = () => {
-    const filename = `report-${cveId}-${report._id || "report"}.json`;
+    const filename = `${scanIdString(report)}.json`;
     downloadFile(report, filename);
   };
 
