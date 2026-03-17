@@ -159,7 +159,7 @@ const RepositoryReportPage: React.FC = () => {
               </Title>
             </FlexItem>
             <FlexItem>
-              <DownloadDropdown report={report} cveId={cveId} />
+              <DownloadDropdown report={report} />
             </FlexItem>
           </Flex>
         </GridItem>

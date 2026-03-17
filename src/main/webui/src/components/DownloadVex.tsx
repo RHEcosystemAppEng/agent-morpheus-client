@@ -11,7 +11,6 @@ import type { FullReport } from "../types/FullReport";
 
 interface DownloadDropdownProps {
   report: FullReport;
-  cveId: string;
 }
 
 // Scan ID for filename; falls back to "report" when missing (per FullReport type: input.scan.id is string | undefined).
@@ -19,10 +18,7 @@ function scanIdString(report: FullReport): string {
   return report.input?.scan?.id ?? "report";
 }
 
-const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
-  report,
-  cveId,
-}) => {
+const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const onToggle = () => {
@@ -52,7 +48,7 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
       return;
     }
 
-    const filename = `${scanIdString(report)}.json`;
+    const filename = `vex-${scanIdString(report)}.json`;
     downloadFile(vexData, filename);
   };
 
