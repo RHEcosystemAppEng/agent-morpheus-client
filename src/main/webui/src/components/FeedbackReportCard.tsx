@@ -16,11 +16,9 @@ import {
   Button,
   Alert,
   Content,
-  Icon,
-  Stack,
-  StackItem,
+  EmptyState,
+  EmptyStateBody,
 } from "@patternfly/react-core";
-import { CheckCircleIcon } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
 import { useExecuteApi } from "../hooks/useExecuteApi";
 import { FeedbackResourceService } from "../generated-client";
@@ -50,7 +48,129 @@ const DROPDOWN_CONFIG = [
   },
 ];
 
-const SELECT_PLACEHOLDER = "Select an option";
+const DROPDOWN_PLACEHOLDER = "Select an option";
+
+interface FeedbackFormProps {
+  values: Record<string, string>;
+  opens: Record<string, boolean>;
+  setValue: (key: string, value: string) => void;
+  setOpen: (key: string, open: boolean) => void;
+  rating: number | null;
+  setRating: (rating: number | null) => void;
+  comment: string;
+  setComment: (comment: string) => void;
+  submitError: Error | null;
+  isFormValid: boolean;
+  submitting: boolean;
+  onSubmit: () => void;
+}
+
+function FeedbackForm({
+  values,
+  opens,
+  setValue,
+  setOpen,
+  rating,
+  setRating,
+  comment,
+  setComment,
+  submitError,
+  isFormValid,
+  submitting,
+  onSubmit,
+}: FeedbackFormProps) {
+  return (
+    <Form>
+      {DROPDOWN_CONFIG.map(({ key, label, options }) => (
+        <FormGroup key={key} label={label} fieldId={key}>
+          <Dropdown
+            isOpen={opens[key]}
+            onSelect={() => setOpen(key, false)}
+            onOpenChange={(open) => setOpen(key, open)}
+            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              <MenuToggle
+                ref={toggleRef}
+                onClick={() => setOpen(key, !opens[key])}
+                isExpanded={opens[key]}
+                style={{ width: "100%" }}
+              >
+                {values[key] || DROPDOWN_PLACEHOLDER}
+              </MenuToggle>
+            )}
+          >
+            <DropdownList>
+              {options.map((opt) => (
+                <DropdownItem
+                  key={opt}
+                  onClick={() => setValue(key, opt)}
+                >
+                  {opt}
+                </DropdownItem>
+              ))}
+            </DropdownList>
+          </Dropdown>
+        </FormGroup>
+      ))}
+
+      <FormGroup
+        label="Rate the response (1 = Poor, 5 = Excellent): *"
+        fieldId="rating"
+      >
+        <Flex spaceItems={{ default: "spaceItemsMd" }}>
+          {([1, 2, 3, 4, 5] as const).map((n) => (
+            <label key={n} style={{ marginRight: "0.5rem" }}>
+              <input
+                type="radio"
+                name="feedback-rating"
+                value={n}
+                checked={rating === n}
+                onChange={() => setRating(n)}
+                style={{ marginRight: "0.25rem" }}
+                aria-label={`Rating ${n}`}
+              />
+              {n}
+            </label>
+          ))}
+        </Flex>
+      </FormGroup>
+
+      <FormGroup
+        label="Do you have any additional feedback or suggestions to improve the analysis?"
+        fieldId="comment"
+      >
+        <TextArea
+          value={comment}
+          onChange={(_e, val) => setComment(val ?? "")}
+          id="feedback-comment"
+          aria-label="Additional feedback"
+        />
+      </FormGroup>
+
+      {submitError && (
+        <Alert
+          variant="danger"
+          title="Failed to submit feedback"
+          isInline
+          className="pf-v6-u-mb-md"
+        >
+          {submitError.message}
+        </Alert>
+      )}
+
+      <Flex justifyContent={{ default: "justifyContentFlexStart" }}>
+        <Button
+          variant="primary"
+          onClick={onSubmit}
+          isDisabled={!isFormValid || submitting}
+          isLoading={submitting}
+          aria-label="Submit Feedback"
+        >
+          Submit Feedback
+        </Button>
+      </Flex>
+    </Form>
+  );
+}
 
 interface FeedbackReportCardProps {
   reportId: string;
@@ -66,9 +186,9 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [values, setValues] = useState<Record<string, string>>({
-    accuracy: SELECT_PLACEHOLDER,
-    reasoning: SELECT_PLACEHOLDER,
-    checklist: SELECT_PLACEHOLDER,
+    accuracy: "",
+    reasoning: "",
+    checklist: "",
   });
   const [opens, setOpens] = useState<Record<string, boolean>>({
     accuracy: false,
@@ -88,9 +208,9 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
     reportId,
     response: aiResponse,
     rating: rating ?? 0,
-    accuracy: (values.accuracy === SELECT_PLACEHOLDER ? "" : values.accuracy) ?? "",
-    reasoning: (values.reasoning === SELECT_PLACEHOLDER ? "" : values.reasoning) ?? "",
-    checklist: (values.checklist === SELECT_PLACEHOLDER ? "" : values.checklist) ?? "",
+    accuracy: values.accuracy ?? "",
+    reasoning: values.reasoning ?? "",
+    checklist: values.checklist ?? "",
     ...(comment.trim() ? { comment: comment.trim() } : {}),
   }), [reportId, aiResponse, rating, values, comment]);
 
@@ -102,7 +222,7 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
     );
 
   const allDropdownsAnswered = (DROPDOWN_CONFIG as Array<{ key: string }>)
-    .every((d) => values[d.key] !== SELECT_PLACEHOLDER);
+    .every((d) => (values[d.key] ?? "").trim() !== "");
   const ratingAnswered = rating !== null;
   const isFormValid = allDropdownsAnswered && ratingAnswered;
   const previousSubmission = existsData?.exists === true;
@@ -125,31 +245,12 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
           </Title>
         </CardTitle>
         <CardBody>
-          <Content style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
-            Your feedback will be used to improve the accuracy of our AI models.
-          </Content>
-          <Stack
-            hasGutter
-            style={{
-              marginTop: "var(--pf-t--global--spacer--md)",
-              marginBottom: "var(--pf-t--global--spacer--md)",
-              textAlign: "center",
-            }}
-          >
-            <StackItem>
-              <Icon status="success" size="xl">
-                <CheckCircleIcon aria-hidden />
-              </Icon>
-            </StackItem>
-            <StackItem>
-              <Title headingLevel="h4" size="xl">
-                Feedback Sent
-              </Title>
-            </StackItem>
-            <StackItem>
-              <Content>Thank you, we appreciate your feedback.</Content>
-            </StackItem>
-          </Stack>
+          <EmptyState status="success" titleText="Feedback Sent" headingLevel="h4">
+            <EmptyStateBody>
+              Thank you, we appreciate your feedback. Your feedback will be used to improve the
+              accuracy of our AI models.
+            </EmptyStateBody>
+          </EmptyState>
         </CardBody>
       </Card>
     );
@@ -166,95 +267,20 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
         <Content style={{ marginBottom: "var(--pf-t--global--spacer--xl)" }}>
           Your feedback will be used to improve the accuracy of our AI models.
         </Content>
-        <Form>
-          {DROPDOWN_CONFIG.map(({ key, label, options }) => (
-            <FormGroup key={key} label={label} fieldId={key}>
-              <Dropdown
-                isOpen={opens[key]}
-                onSelect={() => setOpen(key, false)}
-                onOpenChange={(open) => setOpen(key, open)}
-                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={() => setOpens((o) => ({ ...o, [key]: !o[key] }))}
-                    isExpanded={opens[key]}
-                    style={{ width: "100%" }}
-                  >
-                    {values[key]}
-                  </MenuToggle>
-                )}
-              >
-                <DropdownList>
-                  {options.map((opt) => (
-                    <DropdownItem
-                      key={opt}
-                      onClick={() => setValue(key, opt)}
-                    >
-                      {opt}
-                    </DropdownItem>
-                  ))}
-                </DropdownList>
-              </Dropdown>
-            </FormGroup>
-          ))}
-
-          <FormGroup
-            label="Rate the response (1 = Poor, 5 = Excellent): *"
-            fieldId="rating"
-          >
-            <Flex spaceItems={{ default: "spaceItemsMd" }}>
-              {([1, 2, 3, 4, 5] as const).map((n) => (
-                <label key={n} style={{ marginRight: "0.5rem" }}>
-                  <input
-                    type="radio"
-                    name="feedback-rating"
-                    value={n}
-                    checked={rating === n}
-                    onChange={() => setRating(n)}
-                    style={{ marginRight: "0.25rem" }}
-                    aria-label={`Rating ${n}`}
-                  />
-                  {n}
-                </label>
-              ))}
-            </Flex>
-          </FormGroup>
-
-          <FormGroup
-            label="Do you have any additional feedback or suggestions to improve the analysis?"
-            fieldId="comment"
-          >
-            <TextArea
-              value={comment}
-              onChange={(_e, val) => setComment(val ?? "")}
-              id="feedback-comment"
-              aria-label="Additional feedback"
-            />
-          </FormGroup>
-
-          {submitError && (
-            <Alert
-              variant="danger"
-              title="Failed to submit feedback"
-              isInline
-              className="pf-v6-u-mb-md"
-            >
-              {submitError.message}
-            </Alert>
-          )}
-
-          <Flex justifyContent={{ default: "justifyContentFlexStart" }}>
-            <Button
-              variant="primary"
-              onClick={() => submitFeedback()}
-              isDisabled={!isFormValid || submitting}
-              isLoading={submitting}
-              aria-label="Submit Feedback"
-            >
-              Submit Feedback
-            </Button>
-          </Flex>
-        </Form>
+        <FeedbackForm
+          values={values}
+          opens={opens}
+          setValue={setValue}
+          setOpen={setOpen}
+          rating={rating}
+          setRating={setRating}
+          comment={comment}
+          setComment={setComment}
+          submitError={submitError}
+          isFormValid={isFormValid}
+          submitting={submitting}
+          onSubmit={() => submitFeedback()}
+        />
       </CardBody>
     </Card>
   );
