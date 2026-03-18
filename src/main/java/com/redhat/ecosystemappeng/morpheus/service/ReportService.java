@@ -223,7 +223,20 @@ public class ReportService {
     queueService.deleted(ids);
     return repository.remove(ids);
   }
-  
+
+  /**
+   * Marks all reports with the given scan ID as failed with the given error type and message.
+   *
+   * @throws jakarta.ws.rs.NotFoundException if no report exists for the given scan ID
+   */
+  public void markFailedByScanId(String scanId, String errorType, String errorMessage) {
+    LOGGER.debugf("Mark reports failed by scan ID %s: %s - %s", scanId, errorType, errorMessage);
+    int updated = repository.updateWithErrorByScanId(scanId, errorType, errorMessage);
+    if (updated == 0) {
+      throw new jakarta.ws.rs.NotFoundException("No reports found for scan ID: " + scanId);
+    }
+  }
+
   public Collection<String> remove(Map<String, String> query) {
     LOGGER.debugf("Remove reports with filter: %s", query);
     Collection<String> deleteIds = repository.remove(query);

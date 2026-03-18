@@ -423,6 +423,20 @@
           "2022-03-10T12:15:50"
         ]
       },
+      "MarkReportFailedRequest": {
+        "type": "object",
+        "properties": {
+          "scanId": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          }
+        }
+      },
       "MetricName": {
         "type": "string",
         "enum": [
@@ -2969,6 +2983,52 @@
         ]
       }
     },
+    "/api/v1/reports/failed": {
+      "post": {
+        "summary": "Mark report(s) as failed by scan ID",
+        "description": "Finds report(s) by scan ID (input.scan.id), sets error type and message on each, and returns 202.",
+        "requestBody": {
+          "description": "Scan ID, error type and message for the failure",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReportFailedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Failure status record accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No report found for the given scan ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      }
+    },
     "/api/v1/reports/new": {
       "post": {
         "summary": "Create new analysis request",
@@ -3372,58 +3432,6 @@
           },
           "404": {
             "description": "Report not found"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        },
-        "security": [
-          {
-            "jwt": []
-          }
-        ],
-        "tags": [
-          "Report Endpoint"
-        ]
-      }
-    },
-    "/api/v1/reports/{id}/failed": {
-      "post": {
-        "summary": "Mark analysis request as failed",
-        "description": "Marks an analysis request as failed with error details",
-        "parameters": [
-          {
-            "description": "Report ID to mark as failed (24-character hexadecimal MongoDB ObjectId format)",
-            "required": true,
-            "name": "id",
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "Error message describing the failure",
-            "required": true,
-            "name": "errorMessage",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Failure status record accepted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "examples": [
-                    "66155fd9639dbb7e7e4e44b8"
-                  ]
-                }
-              }
-            }
           },
           "500": {
             "description": "Internal server error"

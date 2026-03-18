@@ -217,14 +217,25 @@ public class ReportRepositoryService {
   }
 
   public void updateWithError(String id, String errorType, String errorMessage) {
-    String productId = getProductId(id);  
-    
+    String productId = getProductId(id);
     var error = new Document("type", errorType).append("message", errorMessage);
     getCollection().updateOne(new Document(RepositoryConstants.ID_KEY, new ObjectId(id)), Updates.set("error", error));
-    
     if (Objects.nonNull(productId)) {
       checkAndStoreProductCompletion(productId);
     }
+  }
+
+  /**
+   * Updates all reports matching the given scan ID (input.scan.id) with the given error type and message.
+   *
+   * @return the number of reports updated (0 if none match the scan ID)
+   */
+  public int updateWithErrorByScanId(String scanId, String errorType, String errorMessage) {
+    List<Report> reports = findByName(scanId);
+    for (Report report : reports) {
+      updateWithError(report.id(), errorType, errorMessage);
+    }
+    return reports.size();
   }
 
   public Report save(String data) {

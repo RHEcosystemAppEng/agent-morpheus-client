@@ -20,6 +20,7 @@ export type { Job } from './models/Job';
 export type { Justification } from './models/Justification';
 export type { LLMStage } from './models/LLMStage';
 export type { LocalDateTime } from './models/LocalDateTime';
+export type { MarkReportFailedRequest } from './models/MarkReportFailedRequest';
 export type { MetricName } from './models/MetricName';
 export type { OverviewMetrics } from './models/OverviewMetrics';
 export type { Product } from './models/Product';
