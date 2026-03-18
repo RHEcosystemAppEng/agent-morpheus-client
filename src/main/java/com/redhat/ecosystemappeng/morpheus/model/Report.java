@@ -10,10 +10,10 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 @Schema(name = "Report", description = "Report metadata")
 @RegisterForReflection
 public record Report(
-    @Schema(required = true, description = "Report ID")
+    @Schema(required = true, description = "Report ID (MongoDB ObjectId hex)")
     String id,
-    @Schema(required = true, description = "Report name")
-    String name,
+    @Schema(required = true, description = "Scan ID (input.scan.id), use for URLs and get-by-scan-id API")
+    String scanId,
     @Schema(required = true, description = "Started at timestamp for report analysis")
     String startedAt,
     @Schema(required = true, description = "Completed at timestamp for report analysis")

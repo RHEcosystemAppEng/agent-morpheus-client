@@ -330,7 +330,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           formData,
         });
       getNavigationPath = (response: ReportData) =>
-        `/reports/component/${cveId}/${response.reportRequestId.id}`;
+        `/reports/component/${cveId}/${response.reportRequestId.reportId}`;
     }
 
     // Call API and navigate using unified code path
@@ -418,7 +418,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
           requestBody,
           submit: true,
         });
-        const reportId = response.reportRequestId.id;
+        const reportId = response.reportRequestId.reportId;
         navigate(`/reports/component/${trimmedCveId}/${reportId}`);
         onClose();
       } catch (err: unknown) {

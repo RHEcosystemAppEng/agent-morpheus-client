@@ -160,7 +160,7 @@ const generateMockReport = (
 
   return {
     id,
-    name: `Report ${id}`,
+    scanId: id,
     startedAt: state === "completed" ? twoDaysAgo : yesterday,
     completedAt: state === "completed" ? now : "",
     imageName: options?.imageName || `sample-image-${id}`,
@@ -413,7 +413,7 @@ const mockReports: Report[] = [
   // 2 uncertain reports (UNKNOWN) - gray
   ...Array.from({ length: 2 }, (_, i) => ({
     id: `report-all-colors-completed-unknown-${i + 1}`,
-    name: `Report report-all-colors-completed-unknown-${i + 1}`,
+    scanId: `report-all-colors-completed-unknown-${i + 1}`,
     startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     completedAt: getStateByIndex(18 + i) === "completed" ? new Date().toISOString() : "",
     imageName: `demo-completed-unknown-${i + 1}`,
@@ -437,7 +437,7 @@ const mockReports: Report[] = [
   // Expired reports (10 total - dark red)
   ...Array.from({ length: 10 }, (_, i) => ({
     id: `report-all-colors-expired-${i + 1}`,
-    name: `Report report-all-colors-expired-${i + 1}`,
+    scanId: `report-all-colors-expired-${i + 1}`,
     startedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
     completedAt: "",
     imageName: `demo-expired-${i + 1}`,
@@ -573,7 +573,7 @@ const mockReports: Report[] = [
   // Report 9: Completed with uncertain status (UNKNOWN)
   {
     id: "report-9",
-    name: "Report report-9",
+    scanId: "report-9",
     startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     completedAt: new Date().toISOString(),
     imageName: "uncertain-app",
@@ -606,7 +606,7 @@ const mockReports: Report[] = [
   // Report 10: Sample Product A / CVE-2024-1001 - First report for pagination testing
   {
     id: "report-product1-cve1001-1",
-    name: "Report report-product1-cve1001-1",
+    scanId: "report-product1-cve1001-1",
     startedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     imageName: "sample-product-a-repo-1",
@@ -639,7 +639,7 @@ const mockReports: Report[] = [
     
     return {
       id: `report-product1-cve1001-${reportNum}`,
-      name: `Report report-product1-cve1001-${reportNum}`,
+      scanId: `report-product1-cve1001-${reportNum}`,
       startedAt: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString(),
       completedAt: new Date(Date.now() - (daysAgo - 1) * 24 * 60 * 60 * 1000).toISOString(),
       imageName: `sample-product-a-repo-${reportNum}`,
@@ -793,6 +793,41 @@ export const handlers = [
     });
   }),
 
+  // GET /api/v1/reports/by-scan-id/:scanId - Get analysis report by scan ID (input.scan.id)
+  http.get("/api/v1/reports/by-scan-id/:scanId", async ({ request, params }) => {
+    await delay(getMockDelay(request));
+    const { scanId } = params as { scanId: string };
+    const report = mockReports.find((r) => r.scanId === scanId);
+    if (!report) {
+      return HttpResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+    // FullReport mock keyed by Mongo id - try by scanId for fallback
+    const fullReport = mockFullReports[report.id] ?? mockFullReports[scanId];
+    if (fullReport) {
+      let status = "unknown";
+      if (fullReport.input?.scan?.completed_at) status = "completed";
+      else if (fullReport.metadata?.sent_at) status = "sent";
+      else if (fullReport.metadata?.submitted_at) status = "queued";
+      else if (fullReport.metadata?.product_id) status = "pending";
+      return HttpResponse.json({ report: fullReport, status });
+    }
+    const fallbackFullReport = {
+      _id: report.id,
+      input: {
+        scan: {
+          id: report.scanId,
+          started_at: report.startedAt,
+          completed_at: report.completedAt,
+        },
+      },
+      metadata: report.metadata || {},
+    };
+    return HttpResponse.json({
+      report: fallbackFullReport,
+      status: report.state || "unknown",
+    });
+  }),
+
   // GET /api/v1/reports/:id - Get analysis report by ID (FullReport with status)
   http.get("/api/v1/reports/:id", async ({ request, params }) => {
     await delay(getMockDelay(request));
@@ -831,7 +866,7 @@ export const handlers = [
       _id: report.id,
       input: {
         scan: {
-          id: report.name,
+          id: report.scanId,
           started_at: report.startedAt,
           completed_at: report.completedAt,
         },
@@ -856,10 +891,10 @@ export const handlers = [
     const newProductId = body?.productId || `product-${Date.now()}`;
     const now = new Date().toISOString();
 
-    // Create a new report
+    // Create a new report (scanId used in URLs and get-by-scan-id)
     const newReport: Report = {
       id: newReportId,
-      name: body?.name || `New Report ${newReportId}`,
+      scanId: newReportId,
       startedAt: now,
       completedAt: "",
       imageName: body?.imageName || "unknown",
@@ -874,9 +909,9 @@ export const handlers = [
 
     mockReports.push(newReport);
 
-    // Return ReportData format (simplified)
+    // Return ReportData with reportRequestId (reportId = scan ID for navigation)
     return HttpResponse.json({
-      id: newReportId,
+      reportRequestId: { id: newReportId, reportId: newReportId },
       state: "pending",
     });
   }),
