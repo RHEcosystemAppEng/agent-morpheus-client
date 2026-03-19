@@ -196,7 +196,9 @@ const RepositoryReportPage: React.FC = () => {
       <PageSection>
         <Breadcrumb>
           <BreadcrumbItem>
-            <Link to="/reports">Reports</Link>
+            <Link to={productId ? "/reports" : "/reports/single-repositories"}>
+              {productId ? "SBOMs" : "Single Repositories"}
+            </Link>
           </BreadcrumbItem>
           {productId && (
             <BreadcrumbItem>
