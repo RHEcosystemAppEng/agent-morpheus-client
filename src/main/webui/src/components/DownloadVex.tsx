@@ -4,9 +4,9 @@ import {
   DropdownItem,
   DropdownList,
   MenuToggle,
+  MenuToggleAction,
   MenuToggleElement,
 } from "@patternfly/react-core";
-import { DownloadIcon } from "@patternfly/react-icons";
 import type { FullReport } from "../types/FullReport";
 
 interface DownloadDropdownProps {
@@ -74,22 +74,28 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
     <Dropdown
       isOpen={isOpen}
       onSelect={onSelect}
-      onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}
+      onOpenChange={(open: boolean) => setIsOpen(open)}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
           isExpanded={isOpen}
           onClick={onToggle}
-          icon={<DownloadIcon />}
           variant="primary"
-          style={{
-            borderRadius: "2rem",
-            paddingLeft: "1.5rem",
-            paddingRight: "1.5rem",
-          }}
-        >
-          Download
-        </MenuToggle>
+          splitButtonItems={[
+            <MenuToggleAction
+              key="download-split-action"
+              id="download-report-split-action"
+              aria-label="Download"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+              }}
+            >
+              Download
+            </MenuToggleAction>,
+          ]}
+          aria-label="Open download menu"
+        />
       )}
     >
       <DropdownList>{dropdownItems}</DropdownList>
