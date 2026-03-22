@@ -71,6 +71,8 @@ The repository report page SHALL automatically refresh data every 5 seconds by r
 
 The repository report page SHALL compare the report status between the previous and current data during auto-refresh. The page SHALL only trigger a rerender if the report status has changed. This optimization SHALL prevent unnecessary rerenders and UI jumps when the report status remains unchanged. Note: Only the status field is compared, not the entire report object.
 
+The repository report page SHALL display a Feedback card after the RepositoryAdditionalDetailsCard (Additional Details card) in the same grid only when the report status is "completed".
+
 #### Scenario: Analysis state displayed in DetailsCard
 - **WHEN** a user views the repository report page with report data loaded
 - **THEN** the DetailsCard displays an "Analysis State" field showing the current state of the report (e.g., "Completed", "Queued", "Expired")
@@ -107,6 +109,12 @@ The repository report page SHALL compare the report status between the previous 
 - **AND** the page SHALL trigger a rerender if the report status has changed
 - **AND** this optimization SHALL prevent UI jumps and visual disruption when the report status remains unchanged
 - **AND** note that only the status field is compared, not the entire report object
+
+#### Scenario: Feedback card displayed after Additional Details
+- **WHEN** a user views the repository report page with report data loaded AND the report status is "completed"(Feedback card not shown when report not completed)
+- **THEN** a Feedback card is displayed in the same grid after the RepositoryAdditionalDetailsCard (Additional Details card)
+- **AND** the Feedback card has the title "Feedback" and the subtitle "Your feedback will be used to improve the accuracy of our AI models."(for more details see feedback-report spec )
+
 
 ### Requirement: Download Feature
 The repository report page SHALL provide a download button that allows users to download either the VEX (Vulnerability Exploitability eXchange) data or the complete report as JSON files.
