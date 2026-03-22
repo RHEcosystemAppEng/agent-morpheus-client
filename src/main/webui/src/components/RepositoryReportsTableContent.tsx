@@ -107,7 +107,7 @@ const RepositoryReportsTableContent: React.FC<
       case "id":
         return (
           <TableText wrapModifier="truncate">
-            <Link to={getViewPath(report)}>{report.id}</Link>
+            <Link to={getViewPath(report)}>{report.scanId}</Link>
           </TableText>
         );
       case "gitRepo":

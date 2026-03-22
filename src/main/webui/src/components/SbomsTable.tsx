@@ -140,13 +140,13 @@ const SbomsTable: React.FC = () => {
           return;
         }
         const firstReport = reportsData[0];
-        if (!firstReport?.id) {
+        if (!firstReport?.scanId) {
           navigateToProductPage(productId, cveId);
           return;
         }
         setLoadingRow(null);
         currentProductIdRef.current = null;
-        navigate(`/reports/component/${cveId}/${firstReport.id}`);
+        navigate(`/reports/component/${cveId}/${firstReport.scanId}`);
       }
     }
   }, [reportsData, reportsLoading, reportsError, loadingRow, navigate]);

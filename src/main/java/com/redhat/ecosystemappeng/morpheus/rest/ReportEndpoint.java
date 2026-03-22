@@ -358,6 +358,41 @@ public class ReportEndpoint {
 
 
   @GET
+  @Path("/by-scan-id/{scanId}")
+  @Operation(
+    summary = "Get analysis report by scan ID",
+    description = "Retrieves a report by its scan ID (input.scan.id) with calculated analysis status. Use this when the reportId in the URL is the scan ID.")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "200",
+      description = "Report retrieved successfully",
+      content = @Content(
+        schema = @Schema(implementation = ReportWithStatus.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "404",
+      description = "Report not found"
+    ),
+    @APIResponse(
+      responseCode = "500",
+      description = "Internal server error"
+    )
+  })
+  public ReportWithStatus getByScanId(
+    @Parameter(
+      description = "Scan ID (input.scan.id) of the report",
+      required = true
+    )
+    @PathParam("scanId") String scanId) {
+    var reportWithStatus = reportService.getWithStatusByScanId(scanId);
+    if (Objects.isNull(reportWithStatus)) {
+      throw new NotFoundException(scanId);
+    }
+    return reportWithStatus;
+  }
+
+  @GET
   @Path("/{id}")
   @Operation(
     summary = "Get analysis report", 
