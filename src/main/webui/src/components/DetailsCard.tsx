@@ -9,9 +9,7 @@ import {
   Title,
   Flex,
   FlexItem,
-  Label,
 } from "@patternfly/react-core";
-import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { Link } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
@@ -77,30 +75,38 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
-                <Flex>
-                  <FlexItem>
-                    <Link
-                      to={
-                        productId
-                          ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
-                          : `/reports/component/cve/${cveId}/${reportId}`
-                      }
-                    >
-                      {vuln.vuln_id}
-                    </Link>
-                  </FlexItem>
-                  <FlexItem>
-                    {isFailed ? (
-                      <Label color="grey" variant="filled" icon={<ExclamationCircleIcon />}>
-                        Failed
-                      </Label>
-                    ) : outputVuln?.justification?.status ? (
-                      <CveStatus status={outputVuln.justification.status} />
-                    ) : (
-                      <NotAvailable />
-                    )}
-                  </FlexItem>
-                </Flex>
+                {isFailed ? (
+                  <Link
+                    to={
+                      productId
+                        ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                        : `/reports/component/cve/${cveId}/${reportId}`
+                    }
+                  >
+                    {vuln.vuln_id}
+                  </Link>
+                ) : (
+                  <Flex>
+                    <FlexItem>
+                      <Link
+                        to={
+                          productId
+                            ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                            : `/reports/component/cve/${cveId}/${reportId}`
+                        }
+                      >
+                        {vuln.vuln_id}
+                      </Link>
+                    </FlexItem>
+                    <FlexItem>
+                      {outputVuln?.justification?.status ? (
+                        <CveStatus status={outputVuln.justification.status} />
+                      ) : (
+                        <NotAvailable />
+                      )}
+                    </FlexItem>
+                  </Flex>
+                )}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
