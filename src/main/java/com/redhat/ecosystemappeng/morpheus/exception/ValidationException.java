@@ -16,5 +16,10 @@ public class ValidationException extends IllegalArgumentException {
   public Map<String, String> getErrors() {
     return errors;
   }
+
+  @Override
+  public String getMessage() {
+    return "Input Validation failed: " + errors.toString();
+  }
 }
 

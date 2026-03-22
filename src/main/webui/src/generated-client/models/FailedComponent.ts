@@ -9,13 +9,17 @@ export type FailedComponent = {
     /**
      * Component name
      */
-    imageName: string;
+    name: string;
     /**
      * Component version
      */
-    imageVersion: string;
+    version: string;
     /**
-     * Reason of failure
+     * Component image
+     */
+    image: string;
+    /**
+     * Error message
      */
     error: string;
 };

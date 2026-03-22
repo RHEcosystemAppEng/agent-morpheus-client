@@ -1,0 +1,27 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Person: Test"]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "test-product-not-found",
+  "spdxVersion": "SPDX-2.3",
+  "documentNamespace": "https://example.com/spdx/product-not-found",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Other-Package",
+      "name": "other-package",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Nonexistent-Product",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

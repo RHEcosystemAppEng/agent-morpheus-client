@@ -9,7 +9,8 @@ export type Finding =
   | { type: "not-vulnerable"; count?: number }
   | { type: "uncertain"; count?: number }
   | { type: "in-progress" }
-  | { type: "failed" };
+  | { type: "failed" }
+  | { type: "excluded"; count?: number };
 
 export type ProductStatus = {
   vulnerableCount: number;
@@ -42,11 +43,16 @@ function hasFailedInCounts(statusCounts: Record<string, number>): boolean {
 }
 
 
+function getExcludedCount(statusCounts: Record<string, number>): number {
+  return statusCounts["excluded"] ?? 0;
+}
+
 /**
  * Returns the single prioritized finding for a product row (reports table).
- * Priority: Vulnerable > Uncertain > In progress > Failed > Not vulnerable.
+ * Priority: Vulnerable > Uncertain > In progress > Failed > Excluded > Not vulnerable.
  * Only returns type + optional count; color/variant are applied by Finding component.
  * totalCount uses submittedCount (e.g. productSummary.data.submittedCount) when provided.
+ * Excluded uses statusCounts["excluded"] (submission failure count from API).
  */
 export function getProductFinding(
   productStatus: ProductStatus,
@@ -72,8 +78,12 @@ export function getProductFinding(
   if (hasFailedInCounts(statusCounts)) {
     return { type: "failed" };
   }
+  const excludedCount = getExcludedCount(statusCounts);
+  if (excludedCount > 0) {
+    return { type: "excluded", count: excludedCount };
+  }
   if (
-    analysisState === "completed" &&    
+    analysisState === "completed" &&
     productStatus.notVulnerableCount === submittedCount
   ) {
     return { type: "not-vulnerable" };

@@ -2,7 +2,6 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import com.redhat.ecosystemappeng.morpheus.client.FeedbackApi;
 import com.redhat.ecosystemappeng.morpheus.model.FeedbackDto;
-import com.redhat.ecosystemappeng.morpheus.rest.ReportEndpoint;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;

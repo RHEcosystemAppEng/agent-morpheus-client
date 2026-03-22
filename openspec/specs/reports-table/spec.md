@@ -125,7 +125,7 @@ When a product has exactly one submitted report (`submittedCount === 1`), clicki
 
 ### Requirement: Reports Table Finding Column
 
-The reports table SHALL display a "Finding" column with one finding per product. Five states, in priority order: Vulnerable > Uncertain > In progress > Failed > Not vulnerable. Only the highest-priority finding is shown per row. Counts for Vulnerable and Uncertain only; no count for In progress, Not vulnerable, or Failed.
+The reports table SHALL display a "Finding" column with one finding per product. Six states, in priority order: Vulnerable > Uncertain > In progress > Failed > Excluded > Not vulnerable. Only the highest-priority finding is shown per row. Counts for Vulnerable, Uncertain, and Excluded only; no count for In progress, Not vulnerable, or Failed.
 
 #### Scenario: Finding column header
 - **WHEN** a user views the reports table
@@ -135,8 +135,13 @@ The reports table SHALL display a "Finding" column with one finding per product.
 - **WHEN** a product has one or more vulnerable repositories → display "Vulnerable" + count, red (danger) label
 - **WHEN** a product has zero vulnerable and one or more uncertain → display "Uncertain" + count, orange (warning) label
 - **WHEN** a product has zero vulnerable, zero uncertain, and any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon
-- **WHEN** a product has zero vulnerable, zero uncertain, no in-progress reports, and any failed or expired report → display "Failed", no count, filled grey label and ExclamationCircleIcon
-- **WHEN** 100% of reports are completed and 100% are not vulnerable → display "Not vulnerable", no count, green (success) label
+- **WHEN** a product has zero vulnerable, zero uncertain, no in-progress reports, no failed/expired reports, and one or more excluded components (`statusCounts["excluded"]` > 0) → display "Excluded" + count, with label styling as defined (e.g. grey or info)
+- **WHEN** 100% of reports are completed and 100% are not vulnerable and no excluded components → display "Not vulnerable", no count, green (success) label
+
+#### Scenario: Excluded state uses submission failure count
+- **WHEN** a product has excluded components (submissionFailures length > 0) and no higher-priority finding
+- **THEN** the Finding column displays "Excluded" with the count equal to `statusCounts["excluded"]` (length of product submissionFailures)
+- **AND** the count is shown in the same format as Vulnerable and Uncertain (e.g. "3 Excluded")
 
 ### Requirement: Reports Page Tabs and Single Repositories
 The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Repositories**. Selecting a tab SHALL switch content and update the URL: `/reports` for SBOMs, `/reports/single-repositories` for Single Repositories. Direct navigation to either URL SHALL show the corresponding tab. Spacing between tab bar and content SHALL use PatternFly Stack/StackItem with the standard spacer.
@@ -156,6 +161,16 @@ The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Reposi
 - **WHEN** implementing the feature
 - **THEN** Single Repositories tab content SHALL live in a dedicated component (e.g. `SingleRepositoriesTable.tsx`) reusing patterns from `RepositoryReportsTable`
 - **AND** devservices/test data SHALL include at least one report without `report.metadata.product_id` (e.g. under `src/test/resources/devservices/reports/`) for verification
+
+### Requirement: Repos Analyzed column format
+The reports table SHALL display the "Repos Analyzed" column using the same calculation as the report page Details card: num completed from `statusCounts["completed"]` and num submitted from `product.data.submittedCount`. The display SHALL use the same shared formatter as the report details card, with the optional suffix "analyzed" (e.g. "5/10 analyzed").
+
+#### Scenario: Repos Analyzed uses completed and submittedCount
+- **WHEN** a user views the reports table
+- **THEN** the Repos Analyzed column shows values in the form {completed}/{submitted} with the suffix "analyzed" (e.g. "5/10 analyzed")
+- **AND** completed is the value of `statusCounts["completed"]` (or 0 if absent)
+- **AND** submitted is the value of `product.data.submittedCount`
+- **AND** the same shared formatting logic is used as for the report page Details card (with suffix enabled for the table)
 
 ### Requirement: Reports Toolbar Per-Page Selection
 When the reports table toolbar is used with pagination, the toolbar SHALL accept optional `perPageOptions` and `onPerPageSelect` and SHALL pass them to the PatternFly Pagination component. When provided, the user SHALL be able to select a different page size from the options; selecting a new per-page value SHALL invoke the caller's handler so pagination state (e.g. page and perPage) can be updated (typically resetting to page 1).

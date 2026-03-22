@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
-import { formatRepositoriesAnalyzed } from "../utils/repositoriesAnalyzed";
+import { getRepositoriesAnalyzedFromProduct } from "../utils/repositoriesAnalyzed";
 import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import type { Finding } from "../utils/findingDisplay";
@@ -55,49 +55,6 @@ export function isAnalysisCompleted(analysisState: string): boolean {
 }
 
 /**
- * Pure function to determine analysis state from statusCounts
- * Returns "completed" if all reports are completed, "in-progress" when any report is pending, queued, or sent
- */
-export function getAnalysisStateFromStatusCounts(
-  statusCounts: Record<string, number>
-): string {
-  const completedCount = statusCounts["completed"] || 0;
-  const totalCount = Object.values(statusCounts).reduce(
-    (sum, count) => sum + count,
-    0
-  );
-
-  // If all reports are completed, state is "completed"
-  if (completedCount === totalCount && totalCount > 0) {
-    return "completed";
-  }
-
-  // In-progress states: pending, queued, sent
-  const inProgressStates = ["pending", "queued", "sent"];
-  const hasInProgress = inProgressStates.some(
-    (state) => (statusCounts[state] || 0) > 0
-  );
-
-  return hasInProgress ? "in-progress" : "completed";
-}
-
-/**
- * Pure function to calculate repositories analyzed from statusCounts
- * Uses the "completed" count from statusCounts as analyzedCount
- * and total count as submittedCount
- */
-export function calculateRepositoriesFromStatusCounts(
-  statusCounts: Record<string, number>
-): { analyzedCount: number; submittedCount: number } {
-  const analyzedCount = statusCounts["completed"] || 0;
-  const submittedCount = Object.values(statusCounts).reduce(
-    (sum, count) => sum + count,
-    0
-  );
-  return { analyzedCount, submittedCount };
-}
-
-/**
  * Pure function to transform ProductSummary to ReportRow
  */
 export function transformProductSummaryToRow(productSummary: ProductSummary): ReportRow {
@@ -112,15 +69,11 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
 
   // Calculate analysis state from statusCounts
   const statusCounts = summary.statusCounts || {};
-  const analysisState = getAnalysisStateFromStatusCounts(statusCounts);
+  const analysisState = productSummary.summary.productState;
 
-  // Calculate repositories analyzed from statusCounts
-  const { analyzedCount, submittedCount } =
-    calculateRepositoriesFromStatusCounts(statusCounts);
-  const repositoriesAnalyzed = formatRepositoriesAnalyzed(
-    analyzedCount,
-    submittedCount
-  );
+  // Repositories analyzed from shared utility (completed + data.submittedCount, "analyzed" suffix)
+  const { getDisplay } = getRepositoriesAnalyzedFromProduct(productSummary);
+  const repositoriesAnalyzed = getDisplay("analyzed");
 
   const justificationStatusCounts = summary.justificationStatusCounts || {};
   const productStatus: ProductStatus = {

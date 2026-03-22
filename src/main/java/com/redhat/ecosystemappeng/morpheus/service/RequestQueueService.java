@@ -46,7 +46,7 @@ public class RequestQueueService {
   @ConfigProperty(name = "morpheus.queue.max-active", defaultValue = "5")
   Integer maxActive;
 
-  @ConfigProperty(name = "morpheus.queue.max-size", defaultValue = "100")
+  @ConfigProperty(name = "morpheus.queue.max-size", defaultValue = "500")
   Integer maxSize;
 
   @ConfigProperty(name = "morpheus.queue.timeout", defaultValue = "5m")

@@ -1,0 +1,46 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Person: Test"]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "test-no-supported-components",
+  "spdxVersion": "SPDX-2.3",
+  "documentNamespace": "https://example.com/spdx/no-supported-components",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Product",
+      "name": "test-product",
+      "versionInfo": "1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-Maven-Component",
+      "name": "maven-lib",
+      "versionInfo": "2.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.example/maven-lib@2.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Product",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-Maven-Component",
+      "relatedSpdxElement": "SPDXRef-Product",
+      "relationshipType": "PACKAGE_OF"
+    }
+  ]
+}

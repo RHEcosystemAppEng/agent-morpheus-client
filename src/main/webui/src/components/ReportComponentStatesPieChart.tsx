@@ -18,6 +18,7 @@ import DonutChartWrapper from "./DonutChartWrapper";
 
 interface ReportComponentStatesPieChartProps {
   product: ProductSummary;
+  cardHeight: string;
 }
 
 // State ordering: states appear in this order when present in data
@@ -28,6 +29,7 @@ const STATE_ORDER = [
   "queued",
   "sent",
   "pending",
+  "excluded",
 ] as const;
 
 // Color mapping for each component state
@@ -38,11 +40,12 @@ const STATE_COLORS: Record<string, string> = {
   queued: t_global_color_nonstatus_gray_300.var,
   sent: t_global_color_nonstatus_gray_400.var,
   pending: t_global_color_nonstatus_gray_200.var,
+  excluded: t_global_color_nonstatus_gray_300.var,
 };
 
 const ReportComponentStatesPieChart: React.FC<
   ReportComponentStatesPieChartProps
-> = ({ product }) => {
+> = ({ product, cardHeight }) => {
   const chartData = useMemo(() => {
     const statusCounts = product.summary?.statusCounts || {};
     const baseData = Object.entries(statusCounts).map(([x, y]) => ({ x, y: y as number }));        
@@ -89,7 +92,7 @@ const ReportComponentStatesPieChart: React.FC<
 
   if (chartData.length === 0) {
     return (
-      <Card>
+      <Card style={{ height: cardHeight, overflowY: "auto" }}>
         <CardTitle>
           <Title headingLevel="h4" size="xl">
             Repository analysis distribution
@@ -105,7 +108,7 @@ const ReportComponentStatesPieChart: React.FC<
   }
 
   return (
-    <Card>
+    <Card style={{ height: cardHeight, overflowY: "auto" }}>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
           Repository analysis distribution

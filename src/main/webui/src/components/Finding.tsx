@@ -1,6 +1,7 @@
-import { Label } from "@patternfly/react-core";
+import { Label, LabelProps } from "@patternfly/react-core";
 import type { Finding as FindingType } from "../utils/findingDisplay";
 import { ExclamationCircleIcon, InProgressIcon } from "@patternfly/react-icons";
+import { apiToColor, JUSTIFICATION_API } from "../utils/justificationStatus";
 
 export interface FindingProps {
   finding: FindingType | null;
@@ -20,23 +21,38 @@ const FailedStatus: React.FC = () => (
 
 const Finding: React.FC<FindingProps> = ({ finding }) => {
   if (!finding) return null;
-  if (finding.type === "failed") return <FailedStatus />;
-  if (finding.type === "in-progress") return <InProgressStatus />;
+  
+  let label: string;
+  let color: LabelProps["color"];
 
-  const label =
-    finding.type === "vulnerable"
-      ? "Vulnerable"
-      : finding.type === "not-vulnerable"
-        ? "Not vulnerable"
-        : "Uncertain";
+  switch (finding.type) {
+    case "failed":
+      return <FailedStatus />;
+    case "in-progress":
+      return <InProgressStatus />;
+    case "vulnerable":
+      label = "Vulnerable";
+      color = apiToColor(JUSTIFICATION_API.VULNERABLE);
+      break;
+    case "not-vulnerable":
+      label = "Not vulnerable";
+      color = apiToColor(JUSTIFICATION_API.NOT_VULNERABLE);
+      break;
+    case "excluded":
+      label = "Excluded";
+      color = "grey";
+      break;
+    case "uncertain":
+      label = "Uncertain";
+      color = apiToColor(JUSTIFICATION_API.UNCERTAIN);
+      break;
+    default: {
+      return null;
+    }
+  }
+
   const labelText =
     finding.count !== undefined ? `${finding.count} ${label}` : label;
-  const color =
-    finding.type === "vulnerable"
-      ? "red"
-      : finding.type === "not-vulnerable"
-        ? "green"
-        : "orange";
 
   return (
     <Label color={color} variant="filled">

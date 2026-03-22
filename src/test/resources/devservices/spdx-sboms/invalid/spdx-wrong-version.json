@@ -1,0 +1,13 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2025-01-01T00:00:00Z",
+    "creators": ["Person: Test"]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "test-wrong-version",
+  "spdxVersion": "SPDX-2.2",
+  "documentNamespace": "https://example.com/spdx/wrong-version",
+  "packages": [],
+  "relationships": []
+}

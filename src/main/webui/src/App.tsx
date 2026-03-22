@@ -4,6 +4,7 @@ import AppLayout from "./components/AppLayout";
 import HomePage from "./pages/HomePage";
 import ReportsPage from "./pages/ReportsPage";
 import ReportPage from "./pages/ReportPage";
+import ExcludedComponentsPage from "./pages/ExcludedComponentsPage";
 import RepositoryReportPage from "./pages/RepositoryReportPage";
 import CveDetailsPage from "./pages/CveDetailsPage";
 
@@ -21,6 +22,10 @@ const App: React.FC = () => {
           <Route
             path="/reports/product/:productId/:cveId/:reportId"
             element={<RepositoryReportPage />}
+          />
+          <Route
+            path="/reports/product/excluded-components/:productId/:cveId"
+            element={<ExcludedComponentsPage />}
           />
           <Route
             path="/reports/product/:productId/:cveId"

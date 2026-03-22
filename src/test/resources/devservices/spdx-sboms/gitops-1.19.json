@@ -1,0 +1,1717 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-01-05T01:26:57Z",
+    "creators": [
+      "Organization: Red Hat Product Security (secalert@redhat.com)"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "gitops-1.19",
+  "spdxVersion": "SPDX-2.3",
+  "documentNamespace": "https://security.access.redhat.com/data/sbom/v1/spdx/gitops-1.19",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:/a:redhat:openshift_gitops:1.19::el8",
+          "referenceType": "cpe22Type"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-1.19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-7cd7ce9a3fce15b26ebe030886c2de561b81a46410791ef86bedbeb4b263f310-SPDXRef-component-gitops-operator-bundle-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-operator-bundle@sha256:5e78b9e6a98218c209af1d85e60c2000172a90f178f32f06f0e3b6bc11f33cce?repository_url=registry.redhat.io/openshift-gitops-1/gitops-operator-bundle&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-operator-bundle@sha256:5e78b9e6a98218c209af1d85e60c2000172a90f178f32f06f0e3b6bc11f33cce?repository_url=registry.redhat.io/openshift-gitops-1/gitops-operator-bundle&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-operator-bundle@sha256:5e78b9e6a98218c209af1d85e60c2000172a90f178f32f06f0e3b6bc11f33cce?repository_url=registry.redhat.io/openshift-gitops-1/gitops-operator-bundle&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-operator-bundle-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:74112a7f92c432baef25f9af458d90bfae308aa23f0b188d46c15b9917090be1?repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:74112a7f92c432baef25f9af458d90bfae308aa23f0b188d46c15b9917090be1?repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:74112a7f92c432baef25f9af458d90bfae308aa23f0b188d46c15b9917090be1?repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "console-plugin-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-900e6ecfe844a927630d15410332e3dde9591df1091f68dd896128db8c11c11e-SPDXRef-image-console-plugin-rhel8-bc878ab90a9b9bfc7538fda5ca5aed0575ba3042621b8ccf25f4c05af56936ed",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:7245becd665b84a2456851f30ef634081cb729c93ea10910db5a4005e7ff28f6?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:7245becd665b84a2456851f30ef634081cb729c93ea10910db5a4005e7ff28f6?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:7245becd665b84a2456851f30ef634081cb729c93ea10910db5a4005e7ff28f6?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "console-plugin-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-01d862f6ef399fd14511e0e46ebc34ed91eb85b832937ca8a3785457ed7333b8-SPDXRef-image-console-plugin-rhel8-e92cb894484d4782cb1d59a30e21f05eb7f3de09257c0fa796574358b1d20706",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:eb555922789811438e9380fdcc8dfb3f386e6f1a6ccc2f1e368e33545f1a5be3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:eb555922789811438e9380fdcc8dfb3f386e6f1a6ccc2f1e368e33545f1a5be3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:eb555922789811438e9380fdcc8dfb3f386e6f1a6ccc2f1e368e33545f1a5be3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "console-plugin-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-bcb85d505d35b75b03f775288e47fbedef89daafdff109e6aab3ecee6065307b-SPDXRef-image-console-plugin-rhel8-50e8c988ce82f3fd1f0c6652c1da2b1fd08bdd47881a942b8c1191cb80b70163",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:005c088daa46991e0c9db1536c8e2ed16b262e8f957c124e9c984fe523aed61b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:005c088daa46991e0c9db1536c8e2ed16b262e8f957c124e9c984fe523aed61b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:005c088daa46991e0c9db1536c8e2ed16b262e8f957c124e9c984fe523aed61b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "console-plugin-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-0012c7e6685f5c957d095dbd120fa66ee15d0a79c272b1537302021b1361f4bd-SPDXRef-image-console-plugin-rhel8-19660180fd0a8daf9a18d3a51d1b2aba43f6c546da12c92ad72c7380fd04c550",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:e709b249a37546e68098c20439c8f9392119a5575e17650531ba5e8f7ae33e15?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:e709b249a37546e68098c20439c8f9392119a5575e17650531ba5e8f7ae33e15?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/console-plugin-rhel8@sha256:e709b249a37546e68098c20439c8f9392119a5575e17650531ba5e8f7ae33e15?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/console-plugin-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "console-plugin-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-470fd81e1f242471de3c31ab711a5cdcbd236af56f72cc8cf9100394b8464ca7-SPDXRef-image-dex-rhel8-fd768f41696418e43e159e356b6710eb2b506886d3ab25818653387d3ec2ebd6",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:71bf43d781bbea5c15cea03f6540f237140518d1f1eb5ad8e5880bfd78c63c87?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:71bf43d781bbea5c15cea03f6540f237140518d1f1eb5ad8e5880bfd78c63c87?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:71bf43d781bbea5c15cea03f6540f237140518d1f1eb5ad8e5880bfd78c63c87?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-741a99af59654532015787899c3be9f3ddbeabac661a7e711e597c1c70e3406c-SPDXRef-image-dex-rhel8-a42abc6459215a12f3973647d10dca0b766a403d92a41cfb4e33894a99d58419",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:f52ee2a5d77a3ddcd7a167771028f434756cec291e758b99ab27e9b134e23a8d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:f52ee2a5d77a3ddcd7a167771028f434756cec291e758b99ab27e9b134e23a8d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:f52ee2a5d77a3ddcd7a167771028f434756cec291e758b99ab27e9b134e23a8d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-0635e46b00a87f3e2ff17ff7d8b864549822446f159b6812ce17ec9ac9b2fc13-SPDXRef-image-dex-rhel8-a267ace16015440aff0528851a3ca56aaa5f44b2a9df0654cdcbc33a191e50dc",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:b5401379a2dc5db276fef0d3b98f87e1fd5f44c6992042de06c804c8eb678e24?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:b5401379a2dc5db276fef0d3b98f87e1fd5f44c6992042de06c804c8eb678e24?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:b5401379a2dc5db276fef0d3b98f87e1fd5f44c6992042de06c804c8eb678e24?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-e41021e901a183e6718de05036bfb542aa3bc04a0e7e61f8a9978f34755f37df-SPDXRef-image-dex-rhel8-e88ff4cdf69664525bf673eaeb7438f3febe834ddc4f4c19f7d6d3d57b51edfc",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:2af29d06fd29392baed186efc56eaf8d251dc8aa4f73bab6c3d49c755868f513?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:2af29d06fd29392baed186efc56eaf8d251dc8aa4f73bab6c3d49c755868f513?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:2af29d06fd29392baed186efc56eaf8d251dc8aa4f73bab6c3d49c755868f513?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-6eff96b86b028dd387fe0e4023ced801cf045cf0c978090d164c6a524503baa9-SPDXRef-image-argocd-extensions-rhel8-530563ff036e54d58fd859fabe155342ac9464100cd87573e8e58b76069d05af",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:5d097ae18bd3e53a3bd7ddf259a1aa4162ff546ec7fea6a70da63d90f262efd4?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:5d097ae18bd3e53a3bd7ddf259a1aa4162ff546ec7fea6a70da63d90f262efd4?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:5d097ae18bd3e53a3bd7ddf259a1aa4162ff546ec7fea6a70da63d90f262efd4?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-722db1f234bac70960dcf6644ab5148d28991f3190ce5228442012c52f9df6b1-SPDXRef-image-argocd-extensions-rhel8-746af9eedd05d61aeb6032b5507b78348adb15996c1fdb37a911d458e6fa106c",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0610dcc8fd4a815da1f2bb6b1490d47a36e630ed256a186e3cd39d8d240d0a93?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0610dcc8fd4a815da1f2bb6b1490d47a36e630ed256a186e3cd39d8d240d0a93?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0610dcc8fd4a815da1f2bb6b1490d47a36e630ed256a186e3cd39d8d240d0a93?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-e0369a8b8bef779ee3338cd0da1f9e2856eeb9dfb060204561cd902f5eea9993-SPDXRef-image-argocd-extensions-rhel8-d76e8765bd144bba1d195ce0d5c25ae1528582ca7732fe88a51b2afdeb7a2bdf",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:2fbd6b464f5bbefce71bf7c02717d394e8e754f44b34ad7440e4d30db1b124a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:2fbd6b464f5bbefce71bf7c02717d394e8e754f44b34ad7440e4d30db1b124a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:2fbd6b464f5bbefce71bf7c02717d394e8e754f44b34ad7440e4d30db1b124a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-4dcbd86bfead0f293d9e2d34049da5af98d4df1ea81ed3559fc5bf6783abd072-SPDXRef-image-argocd-extensions-rhel8-7c5728f0f77d2add23690014d1cb104a3b33ed01bb767824395f61c8a12afb9e",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0b64c416cd80261088e5d1b08c9b791f0c23370e52b31d8554116cf4189d7c5e?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0b64c416cd80261088e5d1b08c9b791f0c23370e52b31d8554116cf4189d7c5e?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:0b64c416cd80261088e5d1b08c9b791f0c23370e52b31d8554116cf4189d7c5e?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-operator-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-a8c42b415730d4c772faf7e3bfa00605e3d2d526fab75a36d04a4f1c9a71986f-SPDXRef-image-gitops-rhel8-operator-8445993710077e4c37afe67c33722640323012a3811f43baddd1143a3e8bd0f1",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:3ebb944694f3f2d655b2486466b5a6e08b588dfcfbf9f220226004788a8ff274?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:3ebb944694f3f2d655b2486466b5a6e08b588dfcfbf9f220226004788a8ff274?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:3ebb944694f3f2d655b2486466b5a6e08b588dfcfbf9f220226004788a8ff274?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8-operator_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-06d20fa27f8eda754e4615694298a7393f4abc66754efc1338f586342cb51c70-SPDXRef-image-gitops-rhel8-operator-3f230f87a86cdb3d2c7b3c8d1bdae83fd4cdae33cdae1b42f7dc1812ca6d1b7c",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4e8ddc5096b68da2822113a4705bb625a08b1b97ec6fc7c5bfb429e389d2114f?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4e8ddc5096b68da2822113a4705bb625a08b1b97ec6fc7c5bfb429e389d2114f?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4e8ddc5096b68da2822113a4705bb625a08b1b97ec6fc7c5bfb429e389d2114f?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8-operator_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-2cdbbf53c1207a2774853de0251afcf33c1163a259b18a57d8f0fbc3038c85c2-SPDXRef-image-gitops-rhel8-operator-405b268d2ee5d4c0ce08cf0cd91cf0112279172a56dcafa9bbf40b1666706681",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:e00ea72ed08d710008b2056258896e40d2aa34ec5d64c08084de76513bc4402b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:e00ea72ed08d710008b2056258896e40d2aa34ec5d64c08084de76513bc4402b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:e00ea72ed08d710008b2056258896e40d2aa34ec5d64c08084de76513bc4402b?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8-operator_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-83c03570d7242ac4b06153670a9b63686a619d8f4fb0d9de7c9eb0f785078e61-SPDXRef-image-gitops-rhel8-operator-33857c3fc93d50a3d33643bfc607dfd17471444a536c01b8337def5de50eeebc",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4005650e02c88595207c60f7e6094fd78b8b03512a42214a1f7bcca32d23ed5c?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4005650e02c88595207c60f7e6094fd78b8b03512a42214a1f7bcca32d23ed5c?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:4005650e02c88595207c60f7e6094fd78b8b03512a42214a1f7bcca32d23ed5c?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8-operator_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-9fdb60c219943202ddec96b49c3c0d690c4a007f0a399a03d739d306f43baf33-SPDXRef-image-gitops-rhel8-1ce7b5c5cf67907693e60e008452077b32ab12d3f28e9ccdc00711ffdb1da0e7",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f3ce8f3a0bda7e550f75754862b7e23650010bbd3f934d4432c3eeb16b241647?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f3ce8f3a0bda7e550f75754862b7e23650010bbd3f934d4432c3eeb16b241647?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f3ce8f3a0bda7e550f75754862b7e23650010bbd3f934d4432c3eeb16b241647?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-61038962941d5ac1c825de38d87b2caef11f890d4bb5b8846de074c444895df9-SPDXRef-image-gitops-rhel8-3dd0d22225db27edbb4a4a5e80d019ea558741169b195bbeb91bfcafaf10caf7",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:448df643bd39a828d73324273ca7cfcbff84ba34e7e0a351b6d71a7763007909?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:448df643bd39a828d73324273ca7cfcbff84ba34e7e0a351b6d71a7763007909?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:448df643bd39a828d73324273ca7cfcbff84ba34e7e0a351b6d71a7763007909?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-f188460c6aaf45915ccb357af385297cf78b33f799adefe90d00f9a381236ce5-SPDXRef-image-gitops-rhel8-dd9daed0dbf2bf37abc37e2571be2f399719480b6d630c27cd425950471dff7d",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f8029eb49be979cf99442bb3db742920373b36a9ef03ff2aa28fc162ce2a715f?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f8029eb49be979cf99442bb3db742920373b36a9ef03ff2aa28fc162ce2a715f?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:f8029eb49be979cf99442bb3db742920373b36a9ef03ff2aa28fc162ce2a715f?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-de1bf9f37a62846a1732dae1356f1ba25b380321f5a36fbd2c5685f36d5853c3-SPDXRef-image-gitops-rhel8-fe60b4ee29502b23fa9b064ccb2c7df910a3af683ce09299c96c775933d4b419",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:434bf79e1aa82368e3fe912b895e091c20713b12ae6c794b5593fb8864db44e3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:434bf79e1aa82368e3fe912b895e091c20713b12ae6c794b5593fb8864db44e3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:434bf79e1aa82368e3fe912b895e091c20713b12ae6c794b5593fb8864db44e3?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-db1b75cb164e0d008b303ec521754fff4bc4e47a6170a3da2b622b70ae333172-SPDXRef-image-argocd-image-updater-rhel8-70034346cdef53f7ef4f04de2636642ec248e6fede6485e09d364c2a50128d24",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:2feab0957618d107f0dc6ebed5e195ac0c032ff1461d82487cb24ff8bb6dd2dd?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:2feab0957618d107f0dc6ebed5e195ac0c032ff1461d82487cb24ff8bb6dd2dd?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:2feab0957618d107f0dc6ebed5e195ac0c032ff1461d82487cb24ff8bb6dd2dd?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-662f01393b84b45d35d57b6eead46dad302ad24354f1dd730e2e3a1bad392a03-SPDXRef-image-argocd-image-updater-rhel8-7221c384f79d425712d53be197ce726c5725809beff75e483c02cbe4ad233d71",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:7db9642514469da5a06153f4bbda1697d84d3ef99b364f1958e37b20a8e63767?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:7db9642514469da5a06153f4bbda1697d84d3ef99b364f1958e37b20a8e63767?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:7db9642514469da5a06153f4bbda1697d84d3ef99b364f1958e37b20a8e63767?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-b6c4e87bef3a300b293df10430b3669a2b0976ce3ed866cfa52c7c6c5267d751-SPDXRef-image-argocd-image-updater-rhel8-274a29edb6ad238ccb1a53244452ae5b700fd3fa6ced1cab5aebcfb70f689303",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:ea9c6ebc92bb1f194f5dcae959e658e76e8881b6af1df8d08bbe7fbced59b48d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:ea9c6ebc92bb1f194f5dcae959e658e76e8881b6af1df8d08bbe7fbced59b48d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:ea9c6ebc92bb1f194f5dcae959e658e76e8881b6af1df8d08bbe7fbced59b48d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-aaaf4debe1336fffb8a401da0fa557458e20c944eaad3df20b3b2b652a6b6034-SPDXRef-image-argocd-image-updater-rhel8-3919777007b53b5a1543cfde40c70590e6346b8b87a9f7a4a3583816fc982c19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:5d031f4bda95f0245bf9d7f250dc31df9fc73b27d238813811f4514dd49b19fc?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:5d031f4bda95f0245bf9d7f250dc31df9fc73b27d238813811f4514dd49b19fc?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:5d031f4bda95f0245bf9d7f250dc31df9fc73b27d238813811f4514dd49b19fc?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-09b473bd3ae4c93fb769a041c89d3747db69eac389719492979adf7fe0a543ab-SPDXRef-image-must-gather-rhel8-ee92b4a88783677c60bf92519c1c9558bc368620a385da2e78f44cb79fc743bf",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c04607f2f3292e6474a189c81f269a9d779c25fb9c27e2bf3dd09bfbea8b1b9b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c04607f2f3292e6474a189c81f269a9d779c25fb9c27e2bf3dd09bfbea8b1b9b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c04607f2f3292e6474a189c81f269a9d779c25fb9c27e2bf3dd09bfbea8b1b9b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-d18815729123ec545b4bcd66a6d2cf9ad17593d9688b52cbcdfc6b4a81094155-SPDXRef-image-must-gather-rhel8-acdc2547e9000a5e2f02f6c322f318e7f8d652c0a5e046c19087fbef68962f8d",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c443010acb264c5bf388429b50fa3a7eceb1e83fdaf8b82ab84c3b56fbf72d09?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c443010acb264c5bf388429b50fa3a7eceb1e83fdaf8b82ab84c3b56fbf72d09?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:c443010acb264c5bf388429b50fa3a7eceb1e83fdaf8b82ab84c3b56fbf72d09?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-795f55617105bf4c2ecbdc89229f15fb87d21767177335d30036539ea6b7e769-SPDXRef-image-must-gather-rhel8-39dfb34f285f4e83ffee9c245c35d09a81bac602daed3691c5c9617c106adc42",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:6a486a338179a7733ab0cf3bc6797bf86a6b911cc75a0f944e9cc60f7f0c8760?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:6a486a338179a7733ab0cf3bc6797bf86a6b911cc75a0f944e9cc60f7f0c8760?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:6a486a338179a7733ab0cf3bc6797bf86a6b911cc75a0f944e9cc60f7f0c8760?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-b57046ecefb6d6ed3cdf933a40e0a3bf5de6d191ce7b16122771ae4b4330a59f-SPDXRef-image-must-gather-rhel8-8a7d434c853e6232a1bccf14fdcc744fbd440fcfce288e93c6023afee2ee43d5",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:010f9fa72574c1ba77b3892142d3de527fe9b9fb7a3dcaf28c67bec302cb2945?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:010f9fa72574c1ba77b3892142d3de527fe9b9fb7a3dcaf28c67bec302cb2945?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:010f9fa72574c1ba77b3892142d3de527fe9b9fb7a3dcaf28c67bec302cb2945?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-395d2fffc24ef0f6a41a298027e26b88511c0f7dc24793a1d745a5a4c483fc0d-SPDXRef-image-argo-rollouts-rhel8-135bc64508bd3fe050cebe7f507a30633e5af36b3eafb227327d779f395315d6",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:4b531aeff18ac3408d29b536b2e17d3541878ad81488d143785ea38340004d8f?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:4b531aeff18ac3408d29b536b2e17d3541878ad81488d143785ea38340004d8f?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:4b531aeff18ac3408d29b536b2e17d3541878ad81488d143785ea38340004d8f?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-779e2b94ed2e23bcfa98a064f85cabab36977d2edaa0b66d8687f6a998672db5-SPDXRef-image-argo-rollouts-rhel8-86d674d0218a5dba6c1f9f63a317f5d3f9221368ac3461073e11bd8ca9d03b10",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:01115f5b15c97fd7d4151251147b2027cd59f46913ea7736a24c4d752ea8c10a?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:01115f5b15c97fd7d4151251147b2027cd59f46913ea7736a24c4d752ea8c10a?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:01115f5b15c97fd7d4151251147b2027cd59f46913ea7736a24c4d752ea8c10a?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-adf545ca40c9a459d571149ddb36cf716ee3ac21b8714b436f82ca0dcd24b66d-SPDXRef-image-argo-rollouts-rhel8-c51029cf9cac044339d9b10cedb28da628190984450e39a8da6294bfab7b3513",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:982c1f7c4cb824017a9bfa370967ef2c33ec2b6f5084151160bce9c67c161808?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:982c1f7c4cb824017a9bfa370967ef2c33ec2b6f5084151160bce9c67c161808?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:982c1f7c4cb824017a9bfa370967ef2c33ec2b6f5084151160bce9c67c161808?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-924c124b967115c67e5abfe1b2a82afc09d4bb6c281aa8abf5325d726870591f-SPDXRef-image-argo-rollouts-rhel8-b16bf648371afa1522d72081f82117b0b61d70a316a982b3496b04c3c49d3539",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:348b33574e450c2cd1b2bbc4d1c963c3eff712f7d134ffdb939307877f96b43e?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:348b33574e450c2cd1b2bbc4d1c963c3eff712f7d134ffdb939307877f96b43e?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:348b33574e450c2cd1b2bbc4d1c963c3eff712f7d134ffdb939307877f96b43e?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-fb6602d5856fa114f5eaf7d634764f33a8b6a42ba237b0025f30ea85ba8a11d5-SPDXRef-image-argocd-rhel9-7772207ef82b81a34106c22b62da48a40b8a35b1988eb059e517a0cb55e7b212",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:7ce92cc4c69bd9cd64e5dfedad15388be5d9404ac916731b86f5cf490993756b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:7ce92cc4c69bd9cd64e5dfedad15388be5d9404ac916731b86f5cf490993756b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:7ce92cc4c69bd9cd64e5dfedad15388be5d9404ac916731b86f5cf490993756b?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-c762fc22dfcfad44ac3a4e47f230d413c7184eeba3f005b833c3072693cb45f2-SPDXRef-image-argocd-rhel9-65f0b9b4ade562d7c2aea6ea8f9e211b46715a2f83d766513545af56175bfee7",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:bd3ef871e5b7bf36af1bd824b65b9a20d279af5d6c2326e9e8b99824645ceba9?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:bd3ef871e5b7bf36af1bd824b65b9a20d279af5d6c2326e9e8b99824645ceba9?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:bd3ef871e5b7bf36af1bd824b65b9a20d279af5d6c2326e9e8b99824645ceba9?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-3571f46a897799be5cb7395cb070a8dbfbb2197a0c2b010ba3262b40621ac671-SPDXRef-image-argocd-rhel9-3f0289f5e1a7b18f09ebb5cee4e76c8ccb5b4263d608aee6805e2e7d18b4293a",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:1c4cdd4d103989dffe73eee4f432f3380a6f367766ee089ef9fd480779080f2d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:1c4cdd4d103989dffe73eee4f432f3380a6f367766ee089ef9fd480779080f2d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:1c4cdd4d103989dffe73eee4f432f3380a6f367766ee089ef9fd480779080f2d?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-0dd944c11d0d212f94683c95d8d32b0cf20ddcb2358a726112eea882b00d3f2a-SPDXRef-image-argocd-rhel9-0597214324321037d808ee2148e987c93e3b472eefc30d85bad890c9509c845e",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:6fb646fbd35b779be50ceca8d12a8736ed43ebe4f40204ca28851db2e2cfdf20?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:6fb646fbd35b779be50ceca8d12a8736ed43ebe4f40204ca28851db2e2cfdf20?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:6fb646fbd35b779be50ceca8d12a8736ed43ebe4f40204ca28851db2e2cfdf20?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-a9f573a00e9e82e18748eacb72a4d05f287534dd63ea4be12b28de167e364fb7-SPDXRef-image-argocd-agent-rhel8-54df6969372787dc15ddb1125727a86bca1ba0ac2c3254b44e298edbe45d04e8",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:69f3cf6431f19b595bf116b69815aa86e0d8f4aaedb8b46311a3a0587280615a?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:69f3cf6431f19b595bf116b69815aa86e0d8f4aaedb8b46311a3a0587280615a?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:69f3cf6431f19b595bf116b69815aa86e0d8f4aaedb8b46311a3a0587280615a?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-66332f01e60fa339aa5cd2f4d32493e84cc1c3e770baf82cd3a5b27eab1d7d48-SPDXRef-image-argocd-agent-rhel8-36ef79965139efa1a3e2c8908b1275e4f132857649fff6a6b821786d196dd45c",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:2eab9f61eb3ddcc0492b44baa98768322773f8b3126a7bfa14d5b0903ac4c235?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:2eab9f61eb3ddcc0492b44baa98768322773f8b3126a7bfa14d5b0903ac4c235?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:2eab9f61eb3ddcc0492b44baa98768322773f8b3126a7bfa14d5b0903ac4c235?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-24d9f38ef89996d0c89acd278c53a15a5e55d348de3a096e12cc8ff4a360391a-SPDXRef-image-argocd-agent-rhel8-adcfc44daec28329f8bed8e166c61c3738fb132d535a2eb3fdb3dc17db5d7cfb",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:f4f82d22e3e8a7614034664e01815de73ad9dd3106e163e1ea43d2440d52cac7?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:f4f82d22e3e8a7614034664e01815de73ad9dd3106e163e1ea43d2440d52cac7?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:f4f82d22e3e8a7614034664e01815de73ad9dd3106e163e1ea43d2440d52cac7?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-adc981c2a77138783433b51951c774473a268212a4b34ff189e2619c0bad0b98-SPDXRef-image-argocd-agent-rhel8-dfb1902c7c49fc70e28ce3ce49ea78323aa0cfff5b5cc7985a55d5b13d5f0206",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:6f728674e9a8116c4b3f6e744e778cc4a834e13f6a8b1602b1cc0301f092e0db?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:6f728674e9a8116c4b3f6e744e778cc4a834e13f6a8b1602b1cc0301f092e0db?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:6f728674e9a8116c4b3f6e744e778cc4a834e13f6a8b1602b1cc0301f092e0db?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-5cca4007dce3a440880de3f3ec4f75828a0f7599db841950ace32cdb30a22319-SPDXRef-image-argocd-rhel8-0d67ee18fa14ff383254c14c62a978e244fafb1f5bb7a38516c88bfb3e65f2c2",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:ae40fbd7d23643dbfee02bb92af0f7e60d559c76e2cdbd79f2b4d4f412d928a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:ae40fbd7d23643dbfee02bb92af0f7e60d559c76e2cdbd79f2b4d4f412d928a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:ae40fbd7d23643dbfee02bb92af0f7e60d559c76e2cdbd79f2b4d4f412d928a5?arch=ppc64le&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel8_ppc64le",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-819ff074acf5ef12c83964ed11aabd3dd5ed27dc85bd44e371de411e4872207e-SPDXRef-image-argocd-rhel8-c463a9457cfb6c1b3c4e5e8351eaff31250a88237d0d6882420b6fbfa3ac853e",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:66861199e1799a004787ce33f357009176a73205fad7c3abfec156d3e06e5ad3?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:66861199e1799a004787ce33f357009176a73205fad7c3abfec156d3e06e5ad3?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:66861199e1799a004787ce33f357009176a73205fad7c3abfec156d3e06e5ad3?arch=arm64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel8_arm64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-26400defcbc185f8af407a122e26284f00873de1454bde06b5393a5da4cbb36e-SPDXRef-image-argocd-rhel8-5a77a54048b402dd6670de13738a27893316038f51221130de4f5db79a35a6c1",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:088538b51efb398a3670db4443e3750a71190ef968a82b2c4d694ef6abf3e665?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:088538b51efb398a3670db4443e3750a71190ef968a82b2c4d694ef6abf3e665?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:088538b51efb398a3670db4443e3750a71190ef968a82b2c4d694ef6abf3e665?arch=s390x&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel8_s390x",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    },
+    {
+      "SPDXID": "SPDXRef-405e8af451ee7d6c59c88eb64810d1b18bda0d43b75c050e3134ce61566d484c-SPDXRef-image-argocd-rhel8-65a5ef885a6ad5ec5fccc6056778250ebd922dbc1e83ecd4287b73124587a3d6",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:055608ee953f1ef764d2aa569b9ff0df859bcab5d560653a0df4a5bc5ea7fb1d?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:055608ee953f1ef764d2aa569b9ff0df859bcab5d560653a0df4a5bc5ea7fb1d?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:055608ee953f1ef764d2aa569b9ff0df859bcab5d560653a0df4a5bc5ea7fb1d?arch=amd64&repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel8_amd64",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": "4e37103c6d60cd10381d5d10a88241e7073dd187"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-900e6ecfe844a927630d15410332e3dde9591df1091f68dd896128db8c11c11e-SPDXRef-image-console-plugin-rhel8-bc878ab90a9b9bfc7538fda5ca5aed0575ba3042621b8ccf25f4c05af56936ed",
+      "relatedSpdxElement": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-01d862f6ef399fd14511e0e46ebc34ed91eb85b832937ca8a3785457ed7333b8-SPDXRef-image-console-plugin-rhel8-e92cb894484d4782cb1d59a30e21f05eb7f3de09257c0fa796574358b1d20706",
+      "relatedSpdxElement": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-bcb85d505d35b75b03f775288e47fbedef89daafdff109e6aab3ecee6065307b-SPDXRef-image-console-plugin-rhel8-50e8c988ce82f3fd1f0c6652c1da2b1fd08bdd47881a942b8c1191cb80b70163",
+      "relatedSpdxElement": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-0012c7e6685f5c957d095dbd120fa66ee15d0a79c272b1537302021b1361f4bd-SPDXRef-image-console-plugin-rhel8-19660180fd0a8daf9a18d3a51d1b2aba43f6c546da12c92ad72c7380fd04c550",
+      "relatedSpdxElement": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-470fd81e1f242471de3c31ab711a5cdcbd236af56f72cc8cf9100394b8464ca7-SPDXRef-image-dex-rhel8-fd768f41696418e43e159e356b6710eb2b506886d3ab25818653387d3ec2ebd6",
+      "relatedSpdxElement": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-741a99af59654532015787899c3be9f3ddbeabac661a7e711e597c1c70e3406c-SPDXRef-image-dex-rhel8-a42abc6459215a12f3973647d10dca0b766a403d92a41cfb4e33894a99d58419",
+      "relatedSpdxElement": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-0635e46b00a87f3e2ff17ff7d8b864549822446f159b6812ce17ec9ac9b2fc13-SPDXRef-image-dex-rhel8-a267ace16015440aff0528851a3ca56aaa5f44b2a9df0654cdcbc33a191e50dc",
+      "relatedSpdxElement": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-e41021e901a183e6718de05036bfb542aa3bc04a0e7e61f8a9978f34755f37df-SPDXRef-image-dex-rhel8-e88ff4cdf69664525bf673eaeb7438f3febe834ddc4f4c19f7d6d3d57b51edfc",
+      "relatedSpdxElement": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-6eff96b86b028dd387fe0e4023ced801cf045cf0c978090d164c6a524503baa9-SPDXRef-image-argocd-extensions-rhel8-530563ff036e54d58fd859fabe155342ac9464100cd87573e8e58b76069d05af",
+      "relatedSpdxElement": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-722db1f234bac70960dcf6644ab5148d28991f3190ce5228442012c52f9df6b1-SPDXRef-image-argocd-extensions-rhel8-746af9eedd05d61aeb6032b5507b78348adb15996c1fdb37a911d458e6fa106c",
+      "relatedSpdxElement": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-e0369a8b8bef779ee3338cd0da1f9e2856eeb9dfb060204561cd902f5eea9993-SPDXRef-image-argocd-extensions-rhel8-d76e8765bd144bba1d195ce0d5c25ae1528582ca7732fe88a51b2afdeb7a2bdf",
+      "relatedSpdxElement": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-4dcbd86bfead0f293d9e2d34049da5af98d4df1ea81ed3559fc5bf6783abd072-SPDXRef-image-argocd-extensions-rhel8-7c5728f0f77d2add23690014d1cb104a3b33ed01bb767824395f61c8a12afb9e",
+      "relatedSpdxElement": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-a8c42b415730d4c772faf7e3bfa00605e3d2d526fab75a36d04a4f1c9a71986f-SPDXRef-image-gitops-rhel8-operator-8445993710077e4c37afe67c33722640323012a3811f43baddd1143a3e8bd0f1",
+      "relatedSpdxElement": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-06d20fa27f8eda754e4615694298a7393f4abc66754efc1338f586342cb51c70-SPDXRef-image-gitops-rhel8-operator-3f230f87a86cdb3d2c7b3c8d1bdae83fd4cdae33cdae1b42f7dc1812ca6d1b7c",
+      "relatedSpdxElement": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-2cdbbf53c1207a2774853de0251afcf33c1163a259b18a57d8f0fbc3038c85c2-SPDXRef-image-gitops-rhel8-operator-405b268d2ee5d4c0ce08cf0cd91cf0112279172a56dcafa9bbf40b1666706681",
+      "relatedSpdxElement": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-83c03570d7242ac4b06153670a9b63686a619d8f4fb0d9de7c9eb0f785078e61-SPDXRef-image-gitops-rhel8-operator-33857c3fc93d50a3d33643bfc607dfd17471444a536c01b8337def5de50eeebc",
+      "relatedSpdxElement": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-9fdb60c219943202ddec96b49c3c0d690c4a007f0a399a03d739d306f43baf33-SPDXRef-image-gitops-rhel8-1ce7b5c5cf67907693e60e008452077b32ab12d3f28e9ccdc00711ffdb1da0e7",
+      "relatedSpdxElement": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-61038962941d5ac1c825de38d87b2caef11f890d4bb5b8846de074c444895df9-SPDXRef-image-gitops-rhel8-3dd0d22225db27edbb4a4a5e80d019ea558741169b195bbeb91bfcafaf10caf7",
+      "relatedSpdxElement": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-f188460c6aaf45915ccb357af385297cf78b33f799adefe90d00f9a381236ce5-SPDXRef-image-gitops-rhel8-dd9daed0dbf2bf37abc37e2571be2f399719480b6d630c27cd425950471dff7d",
+      "relatedSpdxElement": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-de1bf9f37a62846a1732dae1356f1ba25b380321f5a36fbd2c5685f36d5853c3-SPDXRef-image-gitops-rhel8-fe60b4ee29502b23fa9b064ccb2c7df910a3af683ce09299c96c775933d4b419",
+      "relatedSpdxElement": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-db1b75cb164e0d008b303ec521754fff4bc4e47a6170a3da2b622b70ae333172-SPDXRef-image-argocd-image-updater-rhel8-70034346cdef53f7ef4f04de2636642ec248e6fede6485e09d364c2a50128d24",
+      "relatedSpdxElement": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-662f01393b84b45d35d57b6eead46dad302ad24354f1dd730e2e3a1bad392a03-SPDXRef-image-argocd-image-updater-rhel8-7221c384f79d425712d53be197ce726c5725809beff75e483c02cbe4ad233d71",
+      "relatedSpdxElement": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-b6c4e87bef3a300b293df10430b3669a2b0976ce3ed866cfa52c7c6c5267d751-SPDXRef-image-argocd-image-updater-rhel8-274a29edb6ad238ccb1a53244452ae5b700fd3fa6ced1cab5aebcfb70f689303",
+      "relatedSpdxElement": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-aaaf4debe1336fffb8a401da0fa557458e20c944eaad3df20b3b2b652a6b6034-SPDXRef-image-argocd-image-updater-rhel8-3919777007b53b5a1543cfde40c70590e6346b8b87a9f7a4a3583816fc982c19",
+      "relatedSpdxElement": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-09b473bd3ae4c93fb769a041c89d3747db69eac389719492979adf7fe0a543ab-SPDXRef-image-must-gather-rhel8-ee92b4a88783677c60bf92519c1c9558bc368620a385da2e78f44cb79fc743bf",
+      "relatedSpdxElement": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-d18815729123ec545b4bcd66a6d2cf9ad17593d9688b52cbcdfc6b4a81094155-SPDXRef-image-must-gather-rhel8-acdc2547e9000a5e2f02f6c322f318e7f8d652c0a5e046c19087fbef68962f8d",
+      "relatedSpdxElement": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-795f55617105bf4c2ecbdc89229f15fb87d21767177335d30036539ea6b7e769-SPDXRef-image-must-gather-rhel8-39dfb34f285f4e83ffee9c245c35d09a81bac602daed3691c5c9617c106adc42",
+      "relatedSpdxElement": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-b57046ecefb6d6ed3cdf933a40e0a3bf5de6d191ce7b16122771ae4b4330a59f-SPDXRef-image-must-gather-rhel8-8a7d434c853e6232a1bccf14fdcc744fbd440fcfce288e93c6023afee2ee43d5",
+      "relatedSpdxElement": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-395d2fffc24ef0f6a41a298027e26b88511c0f7dc24793a1d745a5a4c483fc0d-SPDXRef-image-argo-rollouts-rhel8-135bc64508bd3fe050cebe7f507a30633e5af36b3eafb227327d779f395315d6",
+      "relatedSpdxElement": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-779e2b94ed2e23bcfa98a064f85cabab36977d2edaa0b66d8687f6a998672db5-SPDXRef-image-argo-rollouts-rhel8-86d674d0218a5dba6c1f9f63a317f5d3f9221368ac3461073e11bd8ca9d03b10",
+      "relatedSpdxElement": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-adf545ca40c9a459d571149ddb36cf716ee3ac21b8714b436f82ca0dcd24b66d-SPDXRef-image-argo-rollouts-rhel8-c51029cf9cac044339d9b10cedb28da628190984450e39a8da6294bfab7b3513",
+      "relatedSpdxElement": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-924c124b967115c67e5abfe1b2a82afc09d4bb6c281aa8abf5325d726870591f-SPDXRef-image-argo-rollouts-rhel8-b16bf648371afa1522d72081f82117b0b61d70a316a982b3496b04c3c49d3539",
+      "relatedSpdxElement": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-fb6602d5856fa114f5eaf7d634764f33a8b6a42ba237b0025f30ea85ba8a11d5-SPDXRef-image-argocd-rhel9-7772207ef82b81a34106c22b62da48a40b8a35b1988eb059e517a0cb55e7b212",
+      "relatedSpdxElement": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-c762fc22dfcfad44ac3a4e47f230d413c7184eeba3f005b833c3072693cb45f2-SPDXRef-image-argocd-rhel9-65f0b9b4ade562d7c2aea6ea8f9e211b46715a2f83d766513545af56175bfee7",
+      "relatedSpdxElement": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-3571f46a897799be5cb7395cb070a8dbfbb2197a0c2b010ba3262b40621ac671-SPDXRef-image-argocd-rhel9-3f0289f5e1a7b18f09ebb5cee4e76c8ccb5b4263d608aee6805e2e7d18b4293a",
+      "relatedSpdxElement": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-0dd944c11d0d212f94683c95d8d32b0cf20ddcb2358a726112eea882b00d3f2a-SPDXRef-image-argocd-rhel9-0597214324321037d808ee2148e987c93e3b472eefc30d85bad890c9509c845e",
+      "relatedSpdxElement": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-a9f573a00e9e82e18748eacb72a4d05f287534dd63ea4be12b28de167e364fb7-SPDXRef-image-argocd-agent-rhel8-54df6969372787dc15ddb1125727a86bca1ba0ac2c3254b44e298edbe45d04e8",
+      "relatedSpdxElement": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-66332f01e60fa339aa5cd2f4d32493e84cc1c3e770baf82cd3a5b27eab1d7d48-SPDXRef-image-argocd-agent-rhel8-36ef79965139efa1a3e2c8908b1275e4f132857649fff6a6b821786d196dd45c",
+      "relatedSpdxElement": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-24d9f38ef89996d0c89acd278c53a15a5e55d348de3a096e12cc8ff4a360391a-SPDXRef-image-argocd-agent-rhel8-adcfc44daec28329f8bed8e166c61c3738fb132d535a2eb3fdb3dc17db5d7cfb",
+      "relatedSpdxElement": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-adc981c2a77138783433b51951c774473a268212a4b34ff189e2619c0bad0b98-SPDXRef-image-argocd-agent-rhel8-dfb1902c7c49fc70e28ce3ce49ea78323aa0cfff5b5cc7985a55d5b13d5f0206",
+      "relatedSpdxElement": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-5cca4007dce3a440880de3f3ec4f75828a0f7599db841950ace32cdb30a22319-SPDXRef-image-argocd-rhel8-0d67ee18fa14ff383254c14c62a978e244fafb1f5bb7a38516c88bfb3e65f2c2",
+      "relatedSpdxElement": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-819ff074acf5ef12c83964ed11aabd3dd5ed27dc85bd44e371de411e4872207e-SPDXRef-image-argocd-rhel8-c463a9457cfb6c1b3c4e5e8351eaff31250a88237d0d6882420b6fbfa3ac853e",
+      "relatedSpdxElement": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-26400defcbc185f8af407a122e26284f00873de1454bde06b5393a5da4cbb36e-SPDXRef-image-argocd-rhel8-5a77a54048b402dd6670de13738a27893316038f51221130de4f5db79a35a6c1",
+      "relatedSpdxElement": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-405e8af451ee7d6c59c88eb64810d1b18bda0d43b75c050e3134ce61566d484c-SPDXRef-image-argocd-rhel8-65a5ef885a6ad5ec5fccc6056778250ebd922dbc1e83ecd4287b73124587a3d6",
+      "relatedSpdxElement": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "relationshipType": "VARIANT_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-7cd7ce9a3fce15b26ebe030886c2de561b81a46410791ef86bedbeb4b263f310-SPDXRef-component-gitops-operator-bundle-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-2b1c4cb4f0fbffbaf73bd7aef8db727102c839e5729a6593db791f6a6bb24961-SPDXRef-component-console-plugin-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-a2e73178ac0815b9cd051d723979c8ca92bdb4c470c216a2b0ef34c88ad58441-SPDXRef-component-dex-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-25ca98e0ad06b78b7fc5bac41d7cd3567e1daa1640dfda410fbc7c42953a11ff-SPDXRef-component-argocd-extensions-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-c9ccfbfc834dacf49a0e78cc6077bb812d23715e04aaa521b002011236af897e-SPDXRef-component-gitops-operator-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-ba3ede830d4eb0684fddc12282ffe295c2653a25ff668ae378135edd6b87f3d6-SPDXRef-component-gitops-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-f7d79072238f79c170990ecb7a07d0fb07f412f6e7b48abe26af4a5a62901009-SPDXRef-component-argocd-image-updater-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-2ce4b39f929efd4080b0541a4f7c606dbd42a536c8bdb0295ea08ea71fe8d6f7-SPDXRef-component-must-gather-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-808df6bd95dbdd17d85830d6f5e57a333c5968c1e9965242a0e1f799090126df-SPDXRef-component-argo-rollouts-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-7683203386b53d04cdad060a0401cb197f726847f7963ceac7381178f66785d8-SPDXRef-component-argocd-rhel9-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-5ef8f886a6631a5facb12423c88a49cfa56e4e175f88d8c18c34622146fa05ad-SPDXRef-component-argocd-agent-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-92b2e0fd3c5b9156320db2268060a026ba7eb2daa61715cb46e6cae55a53e689-SPDXRef-component-argocd-1-19",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-16053dc441bd15052c9e0980903a31de3309ffb7b19bb336b1fab22862096832-gitops-1.19",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

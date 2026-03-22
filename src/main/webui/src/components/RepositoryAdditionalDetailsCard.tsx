@@ -9,23 +9,16 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
-  Label,
-  LabelGroup,
   Title,
 } from "@patternfly/react-core";
 import type { FullReport } from "../types/FullReport";
 import FormattedTimestamp from "./FormattedTimestamp";
 import NotAvailable from "./NotAvailable";
+import MetadataDisplay from "./MetadataDisplay";
 
 interface RepositoryAdditionalDetailsCardProps {
   report: FullReport;
 }
-
-// Only keep metadata fields configurable
-const METADATA_TIMESTAMP_FIELDS = [
-  { label: "Submitted", key: "submitted_at" },
-  { label: "Sent", key: "sent_at" },
-];
 
 const parseMetadataTimestamp = (
   metadata: Record<string, string> | undefined,
@@ -50,21 +43,6 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
   
   const started = report?.input?.scan?.started_at ?? "";
   const completed = report?.input?.scan?.completed_at ?? "";
-
-  const otherMetadata: Array<{ key: string; value: string }> = [];
-  const metadataExcludeKeys = new Set(
-    METADATA_TIMESTAMP_FIELDS.map((f) => f.key)
-  );
-  if (report?.metadata) {
-    Object.keys(report.metadata).forEach((key) => {
-      if (!metadataExcludeKeys.has(key)) {
-        otherMetadata.push({
-          key,
-          value: String(report.metadata![key]),
-        });
-      }
-    });
-  }
 
   const onExpand = () => setIsExpanded((prev) => !prev);
 
@@ -117,20 +95,14 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
                 {completed ? <FormattedTimestamp date={completed} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            {otherMetadata.length > 0 ? (
-              <DescriptionListGroup>
-                <DescriptionListTerm>Metadata</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <LabelGroup >
-                    {otherMetadata.map((m, idx) => (
-                      <Label key={`${m.key}_${idx}`}>
-                        {m.key}:{String(m.value)}
-                      </Label>
-                    ))}
-                  </LabelGroup>
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            ) : <NotAvailable />}
+            <DescriptionListGroup>
+              <DescriptionListTerm>Metadata</DescriptionListTerm>
+              <DescriptionListDescription>
+                <MetadataDisplay
+                  metadata={report?.metadata}
+                />
+              </DescriptionListDescription>
+            </DescriptionListGroup>
           </DescriptionList>
         </CardBody>
       </CardExpandableContent>
