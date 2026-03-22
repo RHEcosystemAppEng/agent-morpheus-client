@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router";
 import {
   Breadcrumb,
@@ -89,6 +90,11 @@ const RepositoryReportPage: React.FC = () => {
     loading,
     error,
   } = useRepositoryReport(reportId || "");
+
+  const feedbackAiSummary = useMemo(
+    () => (report ? getReportSummaryForFeedback(report) : ""),
+    [report]
+  );
 
   if (!cveId) {
     return (
@@ -193,7 +199,7 @@ const RepositoryReportPage: React.FC = () => {
           <GridItem>
             <FeedbackReportCard
               reportId={reportId || ""}
-              aiResponse={getReportSummaryForFeedback(report)}
+              aiResponse={feedbackAiSummary}
             />
           </GridItem>
         )}

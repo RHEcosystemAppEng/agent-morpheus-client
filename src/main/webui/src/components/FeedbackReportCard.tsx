@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import type { CSSProperties } from "react";
 import {
   Card,
   CardTitle,
@@ -6,20 +7,31 @@ import {
   Title,
   Form,
   FormGroup,
+  ActionGroup,
   Dropdown,
   DropdownItem,
   DropdownList,
   MenuToggle,
   MenuToggleElement,
   Flex,
+  FlexItem,
+  Radio,
   TextArea,
   Button,
   Alert,
   Content,
   EmptyState,
   EmptyStateBody,
+  Skeleton,
+  Stack,
+  StackItem,
+  FormHelperText,
+  HelperText,
+  HelperTextItem,
 } from "@patternfly/react-core";
+import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useApi } from "../hooks/useApi";
+import { getErrorMessage } from "../utils/errorHandling";
 import { useExecuteApi } from "../hooks/useExecuteApi";
 import { FeedbackResourceService } from "../generated-client";
 import type { Feedback } from "../generated-client";
@@ -27,7 +39,7 @@ import type { Feedback } from "../generated-client";
 const DROPDOWN_CONFIG = [
   {
     key: "accuracy" as const,
-    label: "How accurate do you find ExploitIQ's assessment? *",
+    label: "How accurate do you find ExploitIQ's assessment?",
     options: [
       "Very Accurate",
       "Mostly Accurate",
@@ -38,17 +50,39 @@ const DROPDOWN_CONFIG = [
   {
     key: "reasoning" as const,
     label:
-      "Is the reasoning and summary of findings clear, complete, and well-supported? *",
+      "Is the reasoning and summary of findings clear, complete, and well-supported?",
     options: ["Yes", "Mostly", "Somewhat", "No"],
   },
   {
     key: "checklist" as const,
-    label: "Were the checklist questions and explanations easy to understand? *",
+    label: "Were the checklist questions and explanations easy to understand?",
     options: ["Yes", "Mostly", "Somewhat", "No"],
   },
 ];
 
 const DROPDOWN_PLACEHOLDER = "Select an option";
+
+const RATING_VALUES = [1, 2, 3, 4, 5] as const;
+
+/** Answer controls (dropdowns, radios, comment, actions) — half width per design; card stays full width. */
+const FEEDBACK_FIELDS_WIDTH_STYLE: CSSProperties = {
+  width: "50%",
+  maxWidth: "100%",
+};
+
+type FeedbackFieldErrors = {
+  accuracy: string | null;
+  reasoning: string | null;
+  checklist: string | null;
+  rating: string | null;
+};
+
+const EMPTY_FIELD_ERRORS: FeedbackFieldErrors = {
+  accuracy: null,
+  reasoning: null,
+  checklist: null,
+  rating: null,
+};
 
 interface FeedbackFormProps {
   values: Record<string, string>;
@@ -60,7 +94,7 @@ interface FeedbackFormProps {
   comment: string;
   setComment: (comment: string) => void;
   submitError: Error | null;
-  isFormValid: boolean;
+  fieldErrors: FeedbackFieldErrors;
   submitting: boolean;
   onSubmit: () => void;
 }
@@ -75,14 +109,14 @@ function FeedbackForm({
   comment,
   setComment,
   submitError,
-  isFormValid,
+  fieldErrors,
   submitting,
   onSubmit,
 }: FeedbackFormProps) {
   return (
     <Form>
       {DROPDOWN_CONFIG.map(({ key, label, options }) => (
-        <FormGroup key={key} label={label} fieldId={key}>
+        <FormGroup key={key} label={label} fieldId={key} isRequired>
           <Dropdown
             isOpen={opens[key]}
             onSelect={() => setOpen(key, false)}
@@ -93,6 +127,7 @@ function FeedbackForm({
                 onClick={() => setOpen(key, !opens[key])}
                 isExpanded={opens[key]}
                 style={{ width: "100%" }}
+                status={fieldErrors[key] ? "danger" : undefined}
               >
                 {values[key] || DROPDOWN_PLACEHOLDER}
               </MenuToggle>
@@ -109,29 +144,42 @@ function FeedbackForm({
               ))}
             </DropdownList>
           </Dropdown>
+          {fieldErrors[key] && (
+            <FormHelperText>
+              <HelperText>
+                <HelperTextItem variant="error">{fieldErrors[key]}</HelperTextItem>
+              </HelperText>
+            </FormHelperText>
+          )}
         </FormGroup>
       ))}
 
       <FormGroup
-        label="Rate the response (1 = Poor, 5 = Excellent): *"
+        label="Rate the response (1 = Poor, 5 = Excellent)"
         fieldId="rating"
+        isRequired
       >
         <Flex spaceItems={{ default: "spaceItemsMd" }}>
-          {([1, 2, 3, 4, 5] as const).map((n) => (
-            <label key={n} style={{ marginRight: "0.5rem" }}>
-              <input
-                type="radio"
+          {RATING_VALUES.map((n) => (
+            <FlexItem key={n}>
+              <Radio
+                id={`feedback-rating-${n}`}
                 name="feedback-rating"
-                value={n}
-                checked={rating === n}
+                isChecked={rating === n}
                 onChange={() => setRating(n)}
-                style={{ marginRight: "0.25rem" }}
-                aria-label={`Rating ${n}`}
+                label={String(n)}
+                isValid={!fieldErrors.rating}
               />
-              {n}
-            </label>
+            </FlexItem>
           ))}
         </Flex>
+        {fieldErrors.rating && (
+          <FormHelperText>
+            <HelperText>
+              <HelperTextItem variant="error">{fieldErrors.rating}</HelperTextItem>
+            </HelperText>
+          </FormHelperText>
+        )}
       </FormGroup>
 
       <FormGroup
@@ -157,17 +205,17 @@ function FeedbackForm({
         </Alert>
       )}
 
-      <Flex justifyContent={{ default: "justifyContentFlexStart" }}>
+      <ActionGroup>
         <Button
           variant="primary"
           onClick={onSubmit}
-          isDisabled={!isFormValid || submitting}
+          isDisabled={submitting}
           isLoading={submitting}
           aria-label="Submit Feedback"
         >
           Submit Feedback
         </Button>
-      </Flex>
+      </ActionGroup>
     </Form>
   );
 }
@@ -185,6 +233,8 @@ interface FeedbackExistsResponse {
 export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackReportCardProps) {
   const [rating, setRating] = useState<number | null>(null);
   const [comment, setComment] = useState("");
+  const [fieldErrors, setFieldErrors] =
+    useState<FeedbackFieldErrors>(EMPTY_FIELD_ERRORS);
   const [values, setValues] = useState<Record<string, string>>({
     accuracy: "",
     reasoning: "",
@@ -196,7 +246,11 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
     checklist: false,
   });
 
-  const { data: existsData } = useApi<FeedbackExistsResponse>(
+  const {
+    data: existsData,
+    loading: existsLoading,
+    error: existsError,
+  } = useApi<FeedbackExistsResponse>(
     () =>
       FeedbackResourceService.getApiV1FeedbackExists({
         reportId,
@@ -221,10 +275,6 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
       })
     );
 
-  const allDropdownsAnswered = (DROPDOWN_CONFIG as Array<{ key: string }>)
-    .every((d) => (values[d.key] ?? "").trim() !== "");
-  const ratingAnswered = rating !== null;
-  const isFormValid = allDropdownsAnswered && ratingAnswered;
   const previousSubmission = existsData?.exists === true;
   const submitted = previousSubmission || submitResult != null;
 
@@ -234,16 +284,109 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
   const setValue = (key: string, value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
     setOpens((o) => ({ ...o, [key]: false }));
+    if (key === "accuracy" || key === "reasoning" || key === "checklist") {
+      setFieldErrors((e) => ({ ...e, [key]: null }));
+    }
   };
+
+  const handleRatingChange = (next: number | null) => {
+    setRating(next);
+    setFieldErrors((e) => ({ ...e, rating: null }));
+  };
+
+  const validateAndSubmitFeedback = () => {
+    const next: FeedbackFieldErrors = { ...EMPTY_FIELD_ERRORS };
+    let hasErrors = false;
+
+    for (const d of DROPDOWN_CONFIG) {
+      if (!(values[d.key] ?? "").trim()) {
+        next[d.key] = "Required";
+        hasErrors = true;
+      }
+    }
+    if (rating === null) {
+      next.rating = "Required";
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setFieldErrors(next);
+      return;
+    }
+
+    setFieldErrors(EMPTY_FIELD_ERRORS);
+    submitFeedback();
+  };
+
+  const feedbackCardTitle = (
+    <CardTitle>
+      <Title headingLevel="h4" size="xl">
+        Feedback
+      </Title>
+    </CardTitle>
+  );
+
+  if (existsLoading) {
+    return (
+      <Card>
+        {feedbackCardTitle}
+        <CardBody>
+          <div style={FEEDBACK_FIELDS_WIDTH_STYLE}>
+            <Stack hasGutter>
+              <StackItem aria-hidden="true">
+                <Skeleton
+                  width="85%"
+                  screenreaderText="Loading feedback card"
+                />
+              </StackItem>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <StackItem key={index} aria-hidden="true">
+                  <Skeleton
+                    width={["100%", "100%", "100%", "70%"][index] ?? "50%"}
+                    screenreaderText="Loading feedback card"
+                  />
+                </StackItem>
+              ))}
+            </Stack>
+          </div>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  if (existsError) {
+    const errorStatus = (existsError as { status?: number })?.status;
+    return (
+      <Card>
+        {feedbackCardTitle}
+        <CardBody>
+          <EmptyState
+            headingLevel="h4"
+            icon={ExclamationCircleIcon}
+            titleText="Could not load feedback status"
+          >
+            <EmptyStateBody>
+              {errorStatus ? (
+                <>
+                  <p>
+                    {errorStatus}: {getErrorMessage(existsError)}
+                  </p>
+                  Feedback status for this report could not be retrieved.
+                </>
+              ) : (
+                getErrorMessage(existsError)
+              )}
+            </EmptyStateBody>
+          </EmptyState>
+        </CardBody>
+      </Card>
+    );
+  }
 
   if (submitted) {
     return (
       <Card>
-        <CardTitle>
-          <Title headingLevel="h4" size="xl">
-            Feedback
-          </Title>
-        </CardTitle>
+        {feedbackCardTitle}
         <CardBody>
           <EmptyState status="success" titleText="Feedback Sent" headingLevel="h4">
             <EmptyStateBody>
@@ -258,29 +401,27 @@ export default function FeedbackReportCard({ reportId, aiResponse }: FeedbackRep
 
   return (
     <Card>
-      <CardTitle>
-        <Title headingLevel="h4" size="xl">
-          Feedback
-        </Title>
-      </CardTitle>
+      {feedbackCardTitle}
       <CardBody>
         <Content style={{ marginBottom: "var(--pf-t--global--spacer--xl)" }}>
           Your feedback will be used to improve the accuracy of our AI models.
         </Content>
-        <FeedbackForm
-          values={values}
-          opens={opens}
-          setValue={setValue}
-          setOpen={setOpen}
-          rating={rating}
-          setRating={setRating}
-          comment={comment}
-          setComment={setComment}
-          submitError={submitError}
-          isFormValid={isFormValid}
-          submitting={submitting}
-          onSubmit={() => submitFeedback()}
-        />
+        <div style={FEEDBACK_FIELDS_WIDTH_STYLE}>
+          <FeedbackForm
+            values={values}
+            opens={opens}
+            setValue={setValue}
+            setOpen={setOpen}
+            rating={rating}
+            setRating={handleRatingChange}
+            comment={comment}
+            setComment={setComment}
+            submitError={submitError}
+            fieldErrors={fieldErrors}
+            submitting={submitting}
+            onSubmit={validateAndSubmitFeedback}
+          />
+        </div>
       </CardBody>
     </Card>
   );

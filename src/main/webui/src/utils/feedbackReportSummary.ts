@@ -1,7 +1,8 @@
 /**
  * Builds a plain-text summary of a report for use as AI response context in feedback.
  * Matches the format used by the legacy Report page (getReportSummary) so the backend
- * receives the same kind of context: name, image, and per-vuln label, reason, summary, checklist.
+ * receives the same kind of context: name, image, repository URL, commit/ref, and
+ * per-vuln label, reason, summary, checklist.
  */
 
 import type { FullReport } from "../types/FullReport";
@@ -12,8 +13,16 @@ export function getReportSummaryForFeedback(report: FullReport): string {
   }
 
   const lines: string[] = [];
-  const name = report.metadata?.product_id ?? report._id ?? "Report";
+  const name =
+    report.input.scan?.id ??
+    report.metadata?.product_id ??
+    report._id ??
+    "Report";
   const image = report.input.image;
+  const sourceInfo = image?.source_info ?? [];
+  const repoSource =
+    sourceInfo.find((s) => s?.type === "code" && s?.git_repo) ??
+    sourceInfo.find((s) => s?.git_repo);
 
   lines.push(`Name: ${name}`);
   lines.push("");
@@ -24,6 +33,9 @@ export function getReportSummaryForFeedback(report: FullReport): string {
     }
     lines.push("");
   }
+  lines.push(`Repository: ${repoSource?.git_repo ?? ""}`);
+  lines.push(`Commit/ref: ${repoSource?.ref ?? ""}`);
+  lines.push("");
 
   const analysis = report.output?.analysis ?? [];
   for (const vuln of analysis) {
