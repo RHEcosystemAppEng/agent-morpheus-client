@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
+import com.redhat.ecosystemappeng.morpheus.model.MarkReportFailedRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
@@ -554,42 +555,39 @@ public class ReportEndpoint {
   }
 
   @POST
-  @Path("/{id}/failed")
-  @Consumes(MediaType.TEXT_PLAIN)
+  @Path("/failed")
+  @Consumes(MediaType.APPLICATION_JSON)
   @Operation(
-    summary = "Mark analysis request as failed", 
-    description = "Marks an analysis request as failed with error details")
+    summary = "Mark report(s) as failed by scan ID",
+    description = "Finds report(s) by scan ID (input.scan.id), sets error type and message on each, and returns 202.")
   @APIResponses({
     @APIResponse(
-      responseCode = "202", 
+      responseCode = "202",
       description = "Failure status record accepted",
       content = @Content(
         schema = @Schema(
-          type = SchemaType.STRING,
-          example = "66155fd9639dbb7e7e4e44b8"
+          type = SchemaType.STRING
         )
       )
     ),
     @APIResponse(
-      responseCode = "500", 
+      responseCode = "404",
+      description = "No report found for the given scan ID"
+    ),
+    @APIResponse(
+      responseCode = "500",
       description = "Internal server error"
     )
   })
   public Response failed(
-    @Parameter(
-      description = "Report ID to mark as failed (24-character hexadecimal MongoDB ObjectId format)", 
-      required = true
+    @RequestBody(
+      description = "Scan ID, error type and message for the failure",
+      required = true,
+      content = @Content(schema = @Schema(implementation = MarkReportFailedRequest.class))
     )
-    @PathParam("id") String id, 
-    @Parameter(
-      description = "Error message describing the failure",
-      required = true
-    )
-    @QueryParam("errorMessage") String errorMessage) {
-    preProcessingService.confirmResponse(id);
-    
-    preProcessingService.handleError(id, "component-syncer-processing-error", errorMessage);
-    return Response.accepted(id).build();
+    MarkReportFailedRequest body) {
+    reportService.markFailedByScanId(body.scanId(), body.errorType(), body.errorMessage());
+    return Response.accepted(body.scanId()).build();
   }
 
   @DELETE
@@ -721,11 +719,19 @@ public class ReportEndpoint {
   }
 
   @ServerExceptionMapper
+  public Response mapNotFoundException(NotFoundException e) {
+    LOGGER.errorf("Not found: %s", e.getMessage());
+    return Response.status(Status.NOT_FOUND)
+        .entity(objectMapper.createObjectNode().put("error", "Not found"))
+        .build();
+  }
+
+  @ServerExceptionMapper
   public Response mapException(Exception e) {
     LOGGER.error("Unexpected error in ReportEndpoint", e);
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
         .entity(objectMapper.createObjectNode()
-            .put("error", e.getMessage() != null ? e.getMessage() : "An unexpected error occurred"))
+            .put("error","An unexpected error occurred"))
         .build();
   }
 }

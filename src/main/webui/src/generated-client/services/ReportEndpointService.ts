@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { FailedComponent } from '../models/FailedComponent';
+import type { MarkReportFailedRequest } from '../models/MarkReportFailedRequest';
 import type { ProductSummary } from '../models/ProductSummary';
 import type { Report } from '../models/Report';
 import type { ReportData } from '../models/ReportData';
@@ -140,6 +141,32 @@ export class ReportEndpointService {
                 'withoutProduct': withoutProduct,
             },
             errors: {
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Mark report(s) as failed by scan ID
+     * Finds report(s) by scan ID (input.scan.id), sets error type and message on each, and returns 202.
+     * @returns string Failure status record accepted
+     * @throws ApiError
+     */
+    public static postApiV1ReportsFailed({
+        requestBody,
+    }: {
+        /**
+         * Scan ID, error type and message for the failure
+         */
+        requestBody: MarkReportFailedRequest,
+    }): CancelablePromise<string> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/reports/failed',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad Request`,
+                404: `No report found for the given scan ID`,
                 500: `Internal server error`,
             },
         });
@@ -397,39 +424,6 @@ export class ReportEndpointService {
             },
             errors: {
                 404: `Report not found`,
-                500: `Internal server error`,
-            },
-        });
-    }
-    /**
-     * Mark analysis request as failed
-     * Marks an analysis request as failed with error details
-     * @returns string Failure status record accepted
-     * @throws ApiError
-     */
-    public static postApiV1ReportsFailed({
-        id,
-        errorMessage,
-    }: {
-        /**
-         * Report ID to mark as failed (24-character hexadecimal MongoDB ObjectId format)
-         */
-        id: string,
-        /**
-         * Error message describing the failure
-         */
-        errorMessage: string,
-    }): CancelablePromise<string> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/reports/{id}/failed',
-            path: {
-                'id': id,
-            },
-            query: {
-                'errorMessage': errorMessage,
-            },
-            errors: {
                 500: `Internal server error`,
             },
         });
