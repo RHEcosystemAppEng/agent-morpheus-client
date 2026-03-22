@@ -2,6 +2,7 @@
   "realm": "quarkus",
   "enabled": true,
   "sslRequired": "none",
+  "bruteForceProtected": true,
   "clients": [
     {
       "clientId": "exploit-iq-client",
