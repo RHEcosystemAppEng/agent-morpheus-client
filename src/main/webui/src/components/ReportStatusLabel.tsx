@@ -1,9 +1,5 @@
 import { Label } from "@patternfly/react-core";
-import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  SyncIcon,
-} from "@patternfly/react-icons";
+import { CheckCircleIcon, ExclamationCircleIcon, SyncIcon } from "@patternfly/react-icons";
 
 interface ReportStatusLabelProps {
   state?: string | null;
@@ -26,18 +22,10 @@ const ReportStatusLabel: React.FC<ReportStatusLabelProps> = ({ state }) => {
     );
   }
 
-  if (stateLower === "expired") {
+  if (stateLower === "failed" || stateLower === "expired") {
     return (
-      <Label status="danger" variant="outline" icon={<ExclamationTriangleIcon />}>
-        {formatToTitleCase(state)}
-      </Label>
-    );
-  }
-
-  if (stateLower === "failed") {
-    return (
-      <Label status="danger" variant="outline" icon={<ExclamationTriangleIcon />}>
-        {formatToTitleCase(state)}
+      <Label color="grey" variant="filled" icon={<ExclamationCircleIcon />}>
+        Failed
       </Label>
     );
   }

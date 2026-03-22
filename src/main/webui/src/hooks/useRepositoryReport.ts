@@ -3,6 +3,7 @@ import { getRepositoryReport } from "../utils/reportApi";
 import { POLL_INTERVAL_MS } from "../utils/polling";
 import type { FullReport } from "../types/FullReport";
 import type { ReportWithStatus } from "../generated-client";
+import { isFailingState } from "../utils/findingDisplay";
 export interface UseRepositoryReportResult {
   data?: FullReport;
   status?: string;
@@ -32,14 +33,17 @@ export function shouldContinuePollingRepositoryReport(
   response: ReportWithStatus | null
 ): boolean {
   if (!response) return true; // Continue polling if no data yet
-  const status = response.status;
-  // Continue polling if status is not "completed" or "failed"
-  return status !== "completed" && status !== "failed";
+  const status = response.status ?? "";
+  // Stop when completed or any terminal failure (failed, expired, etc.)
+  if (status === "completed" || isFailingState(status)) {
+    return false;
+  }
+  return true;
 }
 
 /**
  * Hook to fetch repository report data with conditional auto-refresh.
- * Auto-refresh continues while report status is not "completed" or "failed".
+ * Auto-refresh continues until status is "completed" or a failing state (e.g. failed, expired).
  * Only updates state when report status or other relevant data have changed to prevent unnecessary rerenders.
  * 
  * @param reportId - The report ID to fetch data for

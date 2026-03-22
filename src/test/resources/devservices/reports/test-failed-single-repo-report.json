@@ -1,0 +1,50 @@
+{
+  "_id": {
+    "$oid": "507f1f77bcf86cd7994390f1"
+  },
+  "error": {
+    "type": "failed",
+    "message": "Analysis could not be completed: repository clone timed out. No agent answer was produced for this CVE."
+  },
+  "input": {
+    "scan": {
+      "id": "failed-single-repo-scan-1",
+      "type": null,
+      "started_at": "2026-04-02T11:00:00.000000",
+      "completed_at": "2026-04-02T11:10:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2025-FAILED-SINGLE",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "failed-single-repo-image",
+      "tag": "dev",
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/failed-single-repo",
+          "ref": "develop"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "submitted_at": "2026-04-02T10:00:00.000000Z",
+    "sent_at": "2026-04-02T10:01:00.000000Z",
+    "user": "test@example.com"
+  },
+  "info": {}
+}

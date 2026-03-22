@@ -9,7 +9,9 @@ import {
   Title,
   Flex,
   FlexItem,
+  Label,
 } from "@patternfly/react-core";
+import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { Link } from "react-router";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
@@ -25,6 +27,8 @@ interface DetailsCardProps {
   productId?: string;
   analysisState?: string;
   analysisStateLoading?: boolean;
+  /** When true (failed or expired API status), show failure UI; omit agent output fields; CVE line shows Failed like Finding */
+  isFailed?: boolean;
 }
 
 const DetailsCard: React.FC<DetailsCardProps> = ({
@@ -33,6 +37,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   reportId,
   productId,
   analysisState,
+  isFailed = false,
 }) => {
   const image = report.input?.image;
   const sourceInfo = image?.source_info || [];
@@ -61,6 +66,14 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                 <ReportStatusLabel state={analysisState} />
               </DescriptionListDescription>
             </DescriptionListGroup>
+            {isFailed && (
+              <DescriptionListGroup>
+                <DescriptionListTerm>Failure reason</DescriptionListTerm>
+                <DescriptionListDescription>
+                  {report.error?.message ?? <NotAvailable />}
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+            )}
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
@@ -77,7 +90,11 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     </Link>
                   </FlexItem>
                   <FlexItem>
-                    {outputVuln?.justification?.status ? (
+                    {isFailed ? (
+                      <Label color="grey" variant="filled" icon={<ExclamationCircleIcon />}>
+                        Failed
+                      </Label>
+                    ) : outputVuln?.justification?.status ? (
                       <CveStatus status={outputVuln.justification.status} />
                     ) : (
                       <NotAvailable />
@@ -118,30 +135,34 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                 )}
               </DescriptionListDescription>
             </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>CVSS Score</DescriptionListTerm>
-              <DescriptionListDescription>
-                <CvssBanner cvss={outputVuln?.cvss ?? null} />
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Intel Reliability Score</DescriptionListTerm>
-              <DescriptionListDescription>
-                <IntelReliabilityScore score={outputVuln?.intel_score} />
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Reason</DescriptionListTerm>
-              <DescriptionListDescription>
-                {outputVuln?.justification?.reason || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-            <DescriptionListGroup>
-              <DescriptionListTerm>Summary</DescriptionListTerm>
-              <DescriptionListDescription>
-                {outputVuln?.summary || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
+            {!isFailed && (
+              <>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>CVSS Score</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <CvssBanner cvss={outputVuln?.cvss ?? null} />
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Intel Reliability Score</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    <IntelReliabilityScore score={outputVuln?.intel_score} />
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Reason</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {outputVuln?.justification?.reason || <NotAvailable />}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>Summary</DescriptionListTerm>
+                  <DescriptionListDescription>
+                    {outputVuln?.summary || <NotAvailable />}
+                  </DescriptionListDescription>
+                </DescriptionListGroup>
+              </>
+            )}
           </DescriptionList>
         )}
       </CardBody>

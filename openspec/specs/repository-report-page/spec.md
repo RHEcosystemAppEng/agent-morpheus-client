@@ -5,6 +5,9 @@ A detailed view page that displays comprehensive information about a specific re
 
 ## Purpose
 View individual repository report details for a specific CVE, image, and tag combination within an SBOM report or as a standalone component report.
+
+When the API report status is a **failing** state (`failed` or `expired` from the backend), the UI treats it as **Failed** everywhere: **Analysis State** and the CVE line use the same **Failed** label as repository findings tables. The `error.type` field is not shown; only **Failure reason** (`report.error.message`) explains the outcome. The **Analysis Q&A** card is omitted, and agent-only detail rows (CVSS Score, Intel Reliability Score, Reason, Summary) are not shown.
+
 ## Requirements
 ### Requirement: Repository Report Page Routes
 The repository report page SHALL support multiple route patterns.
@@ -73,17 +76,16 @@ The repository report page SHALL compare the report status between the previous 
 
 #### Scenario: Analysis state displayed in DetailsCard
 - **WHEN** a user views the repository report page with report data loaded
-- **THEN** the DetailsCard displays an "Analysis State" field showing the current state of the report (e.g., "Completed", "Queued", "Expired")
-- **AND** the Analysis State field appears as the first field in the DetailsCard description list, immediately after the card title and before all other fields (CVE, Repository, Commit ID, CVSS Score, Intel Reliability Score, Reason, Summary)
+- **THEN** the DetailsCard displays an "Analysis State" field showing the current state of the report (e.g., "Completed", "Queued", or **Failed** for any failing API status)
+- **AND** the Analysis State field appears as the first field in the DetailsCard description list, immediately after the card title; when status is not **failing**, following fields include CVE, Repository, Commit ID, CVSS Score, Intel Reliability Score, Reason, and Summary; when status is **failing**, **Failure reason** (`report.error.message` only) appears after Analysis State, then CVE (with the same **Failed** label beside the CVE link as in repository findings tables), Repository, and Commit ID, and the Analysis Q&A card is not shown
 - **AND** the analysis state is retrieved from the `status` field in the response object returned by the `/api/v1/reports/{id}` endpoint (the response contains `report` and `status` fields)
 - **AND** the state is displayed using a shared `ReportStatusLabel` React component that renders a PatternFly Label component with appropriate color and icon:
   - "Completed" state: green label with CheckCircleIcon
   - "Queued" state: gray label with InProgressIcon (or SyncIcon)
   - "Sent" state: gray label with InProgressIcon (or SyncIcon)
-  - "Expired" state: orange label with ExclamationTriangleIcon
-  - "Failed" state: red label with ExclamationTriangleIcon
+  - "Failed" and "Expired" API statuses: both SHALL display the same grey filled **Failed** label with ExclamationCircleIcon as the failed case in `Finding.tsx`; the API may still distinguish `expired` vs `failed`, but this page does not surface `error.type`
   - Other states: gray label with default styling
-- **AND** the state text is formatted in title case (first letter uppercase, rest lowercase)
+- **AND** except for failing states above, the state text is formatted in title case (first letter uppercase, rest lowercase)
 
 #### Scenario: Analysis state loading state
 - **WHEN** a user views the repository report page
