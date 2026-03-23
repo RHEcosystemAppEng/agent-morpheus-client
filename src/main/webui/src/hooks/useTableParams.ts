@@ -29,6 +29,8 @@ export interface UseTableParamsData<TSort extends string, TFilterKey extends str
 
 export interface UseTableParamsHandlers<TSort extends string, TFilterKey extends string> {
   setFilterValue: (key: TFilterKey, value: string) => void;
+  /** Remove every `validFilterKeys` entry from the URL in one update (required for toolbar "clear all" — RR does not queue multiple setSearchParams calls). */
+  clearAllFilters: () => void;
   setSort: (column: TSort, direction: SortDirection) => void;
   setPage: (page: number) => void;
   setPerPage: (perPage: number) => void;
@@ -90,6 +92,17 @@ export function useTableParams<TSort extends string, TFilterKey extends string>(
     },
     [searchParams, setSearchParams]
   );
+
+  const clearAllFilters = useCallback(() => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      for (const key of validFilterKeys) {
+        next.delete(key);
+      }
+      next.set(PARAM_PAGE, "1");
+      return next;
+    }, { replace: true });
+  }, [setSearchParams, validFilterKeys]);
 
   const setFilterValue = useCallback(
     (key: TFilterKey, value: string) => {
@@ -178,6 +191,7 @@ export function useTableParams<TSort extends string, TFilterKey extends string>(
     },
     handlers: {
       setFilterValue,
+      clearAllFilters,
       setSort,
       setPage,
       setPerPage,

@@ -175,8 +175,7 @@ const SbomsTable: React.FC = () => {
   };
 
   const handleClearFilters = () => {
-    handlers.setFilterValue("sbomName", "");
-    handlers.setFilterValue("cveId", "");
+    handlers.clearAllFilters();
   };
 
   const activeSortIndex = Math.max(
