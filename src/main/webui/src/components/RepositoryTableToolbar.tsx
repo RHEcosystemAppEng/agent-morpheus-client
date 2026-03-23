@@ -51,21 +51,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   const page = data.page ?? 1;
   const perPage = data.perPage ?? DEFAULT_PER_PAGE;
 
-  const handleFindingFilterDelete = () => {
-    handlers.setFilterValue("finding", "");
-  };
-
-  const handleFilterDeleteGroup = () => {
-    handlers.setFilterValue("gitRepo", "");
-    handlers.setFilterValue("finding", "");
-    handlers.setFilterValue("cveId", "");
-  };
-
   const attributes: ActiveAttribute[] = ["Repository Name", ...(showCveIdFilter ? (["CVE ID"] as const) : []), "Finding"];
-  const hasActiveFilters =
-    repositorySearchValue !== "" ||
-    findingFilter != null ||
-    (showCveIdFilter && cveIdFilterValue !== "");
 
   const repositorySearchInput = (
     <SearchInput
@@ -90,7 +76,7 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   return (
     <Toolbar
       id="repository-reports-toolbar"
-      clearAllFilters={hasActiveFilters ? handleFilterDeleteGroup : undefined}
+      clearAllFilters={handlers.clearAllFilters}
     >
       <ToolbarContent>
         <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
@@ -128,8 +114,8 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
             )}
             <ToolbarFilter
               labels={findingFilter != null ? [findingFilter] : []}
-              deleteLabel={handleFindingFilterDelete}
-              deleteLabelGroup={handleFilterDeleteGroup}
+              deleteLabel={() => handlers.setFilterValue("finding", "")}
+              deleteLabelGroup={() => handlers.setFilterValue("finding", "")}
               categoryName="Finding"
               showToolbarItem={activeAttribute === "Finding"}
             >

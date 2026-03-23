@@ -72,12 +72,10 @@ const ReportsToolbar: React.FC<ReportsToolbarProps> = ({
     />
   );
 
-  const hasActiveFilters = searchValue !== "" || cveSearchValue !== "";
-
   return (
     <Toolbar
       id="reports-toolbar"
-      clearAllFilters={hasActiveFilters ? onClearFilters : undefined}
+      clearAllFilters={onClearFilters}
     >
       <ToolbarContent>
         <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
