@@ -75,38 +75,24 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
-                {isFailed ? (
-                  <Link
-                    to={
-                      productId
-                        ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
-                        : `/reports/component/cve/${cveId}/${reportId}`
-                    }
-                  >
-                    {vuln.vuln_id}
-                  </Link>
-                ) : (
-                  <Flex>
-                    <FlexItem>
-                      <Link
-                        to={
-                          productId
-                            ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
-                            : `/reports/component/cve/${cveId}/${reportId}`
-                        }
-                      >
-                        {vuln.vuln_id}
-                      </Link>
-                    </FlexItem>
-                    <FlexItem>
-                      {outputVuln?.justification?.status ? (
-                        <CveStatus status={outputVuln.justification.status} />
-                      ) : (
-                        <NotAvailable />
-                      )}
-                    </FlexItem>
-                  </Flex>
-                )}
+              <Flex>
+                  <FlexItem>
+                    <Link
+                      to={
+                        productId
+                          ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                          : `/reports/component/cve/${cveId}/${reportId}`
+                      }
+                    >
+                      {vuln.vuln_id}
+                    </Link>
+                  </FlexItem>
+                  <FlexItem>
+                    {outputVuln?.justification?.status && (
+                      <CveStatus status={outputVuln.justification.status} />
+                    )}
+                  </FlexItem>
+                </Flex>
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
@@ -150,7 +136,9 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                   </DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
-                  <DescriptionListTerm>Intel Reliability Score</DescriptionListTerm>
+                  <DescriptionListTerm>
+                    Intel Reliability Score
+                  </DescriptionListTerm>
                   <DescriptionListDescription>
                     <IntelReliabilityScore score={outputVuln?.intel_score} />
                   </DescriptionListDescription>
