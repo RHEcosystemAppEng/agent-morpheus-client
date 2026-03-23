@@ -31,7 +31,7 @@ const SingleRepositoriesTable: React.FC = () => {
   const getViewPath = (report: Report) => {
     const cveId = getCveIdForReport(report);
     return cveId
-      ? `/reports/component/${cveId}/${report.id}`
+      ? `/reports/component/${cveId}/${report.scanId}`
       : "/reports/single-repositories";
   };
 

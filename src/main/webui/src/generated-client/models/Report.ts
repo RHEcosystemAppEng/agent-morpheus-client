@@ -8,13 +8,13 @@ import type { VulnResult } from './VulnResult';
  */
 export type Report = {
     /**
-     * Report ID
+     * Report ID (MongoDB ObjectId hex)
      */
     id: string;
     /**
-     * Report name
+     * Scan ID (input.scan.id), use for URLs and get-by-scan-id API
      */
-    name: string;
+    scanId: string;
     /**
      * Started at timestamp for report analysis
      */

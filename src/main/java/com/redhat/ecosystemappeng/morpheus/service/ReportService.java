@@ -196,18 +196,30 @@ public class ReportService {
     if (reportJson == null) {
       return null;
     }
+    return parseReportWithStatus(reportJson, id);
+  }
+
+  public ReportWithStatus getWithStatusByScanId(String scanId) {
+    LOGGER.debugf("Get report with status by scanId %s", scanId);
+    var reportJson = repository.findByScanId(scanId);
+    if (reportJson == null) {
+      return null;
+    }
+    return parseReportWithStatus(reportJson, scanId);
+  }
+
+  private ReportWithStatus parseReportWithStatus(String reportJson, String idForLogging) {
     try {
-      // Parse JSON once for both report and status calculation
       var reportNode = objectMapper.readTree(reportJson);
       var document = org.bson.Document.parse(reportJson);
       var metadata = repository.extractMetadata(document);
       var status = repository.getStatus(document, metadata);
       return new ReportWithStatus(reportNode, status);
     } catch (JsonProcessingException e) {
-      LOGGER.errorf("Error parsing report JSON for id %s: %s", id, e.getMessage());
+      LOGGER.errorf("Error parsing report JSON for id %s: %s", idForLogging, e.getMessage());
       throw new RuntimeException("Failed to parse report JSON", e);
     } catch (Exception e) {
-      LOGGER.errorf("Error processing report for id %s: %s", id, e.getMessage());
+      LOGGER.errorf("Error processing report for id %s: %s", idForLogging, e.getMessage());
       throw new RuntimeException("Failed to process report", e);
     }
   }

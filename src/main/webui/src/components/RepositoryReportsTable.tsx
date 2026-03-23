@@ -39,7 +39,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
   });
 
 
-  const getViewPath = (report: Report) => `/reports/product/${productId}/${cveId}/${report.id}`;
+  const getViewPath = (report: Report) => `/reports/product/${productId}/${cveId}/${report.scanId}`;
 
   return (
     <RepositoryReportsTableContent

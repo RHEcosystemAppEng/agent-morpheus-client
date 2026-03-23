@@ -146,6 +146,32 @@ export class ReportEndpointService {
         });
     }
     /**
+     * Get analysis report by scan ID
+     * Retrieves a report by its scan ID (input.scan.id) with calculated analysis status. Use this when the reportId in the URL is the scan ID.
+     * @returns ReportWithStatus Report retrieved successfully
+     * @throws ApiError
+     */
+    public static getApiV1ReportsByScanId({
+        scanId,
+    }: {
+        /**
+         * Scan ID (input.scan.id) of the report
+         */
+        scanId: string,
+    }): CancelablePromise<ReportWithStatus> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/reports/by-scan-id/{scanId}',
+            path: {
+                'scanId': scanId,
+            },
+            errors: {
+                404: `Report not found`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * Mark report(s) as failed by scan ID
      * Finds report(s) by scan ID (input.scan.id), sets error type and message on each, and returns 202.
      * @returns string Failure status record accepted

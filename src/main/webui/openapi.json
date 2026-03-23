@@ -667,7 +667,7 @@
         "type": "object",
         "required": [
           "id",
-          "name",
+          "scanId",
           "startedAt",
           "completedAt",
           "imageName",
@@ -679,11 +679,11 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Report ID"
+            "description": "Report ID (MongoDB ObjectId hex)"
           },
-          "name": {
+          "scanId": {
             "type": "string",
-            "description": "Report name"
+            "description": "Scan ID (input.scan.id), use for URLs and get-by-scan-id API"
           },
           "startedAt": {
             "type": "string",
@@ -2968,6 +2968,49 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/reports/by-scan-id/{scanId}": {
+      "get": {
+        "summary": "Get analysis report by scan ID",
+        "description": "Retrieves a report by its scan ID (input.scan.id) with calculated analysis status. Use this when the reportId in the URL is the scan ID.",
+        "parameters": [
+          {
+            "description": "Scan ID (input.scan.id) of the report",
+            "required": true,
+            "name": "scanId",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportWithStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Report not found"
           },
           "500": {
             "description": "Internal server error"

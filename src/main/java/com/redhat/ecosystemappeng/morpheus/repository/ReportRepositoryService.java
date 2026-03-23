@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
@@ -40,6 +41,7 @@ import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
 import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -83,6 +85,12 @@ public class ReportRepositoryService {
 
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
+  }
+
+  @PostConstruct
+  public void dbInit() {
+    MongoCollection<Document> reportsCollection = getCollection();
+    reportsCollection.createIndex(Indexes.ascending("input.scan.id"));
   }
 
   public Map<String, String> extractMetadata(Document doc) {
@@ -153,7 +161,8 @@ public class ReportRepositoryService {
     }
 
     String submittedAt = Objects.nonNull(metadata) ? metadata.get(SUBMITTED_AT) : null;
-    return new Report(id, scan.getString(RepositoryConstants.ID_SORT),
+    String scanId = scan.getString(RepositoryConstants.SCAN_ID);
+    return new Report(id, scanId,
         scan.getString("started_at"),
         scan.getString("completed_at"),
         image.getString("name"),
@@ -287,6 +296,14 @@ public class ReportRepositoryService {
     var results = new ArrayList<Report>();
     getCollection().find(Filters.eq("input.scan.id", name)).cursor().forEachRemaining(d -> results.add(toReport(d)));
     return results;
+  }
+
+  /**
+   * Find report by scan ID (input.scan.id). Returns raw JSON or null if not found.
+   */
+  public String findByScanId(String scanId) {
+    var doc = getCollection().find(Filters.eq("input.scan.id", scanId)).first();
+    return Objects.nonNull(doc) ? doc.toJson() : null;
   }
 
   private static final Map<String, String> SORT_MAPPINGS = Map.of(
