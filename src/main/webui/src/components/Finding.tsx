@@ -13,7 +13,7 @@ const InProgressStatus: React.FC = () => (
   </Label>
 );
 
-const FailedStatus: React.FC = () => (
+export const FailedStatus: React.FC = () => (
   <Label color="grey" variant="filled" icon={<ExclamationCircleIcon />}>
     Failed
   </Label>

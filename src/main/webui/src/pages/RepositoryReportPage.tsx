@@ -16,6 +16,7 @@ import {
 import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useRepositoryReport } from "../hooks/useRepositoryReport";
 import { getErrorMessage } from "../utils/errorHandling";
+import { isFailingState } from "../utils/findingDisplay";
 import DetailsCard from "../components/DetailsCard";
 import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
@@ -144,6 +145,8 @@ const RepositoryReportPage: React.FC = () => {
   const productName = report?.metadata?.product_id;
   const output = report.output?.analysis || [];
   const outputVuln = output.find((v) => v.vuln_id === cveId);
+  /** Terminal analysis failure: same UI as Finding "failed" (failed or expired; details in error.message). */
+  const isFailed = isFailingState(status ?? "");
 
   const showReport = () => {
     return (
@@ -187,11 +190,14 @@ const RepositoryReportPage: React.FC = () => {
             reportId={reportId || ""}
             productId={productId}
             analysisState={status}
+            isFailed={isFailed}
           />
         </GridItem>
-        <GridItem>
-          <ChecklistCard vuln={outputVuln} />
-        </GridItem>
+        {!isFailed && (
+          <GridItem>
+            <ChecklistCard vuln={outputVuln} />
+          </GridItem>
+        )}
         <GridItem>
           <RepositoryAdditionalDetailsCard report={report} />
         </GridItem>

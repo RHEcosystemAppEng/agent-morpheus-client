@@ -153,4 +153,9 @@ export interface FullReport {
   info?: FullReportInfo;
   /** User provided metadata for the report */
   metadata?: Record<string, string>;
+  /** Present when analysis failed */
+  error?: {
+    message: string;
+    type: string;
+  };
 }
