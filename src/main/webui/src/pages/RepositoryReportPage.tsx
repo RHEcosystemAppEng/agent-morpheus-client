@@ -170,7 +170,7 @@ const RepositoryReportPage: React.FC = () => {
               </Title>
             </FlexItem>
             <FlexItem>
-              <DownloadDropdown report={report} />
+              <DownloadDropdown report={report} analysisStatus={status} />
             </FlexItem>
           </Flex>
         </GridItem>

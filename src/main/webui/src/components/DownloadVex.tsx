@@ -8,9 +8,12 @@ import {
   MenuToggleElement,
 } from "@patternfly/react-core";
 import type { FullReport } from "../types/FullReport";
+import { isInProgressState } from "../utils/findingDisplay";
 
 interface DownloadDropdownProps {
   report: FullReport;
+  /** Analysis status from the API (e.g. pending, queued, sent, completed). */
+  analysisStatus?: string | null;
 }
 
 // Scan ID for filename; falls back to "report" when missing (per FullReport type: input.scan.id is string | undefined).
@@ -18,8 +21,13 @@ function scanIdString(report: FullReport): string {
   return report.input?.scan?.id ?? "report";
 }
 
-const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
+const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
+  report,
+  analysisStatus,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const downloadsDisabled = isInProgressState(analysisStatus ?? "");
 
   const onToggle = () => {
     setIsOpen(!isOpen);
@@ -61,10 +69,18 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
 
   const dropdownItems = (
     <>
-      <DropdownItem key="vex" onClick={handleDownloadVex} isDisabled={!hasVex}>
+      <DropdownItem
+        key="vex"
+        onClick={handleDownloadVex}
+        isDisabled={downloadsDisabled || !hasVex}
+      >
         VEX
       </DropdownItem>
-      <DropdownItem key="report" onClick={handleDownloadReport}>
+      <DropdownItem
+        key="report"
+        onClick={handleDownloadReport}
+        isDisabled={downloadsDisabled}
+      >
         Report
       </DropdownItem>
     </>
@@ -81,14 +97,18 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
           isExpanded={isOpen}
           onClick={onToggle}
           variant="primary"
+          isDisabled={downloadsDisabled}
           splitButtonItems={[
             <MenuToggleAction
               key="download-split-action"
               id="download-report-split-action"
               aria-label="Download"
+              isDisabled={downloadsDisabled}
               onClick={(e) => {
                 e.stopPropagation();
-                onToggle();
+                if (!downloadsDisabled) {
+                  onToggle();
+                }
               }}
             >
               Download
