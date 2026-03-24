@@ -35,6 +35,8 @@ import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
+import com.redhat.ecosystemappeng.morpheus.service.UserService;
+import com.redhat.ecosystemappeng.morpheus.service.UtilitiesService;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
@@ -95,6 +97,9 @@ public class ReportEndpoint {
   @Context
   SecurityContext securityContext;
 
+  @Inject
+  UserService userService;
+
   @POST
   @Path("/new")
   @Operation(
@@ -136,7 +141,7 @@ public class ReportEndpoint {
       String credentialId = null;
       if (Objects.nonNull(request.credential())) {
         try {
-          String userId = securityContext.getUserPrincipal().getName();
+          String userId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
           credentialId = credentialProcessingService.processAndStoreCredential(
             request.credential(), userId);
         } catch (IllegalArgumentException | CredentialStorageException e) {
@@ -182,7 +187,7 @@ public class ReportEndpoint {
     }
   }
 
-  @POST
+    @POST
   @Path("/{id}/retry")
   @Operation(
     summary = "Retry analysis request", 

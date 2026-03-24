@@ -34,6 +34,7 @@ import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.SbomReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
+import com.redhat.ecosystemappeng.morpheus.service.UtilitiesService;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -216,7 +217,7 @@ public class ProductEndpoint {
       if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {
         try {
           InlineCredential credential = new InlineCredential(secretValue, userName);
-          String userId = securityContext.getUserPrincipal().getName();
+          String userId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
           credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);
         } catch (IllegalArgumentException e) {
           LOGGER.warnf(e, "Credential validation failed");
@@ -345,7 +346,7 @@ public class ProductEndpoint {
       String credentialId = null;
       if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {        
         InlineCredential credential = new InlineCredential(secretValue, userName);
-        String userId = securityContext.getUserPrincipal().getName();
+        String userId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
         credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);        
       }      
       String productId = sbomProcessingService.submitSpdx(fileInputStream, cveId, credentialId);
