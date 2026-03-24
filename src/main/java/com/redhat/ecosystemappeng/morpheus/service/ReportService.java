@@ -71,7 +71,6 @@ public class ReportService {
   private static final Pattern PURL_PKG_TYPE = Pattern.compile("pkg\\:(\\w+)\\/.*");
   public static final String HOSTED_GITHUB_COM = "github.com";
 
-
   @RestClient
   GitHubService gitHubService;
 
@@ -390,13 +389,19 @@ public class ReportService {
     return userService.getUserName();
   }
 
+  /**
+   * New scan id for {@code input.scan.id} when it must not be shared (e.g. batch SPDX components) or when trace context has no id.
+   */
+  public String createUniqueScanId() {
+    return UUID.randomUUID().toString();
+  }
+
   private Scan buildScan(ReportRequest request) {
     var id = request.id();
     if (Objects.isNull(id)) {
       id = getTraceIdFromContext(Context.current());
-      // If no trace ID is available from context, generate a unique ID
       if (Objects.isNull(id)) {
-        id = UUID.randomUUID().toString();
+        id = createUniqueScanId();
       }
     }
     return new Scan(id, request.vulnerabilities().stream().map(String::toUpperCase).map(VulnId::new).toList());
@@ -434,7 +439,7 @@ public class ReportService {
       if (Objects.nonNull(metadataProperties) && metadataProperties.isArray()) {
         metadataProperties.forEach(p -> properties.put(getProperty(p, "name"), getProperty(p, "value")));
       }
-      if(Objects.nonNull(request.metadata())) {
+      if (Objects.nonNull(request.metadata())) {
         properties.putAll(request.metadata());
       }
       commitId = getCommitIdFromMetadataLabels(properties);
@@ -640,7 +645,12 @@ public class ReportService {
     }
   }
 
-  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId) throws JsonProcessingException, IOException {
+  /**
+   * @param useUniqueScanId when {@code true}, {@link #createUniqueScanId()} is set on the request so each call gets a distinct scan id
+   *                        (batch components). When {@code false}, request id is unset and {@code buildScan} assigns trace id or
+   *                        {@link #createUniqueScanId()}.
+   */
+  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId, boolean useUniqueScanId) throws JsonProcessingException, IOException {
     // All validations passed, proceed with processing
     JsonNode sbomJson = parsedCycloneDx.sbomJson();
     // Create metadata with product_id, sbom_name, sbom_version, and additional SBOM metadata fields
@@ -662,9 +672,9 @@ public class ReportService {
     if (Objects.nonNull(parsedCycloneDx.bomRef())) {
       metadata.put("sbom_bom_ref", parsedCycloneDx.bomRef());
     }
-    // Create and return ReportRequest
+    
     ReportRequest reportRequest = new ReportRequest(
-      null, // id - auto-generated
+      useUniqueScanId ? createUniqueScanId() : null,
       "image", // analysisType
       java.util.Collections.singletonList(cveId), // vulnerabilities
       null, // image
@@ -682,7 +692,7 @@ public class ReportService {
   }
 
   public ReportData submitCycloneDx(ParsedCycloneDx parsedCycloneDx, String productId, String cveId) throws JsonProcessingException, IOException {
-    var reportData = this.createCycloneDxReportData(parsedCycloneDx, productId, cveId);
+    var reportData = this.createCycloneDxReportData(parsedCycloneDx, productId, cveId, false);
     // Save the report before submitting (submit() requires the report to exist in the repository)
     var savedReportData = this.saveReport(reportData);
     this.submit(savedReportData.reportRequestId().id(), savedReportData.report());

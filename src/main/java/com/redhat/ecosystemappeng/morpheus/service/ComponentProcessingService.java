@@ -155,7 +155,7 @@ public class ComponentProcessingService {
         LOGGER.infof("Generated CycloneDX SBOM for component: %s", component.name());
 
         // Create report data
-        ReportData reportData = reportService.createCycloneDxReportData(cycloneDxSbom, productId, vulnerabilityId);
+        ReportData reportData = reportService.createCycloneDxReportData(cycloneDxSbom, productId, vulnerabilityId, true);
         LOGGER.infof("Created report data for component: %s", component.name());
         
         return reportData;

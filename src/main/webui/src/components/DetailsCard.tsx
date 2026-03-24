@@ -18,6 +18,21 @@ import IntelReliabilityScore from "./IntelReliabilityScore";
 import NotAvailable from "./NotAvailable";
 import ReportStatusLabel from "./ReportStatusLabel";
 
+/** Base URL for .../commit/{ref} links: no trailing slash or `.git` suffix. */
+function normalizeRepoBaseForCommitLink(repo: string): string {
+  let s = repo;
+  while (s.endsWith("/")) {
+    s = s.slice(0, -1);
+  }
+  if (s.endsWith(".git")) {
+    s = s.slice(0, -".git".length);
+  }
+  while (s.endsWith("/")) {
+    s = s.slice(0, -1);
+  }
+  return s;
+}
+
 interface DetailsCardProps {
   report: FullReport;
   cveId: string;
@@ -103,7 +118,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     {codeRepository}
                   </a>
                 ) : (
-                  image?.name
+                  <NotAvailable />
                 )}
               </DescriptionListDescription>
             </DescriptionListGroup>
@@ -112,18 +127,14 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               <DescriptionListDescription>
                 {codeRepository && codeTag ? (
                   <a
-                    href={`${
-                      codeRepository.endsWith("/")
-                        ? codeRepository.slice(0, -1)
-                        : codeRepository
-                    }/commit/${codeTag}`}
+                    href={`${normalizeRepoBaseForCommitLink(codeRepository)}/commit/${codeTag}`}
                     target="_blank"
                     rel="noreferrer"
                   >
                     {codeTag}
                   </a>
                 ) : (
-                  image?.tag
+                  <NotAvailable />
                 )}
               </DescriptionListDescription>
             </DescriptionListGroup>
