@@ -111,6 +111,9 @@ public class ReportService {
   @Inject
   Scheduler scheduler;
 
+  @ConfigProperty(name= "client.global.github.api-key", defaultValue = "")
+  String globalGithubApiKey;
+
   private Map<String, Collection<String>> includes;
   private Map<String, Collection<String>> excludes;
 
@@ -451,7 +454,10 @@ public class ReportService {
       var credential = request.credential();
       if (Objects.nonNull(credential) && Objects.nonNull(credential.userName())) {
         languages = getGitHubLanguages(sourceLocation, "Bearer " + credential.secretValue());
-      } else {
+      } else if(!globalGithubApiKey.isEmpty()){
+        languages = getGitHubLanguages(sourceLocation, "Bearer " + globalGithubApiKey.trim());
+      }
+      else {
         languages = getGitHubLanguages(sourceLocation);
       }
       if (languages.isEmpty() && Objects.nonNull(request.ecosystem()) && !request.ecosystem().trim().isEmpty()) {
@@ -635,8 +641,8 @@ public class ReportService {
       LOGGER.debugf("looking for programming languages for repository %s (with user token)", repoName);
       return gitHubService.getLanguages(repoName, authorization).keySet();
     } catch (Exception e) {
-      LOGGER.errorf(e, "Unable to retrieve programming languages for repository %s", repository);
-      throw new IllegalArgumentException("Unable to retrieve programming languages for repository " + repository);
+      LOGGER.warnf(e, "Unable to retrieve programming languages for repository %s, falling back to all supported languages", repository);
+      return Collections.emptySet();
     }
   }
 
