@@ -216,14 +216,17 @@ const SbomsTable: React.FC = () => {
     col: ColumnDef
   ): React.ReactNode => {
     switch (col.key) {
-      case "productId":
+      case "productId": {
+        const productReportPath = `/reports/product/${row.productId}/${row.cveId}`;
         return (
           <TableText wrapModifier="truncate">
             <Link
-              to="#"
+              to={productReportPath}
               onClick={(e) => {
-                e.preventDefault();
-                handleProductIdClick(row);
+                if (row.submittedCount === 1) {
+                  e.preventDefault();
+                  handleProductIdClick(row);
+                }
               }}
             >
               {loadingRow?.productId === row.productId &&
@@ -235,6 +238,7 @@ const SbomsTable: React.FC = () => {
             </Link>
           </TableText>
         );
+      }
       case "name":
         return (
           <TableText wrapModifier="truncate">{row.productName}</TableText>
