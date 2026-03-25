@@ -1,5 +1,7 @@
 package com.redhat.ecosystemappeng.morpheus.rest;
 
+import com.redhat.ecosystemappeng.morpheus.service.UserService;
+import com.redhat.ecosystemappeng.morpheus.service.UtilitiesService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -17,6 +19,7 @@ import com.redhat.ecosystemappeng.morpheus.service.CredentialStorageException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+
 import java.util.Objects;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -47,6 +50,9 @@ public class CredentialsEndpoint {
 
     @Inject
     CredentialStoreService credentialStoreService;
+
+    @Inject
+    UserService userService;
 
     /**
      * Retrieves a stored credential for ExploitIQ Agent use (single-use).
@@ -104,7 +110,7 @@ public class CredentialsEndpoint {
         }
 
         // JWT authentication check
-        if (Objects.isNull(securityContext.getUserPrincipal())) {
+        if (Objects.isNull(UtilitiesService.getAuthenticatedUserName(securityContext, userService))) {
             LOGGER.warnf("Unauthenticated credential retrieval attempt: credentialId=%s",
                 credentialId);
             return Response.status(Status.UNAUTHORIZED)
@@ -112,7 +118,8 @@ public class CredentialsEndpoint {
                 .build();
         }
 
-        String jwtUserId = securityContext.getUserPrincipal().getName();
+        String jwtUserId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
+
         LOGGER.infof("Agent credential retrieval request: credentialId=%s, agent=%s",
             credentialId, jwtUserId);
 
@@ -154,4 +161,6 @@ public class CredentialsEndpoint {
                 .build();
         }
     }
+
+
 }
