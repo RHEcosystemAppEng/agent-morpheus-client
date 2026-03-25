@@ -41,7 +41,6 @@ const STATE_ORDER = [
   "queued",
   "sent",
   "pending",
-  "excluded",
 ] as const;
 
 // Color mapping for each component state
@@ -52,7 +51,6 @@ const STATE_COLORS: Record<string, string> = {
   queued: t_global_color_nonstatus_gray_300.var,
   sent: t_global_color_nonstatus_gray_400.var,
   pending: t_global_color_nonstatus_gray_200.var,
-  excluded: t_global_color_nonstatus_gray_300.var,
 };
 
 const ReportComponentStatesPieChart: React.FC<

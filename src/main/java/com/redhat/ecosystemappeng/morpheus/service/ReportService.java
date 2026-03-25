@@ -42,6 +42,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.config.AppConfig;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
@@ -670,12 +671,18 @@ public class ReportService {
     }
   }
 
+  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId)
+      throws JsonProcessingException, IOException {
+    return createCycloneDxReportData(parsedCycloneDx, productId, cveId, false, false);
+  }
+  
+
   /**
    * @param useUniqueScanId when {@code true}, {@link #createUniqueScanId()} is set on the request so each call gets a distinct scan id
    *                        (batch components). When {@code false}, request id is unset and {@code buildScan} assigns trace id or
    *                        {@link #createUniqueScanId()}.
    */
-  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId, boolean useUniqueScanId) throws JsonProcessingException, IOException {
+  public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId, String cveId, boolean useUniqueScanId, boolean componentDependencyTriageFailed) throws JsonProcessingException, IOException {
     // All validations passed, proceed with processing
     JsonNode sbomJson = parsedCycloneDx.sbomJson();
     // Create metadata with product_id, sbom_name, sbom_version, and additional SBOM metadata fields
@@ -713,7 +720,9 @@ public class ReportService {
       null // manifestPath
     );
     // Only generate report data, don't save it yet - saving happens in ComponentProcessingService
-    return this.generateReport(reportRequest);
+    ReportData reportData = this.generateReport(reportRequest);
+    ((ObjectNode) reportData.report()).put("componentDependencyTriageFailed", componentDependencyTriageFailed);
+    return reportData;
   }
 
 }

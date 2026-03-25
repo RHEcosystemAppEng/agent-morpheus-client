@@ -93,3 +93,20 @@ The repository reports table toolbar SHALL support an optional **CVE ID** filter
 - **THEN** the table requests data from the reports API without the `vulnId` parameter (or with it omitted)
 - **AND** the table shows repository reports according to the other active filters only
 
+### Requirement: Exhort dependency triage warning in Repository column
+
+When the repository reports table displays a row whose report data has **`componentDependencyTriageFailed === true`**, the table SHALL display a warning icon immediately to the **left** of the repository URL in the Repository column. The warning icon SHALL be associated with an accessible tooltip (hover and keyboard focus) whose text is exactly: **Dependency triage unavailable. Full analysis performed to ensure complete coverage.** When **`componentDependencyTriageFailed`** is false, undefined, or absent for that row, the warning icon SHALL NOT be shown.
+
+#### Scenario: Warning visible when per-report triage failed
+
+- **WHEN** a user views the repository reports table
+- **AND** a row’s report has **`componentDependencyTriageFailed` true**
+- **THEN** a warning icon appears to the left of that row’s repository URL
+- **AND** focusing or hovering the icon shows a tooltip with the text "Dependency triage unavailable. Full analysis performed to ensure complete coverage."
+
+#### Scenario: No warning when triage did not fail for that component
+
+- **WHEN** a user views the repository reports table
+- **AND** a row’s report has **`componentDependencyTriageFailed` false**, undefined, or absent
+- **THEN** no warning icon appears in the Repository column for that row
+

@@ -13,6 +13,13 @@
 import { useMemo } from "react";
 import { Link } from "react-router";
 import {
+  Flex,
+  FlexItem,
+  Tooltip,
+} from "@patternfly/react-core";
+import t_global_icon_color_status_warning_default from "@patternfly/react-tokens/dist/esm/t_global_icon_color_status_warning_default";
+import { ExclamationTriangleIcon } from "@patternfly/react-icons";
+import {
   Table,
   TableText,
   Thead,
@@ -48,6 +55,9 @@ interface ColumnDef {
   sortable?: boolean;
   width?: ThProps["width"];
 }
+
+const DEPENDENCY_TRIAGE_UNAVAILABLE_TOOLTIP =
+  "Dependency triage unavailable. Full analysis performed to ensure complete coverage.";
 
 const REPOSITORY_REPORTS_COLUMNS: ColumnDef[] = [
   { key: "id", label: "ID", width: 10 },
@@ -124,7 +134,22 @@ const RepositoryReportsTableContent: React.FC<
         );
       case "gitRepo":
         return (
-          <TableText wrapModifier="truncate">{report.gitRepo || ""}</TableText>
+          <TableText wrapModifier="truncate">
+            <Flex
+              alignItems={{ default: "alignItemsCenter" }}
+              gap={{ default: "gapXs" }}
+              flexWrap={{ default: "nowrap" }}
+            >
+              {report.componentDependencyTriageFailed ? (
+                <FlexItem>
+                  <Tooltip content={DEPENDENCY_TRIAGE_UNAVAILABLE_TOOLTIP}>                    
+                    <ExclamationTriangleIcon color={t_global_icon_color_status_warning_default.var}/>                    
+                  </Tooltip>
+                </FlexItem>
+              ) : null}
+              <FlexItem>{report.gitRepo || ""}</FlexItem>
+            </Flex>
+          </TableText>
         );
       case "commitId":
         return (

@@ -1,11 +1,12 @@
 {
   "id": "product-7",
-  "name": "Product_7",
+  "name": "test-sbom-product-7-dependency-triage-unavailable",
   "version": "1.0.0",
   "cveId": "CVE-2024-28180",
   "submittedAt": "2025-01-20T15:46:58.335583Z",
   "submittedCount": 2,
   "completedAt": "2025-01-26T13:48:49.624628Z",
+  "dependencyTriageUnavailable": true,
   "metadata": {},
-  "submissionFailures": []
+  "excludedComponents": []
 }

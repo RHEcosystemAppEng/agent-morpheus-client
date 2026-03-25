@@ -111,6 +111,13 @@ const ReportPage: React.FC = () => {
               <BreadcrumbItem isActive>{breadcrumbText}</BreadcrumbItem>
             </Breadcrumb>
           </GridItem>
+          {data.data.dependencyTriageUnavailable ? (
+            <GridItem span={12}>
+              <Alert variant={AlertVariant.warning} title="Dependency triage unavailable">
+                The automated pre-check for vulnerable packages is offline. Full analysis is being performed on all components to ensure complete coverage.
+              </Alert>
+            </GridItem>
+          ) : null}
           <GridItem>                          
             <Title headingLevel="h1" size="2xl">
               <strong>Report:</strong> {breadcrumbText}

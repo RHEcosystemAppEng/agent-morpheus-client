@@ -64,7 +64,7 @@ class ReportServiceCredentialInjectionOrderTest {
     ReportData savedReportData = new ReportData(new ReportRequestId("db-id", "scan-id"), report);
 
     Mockito.when(cycloneDxParsingService.parseCycloneDxFile(any())).thenReturn(parsedCycloneDx);
-    Mockito.when(reportService.createCycloneDxReportData(any(), any(), any(), eq(false))).thenReturn(reportData);
+    Mockito.when(reportService.createCycloneDxReportData(any(), any(), any())).thenReturn(reportData);
     Mockito.when(reportService.saveReport(any())).thenReturn(savedReportData);
     Mockito.when(userService.getUserName()).thenReturn("test-user");
   }

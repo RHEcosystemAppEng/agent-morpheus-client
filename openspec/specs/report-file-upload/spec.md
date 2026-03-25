@@ -88,6 +88,7 @@ When validation fails because an image-type CycloneDX SBOM is missing required *
 - **AND** each `sbomValidationIssues` entry includes `code`, `configuredProperty`, and `expectedLabels`
 - **AND** any human-readable error text exposed to the client explicitly indicates whether the source code URL, commit ID, or both are missing
 - **AND** the human-readable text SHALL NOT consist solely of **"SBOM metadata validation failed"**
+
 ### Requirement: Full Report Retrieval API
 The system SHALL provide an API endpoint to retrieve full report data by report ID, returning the report data and calculated analysis status as separate fields in a structured response.
 
@@ -100,4 +101,3 @@ The system SHALL provide an API endpoint to retrieve full report data by report 
 - **AND** the status is calculated using the same logic as the `getStatus()` method in `ReportRepositoryService`
 - **AND** the status field is included in the response even if the report data is otherwise incomplete
 - **AND** the report data is returned without modification (no fields are added or removed from the stored document)
-

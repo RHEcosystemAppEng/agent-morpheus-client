@@ -1,0 +1,14 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v5/analysis"
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"error\":\"WireMock default stub: use health-probe or gitops-rhel8-operator-specific mapping\"}"
+  }
+}

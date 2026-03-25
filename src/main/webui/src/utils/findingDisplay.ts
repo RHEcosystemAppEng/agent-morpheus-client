@@ -21,8 +21,12 @@ export type Finding =
   | { type: "not-vulnerable"; count?: number }
   | { type: "uncertain"; count?: number }
   | { type: "in-progress" }
-  | { type: "failed" }
-  | { type: "excluded"; count?: number };
+  | { type: "failed"; count?: number };
+
+/** Minimal shape for product-level exclusion rows (matches API ExcludedComponent). */
+export type ExclusionRow = {
+  exclusionType: "error" | "dependency_not_present";
+};
 
 export type ProductStatus = {
   vulnerableCount: number;
@@ -50,28 +54,23 @@ function hasInProgressInCounts(statusCounts: Record<string, number>): boolean {
   return IN_PROGRESS_STATES.some((s) => (statusCounts[s] || 0) > 0);
 }
 
-function hasFailedInCounts(statusCounts: Record<string, number>): boolean {
-  return FAILING_STATES.some((s) => (statusCounts[s] || 0) > 0);
-}
-
-function getExcludedCount(statusCounts: Record<string, number>): number {
-  return statusCounts["excluded"] ?? 0;
-}
-
 /**
  * Returns the single prioritized finding for a product row (reports table).
  * While any repository is still pending, queued, or sent, the row shows In progress only;
- * after all have a terminal outcome, priority is: Vulnerable > Uncertain > Failed > Excluded > Not vulnerable.
- * Only returns type + optional count; color/variant are applied by Finding component.
- * totalCount uses submittedCount (e.g. productSummary.data.submittedCount) when provided.
- * Excluded uses statusCounts["excluded"] (submission failure count from API).
+ * after all have a terminal outcome, priority is: Vulnerable > Uncertain > Failed > Not vulnerable.
+ * Failed combines failed/expired repository reports with `exclusionType` **error** rows.
+ * Not vulnerable when every submitted component is either a not-vulnerable repository outcome or a
+ * **dependency_not_present** exclusion (no **error** exclusions and no failed/expired reports).
  */
 export function getProductFinding(
   productStatus: ProductStatus,
-  analysisState: string,
   statusCounts: Record<string, number>,
-  submittedCount?: number,
+  submittedCount: number | undefined,
+  excludedComponents: ExclusionRow[] | undefined,
 ): Finding | null {
+  const submitted = submittedCount ?? 0;
+  const excluded = excludedComponents ?? [];
+
   if (hasInProgressInCounts(statusCounts)) {
     return { type: "in-progress" };
   }
@@ -87,16 +86,26 @@ export function getProductFinding(
       count: productStatus.uncertainCount,
     };
   }
-  if (hasFailedInCounts(statusCounts)) {
-    return { type: "failed" };
+
+  const failedReportCount =
+    (statusCounts["failed"] ?? 0) + (statusCounts["expired"] ?? 0);
+  const errorExclusionCount = excluded.filter(
+    (e) => e.exclusionType === "error",
+  ).length;
+  if (failedReportCount > 0 || errorExclusionCount > 0) {
+    return {
+      type: "failed",
+      count: failedReportCount + errorExclusionCount,
+    };
   }
-  const excludedCount = getExcludedCount(statusCounts);
-  if (excludedCount > 0) {
-    return { type: "excluded", count: excludedCount };
-  }
+
+  const dependencyNotPresentCount = excluded.filter(
+    (e) => e.exclusionType === "dependency_not_present",
+  ).length;
+
   if (
-    analysisState === "completed" &&
-    productStatus.notVulnerableCount === submittedCount
+    submitted > 0 &&
+    productStatus.notVulnerableCount + dependencyNotPresentCount === submitted
   ) {
     return { type: "not-vulnerable" };
   }

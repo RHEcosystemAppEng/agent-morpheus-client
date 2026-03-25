@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -20,11 +19,6 @@ import io.restassured.http.ContentType;
  */
 @QuarkusTest
 public class UploadCycloneDxRestTest {
-
-    @BeforeEach
-    void restAssuredBase() {
-        RestApiTestFixture.configureRestAssuredIfExternal();
-    }
 
     private static final String TEST_SBOM_FILE = "src/test/resources/devservices/cyclonedx-sboms/nmstate-rhel8-operator.json";
     private static final String NMSTATE_NO_SOURCE_URL_FILE =

@@ -56,7 +56,15 @@ const getConfig = () => {
     }
     return config;
   } else {
-    return baseConfig;
+    // Quarkus Quinoa forwards to this port; must match quarkus.quinoa.dev-server.port (default 5173 for Vite).
+    // strictPort avoids Vite silently moving to 5174 when 5173 is busy, which breaks Quinoa's readiness check.
+    return {
+      ...baseConfig,
+      server: {
+        port: 5173,
+        strictPort: true,
+      },
+    };
   }
 };
 

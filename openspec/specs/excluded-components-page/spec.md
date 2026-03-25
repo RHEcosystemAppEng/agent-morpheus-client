@@ -18,17 +18,17 @@ The application SHALL provide a dedicated page at route `/reports/product/exclud
 - **AND** product name and CVE ID SHALL be obtained from the route parameters and product API data
 
 ### Requirement: Excluded components table
-The Excluded components page SHALL display a table with three columns: Component, Package URL, and Error. The table SHALL be populated directly from the product's `submissionFailures` field (array of FailedComponent). Each row SHALL display: Component (component name and version from `submissionFailures[].name` and `submissionFailures[].version`), Package URL (`submissionFailures[].image`), Error (`submissionFailures[].error`).
+The Excluded components page SHALL display a table with **three** columns: Component, Package URL, and Reason. The table SHALL **not** include an Exclusion type column. The table SHALL be populated directly from the product's `excludedComponents` field (array of **ExcludedComponent** in the API schema). Each row SHALL display: Component (from `excludedComponents[].name` and `excludedComponents[].version`), Package URL (`excludedComponents[].image`), and Reason. The **Reason** column SHALL derive text from **`exclusionType`**, not from a single API field for all rows: for **dependency_not_present**, the UI SHALL show "Vulnerable package not in dependencies". For **error**, the UI SHALL display **`excludedComponents[].error`** (required on the API for that type). The **`exclusionType`** field SHALL exist on the API payload but SHALL not be shown as its own column.
 
 When a row represents a container image component whose CycloneDX SBOM was produced by Syft (or otherwise processed through the same image-metadata validation path) and validation failed because required **source code URL** and/or **commit ID** metadata is missing from the SBOM, the Error text SHALL NOT be the generic phrase **"SBOM metadata validation failed"** alone. It SHALL state clearly which category of metadata is missing (source code URL, commit ID, or both). It MAY include a Syft-specific prefix (e.g. that Syft produced an invalid SBOM) when the failure is attributed to Syft-generated SBOM output. It MAY list accepted CycloneDX `metadata.properties` names (as configured for the deployment) so operators know which labels to add.
 
 #### Scenario: Table displays excluded components
-- **WHEN** a user views the Excluded components page and the product has one or more entries in `product.data.submissionFailures`
-- **THEN** a table is displayed with columns "Component", "Package URL", and "Error"
-- **AND** each row corresponds to one entry in `submissionFailures`
+- **WHEN** a user views the Excluded components page and the product has one or more entries in `product.data.excludedComponents`
+- **THEN** a table is displayed with columns "Component", "Package URL", and "Reason" only
+- **AND** each row corresponds to one entry in `excludedComponents`
 - **AND** the Component column displays the component name and version (e.g. from `name` and `version` fields)
 - **AND** the Package URL column displays the value of `image` (purl or image reference)
-- **AND** the Error column displays the error message from `error`
+- **AND** the Reason column reflects **`exclusionType`**: **`error`** rows use **`error`** text; **`dependency_not_present`** rows use "Vulnerable package not in dependencies" and do **not** require **`error`** to be set
 
 #### Scenario: Missing image SBOM source metadata error is explicit
 - **WHEN** a submission failure is recorded because the CycloneDX SBOM for an image scan lacks required source URL and/or commit metadata (structured validation issue)
@@ -36,7 +36,7 @@ When a row represents a container image component whose CycloneDX SBOM was produ
 - **AND** the message SHALL NOT consist solely of the generic text **"SBOM metadata validation failed"**
 
 #### Scenario: Table empty state
-- **WHEN** a user views the Excluded components page and the product has no entries in `submissionFailures` (empty array or undefined)
+- **WHEN** a user views the Excluded components page and the product has no entries in `excludedComponents` (empty array or undefined)
 - **THEN** the table displays an empty state message
 
 #### Scenario: Page loading state

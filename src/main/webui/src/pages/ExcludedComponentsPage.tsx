@@ -41,11 +41,12 @@ import {
   pageTitleExcludedInvalidParams,
   pageTitleExcludedLoadError,
 } from "./pageTitles";
+import { excludedComponentReason } from "../utils/excludedComponentReason";
 
 const COLUMN_NAMES = {
   component: "Component",
   packageUrl: "Package URL",
-  error: "Error",
+  reason: "Reason",
 };
 
 const ExcludedComponentsPageSkeleton: React.FC = () => (
@@ -128,7 +129,7 @@ const ExcludedComponentsPage: React.FC = () => {
 
   const productName = data.data?.name ?? "";
   const breadcrumbText = `${productName} / ${cveId}`;
-  const submissionFailures = data.data?.submissionFailures ?? [];
+  const excludedComponents = data.data?.excludedComponents ?? [];
 
   return (
     <>
@@ -160,7 +161,7 @@ const ExcludedComponentsPage: React.FC = () => {
         </Grid>
       </PageSection>
       <PageSection>
-        {submissionFailures.length === 0 ? (
+        {excludedComponents.length === 0 ? (
           <TableEmptyState
             columnCount={3}
             titleText="No excluded components"
@@ -171,22 +172,22 @@ const ExcludedComponentsPage: React.FC = () => {
               <Tr>
                 <Th width={20}>{COLUMN_NAMES.component}</Th>
                 <Th width={30}>{COLUMN_NAMES.packageUrl}</Th>
-                <Th>{COLUMN_NAMES.error}</Th>
+                <Th>{COLUMN_NAMES.reason}</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {submissionFailures.map((failure, index) => (
-                <Tr key={`${failure.name}-${failure.version}-${index}`}>
+              {excludedComponents.map((row, index) => (
+                <Tr key={`${row.name}-${row.version}-${index}`}>
                   <Td dataLabel={COLUMN_NAMES.component}>
                     <TableText wrapModifier="truncate">
-                      {failure.name} {failure.version}
+                      {row.name} {row.version}
                     </TableText>
                   </Td>
                   <Td dataLabel={COLUMN_NAMES.packageUrl}>
-                    <TableText wrapModifier="truncate">{failure.image}</TableText>
+                    <TableText wrapModifier="truncate">{row.image}</TableText>
                   </Td>
-                  <Td dataLabel={COLUMN_NAMES.error}>
-                    <TableText wrapModifier="truncate">{failure.error}</TableText>
+                  <Td dataLabel={COLUMN_NAMES.reason}>
+                    <TableText wrapModifier="truncate">{excludedComponentReason(row)}</TableText>
                   </Td>
                 </Tr>
               ))}

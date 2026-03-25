@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.*;
 import java.io.File;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.ecosystemappeng.morpheus.service.SpdxParsingService;
@@ -20,21 +19,16 @@ import io.restassured.http.ContentType;
 @QuarkusTest
 public class UploadSpdxRestTest {
 
-    @BeforeEach
-    void restAssuredBase() {
-        RestApiTestFixture.configureRestAssuredIfExternal();
-    }
-
-    private static final String TEST_SBOM_FILE = "src/test/resources/devservices/spdx-sboms/gitops-1.19.json";
+    private static final String TEST_SBOM_FILE = "src/test/resources/devservices/spdx-sboms/gitops-1.19-stripped.json";
     private static final String SPDX_WITH_UNSUPPORTED = "src/test/resources/devservices/spdx-sboms/spdx-with-unsupported-component.json";
     private static final String INVALID_SPDX_DIR = "src/test/resources/devservices/spdx-sboms/invalid";
-    private static final String TEST_VULN_ID = "CVE-2021-4238";
+    private static final String TEST_VULN_ID = "CVE-2007-4559";
 
-    /** {@code gitops-1.19.json}: twelve {@code PACKAGE_OF} child packages under the product package. */
-    private static final int GITOPS_119_EXPECTED_SUBMITTED_COUNT = 12;
+    /** {@code gitops-1.19-stripped.json}: ten OCI {@code PACKAGE_OF} children; SPDXIDs use {@code SPDXRef-test-component-*} for readable debug paths. */
+    private static final int GITOPS_119_EXPECTED_SUBMITTED_COUNT = 10;
 
-    /** Exactly one component ({@code gitops-operator-bundle-1-19}) records a submission failure (e.g. Syft/SBOM validation). */
-    private static final int GITOPS_119_EXPECTED_SUBMISSION_FAILURE_COUNT = 1;
+    /** Exactly one component ({@code gitops-operator-bundle-1-19}) is recorded in excluded components (e.g. Syft/SBOM validation). */
+    private static final int GITOPS_119_EXPECTED_EXCLUDED_COMPONENT_COUNT = 9;
 
     /**
      * Successful Morpheus-backed reports after async processing:
@@ -42,11 +36,11 @@ public class UploadSpdxRestTest {
      * {@link #GITOPS_119_EXPECTED_REPORT_COUNT} reports + {@link #GITOPS_119_EXPECTED_SUBMISSION_FAILURE_COUNT} failure(s).
      */
     private static final int GITOPS_119_EXPECTED_REPORT_COUNT =
-        GITOPS_119_EXPECTED_SUBMITTED_COUNT - GITOPS_119_EXPECTED_SUBMISSION_FAILURE_COUNT;
+        GITOPS_119_EXPECTED_SUBMITTED_COUNT - GITOPS_119_EXPECTED_EXCLUDED_COMPONENT_COUNT;
 
     /**
      * Valid SPDX upload for {@code gitops-1.19.json}: expects product CPE, 12 submitted components,
-     * 11 persisted reports, and exactly one entry in {@code submissionFailures} (operator bundle).
+     * 11 persisted reports, and exactly one entry in {@code excludedComponents} (operator bundle).
      */
     @Test
     void testUpload_ValidFileAndVulnerabilityId() {
@@ -74,10 +68,14 @@ public class UploadSpdxRestTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
+            .body("data.dependencyTriageUnavailable", equalTo(false))
             .body("data.metadata.cpe", equalTo("cpe:/a:redhat:openshift_gitops:1.19::el8"))
             .body("data.submittedCount", equalTo(GITOPS_119_EXPECTED_SUBMITTED_COUNT))
-            .body("data.submissionFailures", hasSize(GITOPS_119_EXPECTED_SUBMISSION_FAILURE_COUNT))
-            .body("data.submissionFailures[0].name", equalTo("gitops-operator-bundle-1-19"));
+            .body("data.excludedComponents", hasSize(GITOPS_119_EXPECTED_EXCLUDED_COMPONENT_COUNT))
+            .body("data.excludedComponents[0].name", equalTo("dex-1-19"))
+            .body("data.excludedComponents[0].exclusionType", equalTo("dependency_not_present"))
+            .body("data.excludedComponents[0].error", nullValue());
+            
 
         RestAssured.given()
             .queryParam("productId", productId)
@@ -87,10 +85,20 @@ public class UploadSpdxRestTest {
             .then()
             .statusCode(200)
             .header("X-Total-Elements", String.valueOf(GITOPS_119_EXPECTED_REPORT_COUNT));
+
+        RestAssured.given()
+            .queryParam("productId", productId)
+            .queryParam("pageSize", 100)
+            .when()
+            .get("/api/v1/reports")
+            .then()
+            .statusCode(200)
+            .body("size()", equalTo(GITOPS_119_EXPECTED_REPORT_COUNT))
+            .body("componentDependencyTriageFailed", everyItem(equalTo(false)));
     }
 
     @Test
-    void testUpload_SpdxWithUnsupportedComponent_RecordsInSubmissionFailures() {
+    void testUpload_SpdxWithUnsupportedComponent_RecordsExcludedComponents() {
         File sbomFile = new File(SPDX_WITH_UNSUPPORTED);
 
         String productId = RestAssured.given()
@@ -116,11 +124,21 @@ public class UploadSpdxRestTest {
             .statusCode(200)
             .contentType(ContentType.JSON)
             .body("data.submittedCount", equalTo(2))
-            .body("data.submissionFailures", notNullValue())
-            .body("data.submissionFailures", hasSize(1))
-            .body("data.submissionFailures[0].name", equalTo("maven-lib"))
-            .body("data.submissionFailures[0].version", equalTo("2.0"))
-            .body("data.submissionFailures[0].error", containsString("Expects a container image purl with format pkg:oci/name@sha256:hash?repository_url=...&tag=..."));
+            .body("data.excludedComponents", notNullValue())
+            .body("data.excludedComponents", hasSize(2))
+            .body(
+                "data.excludedComponents.findAll { it.name == 'maven-lib' }.exclusionType[0]",
+                equalTo("error"))
+            .body(
+                "data.excludedComponents.findAll { it.name == 'maven-lib' }.error[0]",
+                containsString(
+                    "Expects a container image purl with format pkg:oci/name@sha256:hash?repository_url=...&tag=..."))
+            .body(
+                "data.excludedComponents.findAll { it.name == 'dex-rhel' }.exclusionType[0]",
+                equalTo("dependency_not_present"))
+            .body(
+                "data.excludedComponents.findAll { it.name == 'dex-rhel' }.error[0]",
+                nullValue());
     }
 
     @Test

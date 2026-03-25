@@ -55,5 +55,9 @@ export type Report = {
      * Submitted at timestamp from metadata.submitted_at
      */
     submittedAt?: string;
+    /**
+     * When true, the per-component Exhort dependency triage (CVE gate) failed while triage was active for the product (dependencyTriageUnavailable false on the product). When false, triage succeeded, was skipped because the whole-product Exhort probe was unhealthy, or was not applicable. Distinct from product-level dependencyTriageUnavailable on product API responses.
+     */
+    componentDependencyTriageFailed: boolean;
 };
 

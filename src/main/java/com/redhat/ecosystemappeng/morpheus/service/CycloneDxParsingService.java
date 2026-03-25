@@ -16,7 +16,9 @@ package com.redhat.ecosystemappeng.morpheus.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,8 +32,80 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class CycloneDxParsingService {
 
+  /** Syft convention: when {@code name} equals this property's value, the component is the Go main module. */
+  public static final String SYFT_METADATA_MAIN_MODULE = "syft:metadata:mainModule";
+
   @Inject
   ObjectMapper objectMapper;
+
+  /**
+   * Strips a trailing {@code ?query} suffix from a PURL (or any warning key string) so CycloneDX {@code purl}
+   * values (e.g. with {@code ?package-id=}) match Exhort {@code status.warnings} object keys.
+   */
+  public static String basePurlForExhortWarningMatch(String purlOrKey) {
+    if (purlOrKey == null) {
+      return "";
+    }
+    int q = purlOrKey.indexOf('?');
+    return q < 0 ? purlOrKey : purlOrKey.substring(0, q);
+  }
+
+  /**
+   * Collects normalized base PURLs for CycloneDX {@code components} that represent the Syft-encoded main module:
+   * {@code syft:metadata:mainModule} property value {@code V} and {@code component.name == V}.
+   *
+   * @param cyclonedxRoot parsed CycloneDX document root (JSON object)
+   * @return distinct base PURLs (query stripped); empty if {@code components} is missing or not an array
+   */
+  public Set<String> collectSyftMainModuleBasePurls(JsonNode cyclonedxRoot) {
+    if (cyclonedxRoot == null || !cyclonedxRoot.isObject()) {
+      throw new SbomValidationException("CycloneDX root is not a JSON object; cannot verify dependency CVE data");
+    }
+    JsonNode components = cyclonedxRoot.get("components");
+    if (components == null || !components.isArray()) {
+      return Set.of();
+    }
+    Set<String> bases = new LinkedHashSet<>();
+    for (JsonNode c : components) {
+      if (c == null || !c.isObject()) {
+        continue;
+      }
+      JsonNode purlNode = c.get("purl");
+      if (purlNode == null || !purlNode.isTextual()) {
+        continue;
+      }
+      String purl = purlNode.asText("");
+      if (purl.isBlank()) {
+        continue;
+      }
+      String mainModule = syftMainModuleFromProperties(c.get("properties"));
+      if (mainModule == null || mainModule.isBlank()) {
+        continue;
+      }
+      JsonNode nameNode = c.get("name");
+      if (nameNode == null || !nameNode.isTextual()) {
+        continue;
+      }
+      if (!mainModule.equals(nameNode.asText())) {
+        continue;
+      }
+      bases.add(basePurlForExhortWarningMatch(purl));
+    }
+    return bases;
+  }
+
+  private static String syftMainModuleFromProperties(JsonNode properties) {
+    if (properties == null || !properties.isArray()) {
+      return null;
+    }
+    for (JsonNode p : properties) {
+      if (p != null && p.isObject() && SYFT_METADATA_MAIN_MODULE.equals(p.path("name").asText())) {
+        String v = p.path("value").asText("");
+        return v.isBlank() ? null : v;
+      }
+    }
+    return null;
+  }
 
   /**
    * Parses and validates CycloneDX JSON file from InputStream

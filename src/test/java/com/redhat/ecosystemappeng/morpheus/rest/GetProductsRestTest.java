@@ -3,7 +3,6 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 import static org.hamcrest.Matchers.*;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -15,11 +14,6 @@ import io.restassured.http.ContentType;
  */
 @QuarkusTest
 public class GetProductsRestTest {
-
-    @BeforeEach
-    void restAssuredBase() {
-        RestApiTestFixture.configureRestAssuredIfExternal();
-    }
 
     @Test
     void testGetSbomReports_ReturnsExpectedStructure() {

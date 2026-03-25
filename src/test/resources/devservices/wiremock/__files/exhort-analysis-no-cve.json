@@ -1,0 +1,20 @@
+{
+  "providers": {
+    "rhtpa": {
+      "status": {
+        "ok": true,
+        "warnings": {}
+      },
+      "sources": {
+        "default": {
+          "dependencies": [
+            {
+              "issues": [],
+              "transitive": []
+            }
+          ]
+        }
+      }
+    }
+  }
+}

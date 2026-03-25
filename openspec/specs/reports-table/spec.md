@@ -11,7 +11,7 @@ The reports table SHALL support sorting by the following columns:
 - **Date Completed**: Sortable (maps to completedAt timestamp)
 
 **Note**: Report ID column is NOT sortable - it is displayed as a clickable link for navigation purposes only.
- When every component is excluded (`submissionFailures.length` equals `submittedCount`), `completedAt` SHALL be set when the last submission failure is recorded so Date Completed is not empty.
+ When every component is excluded (`excludedComponents.length` equals `submittedCount`) and the product reaches a terminal summary state, `completedAt` SHALL be set when the last excluded component is recorded so Date Completed is not empty.
 
 #### Scenario: Default sorting by submittedAt
 - **WHEN** a user first views the reports table
@@ -125,23 +125,29 @@ When a product has exactly one submitted report (`submittedCount === 1`), clicki
 - **AND** only the clicked row shows the loading indicator (other rows remain unchanged)
 
 ### Requirement: Reports Table Finding Column
-The reports table SHALL display a "Finding" column with one finding per product. If any component report is still in pending, queued, or sent state, the Finding SHALL be "In progress" until every component has a terminal outcome (completed, failed, expired, or excluded). After that, six outcomes apply in priority order: Vulnerable > Uncertain > Failed > Excluded > Not vulnerable. Only the single applicable finding is shown per row. Counts for Vulnerable, Uncertain, and Excluded only; no count for In progress, Not vulnerable, or Failed.
+The reports table SHALL display a "Finding" column with one finding per product. If any component report is still in pending, queued, or sent state, the Finding SHALL be "In progress" until every component has a terminal outcome (completed, failed, expired, or excluded from analysis without a repository report). After that, **four** outcomes apply in priority order: **Vulnerable > Uncertain > Failed > Not vulnerable**. Only the single applicable finding is shown per row. **There is no "Excluded" finding.** Product summary **`statusCounts`** SHALL NOT include an **`excluded`** key; component exclusions are read from **`product.excludedComponents`** and **`exclusionType`**.
+
+Counts for Vulnerable, Uncertain, and (when shown) Failed with a numeric aggregate SHALL follow the rules below; no count for In progress or Not vulnerable.
+
+**Failed (with count):** If any repository report is failed or expired, **or** any `excludedComponents` entry has `exclusionType` **error**, the Finding SHALL be **Failed** (unless a higher-priority finding applies). When Failed is shown for **error-type exclusions and/or failed/expired reports**, the label SHALL include a count: failed and expired repository reports plus **`error`** excluded components (e.g. **3 Failed**). Popover help text SHALL mention repository failures and component-level **`error`** exclusions.
+
+**Not vulnerable:** When no reports are pending, queued, or sent; zero vulnerable and zero uncertain repositories; zero failed or expired repository reports; zero **`error`** excluded components; and every outcome is consistent with **not vulnerable**—including **`dependency_not_present`** exclusions, which SHALL be treated like **not vulnerable** for Finding purposes—the Finding SHALL be **Not vulnerable** with no count.
 
 #### Scenario: Finding column header
 - **WHEN** a user views the reports table
 - **THEN** the column header is "Finding" with a help icon and popover explaining priority and states
 
 #### Scenario: Finding by priority
-- **WHEN** a product has any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon (even if some other repositories already have a vulnerable or uncertain result)
+- **WHEN** a product has any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon (even if some repositories already have a vulnerable or uncertain result)
 - **WHEN** no reports are pending, queued, or sent, and the product has one or more vulnerable repositories → display "Vulnerable" + count, red (danger) label
 - **WHEN** no reports are pending, queued, or sent, zero vulnerable, and one or more uncertain → display "Uncertain" + count, orange (warning) label
-- **WHEN** no reports are pending, queued, or sent, zero vulnerable, zero uncertain, no failed/expired reports, and one or more excluded components (`statusCounts["excluded"]` > 0) → display "Excluded" + count, with label styling as defined (e.g. grey or info)
-- **WHEN** no reports are pending, queued, or sent, 100% of reports are completed and 100% are not vulnerable and no excluded components → display "Not vulnerable", no count, green (success) label
+- **WHEN** no reports are pending, queued, or sent, zero vulnerable, zero uncertain, and one or more failed/expired repository reports **or** one or more **`error`** excluded components → display "Failed" + combined count where applicable, consistent with repository Failed styling
+- **WHEN** no reports are pending, queued, or sent, no vulnerable, no uncertain, no failed/expired reports, no **`error`** exclusions, and outcomes satisfy **Not vulnerable** including **`dependency_not_present`** rows → display "Not vulnerable", no count, green (success) label
 
-#### Scenario: Excluded state uses submission failure count
-- **WHEN** a product has excluded components (submissionFailures length > 0) and no higher-priority finding
-- **THEN** the Finding column displays "Excluded" with the count equal to `statusCounts["excluded"]` (length of product submissionFailures)
-- **AND** the count is shown in the same format as Vulnerable and Uncertain (e.g. "3 Excluded")
+#### Scenario: Summary has no excluded count
+- **WHEN** a client receives product summary data for the reports table
+- **THEN** `statusCounts` SHALL NOT contain an **`excluded`** property
+- **AND** excluded-component detail SHALL come from `product.data.excludedComponents` when needed for labels or drill-down
 
 ### Requirement: Reports Page Tabs and Single Repositories
 The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Repositories**. Selecting a tab SHALL switch content and update the URL: `/reports` for SBOMs, `/reports/single-repositories` for Single Repositories. Direct navigation to either URL SHALL show the corresponding tab. Spacing between tab bar and content SHALL use PatternFly Stack/StackItem with the standard spacer.

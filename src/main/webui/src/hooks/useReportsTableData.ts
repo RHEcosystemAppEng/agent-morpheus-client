@@ -94,9 +94,7 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
   const submittedAt = product.submittedAt || "";
   const completedAt = product.completedAt || "";
 
-  // Calculate analysis state from statusCounts
   const statusCounts = summary.statusCounts || {};
-  const analysisState = productSummary.summary.productState;
 
   // Repositories analyzed from shared utility (completed + data.submittedCount, "analyzed" suffix)
   const { getDisplay } = getRepositoriesAnalyzedFromProduct(productSummary);
@@ -120,9 +118,9 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
 
   const finding = getProductFinding(
     productStatus,
-    analysisState,
     statusCounts,
-    product.submittedCount
+    product.submittedCount,
+    product.excludedComponents,
   );
 
   return {

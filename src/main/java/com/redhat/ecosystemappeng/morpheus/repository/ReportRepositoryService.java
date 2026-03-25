@@ -43,7 +43,6 @@ import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.Updates;
-import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Justification;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
@@ -180,6 +179,8 @@ public class ReportRepositoryService {
 
     String submittedAt = Objects.nonNull(metadata) ? metadata.get(SUBMITTED_AT) : null;
     String scanId = scan.getString(RepositoryConstants.SCAN_ID);
+    boolean componentDependencyTriageFailed =
+        Boolean.TRUE.equals(doc.getBoolean("componentDependencyTriageFailed"));
     return new Report(id, scanId,
         scan.getString("started_at"),
         scan.getString("completed_at"),
@@ -190,7 +191,8 @@ public class ReportRepositoryService {
         metadata,
         gitRepo,
         ref,
-        submittedAt);
+        submittedAt,
+        componentDependencyTriageFailed);
   }
 
   public String getStatus(Document doc, Map<String, String> metadata) {
@@ -303,6 +305,14 @@ public class ReportRepositoryService {
     reportSseBroadcaster.publishCatalogChanged();
   }
 
+  public void updateReportInput(String id, JsonNode input) throws JsonProcessingException {
+    var objId = new ObjectId(id);
+    var inputDoc = Document.parse(input.toPrettyString());
+    getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
+        Updates.set("input", inputDoc));
+    LOGGER.debugf("Updated input for report %s", id);
+  }
+
   private Report get(ObjectId id) {
     var doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     return toReport(doc);
@@ -386,7 +396,6 @@ public class ReportRepositoryService {
   public ProductReportsSummary getProductSummaryData(Product product) {
     Objects.requireNonNull(product, "product");
     String productId = product.id();
-    List<FailedComponent> submissionFailures = product.submissionFailures();
     int submittedCount = product.submittedCount();
     Map<String, String> productMetadata = product.metadata();
 
@@ -427,11 +436,6 @@ public class ReportRepositoryService {
           }
         }
       }
-    }
-
-    int excludedCount = submissionFailures != null ? submissionFailures.size() : 0;
-    if (excludedCount > 0) {
-      statusCounts.put("excluded", excludedCount);
     }
 
     int totalReports = statusCounts.values().stream().mapToInt(Integer::intValue).sum();

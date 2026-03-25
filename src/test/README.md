@@ -13,30 +13,9 @@ Then run `./mvnw test` (or your usual Maven test invocation). Without this, test
 
 ## REST API tests (`@QuarkusTest` + REST Assured)
 
-The package `com.redhat.ecosystemappeng.morpheus.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** for requests and assertions.
+The package `com.redhat.ecosystemappeng.morpheus.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** against the **in-process** Quarkus application (Mongo Dev Services, WireMock for outbound clients where configured, seeded data where enabled).
 
-### Two ways to run the same tests
-
-#### 1. Default — in-process (“embedded”) Quarkus
-
-- Run: `./mvnw test` (or a narrower `-Dtest=…`).
-- **RestAssured** uses the URL Quarkus assigns to the **test application** started in the same JVM.
-- Typical stack: test `application.properties`, Mongo Dev Services, WireMock for outbound clients (e.g. Morpheus, GitHub), seeded data where enabled.
-- **Use when:** fast feedback, CI, no separate server needed.
-
-#### 2. Optional — RestAssured pointed at a **running** server
-
-- Set Quarkus config **`morpheus.rest-test.external-base-url`** to the base URL of an already-running app (no trailing slash required), for example:
-  - **Maven:** `./mvnw test -Dmorpheus.rest-test.external-base-url=http://localhost:8080`
-  - **`src/test/resources/application.properties`:** `%test.morpheus.rest-test.external-base-url=http://localhost:8080`
-- **`@BeforeEach`**, tests call `RestApiTestFixture.configureRestAssuredIfExternal()`, which sets `RestAssured.baseURI` when that property is non-blank.
-- The **`@QuarkusTest` application still starts** in the test JVM; HTTP calls go to the **remote** base URL. That lets you reuse the **same** test code against e.g. `quarkus dev`, a container, or a shared environment.
-
-### Why enable the second mode?
-
-- **One suite, two targets:** identical assertions exercise both the isolated test stack and a **real deployment** (local or staging), without maintaining a duplicate “integration only” test project.
-- **End-to-end confidence:** catch wiring, configuration, data, and infrastructure issues that only appear outside the trimmed test profile, while keeping a single source of truth for API behavior.
-- **Practical workflow:** run default tests in CI; occasionally run with `morpheus.rest-test.external-base-url` after a release candidate or config change to validate the running service matches expectations.
+Run them with `./mvnw test` or a narrower `-Dtest=…`.
 
 ### Other helpers
 

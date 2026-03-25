@@ -1,0 +1,24 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v5/analysis",
+    "queryParameters": {
+      "cves": {
+        "equalTo": "CVE-2007-4559"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "contains": "gitops-rhel8-operator"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "exhort-analysis-with-cve.json"
+  }
+}

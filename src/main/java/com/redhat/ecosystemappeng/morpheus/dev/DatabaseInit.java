@@ -115,10 +115,10 @@ public class DatabaseInit {
               .append("submitted_count", doc.getInteger("submittedCount"))
               .append("cve_id", doc.getString("cveId"))
               .append("metadata", metadataMap)
-              .append("submission_failures", doc.get("submissionFailures", List.class) != null ? 
-                  doc.get("submissionFailures", List.class) : 
-                  new ArrayList<>())
-              .append("completed_at", doc.getString("completedAt"));
+              .append("excluded_components", excludedComponentsToBson(doc.get("excludedComponents")))
+              .append("completed_at", doc.getString("completedAt"))
+              .append("dependency_triage_unavailable",
+                  Objects.requireNonNullElse(doc.getBoolean("dependencyTriageUnavailable"), Boolean.FALSE));
           docs.add(dbDoc);
         } catch (Exception e) {
           LOGGER.errorf("Ignoring invalid product document: %s", f, e);
@@ -166,5 +166,24 @@ public class DatabaseInit {
     } catch (IOException | URISyntaxException e) {
       LOGGER.error("Unable to load reports into database", e);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<Document> excludedComponentsToBson(Object raw) {
+    if (raw == null) {
+      return new ArrayList<>();
+    }
+    if (!(raw instanceof List<?> list)) {
+      return new ArrayList<>();
+    }
+    List<Document> out = new ArrayList<>();
+    for (Object o : list) {
+      if (o instanceof Map<?, ?> m) {
+        Document d = new Document();
+        m.forEach((k, v) -> d.append(String.valueOf(k), v));
+        out.add(d);
+      }
+    }
+    return out;
   }
 }
