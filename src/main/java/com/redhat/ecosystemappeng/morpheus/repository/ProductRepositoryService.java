@@ -27,6 +27,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import static com.redhat.ecosystemappeng.morpheus.service.UtilitiesService.getNonZonedTS;
+
 @ApplicationScoped
 @RegisterForReflection(targets = { Document.class })
 public class ProductRepositoryService {
@@ -224,7 +226,7 @@ public class ProductRepositoryService {
         doc.getString(RepositoryConstants.ID_KEY),
         doc.getString(NAME),
         doc.getString(VERSION),
-        doc.getString(SUBMITTED_AT),
+        getNonZonedTS(doc.getString(SUBMITTED_AT)),
         doc.getInteger(SUBMITTED_COUNT),
         metadata,
         submissionFailures,
@@ -232,5 +234,6 @@ public class ProductRepositoryService {
         doc.getString(CVE_ID)
     );
   }
+
 }
 
