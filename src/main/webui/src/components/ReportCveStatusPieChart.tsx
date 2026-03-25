@@ -8,7 +8,7 @@ import {
   Title,
 } from "@patternfly/react-core";
 import t_global_color_status_success_100 from "@patternfly/react-tokens/dist/esm/t_global_color_status_success_100";
-import t_global_color_nonstatus_gray_300 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_gray_300";
+import t_chart_global_warning_color_100 from "@patternfly/react-tokens/dist/esm/t_chart_global_warning_color_100";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import DonutChartWrapper from "./DonutChartWrapper";
 import t_global_color_nonstatus_red_400 from "@patternfly/react-tokens/dist/esm/t_global_color_nonstatus_red_400";
@@ -52,11 +52,11 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
   const computeColors = (slices: Array<{ x: string; y: number }>) => {
     const red = t_global_color_nonstatus_red_400.var;
     const green = t_global_color_status_success_100.var;
-    const gray = t_global_color_nonstatus_gray_300.var;
+    const orange = t_chart_global_warning_color_100.var;
     return slices.map((d) => {
       if (d.x === "vulnerable") return red;
       if (d.x === "not_vulnerable") return green;
-      return gray;
+      return orange;
     });
   };
 
@@ -82,7 +82,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
     <Card style={{ height: cardHeight, overflowY: "auto" }}>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
-          CVE Status Summary
+          Findings
         </Title>
       </CardTitle>
       <CardBody>
@@ -92,8 +92,8 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
           </EmptyState>
         ) : (
           <DonutChartWrapper
-            ariaDesc="CVE incidents by status"
-            ariaTitle="CVE incidents by status"
+            ariaDesc="Findings by justification status"
+            ariaTitle="Findings by justification status"
             data={chartData}
             colorScale={colors}
             legendData={legendData}
