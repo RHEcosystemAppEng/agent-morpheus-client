@@ -159,7 +159,7 @@ public class ReportService {
     // Build ProductSummary for each product
     List<ProductSummary> summaries = new ArrayList<>();
     for (Product product : listResult.products()) {
-      ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product.id(), product.submissionFailures(), product.submittedCount());
+      ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product);
       summaries.add(new ProductSummary(product, productReportsSummary));
     }
     
@@ -172,7 +172,7 @@ public class ReportService {
       return null;
     }
 
-    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(productId, product.submissionFailures(), product.submittedCount());
+    ProductReportsSummary productReportsSummary = repository.getProductSummaryData(product);
     
     return new ProductSummary(
       product, 

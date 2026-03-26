@@ -33,6 +33,7 @@ import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Justification;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
 import com.redhat.ecosystemappeng.morpheus.model.Pagination;
+import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ProductReportsSummary;
 import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
@@ -363,16 +364,27 @@ public class ReportRepositoryService {
     return productIds;
   }
 
-  public ProductReportsSummary getProductSummaryData(String productId, List<FailedComponent> submissionFailures, int submittedCount) {
+  public ProductReportsSummary getProductSummaryData(Product product) {
+    Objects.requireNonNull(product, "product");
+    String productId = product.id();
+    List<FailedComponent> submissionFailures = product.submissionFailures();
+    int submittedCount = product.submittedCount();
+    Map<String, String> productMetadata = product.metadata();
+
     Bson productFilter = Filters.eq("metadata." + PRODUCT_ID, productId);
     Map<String, Integer> statusCounts = new HashMap<>();
     Map<String, Integer> justificationStatusCounts = new HashMap<>();
     String productState = "unknown";
 
-    getCollection()
-      .find(productFilter)
-      .iterator()
-      .forEachRemaining(doc -> {
+    int reportDocumentCount = 0;
+    Document lastReportDoc = null;
+
+    try (MongoCursor<Document> cursor = getCollection().find(productFilter).cursor()) {
+      while (cursor.hasNext()) {
+        Document doc = cursor.next();
+        reportDocumentCount++;
+        lastReportDoc = doc;
+
         Map<String, String> metadata = extractMetadata(doc);
         String reportStatus = getStatus(doc, metadata);
         statusCounts.merge(reportStatus, 1, Integer::sum);
@@ -395,8 +407,9 @@ public class ReportRepositoryService {
             }
           }
         }
-      });
-    
+      }
+    }
+
     int excludedCount = submissionFailures != null ? submissionFailures.size() : 0;
     if (excludedCount > 0) {
       statusCounts.put("excluded", excludedCount);
@@ -411,12 +424,62 @@ public class ReportRepositoryService {
       productState = "completed";
     }
 
+    String singleComponentFlowScanId = computeSingleComponentFlowScanId(
+        productMetadata, submittedCount, reportDocumentCount, lastReportDoc);
 
     return new ProductReportsSummary(
       productState,
       statusCounts,
-      justificationStatusCounts
+      justificationStatusCounts,
+      singleComponentFlowScanId
     );
+  }
+
+  private static String extractScanIdFromReportDocument(Document doc) {
+    if (Objects.isNull(doc)) {
+      return null;
+    }
+    Document input = doc.get("input", Document.class);
+    if (Objects.isNull(input)) {
+      return null;
+    }
+    Document scan = input.get("scan", Document.class);
+    if (Objects.isNull(scan)) {
+      return null;
+    }
+    String id = scan.getString(RepositoryConstants.SCAN_ID);
+    if (Objects.isNull(id) || id.isBlank()) {
+      return null;
+    }
+    return id;
+  }
+
+  /**
+   * Package-private for unit tests: when to expose a direct component-report scan id on the product summary.
+   */
+  static String computeSingleComponentFlowScanId(
+      Map<String, String> productMetadata,
+      int submittedCount,
+      int persistedReportDocumentCount,
+      Document lastReportDoc) {
+    if (hasNonBlankSpdxId(productMetadata)) {
+      return null;
+    }
+    if (submittedCount != 1) {
+      return null;
+    }
+    if (persistedReportDocumentCount != 1) {
+      return null;
+    }
+    return extractScanIdFromReportDocument(lastReportDoc);    
+  }
+
+  private static boolean hasNonBlankSpdxId(Map<String, String> productMetadata) {
+    if (Objects.isNull(productMetadata)) {
+      return false;
+    }
+    String v = productMetadata.get(RepositoryConstants.SPDX_ID_METADATA_KEY);
+    return Objects.nonNull(v) && !v.isBlank();
   }
 
   public List<String> getReportIdsByProduct(List<String> productIds) {

@@ -23,6 +23,8 @@ export interface ReportRow {
   completedAt: string;
   finding: Finding | null;
   submittedCount?: number;
+  /** React Router path for the Report ID link (product overview vs single-component report) */
+  navigationLink: string;
 }
 
 export type SortDirection = "asc" | "desc";
@@ -52,6 +54,21 @@ export interface UseReportsTableResult {
  */
 export function isAnalysisCompleted(analysisState: string): boolean {
   return analysisState === "completed";
+}
+
+/**
+ * Pure function: destination for the reports table "Report ID" link.
+ */
+export function getProductReportNavigationLink(row: {
+  productId: string;
+  cveId: string;
+  singleComponentFlowScanId?: string;
+}): string {
+  const scanId = row.singleComponentFlowScanId?.trim();
+  if (scanId) {
+    return `/reports/component/${row.cveId}/${scanId}`;
+  }
+  return `/reports/product/${row.productId}/${row.cveId}`;
 }
 
 /**
@@ -107,6 +124,11 @@ export function transformProductSummaryToRow(productSummary: ProductSummary): Re
     completedAt,
     finding,
     submittedCount: product.submittedCount,
+    navigationLink: getProductReportNavigationLink({
+      productId,
+      cveId,
+      singleComponentFlowScanId: summary.singleComponentFlowScanId,
+    }),
   };
 }
 

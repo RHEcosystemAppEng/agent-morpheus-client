@@ -49,7 +49,9 @@ class ProductEndpointTest {
             .body("find { it.data.id == 'product-1' }.data.cveId", equalTo("CVE-2024-12345"))
             .body("find { it.data.id == 'product-1' }.summary.statusCounts.completed", equalTo(2))
             .body("find { it.data.id == 'product-1' }.summary.justificationStatusCounts.TRUE", equalTo(1))
-            .body("find { it.data.id == 'product-1' }.summary.justificationStatusCounts.FALSE", equalTo(1));
+            .body("find { it.data.id == 'product-1' }.summary.justificationStatusCounts.FALSE", equalTo(1))
+            .body("find { it.data.id == 'product-2' }.summary.singleComponentFlowScanId",
+                equalTo("c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"));
     }
 
     @Test

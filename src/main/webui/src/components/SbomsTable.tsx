@@ -1,11 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { useState } from "react";
+import { Link } from "react-router";
 import {
   Flex,
   FlexItem,
   Popover,
   Icon,
-  Spinner,
   Stack,
   StackItem,
 } from "@patternfly/react-core";
@@ -31,9 +30,6 @@ import Finding from "./Finding";
 import ReportsToolbar from "./ReportsToolbar";
 import FormattedTimestamp from "./FormattedTimestamp";
 import TableEmptyState from "./TableEmptyState";
-import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
-import type { Report } from "../generated-client/models/Report";
-import { useExecuteApi } from "../hooks/useExecuteApi";
 import TableErrorState from "./TableErrorState";
 
 const SBOM_VALID_SORT_COLUMNS = [
@@ -74,7 +70,6 @@ const REPORTS_TABLE_COLUMNS: ColumnDef[] = [
 ];
 
 const SbomsTable: React.FC = () => {
-  const navigate = useNavigate();
   const tableParams = useTableParams({
     validSortColumns: SBOM_VALID_SORT_COLUMNS,
     validFilterKeys: SBOM_VALID_FILTER_KEYS,
@@ -91,26 +86,6 @@ const SbomsTable: React.FC = () => {
   const [activeAttribute, setActiveAttribute] = useState<
     "SBOM Name" | "CVE ID"
   >("SBOM Name");
-  const [loadingRow, setLoadingRow] = useState<{
-    productId: string;
-    cveId: string;
-  } | null>(null);
-  const currentProductIdRef = useRef<string | null>(null);
-
-  const {
-    data: reportsData,
-    loading: reportsLoading,
-    error: reportsError,
-    execute: executeReportsQuery,
-  } = useExecuteApi<Array<Report>>(() => {
-    if (!currentProductIdRef.current) {
-      throw new Error("No product ID set for query");
-    }
-    return ReportEndpointService.getApiV1Reports({
-      productId: currentProductIdRef.current,
-      pageSize: 1,
-    });
-  });
 
   const { rows, loading, error, pagination } = useReportsTableData({
     page,
@@ -120,47 +95,6 @@ const SbomsTable: React.FC = () => {
     name: searchValue,
     cveId: cveSearchValue,
   });
-
-  const navigateToProductPage = (productId: string, cveId: string) => {
-    setLoadingRow(null);
-    currentProductIdRef.current = null;
-    navigate(`/reports/product/${productId}/${cveId}`);
-  };
-
-  useEffect(() => {
-    if (!reportsLoading && loadingRow) {
-      const { productId, cveId } = loadingRow;
-      if (reportsError) {
-        navigateToProductPage(productId, cveId);
-        return;
-      }
-      if (reportsData) {
-        if (reportsData.length === 0) {
-          navigateToProductPage(productId, cveId);
-          return;
-        }
-        const firstReport = reportsData[0];
-        if (!firstReport?.scanId) {
-          navigateToProductPage(productId, cveId);
-          return;
-        }
-        setLoadingRow(null);
-        currentProductIdRef.current = null;
-        navigate(`/reports/component/${cveId}/${firstReport.scanId}`);
-      }
-    }
-  }, [reportsData, reportsLoading, reportsError, loadingRow, navigate]);
-
-  const handleProductIdClick = (row: (typeof rows)[0]) => {
-    if (!row.productId) return;
-    if (row.submittedCount === 1) {
-      currentProductIdRef.current = row.productId;
-      setLoadingRow({ productId: row.productId, cveId: row.cveId });
-      executeReportsQuery();
-    } else {
-      navigate(`/reports/product/${row.productId}/${row.cveId}`);
-    }
-  };
 
   const handleSortToggle = (column: SortColumn) => {
     handlers.handleSortToggle(column);
@@ -219,20 +153,7 @@ const SbomsTable: React.FC = () => {
       case "productId":
         return (
           <TableText wrapModifier="truncate">
-            <Link
-              to="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleProductIdClick(row);
-              }}
-            >
-              {loadingRow?.productId === row.productId &&
-              loadingRow?.cveId === row.cveId ? (
-                <Spinner size="sm" />
-              ) : (
-                row.productId
-              )}
-            </Link>
+            <Link to={row.navigationLink}>{row.productId}</Link>
           </TableText>
         );
       case "name":
