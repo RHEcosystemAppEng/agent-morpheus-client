@@ -54,12 +54,7 @@ type ColumnKey =
   | "completedAt";
 
 function isSortableColumn(key: ColumnKey): key is SortColumn {
-  return (
-    key === "name" ||
-    key === "cveId" ||
-    key === "submittedAt" ||
-    key === "completedAt"
-  );
+  return key === "name" || key === "cveId" || key === "submittedAt" || key === "completedAt";
 }
 
 interface ColumnDef {
@@ -185,7 +180,7 @@ const SbomsTable: React.FC = () => {
 
   const activeSortIndex = Math.max(
     0,
-    REPORTS_TABLE_COLUMNS.findIndex((c) => c.key === sortColumn),
+    REPORTS_TABLE_COLUMNS.findIndex((c) => c.key === sortColumn)
   );
   const totalItems = pagination?.totalElements ?? 0;
 
@@ -208,7 +203,7 @@ const SbomsTable: React.FC = () => {
         onPerPageSelect: (
           _event: unknown,
           newPerPage: number,
-          newPage: number,
+          newPage: number
         ) => {
           handlers.setPagination(newPerPage, newPage);
         },
@@ -218,7 +213,7 @@ const SbomsTable: React.FC = () => {
 
   const renderCell = (
     row: (typeof rows)[0],
-    col: ColumnDef,
+    col: ColumnDef
   ): React.ReactNode => {
     switch (col.key) {
       case "productId":
@@ -288,12 +283,12 @@ const SbomsTable: React.FC = () => {
                       aria-label="Finding information"
                       bodyContent={
                         <div>
-                          While any repository is still pending, queued, or sent,
-                          the finding is In progress. After every repository has
-                          finished, this shows the highest risk level detected
-                          across all of them. Not Vulnerable appears only when
-                          every repository is analyzed and found to be not
-                          vulnerable.
+                          While any repository is still pending, queued, or
+                          sent, the finding is In progress. After every
+                          repository has finished, this shows the highest risk
+                          level detected across all of them. Not Vulnerable
+                          appears only when every repository is analyzed and
+                          found to be not vulnerable.
                         </div>
                       }
                     >
