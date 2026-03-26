@@ -59,12 +59,12 @@ The Details card SHALL display a field with label "Excluded components" and valu
 - **THEN** the Additional Details card displays the Metadata field with `NotAvailable` component
 
 ### Requirement: CVE Status donut Chart
-The report page SHALL display a donut chart summarizing CVE vulnerability statuses (vulnerable, not_vulnerable, uncertain) for the specific CVE ID from the route parameters across all repository reports for the report.
+The report page SHALL display a donut chart summarizing CVE vulnerability statuses (vulnerable, not_vulnerable, uncertain) for the specific CVE ID from the route parameters across all repository reports for the report. The card title SHALL be "Findings". When data is present, the donut center SHALL show the total count with subtitle "Statuses".
 
 #### Scenario: CVE status donut chart displays
 - **WHEN** a user views the report page with report data loaded and a specific CVE ID in the route
 - **THEN** a donut chart displays with slices for vulnerable (red), not_vulnerable (green), and uncertain (orange) statuses
-- **AND** each slice shows the count aggregated from `sbomReport.cveStatusCounts` where status values are mapped: "TRUE" -> vulnerable, "FALSE" -> not_vulnerable, all other values -> uncertain
+- **AND** each slice shows the count from `product.summary.justificationStatusCounts` for keys "TRUE", "FALSE", and "UNKNOWN" (matched case-insensitively) mapped to vulnerable, not_vulnerable, and uncertain respectively
 - **AND** the chart includes a legend showing status labels and counts
 - **AND** all three statuses are always displayed, even if count is 0
 

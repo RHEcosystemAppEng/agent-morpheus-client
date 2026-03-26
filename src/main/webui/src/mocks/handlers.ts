@@ -197,7 +197,7 @@ const mockProducts: ProductSummary[] = [
       statusCounts: {
         completed: 20,  // Green
         expired: 10,    // Dark red
-        failed: 8,      // Red
+        failed: 8,      // Darker gray (matches repository analysis pie)
         queued: 7,      // Medium gray
         sent: 8,        // Darker gray
         pending: 7,     // Light gray
@@ -257,13 +257,13 @@ const mockProducts: ProductSummary[] = [
     },
   },
 
-  // Product 4: Pending analysis, 8 repositories
-  generateMockProductSummary("product-4", "Sample Product D", "4.0.0", "CVE-2024-1006", {
-    state: "pending",
-    numReports: 8,
-    completedCount: 0,
-    failedCount: 0,
-    pendingCount: 8,
+  // Product 4: Completed mix — 2 completed + 1 failed (matches devservices product-4 + reports)
+  generateMockProductSummary("product-4", "Sample Product D", "4.0.0", "CVE-2024-1485", {
+    state: "completed",
+    numReports: 3,
+    completedCount: 2,
+    failedCount: 1,
+    pendingCount: 0,
     hasVulnerabilities: false,
   }),
 

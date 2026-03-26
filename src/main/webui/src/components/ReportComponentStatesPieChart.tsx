@@ -95,7 +95,7 @@ const ReportComponentStatesPieChart: React.FC<
       <Card style={{ height: cardHeight, overflowY: "auto" }}>
         <CardTitle>
           <Title headingLevel="h4" size="xl">
-            Repository analysis distribution
+            Repository analysis status
           </Title>
         </CardTitle>
         <CardBody>
@@ -111,7 +111,7 @@ const ReportComponentStatesPieChart: React.FC<
     <Card style={{ height: cardHeight, overflowY: "auto" }}>
       <CardTitle>
         <Title headingLevel="h4" size="xl">
-          Repository analysis distribution
+          Repository analysis status
         </Title>
       </CardTitle>
       <CardBody>
@@ -122,7 +122,7 @@ const ReportComponentStatesPieChart: React.FC<
           colorScale={colors}
           legendData={legendData}
           title={`${total}`}
-          subTitle="States"
+          subTitle="Total repositories"
           total={total}
         />
       </CardBody>

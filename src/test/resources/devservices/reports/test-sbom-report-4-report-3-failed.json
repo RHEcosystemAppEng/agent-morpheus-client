@@ -1,0 +1,51 @@
+{
+  "_id": {
+    "$oid": "507f1f77bcf86cd79943904f"
+  },
+  "error": {
+    "type": "failed",
+    "message": "Analysis could not be completed: mock failure for product-4 pie chart (failed slice)."
+  },
+  "input": {
+    "scan": {
+      "id": "product-4-failed-repo-scan",
+      "type": null,
+      "started_at": "2025-02-21T09:00:00.000000",
+      "completed_at": "2025-02-21T09:15:00.000000",
+      "vulns": [
+        {
+          "vuln_id": "CVE-2024-1485",
+          "description": null,
+          "score": null,
+          "severity": null,
+          "published_date": null,
+          "last_modified_date": null,
+          "url": null,
+          "feed_group": null,
+          "package": null,
+          "package_version": null,
+          "package_name": null,
+          "package_type": null
+        }
+      ]
+    },
+    "image": {
+      "name": "product-4-failed-repo-image",
+      "tag": "dev",
+      "source_info": [
+        {
+          "type": "code",
+          "git_repo": "https://github.com/example/product-4-failed-repo",
+          "ref": "main"
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "product_id": "product-4",
+    "user": "devservices@example.com",
+    "submitted_at": "2025-02-21T08:55:00.000000Z",
+    "sent_at": "2025-02-21T08:56:00.000000Z"
+  },
+  "info": {}
+}
