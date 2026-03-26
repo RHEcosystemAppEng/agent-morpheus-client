@@ -34,7 +34,7 @@ export function isFailingState(state: string): boolean {
   return FAILING_STATES.includes(s);
 }
 
-function hasInProgressInCounts(statusCounts: Record<string, number>): boolean {  
+function hasInProgressInCounts(statusCounts: Record<string, number>): boolean {
   return IN_PROGRESS_STATES.some((s) => (statusCounts[s] || 0) > 0);
 }
 
@@ -42,14 +42,14 @@ function hasFailedInCounts(statusCounts: Record<string, number>): boolean {
   return FAILING_STATES.some((s) => (statusCounts[s] || 0) > 0);
 }
 
-
 function getExcludedCount(statusCounts: Record<string, number>): number {
   return statusCounts["excluded"] ?? 0;
 }
 
 /**
  * Returns the single prioritized finding for a product row (reports table).
- * Priority: Vulnerable > Uncertain > In progress > Failed > Excluded > Not vulnerable.
+ * While any repository is still pending, queued, or sent, the row shows In progress only;
+ * after all have a terminal outcome, priority is: Vulnerable > Uncertain > Failed > Excluded > Not vulnerable.
  * Only returns type + optional count; color/variant are applied by Finding component.
  * totalCount uses submittedCount (e.g. productSummary.data.submittedCount) when provided.
  * Excluded uses statusCounts["excluded"] (submission failure count from API).
@@ -58,8 +58,11 @@ export function getProductFinding(
   productStatus: ProductStatus,
   analysisState: string,
   statusCounts: Record<string, number>,
-  submittedCount?: number
+  submittedCount?: number,
 ): Finding | null {
+  if (hasInProgressInCounts(statusCounts)) {
+    return { type: "in-progress" };
+  }
   if (productStatus.vulnerableCount > 0) {
     return {
       type: "vulnerable",
@@ -71,9 +74,6 @@ export function getProductFinding(
       type: "uncertain",
       count: productStatus.uncertainCount,
     };
-  }
-  if (hasInProgressInCounts(statusCounts)) {
-    return { type: "in-progress" };
   }
   if (hasFailedInCounts(statusCounts)) {
     return { type: "failed" };
@@ -98,12 +98,15 @@ export function getProductFinding(
  */
 export function getFindingForReportRow(
   reportState: string,
-  justificationStatus?: string
+  justificationStatus?: string,
 ): Finding | null {
   const state = reportState || "";
   if (isInProgressState(state)) return { type: "in-progress" };
   if (isFailingState(state)) return { type: "failed" };
-  if (state.toLowerCase() === "completed" && justificationStatus !== undefined) {
+  if (
+    state.toLowerCase() === "completed" &&
+    justificationStatus !== undefined
+  ) {
     const findingType = apiToFindingType(justificationStatus);
     if (findingType) return { type: findingType };
   }
