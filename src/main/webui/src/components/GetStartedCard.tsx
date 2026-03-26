@@ -166,7 +166,7 @@ const GetStartedCard: FunctionComponent = () => {
         </Stack>
       </CardBody>
       <CardFooter>
-        <Button variant="secondary">View Documentation →</Button>
+        <Button isDisabled={true} variant="secondary">View Documentation →</Button>
       </CardFooter>
     </Card>,
   ];
