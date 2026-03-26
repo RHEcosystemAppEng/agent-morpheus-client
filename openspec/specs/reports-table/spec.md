@@ -124,19 +124,18 @@ When a product has exactly one submitted report (`submittedCount === 1`), clicki
 - **AND** only the clicked row shows the loading indicator (other rows remain unchanged)
 
 ### Requirement: Reports Table Finding Column
-
-The reports table SHALL display a "Finding" column with one finding per product. Six states, in priority order: Vulnerable > Uncertain > In progress > Failed > Excluded > Not vulnerable. Only the highest-priority finding is shown per row. Counts for Vulnerable, Uncertain, and Excluded only; no count for In progress, Not vulnerable, or Failed.
+The reports table SHALL display a "Finding" column with one finding per product. If any component report is still in pending, queued, or sent state, the Finding SHALL be "In progress" until every component has a terminal outcome (completed, failed, expired, or excluded). After that, six outcomes apply in priority order: Vulnerable > Uncertain > Failed > Excluded > Not vulnerable. Only the single applicable finding is shown per row. Counts for Vulnerable, Uncertain, and Excluded only; no count for In progress, Not vulnerable, or Failed.
 
 #### Scenario: Finding column header
 - **WHEN** a user views the reports table
 - **THEN** the column header is "Finding" with a help icon and popover explaining priority and states
 
 #### Scenario: Finding by priority
-- **WHEN** a product has one or more vulnerable repositories → display "Vulnerable" + count, red (danger) label
-- **WHEN** a product has zero vulnerable and one or more uncertain → display "Uncertain" + count, orange (warning) label
-- **WHEN** a product has zero vulnerable, zero uncertain, and any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon
-- **WHEN** a product has zero vulnerable, zero uncertain, no in-progress reports, no failed/expired reports, and one or more excluded components (`statusCounts["excluded"]` > 0) → display "Excluded" + count, with label styling as defined (e.g. grey or info)
-- **WHEN** 100% of reports are completed and 100% are not vulnerable and no excluded components → display "Not vulnerable", no count, green (success) label
+- **WHEN** a product has any report in pending, queued, or sent state → display "In progress", no count, outlined grey label and InProgressIcon (even if some other repositories already have a vulnerable or uncertain result)
+- **WHEN** no reports are pending, queued, or sent, and the product has one or more vulnerable repositories → display "Vulnerable" + count, red (danger) label
+- **WHEN** no reports are pending, queued, or sent, zero vulnerable, and one or more uncertain → display "Uncertain" + count, orange (warning) label
+- **WHEN** no reports are pending, queued, or sent, zero vulnerable, zero uncertain, no failed/expired reports, and one or more excluded components (`statusCounts["excluded"]` > 0) → display "Excluded" + count, with label styling as defined (e.g. grey or info)
+- **WHEN** no reports are pending, queued, or sent, 100% of reports are completed and 100% are not vulnerable and no excluded components → display "Not vulnerable", no count, green (success) label
 
 #### Scenario: Excluded state uses submission failure count
 - **WHEN** a product has excluded components (submissionFailures length > 0) and no higher-priority finding

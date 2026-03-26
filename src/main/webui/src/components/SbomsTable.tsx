@@ -236,9 +236,7 @@ const SbomsTable: React.FC = () => {
           </TableText>
         );
       case "name":
-        return (
-          <TableText wrapModifier="truncate">{row.productName}</TableText>
-        );
+        return <TableText wrapModifier="truncate">{row.productName}</TableText>;
       case "cveId":
         return row.cveId;
       case "repositoriesAnalyzed":
@@ -267,8 +265,7 @@ const SbomsTable: React.FC = () => {
                         index: activeSortIndex,
                         direction: sortDirection,
                       },
-                      onSort: () =>
-                        handleSortToggle(col.key as SortColumn),
+                      onSort: () => handleSortToggle(col.key as SortColumn),
                       columnIndex: index,
                     }
                   : undefined
@@ -286,10 +283,12 @@ const SbomsTable: React.FC = () => {
                       aria-label="Finding information"
                       bodyContent={
                         <div>
-                          This status indicates the highest risk level
-                          detected across all repositories analyzed. Not
-                          Vulnerable appears only when every repository is
-                          analyzed and found to be not vulnerable.
+                          While any repository is still pending, queued, or
+                          sent, the finding is In progress. After every
+                          repository has finished, this shows the highest risk
+                          level detected across all of them. Not Vulnerable
+                          appears only when every repository is analyzed and
+                          found to be not vulnerable.
                         </div>
                       }
                     >
