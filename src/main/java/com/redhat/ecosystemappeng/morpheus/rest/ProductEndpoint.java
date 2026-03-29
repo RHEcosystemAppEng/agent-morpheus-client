@@ -35,6 +35,7 @@ import com.redhat.ecosystemappeng.morpheus.service.ReportService;
 import com.redhat.ecosystemappeng.morpheus.service.SbomReportService;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
 import com.redhat.ecosystemappeng.morpheus.service.UtilitiesService;
+import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -353,5 +354,14 @@ public class ProductEndpoint {
       JsonNode response = objectMapper.createObjectNode().put("productId", productId);
       return Response.accepted(response).build();
     
+  }
+
+  @ServerExceptionMapper
+  public Response mapQueueExceededException(RequestQueueExceededException e) {
+    LOGGER.errorf("Too many requests, limit exceeded");
+    return Response.status(Response.Status.TOO_MANY_REQUESTS)
+            .entity(objectMapper.createObjectNode()
+                    .put("error", "Too many requests, limit exceeded"))
+            .build();
   }
 }
