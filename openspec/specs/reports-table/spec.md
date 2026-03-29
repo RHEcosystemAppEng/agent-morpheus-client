@@ -11,6 +11,7 @@ The reports table SHALL support sorting by the following columns:
 - **Date Completed**: Sortable (maps to completedAt timestamp)
 
 **Note**: Report ID column is NOT sortable - it is displayed as a clickable link for navigation purposes only.
+ When every component is excluded (`submissionFailures.length` equals `submittedCount`), `completedAt` SHALL be set when the last submission failure is recorded so Date Completed is not empty.
 
 #### Scenario: Default sorting by submittedAt
 - **WHEN** a user first views the reports table
