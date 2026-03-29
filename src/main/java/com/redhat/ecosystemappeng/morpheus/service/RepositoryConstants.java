@@ -6,4 +6,7 @@ public interface RepositoryConstants {
 
   String ID_KEY = "_id";
 
+  /** Product {@code metadata} map key set when the product is created from an SPDX upload ({@link SbomReportService}). */
+  String SPDX_ID_METADATA_KEY = "spdx_id";
+
 }

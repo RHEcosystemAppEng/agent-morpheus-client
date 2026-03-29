@@ -559,6 +559,10 @@
               "format": "int32"
             },
             "description": "Map of justification status to count of reports with that status"
+          },
+          "singleComponentFlowScanId": {
+            "type": "string",
+            "description": "Scan id for direct navigation to the single-component report view (/reports/component/:cveId/:scanId). Populated when metadata spdx_id is absent or blank, submittedCount is 1, exactly one report document exists for the product, and that report has a non-empty input.scan.id."
           }
         }
       },
@@ -657,6 +661,10 @@
                   "format": "int32"
                 },
                 "description": "Map of justification status to count of reports with that status"
+              },
+              "singleComponentFlowScanId": {
+                "type": "string",
+                "description": "Scan id for direct navigation to the single-component report view (/reports/component/:cveId/:scanId). Populated when metadata spdx_id is absent or blank, submittedCount is 1, exactly one report document exists for the product, and that report has a non-empty input.scan.id."
               }
             }
           }
@@ -1153,10 +1161,6 @@
         "description": "Please enter your JWT Token without Bearer",
         "scheme": "bearer",
         "bearerFormat": "jwt"
-      },
-      "SecurityScheme": {
-        "type": "openIdConnect",
-        "description": "Authentication"
       }
     }
   },
@@ -3394,6 +3398,10 @@
                             "format": "int32"
                           },
                           "description": "Map of justification status to count of reports with that status"
+                        },
+                        "singleComponentFlowScanId": {
+                          "type": "string",
+                          "description": "Scan id for direct navigation to the single-component report view (/reports/component/:cveId/:scanId). Populated when metadata spdx_id is absent or blank, submittedCount is 1, exactly one report document exists for the product, and that report has a non-empty input.scan.id."
                         }
                       }
                     }

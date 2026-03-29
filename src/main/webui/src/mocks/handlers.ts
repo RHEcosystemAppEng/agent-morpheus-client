@@ -55,12 +55,18 @@ const generateMockProductSummary = (
     failedCount?: number;
     pendingCount?: number;
     hasVulnerabilities?: boolean;
+    /** Non-empty value mirrors product metadata spdx_id and must suppress direct scan navigation */
+    spdxId?: string;
+    /** Optional override when numReports === 1 and spdxId is absent/blank */
+    singleComponentFlowScanId?: string;
   }
 ): ProductSummary => {
   const now = new Date().toISOString();
 
   const state = options?.state || "completed";
   const numReports = options?.numReports ?? 10;
+  const spdxRaw = options?.spdxId;
+  const spdxBlocksNavigation = spdxRaw != null && spdxRaw.trim() !== "";
   const completedCount =
     options?.completedCount ?? Math.floor(numReports * 0.8);
   const failedCount = options?.failedCount ?? Math.floor(numReports * 0.1);
@@ -90,6 +96,12 @@ const generateMockProductSummary = (
 
   const productState = state === "completed" ? "completed" : "analysing";
 
+  const singleComponentFlowScanId =
+    spdxBlocksNavigation || numReports !== 1
+      ? undefined
+      : options?.singleComponentFlowScanId ??
+        "aaaaaaaa-bbbb-4ccc-bddd-eeeeeeeeeeee";
+
   return {
     data: {
       id: productId,
@@ -99,13 +111,16 @@ const generateMockProductSummary = (
       submittedAt,
       submittedCount: numReports,
       completedAt: state === "completed" ? now : undefined,
-      metadata: {},
+      metadata: spdxBlocksNavigation ? { spdx_id: spdxRaw! } : {},
       submissionFailures: [],
     },
     summary: {
       productState,
       statusCounts,
       justificationStatusCounts,
+      ...(singleComponentFlowScanId != null
+        ? { singleComponentFlowScanId }
+        : {}),
     },
   };
 };
@@ -340,6 +355,25 @@ const mockProducts: ProductSummary[] = [
     completedCount: 20,
     failedCount: 2,
     pendingCount: 8,
+    hasVulnerabilities: false,
+  }),
+
+  generateMockProductSummary("product-msw-single", "MSW Single Repo", "1.0.0", "CVE-2024-MSW1", {
+    state: "completed",
+    numReports: 1,
+    completedCount: 1,
+    failedCount: 0,
+    pendingCount: 0,
+    hasVulnerabilities: true,
+    singleComponentFlowScanId: "msw-mock-scan-11111111-1111-4111-8111-111111111111",
+  }),
+  generateMockProductSummary("product-msw-spdx", "MSW SPDX Single", "1.0.0", "CVE-2024-MSW2", {
+    state: "completed",
+    numReports: 1,
+    completedCount: 1,
+    failedCount: 0,
+    pendingCount: 0,
+    spdxId: "spdx-doc-msw",
     hasVulnerabilities: false,
   }),
 ];

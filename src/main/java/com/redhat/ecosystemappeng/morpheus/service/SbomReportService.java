@@ -215,7 +215,7 @@ public class SbomReportService {
     }
    
     if (Objects.nonNull(productInfo.spdxId())) {
-      metadata.put("spdx_id", productInfo.spdxId());
+      metadata.put(RepositoryConstants.SPDX_ID_METADATA_KEY, productInfo.spdxId());
     }
 
     int totalComponentCount = parsed.components().size() + parsed.unsupportedComponents().size();
