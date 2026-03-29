@@ -43,10 +43,10 @@ const Brand: React.FC = () => {
           <strong>Red Hat</strong>
           </Title>
           <Title headingLevel="h6">
-            Trusted Profile 
+            exploit  
           </Title>
           <Title headingLevel="h6">
-            Analyzer ExploitIQ
+            intelligence
           </Title>
         </Stack>
       </FlexItem>
