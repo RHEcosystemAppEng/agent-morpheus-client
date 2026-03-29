@@ -35,7 +35,7 @@ const ReportAdditionalDetails: React.FC<ReportAdditionalDetailsProps> = ({
       <CardBody>
         <DescriptionList>
           <DescriptionListGroup>
-            <DescriptionListTerm>Completed</DescriptionListTerm>
+            <DescriptionListTerm>Date Completed</DescriptionListTerm>
             <DescriptionListDescription>
               {completedAt ? (
                 <FormattedTimestamp date={completedAt} />
