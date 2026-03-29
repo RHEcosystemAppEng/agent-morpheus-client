@@ -20,33 +20,15 @@ interface RepositoryAdditionalDetailsCardProps {
   report: FullReport;
 }
 
-function getNonZonedTimestampValue(extracted_ts: string) {
-    if (extracted_ts.endsWith("Z")) {
-        extracted_ts = extracted_ts.slice(0, -1);
-    }
-    return extracted_ts;
-}
-
-/**
- * This function gets an object containing a timestamp, and in case it's a UTC Zoned TS, it turns it to non zoned TS
- * @param raw - Object containing ts value with a key named '$date'
- * @return extracted_ts TS string value that is not zoned.
- */
-function getNonZonedTimestamp(raw: object) {
-    let extracted_ts = (raw as { $date: string }).$date;
-    return getNonZonedTimestampValue(extracted_ts);
-}
-
 const parseMetadataTimestamp = (
   metadata: Record<string, string> | undefined,
   key: string
 ): string => {
   const raw = metadata?.[key];
-
   // Handle MongoDB date format if present
   return raw && typeof raw === "object" && "$date" in raw
-    ? getNonZonedTimestamp(raw)
-    : getNonZonedTimestampValue(String(raw ?? "")) ?? "";
+    ? (raw as { $date: string }).$date
+    : raw ?? "";
 };
 
 const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardProps> = ({

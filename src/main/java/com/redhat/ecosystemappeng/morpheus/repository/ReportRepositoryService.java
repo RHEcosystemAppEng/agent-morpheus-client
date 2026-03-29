@@ -46,13 +46,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import static com.redhat.ecosystemappeng.morpheus.service.UtilitiesService.getNonZonedTS;
-
 @ApplicationScoped
 @RegisterForReflection(targets = { Document.class })
 public class ReportRepositoryService {
 
-    private static final Logger LOGGER = Logger.getLogger(ReportRepositoryService.class);
+  private static final Logger LOGGER = Logger.getLogger(ReportRepositoryService.class);
 
   private static final String SENT_AT = "sent_at";
   private static final String SUBMITTED_AT = "submitted_at";
@@ -72,7 +70,6 @@ public class ReportRepositoryService {
         Filters.eq("metadata." + SENT_AT, null),
         Filters.eq("metadata." + SUBMITTED_AT, null),
         Filters.ne("metadata." + PRODUCT_ID, null)));
-
 
   @Inject
   MongoClient mongoClient;
@@ -104,9 +101,7 @@ public class ReportRepositoryService {
       metadataField.keySet().forEach(key -> {
         if (METADATA_DATES.contains(key)) {
           Date date = metadataField.getDate(key);
-            String dateString = date.toInstant().toString();
-//    Remove UTC TZ Suffix from timestamp fields values, so the timestamp will get rendered as is on the frontend side.
-            metadata.put(key, getNonZonedTS(dateString));
+          metadata.put(key, date.toInstant().toString());
         } else {
           metadata.put(key, metadataField.getString(key));
         }
