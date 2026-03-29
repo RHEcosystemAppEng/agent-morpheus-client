@@ -10,8 +10,13 @@ import {
   AccordionContent,
   Content,
 } from "@patternfly/react-core";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import type { ReportOutput } from "../types/FullReport";
+
+/** Keep block markdown inside the accordion toggle as inline-friendly nodes (valid inside `<span>`). */
+const checklistQuestionMarkdownComponents: Partial<Components> = {
+  p: ({ children }) => <span>{children}</span>,
+};
 
 interface ChecklistCardProps {
   vuln?: ReportOutput;
@@ -76,7 +81,9 @@ const ChecklistCard: React.FC<ChecklistCardProps> = ({ vuln }) => {
                             }
                       }
                     >
-                      {item.input}
+                      <ReactMarkdown components={checklistQuestionMarkdownComponents}>
+                        {item.input}
+                      </ReactMarkdown>
                     </span>
                   </AccordionToggle>
                   <AccordionContent id={`content_${key}`}>
