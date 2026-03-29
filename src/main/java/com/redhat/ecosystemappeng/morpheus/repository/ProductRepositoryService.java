@@ -1,5 +1,6 @@
 package com.redhat.ecosystemappeng.morpheus.repository;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -124,6 +125,16 @@ public class ProductRepositoryService {
         Updates.push(SUBMISSION_FAILURES, failureDoc)
     );
     LOGGER.debugf("Added submission failure to product %s: %s/%s", id, failure.name(), failure.version());
+
+    Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
+    if (Objects.nonNull(doc)) {
+      List<Document> failures = doc.getList(SUBMISSION_FAILURES, Document.class);
+      int failureCount = Objects.nonNull(failures) ? failures.size() : 0;
+      int submittedCount = Objects.requireNonNullElse(doc.getInteger(SUBMITTED_COUNT), 0);
+      if (submittedCount > 0 && failureCount == submittedCount && Objects.isNull(doc.getString(COMPLETED_AT))) {
+        updateCompletedAt(id, Instant.now().toString());
+      }
+    }
   }
 
   public static record ListResult(List<Product> products, long totalCount) {}
