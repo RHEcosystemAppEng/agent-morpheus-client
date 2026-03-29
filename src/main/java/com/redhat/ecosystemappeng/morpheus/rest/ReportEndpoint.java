@@ -176,7 +176,7 @@ public class ReportEndpoint {
     } catch (RequestQueueExceededException e) {
       return Response.status(Status.TOO_MANY_REQUESTS)
         .entity(objectMapper.createObjectNode()
-        .put("error", e.getMessage()))
+        .put("error", "Too many requests, limit exceeded"))
         .build();
     } catch (Exception e) {
       LOGGER.error("Unable to process new analysis request", e);
