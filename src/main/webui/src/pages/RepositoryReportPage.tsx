@@ -77,7 +77,6 @@ const RepositoryReportPageApiError: React.FC<
 
 const RepositoryReportPage: React.FC = () => {
   // Support both new routes: /reports/product/:productId/:cveId/:reportId and /reports/component/:cveId/:reportId
-  // Also support legacy route: /reports/:productId/:cveId/:reportId
   const params = useParams<{
     productId?: string;
     cveId: string;
@@ -218,7 +217,7 @@ const RepositoryReportPage: React.FC = () => {
       <PageSection>
         <Breadcrumb>
           <BreadcrumbItem>
-            <Link to={productId ? "/reports" : "/reports/single-repositories"}>
+            <Link to={report.metadata?.product_id ? "/reports" : "/reports/single-repositories"}>
               {"Reports"}
             </Link>
           </BreadcrumbItem>
