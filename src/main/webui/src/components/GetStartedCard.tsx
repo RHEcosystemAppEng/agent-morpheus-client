@@ -166,7 +166,15 @@ const GetStartedCard: FunctionComponent = () => {
         </Stack>
       </CardBody>
       <CardFooter>
-        <Button isDisabled={true} variant="secondary">View Documentation →</Button>
+        <Button
+          variant="secondary"
+          component="a"
+          href="https://github.com/RHEcosystemAppEng/exploitiq-docs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View Documentation →
+        </Button>
       </CardFooter>
     </Card>,
   ];
