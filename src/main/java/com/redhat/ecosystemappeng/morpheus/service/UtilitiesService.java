@@ -6,7 +6,6 @@ import java.util.Objects;
 
 public class UtilitiesService {
 
-    public static final String TIMESTAMP_SUFFIX_UTC_NOTATION = "Z";
     /**
      *
      * @param securityContext of the rest api request, containing JWT with claims , including principal claims including name
@@ -21,12 +20,5 @@ public class UtilitiesService {
         else {
             return Objects.nonNull(userService.getUserName()) ? userService.getUserName() : null;
         }
-    }
-
-    public static String getNonZonedTS(String ts) {
-        if (ts.endsWith(TIMESTAMP_SUFFIX_UTC_NOTATION)) {
-            return ts.substring(0, ts.length() - 1);
-        }
-        return ts;
     }
 }
