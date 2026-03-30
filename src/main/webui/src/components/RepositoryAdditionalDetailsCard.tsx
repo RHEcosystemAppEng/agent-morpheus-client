@@ -20,6 +20,28 @@ interface RepositoryAdditionalDetailsCardProps {
   report: FullReport;
 }
 
+/** Metadata keys shown elsewhere in this card (or redundant timestamps); omit from the Metadata label group. */
+const METADATA_KEYS_OMITTED_FROM_DISPLAY = new Set([
+  "submitted_at",
+  "sent_at",
+  "requested_at",
+]);
+
+const filterMetadataForDisplay = (
+  metadata: FullReport["metadata"]
+): Record<string, string | { $date: string }> | undefined => {
+  if (!metadata) {
+    return undefined;
+  }
+  const out: Record<string, string | { $date: string }> = {};
+  for (const [k, v] of Object.entries(metadata)) {
+    if (!METADATA_KEYS_OMITTED_FROM_DISPLAY.has(k)) {
+      out[k] = v as string | { $date: string };
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+};
+
 const parseMetadataTimestamp = (
   metadata: Record<string, string> | undefined,
   key: string
@@ -98,9 +120,7 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
             <DescriptionListGroup>
               <DescriptionListTerm>Metadata</DescriptionListTerm>
               <DescriptionListDescription>
-                <MetadataDisplay
-                  metadata={report?.metadata}
-                />
+                <MetadataDisplay metadata={filterMetadataForDisplay(report?.metadata)} />
               </DescriptionListDescription>
             </DescriptionListGroup>
           </DescriptionList>
