@@ -1,145 +1,102 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
+import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.component.QuarkusComponentTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Verifies that credentialId is injected into the report JSON before the report is saved to MongoDB.
  */
+@QuarkusComponentTest
 class ReportServiceCredentialInjectionOrderTest {
 
   private static final String CREDENTIAL_ID = "cred-test-uuid";
   private static final String CVE_ID = "CVE-2024-1234";
 
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final List<String> callOrder = new ArrayList<>();
+  @Inject
+  SbomReportService sbomReportService;
 
-  private SbomReportService sbomReportService;
+  @InjectMock
+  CycloneDxParsingService cycloneDxParsingService;
+
+  @InjectMock
+  ReportService reportService;
+
+  @InjectMock
+  CredentialProcessingService credentialProcessingService;
+
+  @InjectMock
+  ProductRepositoryService productRepository;
+
+  @InjectMock
+  UserService userService;
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @BeforeEach
   void setUp() throws Exception {
-    sbomReportService = new SbomReportService();
-    setField("cycloneDxParsingService", new StubCycloneDxParsingService());
-    setField("reportService", new TrackingReportService(callOrder, mapper));
-    setField("credentialProcessingService", new TrackingCredentialProcessingService(callOrder));
-    setField("productRepository", new StubProductRepositoryService());
-    setField("userService", new StubUserService());
-    setField("objectMapper", mapper);
+    ObjectNode report = mapper.createObjectNode();
+    report.set("input", mapper.createObjectNode());
+
+    ParsedCycloneDx parsedCycloneDx = new ParsedCycloneDx(
+        mapper.createObjectNode(), "test-sbom", "1.0", null, null, null, null);
+
+    ReportData reportData = new ReportData(new ReportRequestId(null, "scan-id"), report);
+    ReportData savedReportData = new ReportData(new ReportRequestId("db-id", "scan-id"), report);
+
+    Mockito.when(cycloneDxParsingService.parseCycloneDxFile(any())).thenReturn(parsedCycloneDx);
+    Mockito.when(reportService.createCycloneDxReportData(any(), any(), any(), eq(false))).thenReturn(reportData);
+    Mockito.when(reportService.saveReport(any())).thenReturn(savedReportData);
+    Mockito.when(userService.getUserName()).thenReturn("test-user");
   }
 
   @Test
   void submitCycloneDx_injectsCredentialBeforeSave() throws Exception {
     sbomReportService.submitCycloneDx(CVE_ID, new ByteArrayInputStream(new byte[0]), CREDENTIAL_ID);
 
-    assertEquals(
-        List.of("inject", "save", "submit"),
-        callOrder,
-        "credentialId must be injected BEFORE saveReport() and submit() so it is " +
-        "persisted in MongoDB and included in the Morpheus payload."
-    );
+    InOrder inOrder = Mockito.inOrder(credentialProcessingService, reportService);
+    assertDoesNotThrow(() -> {
+      inOrder.verify(credentialProcessingService).injectCredentialId(any(JsonNode.class), eq(CREDENTIAL_ID));
+      inOrder.verify(reportService).saveReport(any());
+      inOrder.verify(reportService).submit(any(), any(JsonNode.class));
+    }, "credentialId must be injected BEFORE saveReport() and submit(), " +
+       "otherwise it is not persisted in MongoDB and not included in the Morpheus payload");
   }
 
   @Test
   void submitCycloneDx_withoutCredential_skipsInject() throws Exception {
     sbomReportService.submitCycloneDx(CVE_ID, new ByteArrayInputStream(new byte[0]), null);
 
-    assertEquals(List.of("save", "submit"), callOrder,
-        "Without a credential, inject must not be called.");
+    Mockito.verify(credentialProcessingService, Mockito.never()).injectCredentialId(any(), any());
+    Mockito.verify(reportService).saveReport(any());
+    Mockito.verify(reportService).submit(any(), any());
   }
 
   @Test
-  void submitCycloneDx_invalidCveId_throwsBeforeAnyPersistence() {
+  void submitCycloneDx_invalidCveId_throwsBeforeAnyPersistence() throws Exception {
     assertThrows(Exception.class,
         () -> sbomReportService.submitCycloneDx("INVALID", new ByteArrayInputStream(new byte[0]), CREDENTIAL_ID));
 
-    assertEquals(List.of(), callOrder,
-        "Nothing must be persisted when CVE ID validation fails.");
-  }
-
-  // ── stubs & trackers ──────────────────────────────────────────────────────
-
-  class TrackingCredentialProcessingService extends CredentialProcessingService {
-    private final List<String> order;
-
-    TrackingCredentialProcessingService(List<String> order) {
-      this.order = order;
-    }
-
-    @Override
-    public void injectCredentialId(com.fasterxml.jackson.databind.JsonNode reportNode, String credentialId) {
-      order.add("inject");
-      // actually inject so the JSON is mutated correctly
-      super.injectCredentialId(reportNode, credentialId);
-    }
-  }
-
-  class TrackingReportService extends ReportService {
-    private final List<String> order;
-    private final ObjectMapper mapper;
-
-    TrackingReportService(List<String> order, ObjectMapper mapper) {
-      this.order = order;
-      this.mapper = mapper;
-    }
-
-    @Override
-    public ReportData createCycloneDxReportData(ParsedCycloneDx parsedCycloneDx, String productId,
-        String cveId, boolean useUniqueScanId) {
-      ObjectNode report = mapper.createObjectNode();
-      report.set("input", mapper.createObjectNode());
-      report.set("metadata", mapper.createObjectNode().put("product_id", productId));
-      return new ReportData(new ReportRequestId(null, "scan-id"), report);
-    }
-
-    @Override
-    public ReportData saveReport(ReportData reportData) {
-      order.add("save");
-      return new ReportData(new ReportRequestId("db-id", reportData.reportRequestId().reportId()), reportData.report());
-    }
-
-    @Override
-    public void submit(String id, com.fasterxml.jackson.databind.JsonNode report) {
-      order.add("submit");
-    }
-  }
-
-  class StubCycloneDxParsingService extends CycloneDxParsingService {
-    @Override
-    public ParsedCycloneDx parseCycloneDxFile(java.io.InputStream inputStream) {
-      return new ParsedCycloneDx(mapper.createObjectNode(), "test-sbom", "1.0", null, null, null, null);
-    }
-  }
-
-  class StubProductRepositoryService extends com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService {
-    @Override
-    public void save(com.redhat.ecosystemappeng.morpheus.model.Product product, String userId) {
-      // no-op
-    }
-  }
-
-  class StubUserService extends UserService {
-    @Override
-    public String getUserName() {
-      return "test-user";
-    }
-  }
-
-  private void setField(String name, Object value) throws Exception {
-    Field field = SbomReportService.class.getDeclaredField(name);
-    field.setAccessible(true);
-    field.set(sbomReportService, value);
+    Mockito.verify(credentialProcessingService, Mockito.never()).injectCredentialId(any(), any());
+    Mockito.verify(reportService, Mockito.never()).saveReport(any());
+    Mockito.verify(reportService, Mockito.never()).submit(any(), any());
   }
 }
