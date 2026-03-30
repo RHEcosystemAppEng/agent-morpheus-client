@@ -697,12 +697,5 @@ public class ReportService {
     return this.generateReport(reportRequest);
   }
 
-  public ReportData submitCycloneDx(ParsedCycloneDx parsedCycloneDx, String productId, String cveId) throws JsonProcessingException, IOException {
-    var reportData = this.createCycloneDxReportData(parsedCycloneDx, productId, cveId, false);
-    // Save the report before submitting (submit() requires the report to exist in the repository)
-    var savedReportData = this.saveReport(reportData);
-    this.submit(savedReportData.reportRequestId().id(), savedReportData.report());
-    return savedReportData;
-  }
-
 }
+

@@ -39,6 +39,7 @@ public class SbomReportService {
   private ReportService reportService;
   private SpdxParsingService spdxParsingService;
   private ComponentProcessingService componentProcessingService;
+  private CredentialProcessingService credentialProcessingService;
   private ObjectMapper objectMapper;
 
   @Inject
@@ -69,6 +70,11 @@ public class SbomReportService {
   @Inject
   public void setComponentProcessingService(ComponentProcessingService componentProcessingService) {
     this.componentProcessingService = componentProcessingService;
+  }
+
+  @Inject
+  public void setCredentialProcessingService(CredentialProcessingService credentialProcessingService) {
+    this.credentialProcessingService = credentialProcessingService;
   }
 
   @Inject
@@ -110,14 +116,15 @@ public class SbomReportService {
   }
 
   /**
-   * Processes a CycloneDX file upload: validates CVE ID, parses the file, and creates a ReportRequest
+   * Processes a CycloneDX file upload: validates CVE ID, parses the file, saves and submits the report.
    * @param cveId CVE ID to analyze
    * @param fileInputStream InputStream containing the CycloneDX JSON file
-   * @return ReportRequest ready for processing
+   * @param credentialId optional credential ID to inject into the report before saving (null if not required)
+   * @return saved ReportData including the database ID
    * @throws ValidationException if validation fails (contains field-specific error messages)
    * @throws IOException if file cannot be read
    */
-  public ReportData submitCycloneDx(String cveId, InputStream fileInputStream) throws IOException {
+  public ReportData submitCycloneDx(String cveId, InputStream fileInputStream, String credentialId) throws IOException {
 
     Map<String, String> errors = new HashMap<>();
 
@@ -144,10 +151,17 @@ public class SbomReportService {
     if (!errors.isEmpty()) {
       throw new ValidationException(errors);
     }
-    LOGGER.info("Processing CycloneDX file upload for CVE: " + cveId);    
+    LOGGER.info("Processing CycloneDX file upload for CVE: " + cveId);
     Product product = this.createProduct(cveId, parsedCycloneDx.sbomName(), parsedCycloneDx.sbomVersion(), CYCLONEDX_COMPONENT_COUNT, new HashMap<>());
-    ReportData reportData = this.reportService.submitCycloneDx(parsedCycloneDx, product.id(), cveId);    
-    return reportData;
+    ReportData reportData = reportService.createCycloneDxReportData(parsedCycloneDx, product.id(), cveId, false);
+
+    if (Objects.nonNull(credentialId)) {
+      credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
+    }
+
+    ReportData savedReportData = reportService.saveReport(reportData);
+    reportService.submit(savedReportData.reportRequestId().id(), savedReportData.report());
+    return savedReportData;
   }
 
   /**

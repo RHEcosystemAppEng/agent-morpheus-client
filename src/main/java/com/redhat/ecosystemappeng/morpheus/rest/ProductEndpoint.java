@@ -233,11 +233,7 @@ public class ProductEndpoint {
             .build();
         }
       }
-      ReportData reportData = sbomProcessingService.submitCycloneDx(cveId, fileInputStream);
-
-      if (Objects.nonNull(credentialId) && Objects.nonNull(reportData.report())) {
-        credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
-      }
+      ReportData reportData = sbomProcessingService.submitCycloneDx(cveId, fileInputStream, credentialId);
 
       return Response.accepted(reportData).build();
     }
