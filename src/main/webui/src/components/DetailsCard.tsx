@@ -9,8 +9,10 @@ import {
   Title,
   Flex,
   FlexItem,
+  Content,
 } from "@patternfly/react-core";
 import { Link } from "react-router";
+import ReactMarkdown from "react-markdown";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
 import CveStatus from "./CveStatus";
@@ -157,13 +159,27 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                 <DescriptionListGroup>
                   <DescriptionListTerm>Reason</DescriptionListTerm>
                   <DescriptionListDescription>
-                    {outputVuln?.justification?.reason || <NotAvailable />}
+                    {outputVuln?.justification?.reason ? (
+                      <Content>
+                        <ReactMarkdown>
+                          {outputVuln.justification.reason}
+                        </ReactMarkdown>
+                      </Content>
+                    ) : (
+                      <NotAvailable />
+                    )}
                   </DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
                   <DescriptionListTerm>Summary</DescriptionListTerm>
                   <DescriptionListDescription>
-                    {outputVuln?.summary || <NotAvailable />}
+                    {outputVuln?.summary ? (
+                      <Content>
+                        <ReactMarkdown>{outputVuln.summary}</ReactMarkdown>
+                      </Content>
+                    ) : (
+                      <NotAvailable />
+                    )}
                   </DescriptionListDescription>
                 </DescriptionListGroup>
               </>
