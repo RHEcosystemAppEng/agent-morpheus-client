@@ -55,12 +55,9 @@ const HomePage: React.FC = () => {
         <ModalBody id="ai-usage-modal-body">
           You are about to use a Red Hat tool that utilizes AI technology to
           provide you with relevant information. By proceeding to use the tool,
-          you acknowledge that the tool and any output provided are only intended
-          for internal use and that information should only be shared with those
-          with a legitimate business purpose. Do not include any personal
-          information or customer-specific information in your input. Responses
-          provided by tools utilizing AI technology should be reviewed and
-          verified prior to use.
+          you acknowledge that the tool uses AI-generated analysis and
+          that responses should be reviewed and verified for accuracy prior to use.
+          Do not include any personal information in your input.
         </ModalBody>
         <ModalFooter>
           <Button key="acknowledge" variant="primary" onClick={handleAcknowledge}>
