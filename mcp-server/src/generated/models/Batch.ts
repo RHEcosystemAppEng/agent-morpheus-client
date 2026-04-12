@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BatchType } from './BatchType';
-import type { LocalDateTime } from './LocalDateTime';
+import type { BatchType } from './BatchType.js';
+import type { LocalDateTime } from './LocalDateTime.js';
 export type Batch = {
     batch_id?: string;
     execution_start_timestamp?: LocalDateTime;

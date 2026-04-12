@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LocalDateTime } from './LocalDateTime';
+import type { LocalDateTime } from './LocalDateTime.js';
 export type Trace = {
     readonly format_version?: number;
     /**

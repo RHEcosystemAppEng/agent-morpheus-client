@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { SourceInfo } from './SourceInfo';
+import type { SourceInfo } from './SourceInfo.js';
 /**
  * Image data (required if SBOM is not provided)
  */

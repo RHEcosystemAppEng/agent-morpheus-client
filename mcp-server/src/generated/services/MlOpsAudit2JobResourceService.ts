@@ -2,11 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Job } from '../models/Job';
-import type { LocalDateTime } from '../models/LocalDateTime';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
+import type { Job } from '../models/Job.js';
+import type { LocalDateTime } from '../models/LocalDateTime.js';
+import type { CancelablePromise } from '../core/CancelablePromise.js';
+import { OpenAPI } from '../core/OpenAPI.js';
+import { request as __request } from '../core/request.js';
 export class MlOpsAudit2JobResourceService {
     /**
      * Create List of new jobs containing metadata of executions of analysis

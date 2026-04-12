@@ -2,13 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Batch } from '../models/Batch';
-import type { BatchType } from '../models/BatchType';
-import type { Job } from '../models/Job';
-import type { LocalDateTime } from '../models/LocalDateTime';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
+import type { Batch } from '../models/Batch.js';
+import type { BatchType } from '../models/BatchType.js';
+import type { Job } from '../models/Job.js';
+import type { LocalDateTime } from '../models/LocalDateTime.js';
+import type { CancelablePromise } from '../core/CancelablePromise.js';
+import { OpenAPI } from '../core/OpenAPI.js';
+import { request as __request } from '../core/request.js';
 export class MlOpsAudit1BatchResourceService {
     /**
      * Create one Batch containing metadata of multiple analysis jobs runs

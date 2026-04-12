@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FailedComponent } from './FailedComponent';
+import type { FailedComponent } from './FailedComponent.js';
 /**
  * Product metadata
  */

@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LocalDateTime } from './LocalDateTime';
+import type { LocalDateTime } from './LocalDateTime.js';
 export type Job = {
     job_id?: string;
     execution_start_timestamp?: LocalDateTime;

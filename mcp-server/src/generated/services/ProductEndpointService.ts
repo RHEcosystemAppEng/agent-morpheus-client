@@ -2,11 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProductSummary } from '../models/ProductSummary';
-import type { ReportData } from '../models/ReportData';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
+import type { ProductSummary } from '../models/ProductSummary.js';
+import type { ReportData } from '../models/ReportData.js';
+import type { CancelablePromise } from '../core/CancelablePromise.js';
+import { OpenAPI } from '../core/OpenAPI.js';
+import { request as __request } from '../core/request.js';
 export class ProductEndpointService {
     /**
      * List all product data

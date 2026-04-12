@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { VulnResult } from './VulnResult';
+import type { VulnResult } from './VulnResult.js';
 /**
  * Report metadata
  */

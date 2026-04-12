@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { InlineCredential } from './InlineCredential';
-import type { SourceInfo } from './SourceInfo';
+import type { InlineCredential } from './InlineCredential.js';
+import type { SourceInfo } from './SourceInfo.js';
 /**
  * A single report request
  */

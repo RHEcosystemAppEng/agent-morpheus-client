@@ -2,9 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LLMStage } from './LLMStage';
-import type { LocalDateTime } from './LocalDateTime';
-import type { MetricName } from './MetricName';
+import type { LLMStage } from './LLMStage.js';
+import type { LocalDateTime } from './LocalDateTime.js';
+import type { MetricName } from './MetricName.js';
 export type Eval = {
     job_id: string;
     execution_start_timestamp?: LocalDateTime;

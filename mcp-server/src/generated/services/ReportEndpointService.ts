@@ -2,17 +2,17 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FailedComponent } from '../models/FailedComponent';
-import type { MarkReportFailedRequest } from '../models/MarkReportFailedRequest';
-import type { ProductSummary } from '../models/ProductSummary';
-import type { Report } from '../models/Report';
-import type { ReportData } from '../models/ReportData';
-import type { ReportRequest } from '../models/ReportRequest';
-import type { ReportRequestId } from '../models/ReportRequestId';
-import type { ReportWithStatus } from '../models/ReportWithStatus';
-import type { CancelablePromise } from '../core/CancelablePromise';
-import { OpenAPI } from '../core/OpenAPI';
-import { request as __request } from '../core/request';
+import type { FailedComponent } from '../models/FailedComponent.js';
+import type { MarkReportFailedRequest } from '../models/MarkReportFailedRequest.js';
+import type { ProductSummary } from '../models/ProductSummary.js';
+import type { Report } from '../models/Report.js';
+import type { ReportData } from '../models/ReportData.js';
+import type { ReportRequest } from '../models/ReportRequest.js';
+import type { ReportRequestId } from '../models/ReportRequestId.js';
+import type { ReportWithStatus } from '../models/ReportWithStatus.js';
+import type { CancelablePromise } from '../core/CancelablePromise.js';
+import { OpenAPI } from '../core/OpenAPI.js';
+import { request as __request } from '../core/request.js';
 export class ReportEndpointService {
     /**
      * Delete multiple analysis reports
