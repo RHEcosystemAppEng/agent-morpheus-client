@@ -1,0 +1,37 @@
+# Git
+.git/
+.gitignore
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+src/__tests__/
+vitest.config.ts
+
+# Documentation
+*.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.*
+
+# Temporary files
+*.tmp
+.cache/
