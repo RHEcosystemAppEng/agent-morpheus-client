@@ -8,6 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "start:http": "node dist/http.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate-client": "openapi --input openapi.json --output src/generated --client fetch --useOptions --useUnionTypes && node fix-imports.js"
   },
   "dependencies": {
@@ -17,8 +19,9 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node": "^22.7.5",
+    "@types/node": "^22.19.17",
     "openapi-typescript-codegen": "^0.29.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.4"
   }
 }

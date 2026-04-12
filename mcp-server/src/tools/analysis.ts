@@ -5,7 +5,7 @@ import { ReportEndpointService } from "../generated/services/ReportEndpointServi
 import { ProductEndpointService } from "../generated/services/ProductEndpointService.js";
 
 function formatResult(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+  return { content: [{ type: "text" as const, text: JSON.stringify(data ?? null, null, 2) }] };
 }
 
 function formatError(error: unknown) {
@@ -15,8 +15,8 @@ function formatError(error: unknown) {
 
 export function registerAnalysisTools(server: McpServer): void {
   server.tool(
-    "submit_analysis",
-    "Submit a new source code analysis request for a CVE",
+    "analyze_cve",
+    "Analyze a CVE vulnerability against a source code repository to determine exploitability",
     {
       cveId: z.string().describe("CVE ID to analyze (e.g., CVE-2024-1234)"),
       sourceRepo: z.string().describe("Source repository URL"),
@@ -50,8 +50,8 @@ export function registerAnalysisTools(server: McpServer): void {
   );
 
   server.tool(
-    "upload_spdx_sbom",
-    "Upload an SPDX SBOM file for analysis",
+    "analyze_spdx_sbom",
+    "Analyze an SPDX SBOM file for CVE vulnerability exploitability",
     {
       filePath: z.string().describe("Path to the SPDX SBOM file"),
       cveId: z.string().optional().describe("CVE ID to analyze (optional)"),
@@ -86,8 +86,8 @@ export function registerAnalysisTools(server: McpServer): void {
   );
 
   server.tool(
-    "upload_cyclonedx_sbom",
-    "Upload a CycloneDX SBOM file for analysis",
+    "analyze_cyclonedx_sbom",
+    "Analyze a CycloneDX SBOM file for CVE vulnerability exploitability",
     {
       filePath: z.string().describe("Path to the CycloneDX SBOM file"),
       cveId: z.string().optional().describe("CVE ID to analyze (optional)"),

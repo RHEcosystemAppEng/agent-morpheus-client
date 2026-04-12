@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ReportEndpointService } from "../generated/services/ReportEndpointService.js";
 
 function formatResult(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+  return { content: [{ type: "text" as const, text: JSON.stringify(data ?? null, null, 2) }] };
 }
 
 function formatError(error: unknown) {
@@ -13,8 +13,8 @@ function formatError(error: unknown) {
 
 export function registerReportTools(server: McpServer): void {
   server.tool(
-    "list_reports",
-    "List analysis reports with optional filtering and sorting",
+    "list_cve_reports",
+    "List CVE analysis reports with optional filtering and sorting",
     {
       page: z.number().optional().describe("Page number (0-based)"),
       pageSize: z.number().optional().describe("Number of items per page"),
@@ -45,8 +45,8 @@ export function registerReportTools(server: McpServer): void {
   );
 
   server.tool(
-    "get_report",
-    "Get a specific analysis report by ID",
+    "get_cve_report",
+    "Get a specific CVE analysis report by ID",
     {
       id: z.string().describe("Report ID (24-character hexadecimal MongoDB ObjectId format)"),
     },
@@ -61,8 +61,8 @@ export function registerReportTools(server: McpServer): void {
   );
 
   server.tool(
-    "get_report_by_scan_id",
-    "Get a report by its scan ID (input.scan.id)",
+    "get_cve_report_by_scan_id",
+    "Get a CVE analysis report by its scan ID",
     {
       scanId: z.string().describe("Scan ID of the report"),
     },
@@ -77,8 +77,8 @@ export function registerReportTools(server: McpServer): void {
   );
 
   server.tool(
-    "delete_report",
-    "Delete a specific analysis report by ID",
+    "delete_cve_report",
+    "Delete a specific CVE analysis report by ID",
     {
       id: z.string().describe("Report ID to delete (24-character hexadecimal MongoDB ObjectId format)"),
     },
@@ -93,8 +93,8 @@ export function registerReportTools(server: McpServer): void {
   );
 
   server.tool(
-    "retry_analysis",
-    "Retry an existing analysis request by ID",
+    "retry_cve_analysis",
+    "Retry a failed or expired CVE analysis by report ID",
     {
       id: z.string().describe("Report ID to retry (24-character hexadecimal MongoDB ObjectId format)"),
     },

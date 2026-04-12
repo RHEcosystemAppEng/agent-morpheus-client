@@ -4,7 +4,7 @@ import { ProductEndpointService } from "../generated/services/ProductEndpointSer
 import { ReportEndpointService } from "../generated/services/ReportEndpointService.js";
 
 function formatResult(data: unknown) {
-  return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
+  return { content: [{ type: "text" as const, text: JSON.stringify(data ?? null, null, 2) }] };
 }
 
 function formatError(error: unknown) {

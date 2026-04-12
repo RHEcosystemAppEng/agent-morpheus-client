@@ -75,14 +75,14 @@ claude mcp add --transport streamable-http exploitiq \
 | Tool | Description |
 |------|-------------|
 | `health_check` | Check service health |
-| `submit_analysis` | Submit single repo for CVE analysis |
-| `upload_spdx_sbom` | Upload SPDX SBOM file |
-| `upload_cyclonedx_sbom` | Upload CycloneDX SBOM file |
-| `list_reports` | List reports with filtering |
-| `get_report` | Get report by MongoDB ID |
-| `get_report_by_scan_id` | Get report by scan ID |
-| `delete_report` | Delete a report |
-| `retry_analysis` | Retry failed analysis |
+| `analyze_cve` | Analyze a CVE vulnerability against a source code repository |
+| `analyze_spdx_sbom` | Analyze an SPDX SBOM file for CVE exploitability |
+| `analyze_cyclonedx_sbom` | Analyze a CycloneDX SBOM file for CVE exploitability |
+| `list_cve_reports` | List CVE analysis reports with filtering |
+| `get_cve_report` | Get CVE analysis report by MongoDB ID |
+| `get_cve_report_by_scan_id` | Get CVE analysis report by scan ID |
+| `delete_cve_report` | Delete a CVE analysis report |
+| `retry_cve_analysis` | Retry failed CVE analysis |
 | `list_products` | List products |
 | `get_product` | Get product details |
 | `delete_product` | Delete a product |
