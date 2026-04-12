@@ -8,15 +8,13 @@ interface CveDescriptionCardProps {
 }
 
 /**
- * Component to display CVE description with markdown rendering support
- * Content from PatternFly automatically applies styling to standard HTML elements
- * (h1-h6, p, ul, ol, blockquote) and overrides the base CSS reset.
+ * CVE description rendered as markdown inside PatternFly `Content`, matching
+ * report Details (summary/reason) and analysis Q&A responses in `ChecklistCard`.
  */
 const CveDescriptionCard: React.FC<CveDescriptionCardProps> = ({
   metadata,
 }) => {
   const description = metadata?.description;
-  const descriptionSource = metadata?.descriptionSource;
 
   if (!description) {
     return (
@@ -30,16 +28,11 @@ const CveDescriptionCard: React.FC<CveDescriptionCardProps> = ({
     );
   }
 
-  // Render markdown if source is GHSA, otherwise render as plain text
-  if (descriptionSource === "ghsa") {
-    return (
-      <Content>
-        <ReactMarkdown>{description}</ReactMarkdown>
-      </Content>
-    );
-  }
-
-  return <Content>{description}</Content>;
+  return (
+    <Content>
+      <ReactMarkdown>{description}</ReactMarkdown>
+    </Content>
+  );
 };
 
 export default CveDescriptionCard;
