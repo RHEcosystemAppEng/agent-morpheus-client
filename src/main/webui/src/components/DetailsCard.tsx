@@ -79,14 +79,12 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
       <CardBody>
         {vuln && (
           <DescriptionList>
-            {finding && (
-              <DescriptionListGroup>
-                <DescriptionListTerm>Finding</DescriptionListTerm>
-                <DescriptionListDescription>
-                  <Finding finding={finding} />
-                </DescriptionListDescription>
-              </DescriptionListGroup>
-            )}
+            <DescriptionListGroup>
+              <DescriptionListTerm>Finding</DescriptionListTerm>
+              <DescriptionListDescription>
+                {finding ? <Finding finding={finding} /> : <NotAvailable />}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
             {isFailed && (
               <DescriptionListGroup>
                 <DescriptionListTerm>Failure reason</DescriptionListTerm>
