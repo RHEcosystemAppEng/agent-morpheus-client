@@ -9,6 +9,7 @@ import {
   FormGroup,
   TextInput,
   FileUpload,
+  FileUploadHelperText,
   DropEvent,
   Button,
   Alert,
@@ -552,24 +553,26 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
                 id="sbom-file"
                 value={fileValue}
                 filename={filename}
-                filenamePlaceholder="Drag and drop a file or upload one"
+                filenamePlaceholder="Drag and drop a file or upload (Accepted file types: JSON)"
                 onFileInputChange={handleFileInputChange}
                 onClearClick={handleClear}
                 browseButtonText="Upload"
+                browseButtonAriaDescribedby="sbom-file-helper-text"
                 isDisabled={isSubmitting}
                 accept=".json"
-              />
-              <FormHelperText>
-                <HelperText>
-                  {fileError ? (
-                    <HelperTextItem variant="error">{fileError}</HelperTextItem>
-                  ) : (
-                    <HelperTextItem>
-                      Supported formats: JSON {SbomFormat.SPDX} {SPDX_VERSION} and JSON {SbomFormat.CycloneDX} {CYCLONEDX_VERSION}
-                    </HelperTextItem>
-                  )}
-                </HelperText>
-              </FormHelperText>
+              >
+                <FileUploadHelperText id="sbom-file-helper-text">
+                  <HelperText>
+                    {fileError ? (
+                      <HelperTextItem variant="error">{fileError}</HelperTextItem>
+                    ) : (
+                      <HelperTextItem>
+                        Supported formats: {SbomFormat.SPDX} {SPDX_VERSION} (multi-component) or{" "} {SbomFormat.CycloneDX} {CYCLONEDX_VERSION} (single-component)
+                      </HelperTextItem>
+                    )}
+                  </HelperText>
+                </FileUploadHelperText>
+              </FileUpload>
             </FormGroup>
           )}
           {mode === "single-repository" && (
