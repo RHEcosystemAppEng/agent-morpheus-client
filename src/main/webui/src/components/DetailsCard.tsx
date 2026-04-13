@@ -7,18 +7,16 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   Title,
-  Flex,
-  FlexItem,
   Content,
 } from "@patternfly/react-core";
 import { Link } from "react-router";
 import ReactMarkdown from "react-markdown";
 import type { FullReport } from "../types/FullReport";
 import CvssBanner from "./CvssBanner";
-import CveStatus from "./CveStatus";
+import Finding from "./Finding";
 import IntelReliabilityScore from "./IntelReliabilityScore";
 import NotAvailable from "./NotAvailable";
-import ReportStatusLabel from "./ReportStatusLabel";
+import { getFindingForReportRow } from "../utils/findingDisplay";
 
 /** Base URL for .../commit/{ref} links: no trailing slash or `.git` suffix. */
 function normalizeRepoBaseForCommitLink(repo: string): string {
@@ -40,8 +38,8 @@ interface DetailsCardProps {
   cveId: string;
   reportId: string;
   productId?: string;
+  /** Report analysis state from API (e.g. completed, pending); used with justification to match table Finding column. */
   analysisState?: string;
-  analysisStateLoading?: boolean;
   /** When true (failed or expired API status), show failure UI; omit agent output fields; CVE line shows Failed like Finding */
   isFailed?: boolean;
 }
@@ -64,6 +62,10 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
   const outputVuln = output.find((v) => v.vuln_id === cveId);
+  const finding = getFindingForReportRow(
+    analysisState ?? "",
+    outputVuln?.justification?.status,
+  );
 
   return (
     <Card>
@@ -76,9 +78,9 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
         {vuln && (
           <DescriptionList>
             <DescriptionListGroup>
-              <DescriptionListTerm>Analysis State</DescriptionListTerm>
+              <DescriptionListTerm>Finding</DescriptionListTerm>
               <DescriptionListDescription>
-                <ReportStatusLabel state={analysisState} />
+                {finding ? <Finding finding={finding} /> : <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             {isFailed && (
@@ -92,8 +94,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
-              <Flex>
-                  <FlexItem>
                     <Link
                       to={
                         productId
@@ -103,13 +103,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     >
                       {vuln.vuln_id}
                     </Link>
-                  </FlexItem>
-                  <FlexItem>
-                    {outputVuln?.justification?.status && (
-                      <CveStatus status={outputVuln.justification.status} />
-                    )}
-                  </FlexItem>
-                </Flex>
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
