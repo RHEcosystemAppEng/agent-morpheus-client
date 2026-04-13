@@ -64,12 +64,10 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
   const outputVuln = output.find((v) => v.vuln_id === cveId);
-  const finding = !isFailed
-    ? getFindingForReportRow(
-        analysisState ?? "",
-        outputVuln?.justification?.status,
-      )
-    : null;
+  const finding = getFindingForReportRow(
+    analysisState ?? "",
+    outputVuln?.justification?.status,
+  );
 
   return (
     <Card>
@@ -81,7 +79,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
       <CardBody>
         {vuln && (
           <DescriptionList>
-            {!isFailed && finding && (
+            {finding && (
               <DescriptionListGroup>
                 <DescriptionListTerm>Finding</DescriptionListTerm>
                 <DescriptionListDescription>
