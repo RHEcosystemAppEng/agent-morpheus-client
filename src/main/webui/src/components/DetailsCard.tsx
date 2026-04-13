@@ -7,8 +7,6 @@ import {
   DescriptionListTerm,
   DescriptionListDescription,
   Title,
-  Flex,
-  FlexItem,
   Content,
 } from "@patternfly/react-core";
 import { Link } from "react-router";
@@ -96,7 +94,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
-                  <FlexItem>
                     <Link
                       to={
                         productId
@@ -106,7 +103,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     >
                       {vuln.vuln_id}
                     </Link>
-                  </FlexItem>
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
