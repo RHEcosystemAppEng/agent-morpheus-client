@@ -96,7 +96,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
             <DescriptionListGroup>
               <DescriptionListTerm>CVE</DescriptionListTerm>
               <DescriptionListDescription>
-              <Flex>
                   <FlexItem>
                     <Link
                       to={
@@ -108,7 +107,6 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                       {vuln.vuln_id}
                     </Link>
                   </FlexItem>
-                </Flex>
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
