@@ -1,0 +1,14 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "url": "/generate"
+  },
+  "response": {
+    "status": 202,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{}"
+  }
+}

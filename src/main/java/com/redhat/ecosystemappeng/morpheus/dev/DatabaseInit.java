@@ -17,14 +17,18 @@ import org.jboss.logging.Logger;
 
 import com.mongodb.client.MongoClient;
 
-import io.quarkus.arc.profile.IfBuildProfile;
 import io.quarkus.arc.properties.IfBuildProperty;
+
 import io.quarkus.runtime.Startup;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+/**
+ * Registers only when {@code morpheus.database.init.enabled} is true at build time.
+ * {@code %dev} and {@code %test} set this in {@code application.properties}; production
+ * builds leave it unset so this bean is not included.
+ */
 @Singleton
-@IfBuildProfile("dev")
 @IfBuildProperty(name = "morpheus.database.init.enabled", stringValue = "true")
 public class DatabaseInit {
 

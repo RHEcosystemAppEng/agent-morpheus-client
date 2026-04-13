@@ -101,14 +101,13 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
   - Framework: JUnit5
   - Examples: `ReportServiceMetadataKeysTest` (tests utility methods without dependencies)
   - Execution: Maven Surefire plugin (`mvn test`)
-  
-- **Integration/E2E Tests**: REST Assured for API endpoint testing
+
+- **REST API tests** (HTTP / contract-style): JUnit5 + REST Assured + `@QuarkusTest`
   - Location: `src/test/java/com/redhat/ecosystemappeng/morpheus/rest/`
-  - Framework: REST Assured with JUnit5
-  - Examples: `ProductEndpointTest`, `ReportUploadEndpointTest`
-  - Execution: Maven Failsafe plugin (`mvn verify`)
-  - Configuration: Tests require `BASE_URL` environment variable (skipped if not set)
-  - Pattern: End-to-end tests that require a running service instance with a database initialized with test data from `src/test/resources/devservices/`
+  - **Treated as unit tests today**: they run under **Surefire** with **`mvn test` only** (not a separate `mvn verify` / Failsafe integration phase).
+  - Default mode: in-process Quarkus test application (Dev Services, test `application.properties`, WireMock where configured).
+  - Optional **remote RestAssured target**: set Quarkus property `morpheus.rest-test.external-base-url` (e.g. `-Dmorpheus.rest-test.external-base-url=http://localhost:8080`) so the same test methods assert against a **running** instance while the test JVM still starts `@QuarkusTest` (see `src/test/README.md`).
+  - Examples: `ProductEndpointRestTest`, `UploadSpdxRestTest`, `GetProductsRestTest`
 
 - **Test Resources**: 
   - Test data: `src/test/resources/devservices/` (reports, products, SBOMs)
@@ -132,8 +131,8 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
   - ESLint MUST pass with zero warnings (`npm run lint`)
   - Java code MUST pass linting checks
 - **Test Execution**:
-  - Unit tests run automatically with `mvn test`
-  - Integration tests run with `mvn verify` (require `BASE_URL` env var)
+  - Backend and REST API tests run with **`mvn test`** (Surefire). There is no separate Failsafe phase for the REST suite today.
+  - Optional: pass `-Dmorpheus.rest-test.external-base-url=...` with `mvn test` to point REST Assured at a live server for the same tests (see `src/test/README.md`).
 
 ### Git Workflow
 - Branching strategy: Not explicitly documented (currently on `homepage` branch)

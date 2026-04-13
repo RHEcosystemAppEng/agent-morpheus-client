@@ -1,0 +1,48 @@
+---
+# Maven test for @QuarkusTest in CI: JDK + Syft base image (quay.io/exploit-iq/agent-morpheus-client-test-image).
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: maven-test-ci
+  labels:
+    app.kubernetes.io/name: maven-test-ci
+    app: exploit-iq
+    component: exploit-iq-client
+spec:
+  description: >-
+    Runs ./mvnw test with ephemeral Mongo; uses quay.io/exploit-iq/agent-morpheus-client-test-image (JDK + Syft).
+  workspaces:
+    - name: source
+      description: Cloned repository (git-clone output)
+    # kubernetes.io/dockerconfigjson (or equivalent) for Syft oci-registry pulls
+    # (e.g. registry.redhat.io). Mount secret; Syft expects DOCKER_CONFIG/config.json.
+    - name: syft-registry-auth
+      description: Registry pull secret for Syft (directory with .dockerconfigjson)
+  steps:
+    - name: test
+      image: quay.io/exploit-iq/agent-morpheus-client-test-image:latest
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: QUARKUS_MONGODB_DEVSERVICES_ENABLED
+          value: "false"
+        # Service DNS (mongo-<uid> is the Service name from mongodb-ci task), not pod hostname.
+        - name: QUARKUS_MONGODB_CONNECTION_STRING
+          value: mongodb://mongo-$(context.pipelineRun.uid).$(context.pipelineRun.namespace).svc.cluster.local:27017
+      script: |
+        #!/bin/bash
+        set -euo pipefail
+        # Syft reads Docker-style config (not .dockerconfigjson filename); copy from Tekton secret workspace.
+        SYFT_AUTH_WS="$(workspaces.syft-registry-auth.path)"
+        if [[ ! -f "${SYFT_AUTH_WS}/.dockerconfigjson" ]]; then
+          echo "maven-test-ci: missing ${SYFT_AUTH_WS}/.dockerconfigjson (bind a dockerconfigjson secret to syft-registry-auth)" >&2
+          exit 1
+        fi
+        export DOCKER_CONFIG="$(mktemp -d)"
+        cp "${SYFT_AUTH_WS}/.dockerconfigjson" "${DOCKER_CONFIG}/config.json"
+        chmod 0600 "${DOCKER_CONFIG}/config.json"
+        mkdir -p "${PWD}/.cache/syft"
+        export SYFT_CACHE_DIR="${PWD}/.cache/syft"
+        command -v syft >/dev/null
+        java -version
+        # Do not chmod: workspace may be noexec / chmod denied on OpenShift (e.g. exploit-iq-tests).
+        sh ./mvnw -B --no-transfer-progress test

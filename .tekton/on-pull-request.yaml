@@ -13,7 +13,7 @@ metadata:
 
     # Fetch the git-clone task from hub, we are able to reference later on it
     # with taskRef and it will automatically be embedded into our pipeline.
-    pipelinesascode.tekton.dev/task: "git-clone"
+    pipelinesascode.tekton.dev/task: "[git-clone,.tekton/tekton-tasks/mongodb-ci.yaml,.tekton/tekton-tasks/maven-test-ci.yaml]"
 
     # How many runs we want to keep.
     pipelinesascode.tekton.dev/max-keep-runs: "5"
@@ -72,9 +72,29 @@ spec:
             value: $(params.repo_url)
           - name: REVISION
             value: $(params.revision)
-      - name: buildah
+      # Ephemeral Mongo for @QuarkusTest (see .tekton/tekton-tasks/mongodb-ci.yaml). Torn down in finally.
+      - name: mongodb-setup
         runAfter:
           - fetch-repository
+        taskRef:
+          name: mongodb-ci
+        params:
+          - name: mode
+            value: setup
+      - name: maven-test
+        runAfter:
+          - fetch-repository
+          - mongodb-setup
+        taskRef:
+          name: maven-test-ci
+        workspaces:
+          - name: source
+            workspace: source
+          - name: syft-registry-auth
+            workspace: syft-registry-auth-ws
+      - name: buildah
+        runAfter:
+          - maven-test
         params:
           - name: IMAGE
             value: $(params.output-image)
@@ -104,6 +124,13 @@ spec:
             workspace: source
           - name: dockerconfig
             workspace: dockerconfig-ws
+    finally:
+      - name: mongodb-teardown
+        taskRef:
+          name: mongodb-ci
+        params:
+          - name: mode
+            value: teardown
   workspaces:
   - name: source
     volumeClaimTemplate:
@@ -116,4 +143,8 @@ spec:
   - name: dockerconfig-ws
     secret:
       secretName: ips-for-client-build
+  # Syft in maven-test-ci: same dockerconfigjson shape as buildah; include registry.redhat.io auths.
+  - name: syft-registry-auth-ws
+    secret:
+      secretName: ecosystem-appeng-morpheus-quay
 

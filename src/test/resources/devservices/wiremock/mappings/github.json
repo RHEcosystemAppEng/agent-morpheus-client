@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "GET",
-    "urlPathPattern": "/github/repos/(.+)/languages"
+    "urlPathPattern": "/repos/.+/languages"
   },
   "response": {
     "bodyFileName": "github-languages.json",

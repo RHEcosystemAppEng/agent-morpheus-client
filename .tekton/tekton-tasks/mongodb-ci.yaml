@@ -1,0 +1,89 @@
+---
+# Ephemeral MongoDB for @QuarkusTest in CI. Same image as prod (mongodb-community-server 8.0 UBI);
+# mirrors deploy/agent_morpheus_client.yaml (db Deployment + Service); emptyDir instead of PVC.
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: mongodb-ci
+  labels:
+    app.kubernetes.io/name: mongodb-ci
+spec:
+  params:
+    - name: mode
+      type: string
+      description: "setup — create Deployment+Service and wait; teardown — delete them"
+  steps:
+    - name: oc
+      image: quay.io/openshift/origin-cli:4.15
+      script: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        NS="$(context.pipelineRun.namespace)"
+        NAME="mongo-$(context.pipelineRun.uid)"
+        if [[ "$(params.mode)" == "teardown" ]]; then
+          oc delete "deployment/${NAME}" "svc/${NAME}" -n "${NS}" --ignore-not-found
+          exit 0
+        fi
+        if [[ "$(params.mode)" != "setup" ]]; then
+          echo "mongodb-ci: invalid mode $(params.mode) (expected setup or teardown)" >&2
+          exit 1
+        fi
+        oc apply -f - <<EOF
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${NAME}
+          namespace: ${NS}
+          labels:
+            app: ${NAME}
+        spec:
+          strategy:
+            type: Recreate
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ${NAME}
+          template:
+            metadata:
+              labels:
+                app: ${NAME}
+            spec:
+              containers:
+                - name: mongodb
+                  image: docker.io/mongodb/mongodb-community-server:8.0.3-ubi8
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                    - name: db
+                      protocol: TCP
+                      containerPort: 27017
+                  readinessProbe:
+                    tcpSocket:
+                      port: 27017
+                    initialDelaySeconds: 5
+                    periodSeconds: 2
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data/db
+              volumes:
+                - name: data
+                  emptyDir: {}
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${NAME}
+          namespace: ${NS}
+          labels:
+            app: ${NAME}
+        spec:
+          ports:
+            - name: db
+              port: 27017
+              protocol: TCP
+              targetPort: 27017
+          selector:
+            app: ${NAME}
+        EOF
+        echo "mongodb-ci: waiting for deployment ${NAME} (ready when TCP 27017 accepts)..."
+        oc wait "deployment/${NAME}" -n "${NS}" --for=condition=available --timeout=600s
+        echo "mongodb-ci: Mongo deployment available"
