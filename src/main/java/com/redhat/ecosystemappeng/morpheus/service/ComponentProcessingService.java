@@ -126,12 +126,23 @@ public class ComponentProcessingService {
                 String reportId = savedReportData.reportRequestId().id();
                 String errorMessage = getErrorMessage(e);
                 LOGGER.errorf("Failed to submit report %s for component %s: %s", reportId, component.name(), errorMessage);
-                reportRepositoryService.updateWithError(reportId, "submit-error", "Unexpected error while submitting report");
+                String formattedErrorMessage = formatErrorMessage(e,"Unexpected error while submitting report");
+                reportRepositoryService.updateWithError(reportId, "submit-error", formattedErrorMessage);
             } else {
                 LOGGER.errorf("Failed to save report for component %s: %s", component.name(), getErrorMessage(e));
-                productRepositoryService.addSubmissionFailure(productId, new FailedComponent(component.name(), component.version(), component.image(), "Unexpected error while saving report"));
+                productRepositoryService.addSubmissionFailure(productId, new FailedComponent(component.name(), component.version(), component.image(), formatErrorMessage(e,"Unexpected error while saving report")));
             }
         }
+    }
+
+    private static String formatErrorMessage(Exception e, String prefixMessage) {
+//        In case of Queue Exceeded exception, needs to hide the implementation details of queue and
+//        just return a non disclosing message that the component' request exceeded the maximum number of allowed simultaneous requests.
+        if(e instanceof RequestQueueExceededException) {
+            return String.format("%s: Too Many Parallel Requests", prefixMessage);
+        }
+//        Otherwise, return just a generic error message, could be looked up in logs what is the specific reason for failure/error.
+        return prefixMessage;
     }
 
     /**
