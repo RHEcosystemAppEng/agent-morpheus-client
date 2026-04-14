@@ -13,6 +13,8 @@ import {
 } from "@patternfly/react-core";
 import GetStartedCard from "../components/GetStartedCard";
 import MetricsCard from "../components/MetricsCard";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { PAGE_TITLE_HOME } from "./pageTitles";
 
 const AI_USAGE_ACKNOWLEDGED_KEY = "ai-usage-acknowledged";
 
@@ -21,6 +23,8 @@ const AI_USAGE_ACKNOWLEDGED_KEY = "ai-usage-acknowledged";
  */
 const HomePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useDocumentTitle(PAGE_TITLE_HOME);
 
   useEffect(() => {
     // Check if user has already acknowledged on component mount
