@@ -66,16 +66,16 @@ const CveDetailsPage: React.FC = () => {
 
   const documentTitle = useMemo(() => {
     if (!cveId) {
-      return pageTitleCveDetailsInvalid();
+      return pageTitleCveDetailsInvalid(params.cveId);
     }
     if (loading) {
       return pageTitleCveDetails(cveId);
     }
     if (error) {
-      return pageTitleCveDetailsLoadError();
+      return pageTitleCveDetailsLoadError(cveId);
     }
     return pageTitleCveDetails(cveId);
-  }, [cveId, loading, error]);
+  }, [cveId, loading, error, params.cveId]);
 
   useDocumentTitle(documentTitle);
 

@@ -82,7 +82,7 @@ export function pageTitleReportLoading(
   productId: string,
   cveId: string
 ): string {
-  return withAppTitle(`Report: ${productId} / ${cveId}`);
+  return withAppTitle(`Loading Report: ${productId} / ${cveId}`);
 }
 
 export function pageTitleExcludedInvalidParams(): string {
@@ -97,10 +97,12 @@ export function pageTitleExcludedNotFound(): string {
   return withAppTitle("Product not found");
 }
 
-export function pageTitleCveDetailsInvalid(): string {
-  return withAppTitle("Invalid CVE");
+/** @param routeCveId CVE segment from the route when present (e.g. malformed or empty after trim) */
+export function pageTitleCveDetailsInvalid(routeCveId?: string): string {
+  const id = routeCveId?.trim();
+  return withAppTitle(id ? `Invalid CVE — ${id}` : "Invalid CVE");
 }
 
-export function pageTitleCveDetailsLoadError(): string {
-  return withAppTitle("CVE details error");
+export function pageTitleCveDetailsLoadError(cveId: string): string {
+  return withAppTitle(`CVE details error — ${cveId.toUpperCase()}`);
 }
