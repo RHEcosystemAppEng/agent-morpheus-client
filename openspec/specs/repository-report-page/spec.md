@@ -76,33 +76,15 @@ The repository report page SHALL compare the report status between the previous 
 
 The repository report page SHALL display a Feedback card after the RepositoryAdditionalDetailsCard (Additional Details card) in the same grid only when the report status is "completed".
 
-#### Scenario: Analysis state displayed in DetailsCard
+#### Scenario: CVE repository report details card (DetailsCard)
 - **WHEN** a user views the repository report page with report data loaded
-- **THEN** the DetailsCard displays an "Analysis State" field showing the current state of the report (e.g., "Completed", "Queued", or **Failed** for any failing API status)
-- **AND** the Analysis State field appears as the first field in the DetailsCard description list, immediately after the card title; when status is not **failing**, following fields include CVE, Repository, Commit ID, CVSS Score, Intel Reliability Score, Reason, and Summary; when status is **failing**, **Failure reason** (`report.error.message` only) appears after Analysis State, then CVE (with the same **Failed** label beside the CVE link as in repository findings tables), Repository, and Commit ID, and the Analysis Q&A card is not shown
-- **AND** the analysis state is retrieved from the `status` field in the response object returned by the `/api/v1/reports/{id}` endpoint (the response contains `report` and `status` fields)
-- **AND** the state is displayed using a shared `ReportStatusLabel` React component that renders a PatternFly Label component with appropriate color and icon:
-  - "Completed" state: green label with CheckCircleIcon
-  - "Queued" state: gray label with InProgressIcon (or SyncIcon)
-  - "Sent" state: gray label with InProgressIcon (or SyncIcon)
-  - "Failed" and "Expired" API statuses: both SHALL display the same grey filled **Failed** label with ExclamationCircleIcon as the failed case in `Finding.tsx`; the API may still distinguish `expired` vs `failed`, but this page does not surface `error.type`
-  - Other states: gray label with default styling
-- **AND** except for failing states above, the state text is formatted in title case (first letter uppercase, rest lowercase)
-
-#### Scenario: Analysis state loading state
-- **WHEN** a user views the repository report page
-- **AND** the report data is being fetched from the API
-- **THEN** the DetailsCard displays the "Analysis State" field with a PatternFly Skeleton component in the description area
-- **AND** the Analysis State field appears as the first field in the DetailsCard description list
-- **AND** the Skeleton component indicates that the analysis state is loading
-- **AND** once the report is loaded, the Skeleton is replaced with the `ReportStatusLabel` component showing the actual state from the response's `status` field
-
-#### Scenario: Analysis state fetch error handling
-- **WHEN** a user views the repository report page
-- **AND** the API call to fetch the report fails
-- **THEN** the page displays an appropriate error message based on the error status
-- **AND** if the report fetch succeeds but the `status` field is not present in the response, the DetailsCard displays "Not Available" for the Analysis State field
-- **AND** the Analysis State field appears as the first field in the DetailsCard description list even when displaying "Not Available"
+- **THEN** the `CVE repository report details` card (DetailsCard) displays a description list whose first row is **Finding**, computed from the report API `status` field and the vulnerability analysis justification (same **Failed** presentation as repository findings tables when status is a failing state)
+- **AND** when analysis is in a failing state, **Failure reason** appears next, showing `report.error.message` only
+- **AND** **CVE** is shown as an internal app link to the CVE details route for the current report
+- **AND** **Repository URL** is shown as follows: when the code entry in `report.input.image.source_info` includes both `git_repo` and `ref`, the field is an external link whose URL is the repository base (trim trailing `/`, strip a trailing `.git` suffix, then trim trailing `/` again) followed by `/commit/` and the `ref` value, so the link opens the code snapshot for that revision; the visible link text matches that URL; when only `git_repo` is present, the link targets and displays `git_repo`; when neither is usable, **Not available** is shown
+- **AND** **Image URL** shows the pull reference (for example `registry/repository:tag`, or `registry/repository@sha256:…`) as link text on an external anchor whose `href` is a best-effort HTTPS browse URL for that image (same reference is valid for `podman pull` / `docker pull`); when the report is source-based (for example `analysis_type` is `source` or the image `name` is an `http`/`https` URL), **Not available** is shown
+- **AND** when analysis is not in a failing state, additional rows include CVSS Score, Intel Reliability Score, Reason, and Summary
+- **AND** the Analysis Q&A card (ChecklistCard) is not shown when analysis is in a failing state
 
 #### Scenario: Auto-refresh prevents unnecessary rerenders
 - **WHEN** the repository report page auto-refreshes AND the report status has not changed
