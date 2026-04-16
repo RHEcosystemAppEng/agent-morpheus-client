@@ -17,10 +17,7 @@ import Finding from "./Finding";
 import IntelReliabilityScore from "./IntelReliabilityScore";
 import NotAvailable from "./NotAvailable";
 import { getFindingForReportRow } from "../utils/findingDisplay";
-import {
-  podmanPullImageReference,
-  containerImageBrowseUrl,
-} from "../utils/containerImageReference";
+import { getPullImageReference } from "../utils/containerImageReference";
 
 /** Base URL for .../commit/{ref} links: no trailing slash or `.git` suffix. */
 function normalizeRepoBaseForCommitLink(repo: string): string {
@@ -67,7 +64,7 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
     codeRepository && codeRef
       ? `${normalizeRepoBaseForCommitLink(codeRepository)}/commit/${codeRef}`
       : undefined;
-  const imagePullRef = podmanPullImageReference(image);
+  const imagePullRef = getPullImageReference(image);
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
   const outputVuln = output.find((v) => v.vuln_id === cveId);
@@ -135,20 +132,9 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-              <DescriptionListTerm>Image URL</DescriptionListTerm>
+              <DescriptionListTerm>Image</DescriptionListTerm>
               <DescriptionListDescription>
-                {imagePullRef ? (
-                  <Content
-                    component="a"
-                    href={containerImageBrowseUrl(imagePullRef)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {imagePullRef}
-                  </Content>
-                ) : (
-                  <NotAvailable />
-                )}
+                {imagePullRef ?? <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             {!isFailed && (

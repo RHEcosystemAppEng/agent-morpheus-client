@@ -1,10 +1,10 @@
 import type { FullReportImage } from "../types/FullReport";
 
 /**
- * Builds a container image reference suitable for `podman pull <ref>` / `docker pull <ref>`.
- * Omits source-based reports (git URL in {@code name}) and HTTP(S) URLs that are not image registries.
+ * Builds a container image reference suitable for `podman pull`, `docker pull`, or any OCI-compatible pull.
+ * Returns {@code undefined} for source-based reports (git URL in {@code name}) and bare HTTP(S) URLs that are not registry references.
  */
-export function podmanPullImageReference(
+export function getPullImageReference(
   image: FullReportImage | undefined
 ): string | undefined {
   if (!image) {
@@ -26,30 +26,4 @@ export function podmanPullImageReference(
     return `${name}@${tag}`;
   }
   return `${name}:${tag}`;
-}
-
-/**
- * Best-effort HTTPS URL for opening a container image reference in the browser
- * (registry UI or root path); link text remains the pull reference from {@link podmanPullImageReference}.
- */
-export function containerImageBrowseUrl(pullReference: string): string {
-  const t = pullReference.trim();
-  if (/^https?:\/\//i.test(t)) {
-    return t;
-  }
-  let base = t.includes("@") ? (t.split("@")[0] ?? t) : t;
-  const colonIdx = base.lastIndexOf(":");
-  if (colonIdx > 0) {
-    const after = base.slice(colonIdx + 1);
-    if (/^[A-Za-z0-9._-]+$/.test(after) && !after.includes("/")) {
-      base = base.slice(0, colonIdx);
-    }
-  }
-  if (base.startsWith("quay.io/")) {
-    return `https://quay.io/repository/${base.slice("quay.io/".length)}`;
-  }
-  if (!base.includes("/")) {
-    return `https://hub.docker.com/_/${encodeURIComponent(base)}`;
-  }
-  return `https://${base}`;
 }

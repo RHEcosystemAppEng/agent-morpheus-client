@@ -24,6 +24,7 @@ import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkel
 import DownloadDropdown from "../components/DownloadVex";
 import FeedbackReportCard from "../components/FeedbackReportCard";
 import { getReportSummaryForFeedback } from "../utils/feedbackReportSummary";
+import { getPullImageReference } from "../utils/containerImageReference";
 
 interface RepositoryReportPageErrorProps {
   title: string;
@@ -137,8 +138,9 @@ const RepositoryReportPage: React.FC = () => {
     );
   }
 
+  const pullableImageRef = getPullImageReference(image);
   const reportIdDisplay = vuln.vuln_id
-    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
+    ? [vuln.vuln_id, pullableImageRef].filter(Boolean).join(" | ")
     : "";
   // Extract product name from metadata, fallback to productId
   const productName = report?.metadata?.product_id;
@@ -164,7 +166,7 @@ const RepositoryReportPage: React.FC = () => {
                     fontSize: "var(--pf-t--global--font--size--heading--h6)",
                   }}
                 >
-                  {cveId} | {image?.name || ""} | {image?.tag || ""}
+                  {[cveId, pullableImageRef].filter(Boolean).join(" | ")}
                 </span>
               </Title>
             </FlexItem>

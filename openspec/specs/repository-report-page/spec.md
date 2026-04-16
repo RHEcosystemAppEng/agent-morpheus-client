@@ -32,13 +32,13 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 - **THEN** a breadcrumb navigation is displayed at the top of the page with three items:
   - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
   - Second item: SBOM Report ID and CVE ID (format: `<product_id>/<CVE ID>`) displayed as a clickable link that navigates to `/reports/product/:productId/:cveId` (SBOM report/CVE report page)
-  - Third item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
+  - Third item: Report identifier (format: `<CVE ID>` and, when the report has a pullable container reference, ` | <pull reference>` such as `registry/repository:tag` or `registry/repository@sha256:…`) displayed as non-clickable text indicating the current page
 
 #### Scenario: Breadcrumb for component route
 - **WHEN** a user views the repository report page at `/reports/component/:cveId/:reportId`
 - **THEN** a breadcrumb navigation is displayed at the top of the page with two items:
   - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
-  - Second item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
+  - Second item: Report identifier (same format as the SBOM route’s third item: `<CVE ID>` optionally followed by ` | <pull reference>` when applicable) displayed as non-clickable text indicating the current page
 - **AND** no SBOM report/CVE breadcrumb item is displayed
 
 #### Scenario: Breadcrumb SBOM report ID from report metadata
@@ -52,10 +52,8 @@ The repository report page SHALL display a hierarchical breadcrumb navigation at
 
 #### Scenario: Breadcrumb report identifier from report data
 - **WHEN** a user views the repository report page with report data loaded
-- **THEN** the report identifier breadcrumb item displays in the format `<CVE ID> | <image name> | <image tag>`
-- **AND** the CVE ID is extracted from the vulnerability output matching the route `cveId` parameter (`vuln.vuln_id`)
-- **AND** the image name and tag are extracted from `report.input.image.name` and `report.input.image.tag` respectively
-- **AND** if image name or tag is missing, empty string is used
+- **THEN** the report identifier breadcrumb item displays the CVE ID from the vulnerability matching the route `cveId` parameter (`vuln.vuln_id`)
+- **AND** when the report has a pullable container image reference derived from `report.input.image` (same rules as the **Image** field in the details card: omitted for source-based analysis and non-registry `http`/`https` names), that reference is appended after ` | `; otherwise only the CVE ID is shown (no trailing separators)
 
 #### Scenario: Breadcrumb navigation to reports list
 - **WHEN** a user clicks the "Reports" breadcrumb item on the repository report page
@@ -82,7 +80,7 @@ The repository report page SHALL display a Feedback card after the RepositoryAdd
 - **AND** when analysis is in a failing state, **Failure reason** appears next, showing `report.error.message` only
 - **AND** **CVE** is shown as an internal app link to the CVE details route for the current report
 - **AND** **Repository URL** is shown as follows: when the code entry in `report.input.image.source_info` includes both `git_repo` and `ref`, the field is an external link whose URL is the repository base (trim trailing `/`, strip a trailing `.git` suffix, then trim trailing `/` again) followed by `/commit/` and the `ref` value, so the link opens the code snapshot for that revision; the visible link text matches that URL; when only `git_repo` is present, the link targets and displays `git_repo`; when neither is usable, **Not available** is shown
-- **AND** **Image URL** shows the pull reference (for example `registry/repository:tag`, or `registry/repository@sha256:…`) as link text on an external anchor whose `href` is a best-effort HTTPS browse URL for that image (same reference is valid for `podman pull` / `docker pull`); when the report is source-based (for example `analysis_type` is `source` or the image `name` is an `http`/`https` URL), **Not available** is shown
+- **AND** **Image** shows the pull reference (for example `registry/repository:tag`, or `registry/repository@sha256:…`) as plain text suitable for any OCI-compatible `pull` command when the report has a pullable container reference; when the report is source-based (for example `analysis_type` is `source` or the image `name` is an `http`/`https` URL that is not a registry reference), **Not available** is shown; the value is not a hyperlink
 - **AND** when analysis is not in a failing state, additional rows include CVSS Score, Intel Reliability Score, Reason, and Summary
 - **AND** the Analysis Q&A card (ChecklistCard) is not shown when analysis is in a failing state
 

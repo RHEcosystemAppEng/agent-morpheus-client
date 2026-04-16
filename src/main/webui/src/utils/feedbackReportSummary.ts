@@ -6,6 +6,7 @@
  */
 
 import type { FullReport } from "../types/FullReport";
+import { getPullImageReference } from "./containerImageReference";
 
 export function getReportSummaryForFeedback(report: FullReport): string {
   if (!report?.input) {
@@ -26,11 +27,9 @@ export function getReportSummaryForFeedback(report: FullReport): string {
 
   lines.push(`Name: ${name}`);
   lines.push("");
-  if (image?.name) {
-    lines.push(`Image: ${image.name}`);
-    if (image.tag) {
-      lines.push(`Tag: ${image.tag}`);
-    }
+  const pullable = getPullImageReference(image);
+  if (pullable) {
+    lines.push(`Image: ${pullable}`);
     lines.push("");
   }
   lines.push(`Repository: ${repoSource?.git_repo ?? ""}`);

@@ -698,6 +698,175 @@ const mockReports: Report[] = [
   }),
 ];
 
+/** Reports with no `product_id` / `productId` in metadata (MSW mirror of `withoutProduct=true`). */
+const mockSingleRepositoryReports: Report[] = [
+  {
+    id: "sr-msw-1",
+    scanId: "sr-msw-1",
+    startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE1",
+        justification: { status: "FALSE", label: "not_vulnerable" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-service",
+    ref: "a1b2c3d4e5f6789012345678901234567890abcd",
+    submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "sr-msw-2",
+    scanId: "sr-msw-2",
+    startedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE2",
+        justification: { status: "TRUE", label: "vulnerable" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-app-two",
+    ref: "b2c3d4e5f6789012345678901234567890abcdef12",
+    submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "sr-msw-3",
+    scanId: "sr-msw-3",
+    startedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE3",
+        justification: { status: "UNKNOWN", label: "uncertain" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-three",
+    ref: "c3d4e5f6789012345678901234567890abcdef1234",
+    submittedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "sr-msw-4",
+    scanId: "sr-msw-4",
+    startedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE4",
+        justification: { status: "FALSE", label: "not_vulnerable" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-four",
+    ref: "d4e5f6789012345678901234567890abcdef123456",
+    submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "sr-msw-5",
+    scanId: "sr-msw-5",
+    startedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: "",
+    imageName: "source",
+    imageTag: "n/a",
+    state: "sent",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE5",
+        justification: { status: "UNKNOWN", label: "uncertain" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      sent_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-five",
+    ref: "e5f6789012345678901234567890abcdef12345678",
+    submittedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "sr-msw-6",
+    scanId: "sr-msw-6",
+    startedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-SINGLE6",
+        justification: { status: "FALSE", label: "not_vulnerable" },
+      },
+    ],
+    metadata: {
+      environment: "msw-single",
+      submitted_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://github.com/msw-examples/single-repo-six",
+    ref: "f6789012345678901234567890abcdef1234567890",
+    submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+function reportHasProductMetadata(r: Report): boolean {
+  const m = r.metadata ?? {};
+  return Boolean(m.productId || m.product_id);
+}
+
+function findReportByScanId(scanId: string): Report | undefined {
+  return (
+    mockReports.find((r) => r.scanId === scanId) ??
+    mockSingleRepositoryReports.find((r) => r.scanId === scanId)
+  );
+}
+
+function findReportById(id: string): Report | undefined {
+  return (
+    mockReports.find((r) => r.id === id) ??
+    mockSingleRepositoryReports.find((r) => r.id === id)
+  );
+}
+
+function removeReportById(id: string): boolean {
+  const iMain = mockReports.findIndex((r) => r.id === id);
+  if (iMain !== -1) {
+    mockReports.splice(iMain, 1);
+    return true;
+  }
+  const iSingle = mockSingleRepositoryReports.findIndex((r) => r.id === id);
+  if (iSingle !== -1) {
+    mockSingleRepositoryReports.splice(iSingle, 1);
+    return true;
+  }
+  return false;
+}
 
 /**
  * MSW request handlers
@@ -790,13 +959,17 @@ export const handlers = [
     const vulnId = url.searchParams.get("vulnId");
     const status = url.searchParams.get("status");
 
-    let filteredReports = [...mockReports];
+    let filteredReports = [...mockReports, ...mockSingleRepositoryReports];
 
     // Apply filters
     if (productId) {
       filteredReports = filteredReports.filter(
-        (r) => r.metadata?.productId === productId // Note: Will be productId when types are updated
+        (r) =>
+          r.metadata?.productId === productId ||
+          r.metadata?.product_id === productId
       );
+    } else if (url.searchParams.get("withoutProduct") === "true") {
+      filteredReports = filteredReports.filter((r) => !reportHasProductMetadata(r));
     }
 
     if (vulnId) {
@@ -831,7 +1004,7 @@ export const handlers = [
   http.get("/api/v1/reports/by-scan-id/:scanId", async ({ request, params }) => {
     await delay(getMockDelay(request));
     const { scanId } = params as { scanId: string };
-    const report = mockReports.find((r) => r.scanId === scanId);
+    const report = findReportByScanId(scanId);
     if (!report) {
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
     }
@@ -890,7 +1063,7 @@ export const handlers = [
     }
 
     // Fallback to Report summary if no FullReport exists
-    const report = mockReports.find((r) => r.id === id);
+    const report = findReportById(id);
     if (!report) {
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
     }
@@ -953,14 +1126,12 @@ export const handlers = [
   // DELETE /api/v1/reports/:id - Delete analysis report
   http.delete("/api/v1/reports/:id", async ({ request, params }) => {
     await delay(getMockDelay(request));
-    const { id } = params;
-    const index = mockReports.findIndex((r) => r.id === id);
+    const { id } = params as { id: string };
 
-    if (index === -1) {
+    if (!removeReportById(id)) {
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    mockReports.splice(index, 1);
     return HttpResponse.json({ message: "Report deleted successfully" });
   }),
 
@@ -1003,8 +1174,8 @@ export const handlers = [
   // POST /api/v1/reports/:id/submit - Submit to ExploitIQ
   http.post("/api/v1/reports/:id/submit", async ({ request, params }) => {
     await delay(getMockDelay(request));
-    const { id } = params;
-    const report = mockReports.find((r) => r.id === id);
+    const { id } = params as { id: string };
+    const report = findReportById(id);
 
     if (!report) {
       return HttpResponse.json({ error: "Report not found" }, { status: 404 });
@@ -1019,8 +1190,8 @@ export const handlers = [
   // POST /api/reports/:id/retry - Retry analysis request
   http.post("/api/reports/:id/retry", async ({ request, params }) => {
     await delay(getMockDelay(request));
-    const { id } = params;
-    const report = mockReports.find((r) => r.id === id);
+    const { id } = params as { id: string };
+    const report = findReportById(id);
 
     if (!report) {
       return HttpResponse.json({ error: "Request not found" }, { status: 404 });
