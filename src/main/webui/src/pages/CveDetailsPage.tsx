@@ -30,6 +30,7 @@ import {
   pageTitleCveDetails,
   pageTitleCveDetailsInvalid,
   pageTitleCveDetailsLoadError,
+  pageTitleCveDetailsLoading,
 } from "./pageTitles";
 
 interface CveDetailsPageErrorProps {
@@ -66,16 +67,16 @@ const CveDetailsPage: React.FC = () => {
 
   const documentTitle = useMemo(() => {
     if (!cveId) {
-      return pageTitleCveDetailsInvalid(params.cveId);
+      return pageTitleCveDetailsInvalid();
     }
     if (loading) {
-      return pageTitleCveDetails(cveId);
+      return pageTitleCveDetailsLoading(productId, cveId);
     }
     if (error) {
       return pageTitleCveDetailsLoadError(cveId);
     }
     return pageTitleCveDetails(cveId);
-  }, [cveId, loading, error, params.cveId]);
+  }, [cveId, loading, error, productId]);
 
   useDocumentTitle(documentTitle);
 

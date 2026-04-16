@@ -104,6 +104,11 @@ const RepositoryReportPage: React.FC = () => {
     [report]
   );
 
+  const scanVulnForCve = useMemo(
+    () => report?.input?.scan?.vulns?.find((v) => v.vuln_id === cveId),
+    [report, cveId]
+  );
+
   const documentTitle = useMemo(() => {
     if (!cveId) {
       return pageTitleRepositoryReportInvalidUrl();
@@ -120,13 +125,12 @@ const RepositoryReportPage: React.FC = () => {
     if (!report) {
       return pageTitleRepositoryReportNotFound(reportId || "");
     }
-    const vulnMatch = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
-    if (!vulnMatch) {
+    if (!scanVulnForCve) {
       return pageTitleRepositoryReportVulnNotFound(cveId);
     }
     const image = report.input?.image;
     return pageTitleRepositoryReport(cveId, image?.name, image?.tag);
-  }, [cveId, loading, error, report, reportId]);
+  }, [cveId, loading, error, report, reportId, scanVulnForCve]);
 
   useDocumentTitle(documentTitle);
 
@@ -159,8 +163,7 @@ const RepositoryReportPage: React.FC = () => {
   }
 
   const image = report.input?.image;
-  // Find the vulnerability that matches the CVE ID from the route
-  const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
+  const vuln = scanVulnForCve;
 
   if (!vuln) {
     return (

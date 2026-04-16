@@ -28,7 +28,6 @@ import {
   pageTitleExcludedComponents,
   pageTitleExcludedInvalidParams,
   pageTitleExcludedLoadError,
-  pageTitleExcludedNotFound,
 } from "./pageTitles";
 
 const COLUMN_NAMES = {
@@ -70,10 +69,10 @@ const ExcludedComponentsPage: React.FC = () => {
       return pageTitleExcludedComponents(productId, cveId);
     }
     if (error) {
-      return pageTitleExcludedLoadError();
+      return pageTitleExcludedLoadError(productId, cveId);
     }
     if (!data) {
-      return pageTitleExcludedNotFound();
+      return pageTitleExcludedLoadError(productId, cveId);
     }
     const productName = data.data?.name ?? productId;
     return pageTitleExcludedComponents(productName, cveId);

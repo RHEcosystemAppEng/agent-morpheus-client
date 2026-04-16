@@ -24,7 +24,6 @@ import {
   pageTitleReportInvalidParams,
   pageTitleReportLoadError,
   pageTitleReportLoading,
-  pageTitleReportNotFound,
 } from "./pageTitles";
 
 const REPORT_CARD_HEIGHT = "15rem";
@@ -42,10 +41,10 @@ const ReportPage: React.FC = () => {
       return pageTitleReportLoading(productId, cveId);
     }
     if (error) {
-      return pageTitleReportLoadError();
+      return pageTitleReportLoadError(productId, cveId);
     }
     if (!data) {
-      return pageTitleReportNotFound();
+      return pageTitleReportLoadError(productId, cveId);
     }
     return pageTitleProductReport(data.data.name, cveId);
   }, [productId, cveId, loading, error, data]);

@@ -43,6 +43,18 @@ export function pageTitleCveDetails(cveId: string): string {
   return withAppTitle(`CVE: ${cveId.toUpperCase()}`);
 }
 
+/** Document title while CVE metadata is loading (mirrors {@link pageTitleReportLoading}). */
+export function pageTitleCveDetailsLoading(
+  productId: string | undefined,
+  cveId: string
+): string {
+  const cve = cveId.toUpperCase();
+  if (productId) {
+    return withAppTitle(`Loading CVE: ${productId} / ${cve}`);
+  }
+  return withAppTitle(`Loading CVE: ${cve}`);
+}
+
 export function pageTitleExcludedComponents(
   productName: string,
   cveId: string
@@ -70,7 +82,16 @@ export function pageTitleReportInvalidParams(): string {
   return withAppTitle("Invalid report");
 }
 
-export function pageTitleReportLoadError(): string {
+export function pageTitleReportLoadError(
+  productId?: string,
+  cveId?: string
+): string {
+  if (productId && cveId) {
+    return withAppTitle(`Report error — ${productId} / ${cveId}`);
+  }
+  if (productId) {
+    return withAppTitle(`Report error — ${productId}`);
+  }
   return withAppTitle("Report error");
 }
 
@@ -86,21 +107,25 @@ export function pageTitleReportLoading(
 }
 
 export function pageTitleExcludedInvalidParams(): string {
-  return withAppTitle("Invalid excluded components page");
+  return withAppTitle("Excluded components — Missing URL parameters");
 }
 
-export function pageTitleExcludedLoadError(): string {
+export function pageTitleExcludedLoadError(
+  productId?: string,
+  cveId?: string
+): string {
+  if (productId && cveId) {
+    return withAppTitle(`Excluded components error — ${productId} / ${cveId}`);
+  }
+  if (productId) {
+    return withAppTitle(`Excluded components error — ${productId}`);
+  }
   return withAppTitle("Excluded components error");
 }
 
-export function pageTitleExcludedNotFound(): string {
-  return withAppTitle("Product not found");
-}
-
-/** @param routeCveId CVE segment from the route when present (e.g. malformed or empty after trim) */
-export function pageTitleCveDetailsInvalid(routeCveId?: string): string {
-  const id = routeCveId?.trim();
-  return withAppTitle(id ? `Invalid CVE — ${id}` : "Invalid CVE");
+/** CVE details route is incomplete or malformed (e.g. missing CVE segment), not a bad CVE identifier. */
+export function pageTitleCveDetailsInvalid(): string {
+  return withAppTitle("CVE details — Missing or invalid URL");
 }
 
 export function pageTitleCveDetailsLoadError(cveId: string): string {
