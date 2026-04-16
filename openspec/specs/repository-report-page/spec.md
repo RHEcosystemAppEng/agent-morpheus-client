@@ -70,9 +70,9 @@ The repository report page SHALL display report details in a structured layout w
 
 The repository report page SHALL display an inline warning alert with the title "AI usage notice" and the message "Always review AI generated content prior to use." The alert SHALL be positioned below the page title and above the report detail cards to remind users to review AI-generated content.
 
-The repository report page SHALL automatically refresh data every 5 seconds by re-fetching from the `/api/v1/reports/{id}` endpoint, but only when the report status is not "completed" or "failed". When the report status is "completed" or "failed", auto-refresh SHALL stop.
+The repository report page SHALL automatically refresh data by subscribing to SSE and re-fetching from `/api/v1/reports/{id}` when events arrive, but only when the report status is not "completed" or "failed". When the report status is "completed" or "failed", live refresh SHALL stop.
 
-The repository report page SHALL compare the report status between the previous and current data during auto-refresh. The page SHALL only trigger a rerender if the report status has changed. This optimization SHALL prevent unnecessary rerenders and UI jumps when the report status remains unchanged. Note: Only the status field is compared, not the entire report object.
+The repository report page SHALL compare the report status between the previous and current data during live refresh. The page SHALL only trigger a rerender if the report status has changed. This optimization SHALL prevent unnecessary rerenders and UI jumps when the report status remains unchanged. Note: Only the status field is compared, not the entire report object.
 
 The repository report page SHALL display a Feedback card after the RepositoryAdditionalDetailsCard (Additional Details card) in the same grid only when the report status is "completed".
 
@@ -104,8 +104,8 @@ The repository report page SHALL display a Feedback card after the RepositoryAdd
 - **AND** if the report fetch succeeds but the `status` field is not present in the response, the DetailsCard displays "Not Available" for the Analysis State field
 - **AND** the Analysis State field appears as the first field in the DetailsCard description list even when displaying "Not Available"
 
-#### Scenario: Auto-refresh prevents unnecessary rerenders
-- **WHEN** the repository report page auto-refreshes AND the report status has not changed
+#### Scenario: Live refresh prevents unnecessary rerenders
+- **WHEN** the repository report page SSE-driven refetch runs AND the report status has not changed
 - **THEN** the page SHALL compare only the report status between the previous and current data
 - **AND** the page SHALL skip the state update (prevent rerender) if the report status is unchanged
 - **AND** the page SHALL trigger a rerender if the report status has changed

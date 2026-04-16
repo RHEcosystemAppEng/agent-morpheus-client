@@ -20,9 +20,14 @@ export interface UseApiOptions<T = unknown> {
   deps?: unknown[];
   /**
    * Polling interval in milliseconds. If set, the API will be called repeatedly at this interval.
+   * Ignored when {@link sseRefreshPath} is set.
    * @default undefined (no polling)
    */
   pollInterval?: number;
+  /**
+   * Same-origin path or absolute URL for SSE live refresh. When set, replaces {@link pollInterval}.
+   */
+  sseRefreshPath?: string;
   /**
    * Function to determine if polling should continue based on the current data.
    * If not provided, polling will continue indefinitely (when pollInterval is set).
@@ -78,7 +83,7 @@ export function useApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>,
   options: UseApiOptions<T> = {}
 ): UseApiResult<T> {
-  const { deps = [], pollInterval } = options;
+  const { deps = [], pollInterval, sseRefreshPath } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -88,6 +93,7 @@ export function useApi<T>(
   const promiseRef = useRef<CancelablePromise<T> | Promise<T> | null>(null);
   const cancelledRef = useRef<boolean>(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
   // Store options in ref to avoid stale closures
@@ -189,10 +195,10 @@ export function useApi<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
 
-  // Set up polling if pollInterval is provided
+  // Set up polling if pollInterval is provided (not when using SSE)
   // Wait for initial fetch to complete before starting polling to prevent duplicate calls
   useEffect(() => {
-    if (!pollInterval) {
+    if (!pollInterval || sseRefreshPath) {
       return;
     }
     // Clear any existing interval
@@ -230,7 +236,50 @@ export function useApi<T>(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval]);
+  }, [pollInterval, sseRefreshPath]);
+
+  useEffect(() => {
+    if (!sseRefreshPath) {
+      return;
+    }
+    const url = sseRefreshPath.startsWith("http")
+      ? sseRefreshPath
+      : `${window.location.origin}${sseRefreshPath}`;
+    const es = new EventSource(url, { withCredentials: true });
+    eventSourceRef.current = es;
+    es.onmessage = () => {
+      if (!initialFetchCompleteRef.current) {
+        return;
+      }
+      const shouldPoll = optionsRef.current.shouldPoll;
+      if (shouldPoll && !shouldPoll(dataRef.current)) {
+        es.close();
+        if (eventSourceRef.current === es) {
+          eventSourceRef.current = null;
+        }
+        return;
+      }
+      execute(false);
+    };
+    return () => {
+      es.close();
+      if (eventSourceRef.current === es) {
+        eventSourceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sseRefreshPath, ...deps]);
+
+  useEffect(() => {
+    if (!sseRefreshPath) {
+      return;
+    }
+    const shouldPoll = optionsRef.current.shouldPoll;
+    if (shouldPoll && !shouldPoll(data) && eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, [data, sseRefreshPath]);
 
   return { data, loading, error };
 }

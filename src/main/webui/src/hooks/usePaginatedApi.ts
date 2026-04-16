@@ -86,9 +86,15 @@ export interface UsePaginatedApiOptions<T = unknown> {
   deps?: unknown[];
   /**
    * Polling interval in milliseconds. If set, the API will be called repeatedly at this interval.
+   * Ignored when {@link sseRefreshPath} is set.
    * @default undefined (no polling)
    */
   pollInterval?: number;
+  /**
+   * Absolute URL or same-origin path for Server-Sent Events. When set, live refresh uses EventSource
+   * (with credentials) instead of {@link pollInterval}.
+   */
+  sseRefreshPath?: string;
   /**
    * Function to determine if polling should continue based on the current data.
    * If not provided, polling will continue indefinitely (when pollInterval is set).
@@ -142,7 +148,7 @@ export function usePaginatedApi<T>(
   apiCall: () => ApiRequestOptions,
   options: UsePaginatedApiOptions<T> = {}
 ): UsePaginatedApiResult<T> {
-  const { deps = [], pollInterval } = options;
+  const { deps = [], pollInterval, sseRefreshPath } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -165,7 +171,8 @@ export function usePaginatedApi<T>(
   const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
   // Track if debounce is pending (user is typing/changing filters)
   const debouncePendingRef = useRef<boolean>(false);
-  
+  const eventSourceRef = useRef<EventSource | null>(null);
+
   // Update options ref whenever options change
   useEffect(() => {
     optionsRef.current = options;
@@ -317,11 +324,11 @@ export function usePaginatedApi<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
 
-  // Set up polling if pollInterval is provided
+  // Set up polling if pollInterval is provided (not when using SSE)
   // Always set the interval, but check initialFetchCompleteRef inside the callback
   // to prevent polling until the initial fetch completes
   useEffect(() => {
-    if (!pollInterval) {
+    if (!pollInterval || sseRefreshPath) {
       return;
     }
 
@@ -367,7 +374,53 @@ export function usePaginatedApi<T>(
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval]);
+  }, [pollInterval, sseRefreshPath]);
+
+  useEffect(() => {
+    if (!sseRefreshPath) {
+      return;
+    }
+    const url = sseRefreshPath.startsWith("http")
+      ? sseRefreshPath
+      : `${window.location.origin}${sseRefreshPath}`;
+    const es = new EventSource(url, { withCredentials: true });
+    eventSourceRef.current = es;
+    es.onmessage = () => {
+      if (!initialFetchCompleteRef.current) {
+        return;
+      }
+      if (debouncePendingRef.current) {
+        return;
+      }
+      const shouldPoll = optionsRef.current.shouldPoll;
+      if (shouldPoll && !shouldPoll(dataRef.current)) {
+        es.close();
+        if (eventSourceRef.current === es) {
+          eventSourceRef.current = null;
+        }
+        return;
+      }
+      void execute(false);
+    };
+    return () => {
+      es.close();
+      if (eventSourceRef.current === es) {
+        eventSourceRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sseRefreshPath, ...deps]);
+
+  useEffect(() => {
+    if (!sseRefreshPath) {
+      return;
+    }
+    const shouldPoll = optionsRef.current.shouldPoll;
+    if (shouldPoll && !shouldPoll(data) && eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, [data, sseRefreshPath]);
 
   return { data, loading, error, pagination };
 }

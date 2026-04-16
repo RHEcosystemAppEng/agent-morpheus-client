@@ -22,6 +22,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
 import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.service.ReportSseBroadcaster;
 import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -53,6 +54,9 @@ public class ProductRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
+  @Inject
+  ReportSseBroadcaster reportSseBroadcaster;
+
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
@@ -75,6 +79,7 @@ public class ProductRepositoryService {
 
     getCollection().insertOne(doc);
     LOGGER.debugf("Saved product %s to %s collection", product.id(), COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public Product get(String id) {
@@ -87,11 +92,13 @@ public class ProductRepositoryService {
   public void remove(String id) {
     getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, id)).wasAcknowledged();
     LOGGER.debugf("Removed product %s from %s collection", id, COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void remove(Collection<String> ids) {
     getCollection().deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids)).wasAcknowledged();
     LOGGER.debugf("Removed products %s from %s collection", ids.toString(), COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public String getUserName(String id) {
@@ -109,6 +116,7 @@ public class ProductRepositoryService {
   public void updateCompletedAt(String id, String completedAt) {
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, id), Updates.set(COMPLETED_AT, completedAt));
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void addSubmissionFailure(String id, FailedComponent failure) {
@@ -133,6 +141,7 @@ public class ProductRepositoryService {
         updateCompletedAt(id, Instant.now().toString());
       }
     }
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public static record ListResult(List<Product> products, long totalCount) {}

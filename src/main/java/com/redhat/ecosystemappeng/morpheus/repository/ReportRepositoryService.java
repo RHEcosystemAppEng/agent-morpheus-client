@@ -39,6 +39,7 @@ import com.redhat.ecosystemappeng.morpheus.model.Report;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.model.SortType;
 import com.redhat.ecosystemappeng.morpheus.model.VulnResult;
+import com.redhat.ecosystemappeng.morpheus.service.ReportSseBroadcaster;
 import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -83,6 +84,8 @@ public class ReportRepositoryService {
   @Inject
   ProductRepositoryService productRepositoryService;
 
+  @Inject
+  ReportSseBroadcaster reportSseBroadcaster;
 
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
@@ -224,6 +227,7 @@ public class ReportRepositoryService {
     getCollection().bulkWrite(bulk);
     
     productIds.forEach(this::checkAndStoreProductCompletion);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void updateWithError(String id, String errorType, String errorMessage) {
@@ -233,6 +237,7 @@ public class ReportRepositoryService {
     if (Objects.nonNull(productId)) {
       checkAndStoreProductCompletion(productId);
     }
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   /**
@@ -251,13 +256,16 @@ public class ReportRepositoryService {
   public Report save(String data) {
     var doc = Document.parse(data);
     var inserted = getCollection().insertOne(doc);
-    return get(inserted.getInsertedId().asObjectId().getValue());
+    var report = get(inserted.getInsertedId().asObjectId().getValue());
+    reportSseBroadcaster.publishCatalogChanged();
+    return report;
   }
 
   public void setAsSent(String id) {
     var objId = new ObjectId(id);
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId),
         Updates.set("metadata." + SENT_AT, Instant.now()));
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void setAsSubmitted(String id, String byUser) {
@@ -268,6 +276,7 @@ public class ReportRepositoryService {
     updates.add(Updates.set("metadata.user", byUser));
 
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, objId), updates);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void setAsRetried(String id, String byUser) {
@@ -277,6 +286,7 @@ public class ReportRepositoryService {
             Updates.set("metadata." + SUBMITTED_AT, Instant.now()),
             Updates.set("metadata.user", byUser),
             Updates.unset("error")));
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   private Report get(ObjectId id) {
@@ -581,7 +591,9 @@ public class ReportRepositoryService {
     if (result && Objects.nonNull(productId)) {
       checkAndStoreProductCompletion(productId);
     }
-    
+    if (result) {
+      reportSseBroadcaster.publishCatalogChanged();
+    }
     return result;
   }
 
@@ -595,8 +607,8 @@ public class ReportRepositoryService {
     
     if (result) {
       productIds.forEach(this::checkAndStoreProductCompletion);
+      reportSseBroadcaster.publishCatalogChanged();
     }
-    
     return result;
   }
 
@@ -613,12 +625,16 @@ public class ReportRepositoryService {
 
       }
     getCollection().deleteMany(filter).wasAcknowledged();
+    reportSseBroadcaster.publishCatalogChanged();
     return collection;
   }
 
   public void removeBefore(Instant threshold) {
     var count = getCollection().deleteMany(Filters.lt("metadata." + SUBMITTED_AT, threshold)).getDeletedCount();
     LOGGER.debugf("Removed %s reports before %s", count, threshold);
+    if (count > 0) {
+      reportSseBroadcaster.publishCatalogChanged();
+    }
   }
 
   private void handleMultipleValues(String valueString, 

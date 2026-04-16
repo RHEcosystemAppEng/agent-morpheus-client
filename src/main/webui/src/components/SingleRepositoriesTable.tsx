@@ -6,7 +6,6 @@ import {
   REPOSITORY_REPORTS_VALID_FILTER_KEYS,
 } from "../hooks/repositoryReportsTableParams";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
-import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
 
 function getCveIdForReport(report: Report): string | undefined {
   return report.vulns?.[0]?.vulnId;
@@ -25,7 +24,6 @@ const SingleRepositoriesTable: React.FC = () => {
     pagination,
   } = useRepositoryReports({
     tableData: params.data,
-    pollInterval: REPORTS_TABLE_POLL_INTERVAL_MS,
   });
 
   const getViewPath = (report: Report) => {
