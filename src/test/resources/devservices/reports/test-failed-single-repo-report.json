@@ -9,7 +9,7 @@
   "input": {
     "scan": {
       "id": "failed-single-repo-scan-1",
-      "type": null,
+      "type": "source",
       "started_at": "2026-04-02T11:00:00.000000",
       "completed_at": "2026-04-02T11:10:00.000000",
       "vulns": [
@@ -30,8 +30,9 @@
       ]
     },
     "image": {
-      "name": "failed-single-repo-image",
-      "tag": "dev",
+      "analysis_type": "source",
+      "name": "https://github.com/example/failed-single-repo",
+      "tag": "develop",
       "source_info": [
         {
           "type": "code",

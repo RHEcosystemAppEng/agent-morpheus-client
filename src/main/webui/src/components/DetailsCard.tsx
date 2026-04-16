@@ -17,6 +17,7 @@ import Finding from "./Finding";
 import IntelReliabilityScore from "./IntelReliabilityScore";
 import NotAvailable from "./NotAvailable";
 import { getFindingForReportRow } from "../utils/findingDisplay";
+import { getPullImageReference } from "../utils/containerImageReference";
 
 /** Base URL for .../commit/{ref} links: no trailing slash or `.git` suffix. */
 function normalizeRepoBaseForCommitLink(repo: string): string {
@@ -58,7 +59,12 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
     ? sourceInfo.find((s) => s?.type === "code")
     : undefined;
   const codeRepository = codeSource?.git_repo;
-  const codeTag = codeSource?.ref;
+  const codeRef = codeSource?.ref;
+  const repositorySnapshotUrl =
+    codeRepository && codeRef
+      ? `${normalizeRepoBaseForCommitLink(codeRepository)}/commit/${codeRef}`
+      : undefined;
+  const imagePullRef = getPullImageReference(image);
   const output = report.output?.analysis || [];
   const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
   const outputVuln = output.find((v) => v.vuln_id === cveId);
@@ -106,9 +112,17 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-              <DescriptionListTerm>Repository</DescriptionListTerm>
+              <DescriptionListTerm>Repository URL</DescriptionListTerm>
               <DescriptionListDescription>
-                {codeRepository ? (
+                {repositorySnapshotUrl ? (
+                  <a
+                    href={repositorySnapshotUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {repositorySnapshotUrl}
+                  </a>
+                ) : codeRepository ? (
                   <a href={codeRepository} target="_blank" rel="noreferrer">
                     {codeRepository}
                   </a>
@@ -118,19 +132,9 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
-              <DescriptionListTerm>Commit ID</DescriptionListTerm>
+              <DescriptionListTerm>Image</DescriptionListTerm>
               <DescriptionListDescription>
-                {codeRepository && codeTag ? (
-                  <a
-                    href={`${normalizeRepoBaseForCommitLink(codeRepository)}/commit/${codeTag}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {codeTag}
-                  </a>
-                ) : (
-                  <NotAvailable />
-                )}
+                {imagePullRef ?? <NotAvailable />}
               </DescriptionListDescription>
             </DescriptionListGroup>
             {!isFailed && (

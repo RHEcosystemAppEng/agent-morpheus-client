@@ -2522,4 +2522,383 @@ export const mockFullReports: Record<string, FullReport> = {
       team: "demo",
     },
   },
+
+  /** MSW single-repository list (no product): source scan — Image row is N/A in UI */
+  "sr-msw-1": {
+    _id: "sr-msw-1",
+    input: {
+      scan: {
+        id: "sr-msw-1",
+        type: "source",
+        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE1",
+            description: "MSW single-repo mock vulnerability",
+            score: 6.1,
+            severity: "MEDIUM",
+            published_date: "2024-06-01",
+            last_modified_date: "2024-06-15",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE1",
+            feed_group: "nvd",
+            package: "example-lib",
+            package_version: "2.0.0",
+            package_name: "example-lib",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-service",
+        tag: "a1b2c3d4e5f6789012345678901234567890abcd",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-service",
+            ref: "a1b2c3d4e5f6789012345678901234567890abcd",
+            include: ["**/*.java"],
+            exclude: ["target/**"],
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [
+        {
+          vuln_id: "CVE-2024-SINGLE1",
+          justification: {
+            status: "FALSE",
+            label: "not_vulnerable",
+            reason: "Mock analysis: not exploitable in this codebase.",
+          },
+          summary: "MSW mock source repository report.",
+          checklist: [],
+          intel_score: 0.5,
+          cvss: {
+            score: "6.1",
+            vector_string: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:L",
+          },
+        },
+      ],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
+  "sr-msw-2": {
+    _id: "sr-msw-2",
+    input: {
+      scan: {
+        id: "sr-msw-2",
+        type: "source",
+        started_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE2",
+            description: "MSW single-repo mock vulnerability 2",
+            score: 7.2,
+            severity: "HIGH",
+            published_date: "2024-05-10",
+            last_modified_date: "2024-05-20",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE2",
+            feed_group: "nvd",
+            package: "another-lib",
+            package_version: "1.1.0",
+            package_name: "another-lib",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-app-two",
+        tag: "b2c3d4e5f6789012345678901234567890abcdef12",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-app-two",
+            ref: "b2c3d4e5f6789012345678901234567890abcdef12",
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [
+        {
+          vuln_id: "CVE-2024-SINGLE2",
+          justification: {
+            status: "TRUE",
+            label: "vulnerable",
+            reason: "Mock: dependency is in scope.",
+          },
+          summary: "MSW mock source report 2.",
+          checklist: [],
+          intel_score: 0.6,
+          cvss: {
+            score: "7.2",
+            vector_string: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+          },
+        },
+      ],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
+  "sr-msw-3": {
+    _id: "sr-msw-3",
+    input: {
+      scan: {
+        id: "sr-msw-3",
+        type: "source",
+        started_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE3",
+            description: "MSW single-repo mock vulnerability 3",
+            score: 5.5,
+            severity: "MEDIUM",
+            published_date: "2024-04-01",
+            last_modified_date: "2024-04-10",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE3",
+            feed_group: "nvd",
+            package: "lib-three",
+            package_version: "3.0.0",
+            package_name: "lib-three",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-three",
+        tag: "c3d4e5f6789012345678901234567890abcdef1234",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-three",
+            ref: "c3d4e5f6789012345678901234567890abcdef1234",
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [
+        {
+          vuln_id: "CVE-2024-SINGLE3",
+          justification: {
+            status: "UNKNOWN",
+            label: "uncertain",
+            reason: "Mock: insufficient context.",
+          },
+          summary: "MSW mock source report 3.",
+          checklist: [],
+          intel_score: 0.4,
+          cvss: {
+            score: "5.5",
+            vector_string: "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N",
+          },
+        },
+      ],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
+  "sr-msw-4": {
+    _id: "sr-msw-4",
+    input: {
+      scan: {
+        id: "sr-msw-4",
+        type: "source",
+        started_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE4",
+            description: "MSW single-repo mock vulnerability 4",
+            score: 4.0,
+            severity: "LOW",
+            published_date: "2024-03-01",
+            last_modified_date: "2024-03-05",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE4",
+            feed_group: "nvd",
+            package: "lib-four",
+            package_version: "1.0.1",
+            package_name: "lib-four",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-four",
+        tag: "d4e5f6789012345678901234567890abcdef123456",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-four",
+            ref: "d4e5f6789012345678901234567890abcdef123456",
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [
+        {
+          vuln_id: "CVE-2024-SINGLE4",
+          justification: {
+            status: "FALSE",
+            label: "not_vulnerable",
+            reason: "Mock: not applicable.",
+          },
+          summary: "MSW mock source report 4.",
+          checklist: [],
+          intel_score: 0.3,
+          cvss: {
+            score: "4.0",
+            vector_string: "CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N",
+          },
+        },
+      ],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
+  "sr-msw-5": {
+    _id: "sr-msw-5",
+    input: {
+      scan: {
+        id: "sr-msw-5",
+        type: "source",
+        started_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: "",
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE5",
+            description: "MSW single-repo mock vulnerability 5 (in progress)",
+            score: 8.0,
+            severity: "HIGH",
+            published_date: "2024-02-01",
+            last_modified_date: "2024-02-10",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE5",
+            feed_group: "nvd",
+            package: "lib-five",
+            package_version: "5.0.0",
+            package_name: "lib-five",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-five",
+        tag: "e5f6789012345678901234567890abcdef12345678",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-five",
+            ref: "e5f6789012345678901234567890abcdef12345678",
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+      sent_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
+  "sr-msw-6": {
+    _id: "sr-msw-6",
+    input: {
+      scan: {
+        id: "sr-msw-6",
+        type: "source",
+        started_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        completed_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+        vulns: [
+          {
+            vuln_id: "CVE-2024-SINGLE6",
+            description: "MSW single-repo mock vulnerability 6",
+            score: 3.3,
+            severity: "LOW",
+            published_date: "2024-01-10",
+            last_modified_date: "2024-01-12",
+            url: "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2024-SINGLE6",
+            feed_group: "nvd",
+            package: "lib-six",
+            package_version: "0.9.0",
+            package_name: "lib-six",
+            package_type: "maven",
+          },
+        ],
+      },
+      image: {
+        analysis_type: "source",
+        ecosystem: "java",
+        name: "https://github.com/msw-examples/single-repo-six",
+        tag: "f6789012345678901234567890abcdef1234567890",
+        source_info: [
+          {
+            type: "code",
+            git_repo: "https://github.com/msw-examples/single-repo-six",
+            ref: "f6789012345678901234567890abcdef1234567890",
+          },
+        ],
+      },
+    },
+    output: {
+      analysis: [
+        {
+          vuln_id: "CVE-2024-SINGLE6",
+          justification: {
+            status: "FALSE",
+            label: "not_vulnerable",
+            reason: "Mock: patched upstream.",
+          },
+          summary: "MSW mock source report 6.",
+          checklist: [],
+          intel_score: 0.2,
+          cvss: {
+            score: "3.3",
+            vector_string: "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+          },
+        },
+      ],
+      vex: null,
+    },
+    info: {},
+    metadata: {
+      submitted_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      environment: "msw-single",
+    },
+  },
 };
