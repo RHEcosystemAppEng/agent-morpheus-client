@@ -14,7 +14,7 @@ import { useMemo } from "react";
 import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { getRepositoriesAnalyzedFromProduct } from "../utils/repositoriesAnalyzed";
-import { REPORTS_TABLE_POLL_INTERVAL_MS } from "../utils/polling";
+import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import type { Finding } from "../utils/findingDisplay";
 import {
@@ -232,7 +232,7 @@ export function useReportsTableData(
   if (name) queryParams.name = name;
   if (cveId) queryParams.cveId = cveId;
 
-  // Fetch products using usePaginatedApi with auto-refresh
+  // Fetch products using usePaginatedApi with SSE catalog refresh
   const {
     data: productSummaries,
     loading,
@@ -246,7 +246,7 @@ export function useReportsTableData(
     }),
     {
       deps: [page, perPage, sortField, sortDirectionApi, name, cveId],
-      pollInterval: REPORTS_TABLE_POLL_INTERVAL_MS,
+      sseRefreshPath: REPORT_CATALOG_SSE_PATH,
       shouldUpdate: (previousData, currentData) => {
         return haveReportStatesChanged(previousData, currentData);
       },

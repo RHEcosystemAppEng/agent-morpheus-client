@@ -74,11 +74,11 @@ The reports table SHALL support filtering by SBOM Name and CVE ID. All filtering
 - **AND** the same filter input remains displayed even after the filter is applied
 - **AND** the active attribute only changes when the user manually selects a different attribute from the attribute selector
 
-#### Scenario: Auto-refresh behavior
+#### Scenario: Live refresh behavior
 - **WHEN** a user views the reports table
-- **THEN** the table automatically refreshes data every 15 seconds (see `api-hooks` specification for polling behavior)
-- **AND** the auto-refresh preserves current pagination, sorting, and filter settings
-- **AND** the auto-refresh prevents unnecessary rerenders when data hasn't changed (see `api-hooks` specification for `shouldUpdate` behavior)
+- **THEN** the table refreshes when the server pushes SSE catalog events (see `report-events-stream` and `api-hooks` specifications)
+- **AND** the refresh preserves current pagination, sorting, and filter settings
+- **AND** unnecessary rerenders are avoided when data hasn't changed (see `api-hooks` `shouldUpdate` behavior)
 
 ### Requirement: Optimized Single Report Navigation
 When a product has exactly one submitted report (`submittedCount === 1`), clicking on the Report ID in the reports table SHALL query the reports API for that product and navigate directly to the single report page at `/reports/component/:reportId/:cveId`, bypassing the product summary page. If the product has more than one submitted report, the system SHALL navigate to the product summary page at `/reports/product/:productId/:cveId` (current behavior).

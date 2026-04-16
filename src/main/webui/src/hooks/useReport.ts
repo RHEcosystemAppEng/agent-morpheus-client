@@ -12,7 +12,8 @@
 
 import { useApi } from "./useApi";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-import { POLL_INTERVAL_MS, shouldContinuePollingByProductState } from "../utils/polling";
+import { shouldContinuePollingByProductState } from "../utils/polling";
+import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import { request } from "../generated-client/core/request";
 import { OpenAPI } from "../generated-client/core/OpenAPI";
 import isEqual from "lodash/isEqual";
@@ -41,8 +42,8 @@ export function hasProductStatusCountsChanged(
 }
 
 /**
- * Hook to fetch product data for a report page with conditional auto-refresh.
- * Auto-refresh continues while product data has changed.
+ * Hook to fetch product data for a report page with conditional SSE live refresh.
+ * Refresh continues while product analysis is not completed.
  * Only updates state when product data has changed to prevent unnecessary rerenders.
  * 
  * @param productId - The product ID to fetch data for
@@ -64,7 +65,7 @@ export function useReport(productId: string | undefined): UseReportResult {
     }),
     {
       deps: [productId],
-      pollInterval: POLL_INTERVAL_MS,
+      sseRefreshPath: REPORT_CATALOG_SSE_PATH,
       shouldPoll: (product) => product !== null && shouldContinuePollingByProductState(product),
       shouldUpdate: (previousProduct, currentProduct) => {
         return hasProductStatusCountsChanged(previousProduct, currentProduct);
