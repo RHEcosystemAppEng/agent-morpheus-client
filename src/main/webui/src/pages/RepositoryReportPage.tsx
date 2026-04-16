@@ -25,6 +25,14 @@ import DownloadDropdown from "../components/DownloadVex";
 import FeedbackReportCard from "../components/FeedbackReportCard";
 import { getReportSummaryForFeedback } from "../utils/feedbackReportSummary";
 import { getPullImageReference } from "../utils/containerImageReference";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import {
+  pageTitleRepositoryReport,
+  pageTitleRepositoryReportInvalidUrl,
+  pageTitleRepositoryReportLoadError,
+  pageTitleRepositoryReportNotFound,
+  pageTitleRepositoryReportVulnNotFound,
+} from "./pageTitles";
 
 interface RepositoryReportPageErrorProps {
   title: string;
@@ -97,6 +105,36 @@ const RepositoryReportPage: React.FC = () => {
     [report]
   );
 
+  const scanVulnForCve = useMemo(
+    () => report?.input?.scan?.vulns?.find((v) => v.vuln_id === cveId),
+    [report, cveId]
+  );
+
+  const documentTitle = useMemo(() => {
+    if (!cveId) {
+      return pageTitleRepositoryReportInvalidUrl();
+    }
+    if (loading) {
+      return pageTitleRepositoryReport(cveId);
+    }
+    if (error) {
+      const errorStatus = (error as { status?: number })?.status;
+      return errorStatus === 404
+        ? pageTitleRepositoryReportNotFound(reportId || "")
+        : pageTitleRepositoryReportLoadError();
+    }
+    if (!report) {
+      return pageTitleRepositoryReportNotFound(reportId || "");
+    }
+    if (!scanVulnForCve) {
+      return pageTitleRepositoryReportVulnNotFound(cveId);
+    }
+    const image = report.input?.image;
+    return pageTitleRepositoryReport(cveId, image?.name, image?.tag);
+  }, [cveId, loading, error, report, reportId, scanVulnForCve]);
+
+  useDocumentTitle(documentTitle);
+
   if (!cveId) {
     return (
       <RepositoryReportPageError
@@ -126,8 +164,7 @@ const RepositoryReportPage: React.FC = () => {
   }
 
   const image = report.input?.image;
-  // Find the vulnerability that matches the CVE ID from the route
-  const vuln = report.input?.scan?.vulns?.find((v) => v.vuln_id === cveId);
+  const vuln = scanVulnForCve;
 
   if (!vuln) {
     return (

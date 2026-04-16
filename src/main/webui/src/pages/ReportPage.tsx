@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router";
 import {
   PageSection,
@@ -17,6 +18,13 @@ import ReportComponentStatesPieChart from "../components/ReportComponentStatesPi
 import RepositoryReportsTable from "../components/RepositoryReportsTable";
 import ReportPageSkeleton from "../components/ReportPageSkeleton";
 import { getErrorMessage } from "../utils/errorHandling";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import {
+  pageTitleProductReport,
+  pageTitleReportInvalidParams,
+  pageTitleReportLoadError,
+  pageTitleReportLoading,
+} from "./pageTitles";
 
 const REPORT_CARD_HEIGHT = "15rem";
 
@@ -24,6 +32,24 @@ const ReportPage: React.FC = () => {
   const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
 
   const { data, loading, error } = useReport(productId);
+
+  const documentTitle = useMemo(() => {
+    if (!productId || !cveId) {
+      return pageTitleReportInvalidParams();
+    }
+    if (loading) {
+      return pageTitleReportLoading(productId, cveId);
+    }
+    if (error) {
+      return pageTitleReportLoadError(productId, cveId);
+    }
+    if (!data) {
+      return pageTitleReportLoadError(productId, cveId);
+    }
+    return pageTitleProductReport(data.data.name, cveId);
+  }, [productId, cveId, loading, error, data]);
+
+  useDocumentTitle(documentTitle);
 
   if (loading) {
     return <ReportPageSkeleton />;

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router";
 import {
   Breadcrumb,
@@ -24,6 +25,13 @@ import CveReferencesCard from "../components/CveReferencesCard";
 import CveVulnerablePackagesCard from "../components/CveVulnerablePackagesCard";
 import CveDescriptionCard from "../components/CveDescriptionCard";
 import CveDetailsPageSkeleton from "../components/CveDetailsPageSkeleton";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import {
+  pageTitleCveDetails,
+  pageTitleCveDetailsInvalid,
+  pageTitleCveDetailsLoadError,
+  pageTitleCveDetailsLoading,
+} from "./pageTitles";
 
 interface CveDetailsPageErrorProps {
   title: string;
@@ -54,6 +62,23 @@ const CveDetailsPage: React.FC = () => {
     reportId?: string;
   }>();
   const { productId, cveId, reportId } = params;
+
+  const { metadata, loading, error } = useCveDetails(cveId ?? "", reportId);
+
+  const documentTitle = useMemo(() => {
+    if (!cveId) {
+      return pageTitleCveDetailsInvalid();
+    }
+    if (loading) {
+      return pageTitleCveDetailsLoading(productId, cveId);
+    }
+    if (error) {
+      return pageTitleCveDetailsLoadError(cveId);
+    }
+    return pageTitleCveDetails(cveId);
+  }, [cveId, loading, error, productId]);
+
+  useDocumentTitle(documentTitle);
 
   if (!cveId) {
     return (
@@ -97,8 +122,6 @@ const CveDetailsPage: React.FC = () => {
       </Breadcrumb>
     );
   };
-
-  const { metadata, loading, error } = useCveDetails(cveId, reportId);
 
   if (loading) {
     return <CveDetailsPageSkeleton />;
