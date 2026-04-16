@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router";
 import {
   PageSection,
@@ -22,6 +23,12 @@ import {
 import { useReport } from "../hooks/useReport";
 import { getErrorMessage } from "../utils/errorHandling";
 import TableEmptyState from "../components/TableEmptyState";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import {
+  pageTitleExcludedComponents,
+  pageTitleExcludedInvalidParams,
+  pageTitleExcludedLoadError,
+} from "./pageTitles";
 
 const COLUMN_NAMES = {
   component: "Component",
@@ -53,6 +60,25 @@ const ExcludedComponentsPageSkeleton: React.FC = () => (
 const ExcludedComponentsPage: React.FC = () => {
   const { productId, cveId } = useParams<{ productId: string; cveId: string }>();
   const { data, loading, error } = useReport(productId);
+
+  const documentTitle = useMemo(() => {
+    if (!productId || !cveId) {
+      return pageTitleExcludedInvalidParams();
+    }
+    if (loading) {
+      return pageTitleExcludedComponents(productId, cveId);
+    }
+    if (error) {
+      return pageTitleExcludedLoadError(productId, cveId);
+    }
+    if (!data) {
+      return pageTitleExcludedLoadError(productId, cveId);
+    }
+    const productName = data.data?.name ?? productId;
+    return pageTitleExcludedComponents(productName, cveId);
+  }, [productId, cveId, loading, error, data]);
+
+  useDocumentTitle(documentTitle);
 
   if (loading) {
     return <ExcludedComponentsPageSkeleton />;
