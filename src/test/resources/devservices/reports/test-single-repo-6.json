@@ -5,7 +5,7 @@
   "input": {
     "scan": {
       "id": "test-single-repo-6",
-      "type": null,
+      "type": "source",
       "started_at": "2026-03-08T15:00:00.000000",
       "completed_at": "2026-03-08T16:00:00.000000",
       "vulns": [
@@ -26,8 +26,9 @@
       ]
     },
     "image": {
-      "name": "single-repo-image-6",
-      "tag": "v0.9.0",
+      "analysis_type": "source",
+      "name": "https://github.com/example/single-repo-sdk-f",
+      "tag": "feature-branch",
       "source_info": [
         {
           "type": "code",
