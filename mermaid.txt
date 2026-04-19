@@ -1,0 +1,40 @@
+1. user request analysis.
+
+2. split to 2 : 
+    1- product
+    parsing level-if failed- error- no preproccesing no agent "parsing error" . error in analysis state
+            if work- creat product. user navigates to product page.
+    the proccess- each component in the array :
+    in the component we only have image.
+    async: each component in the array - runs on it syft -> become cycloneDX .
+    if failed: the component added to excluded component.
+     *new* if success: exhort= dependency analytics (exhort failed ?)
+                        if vulnerable package present in code base- send to the agent= ai analysis.
+                        if vulnerable package not present in code base- add the component to excluded component.
+
+    if go to the agent: the steps are:
+    1- queue. Finding= in progress
+    2- sent to agent. Finding= in progress
+        clone failed= Finding= failed.
+    2.5- expired. =timeout
+    3- agent analysis . Finding= in progress
+        a lot of steps. 
+        3.5- expired. =timeout
+        if one of them failed- Finding= uncertain. state= completed
+    4- completed. and than Finding= vulnerable/not vulnerable/.
+
+
+    2- single component (repository/cycloneDX)
+    1- queue. Finding= in progress
+    2- sent to agent. Finding= in progress
+        clone failed= Finding= failed.
+    2.5- expired. =timeout
+    3- agent analysis . Finding= in progress
+        a lot of steps. 
+        3.5- expired. =timeout
+        if one of them failed- Finding= uncertain. state= completed
+    4- completed. and than Finding= vulnerable/not vulnerable/.
+
+
+
+    

@@ -1,0 +1,93 @@
+%% Analysis pipeline / workflow — derived from project notes (mermaid.txt)
+%% Product path vs single-component path, then shared agent lifecycle and outcomes.
+%% Product path: use edge labels `success` / `failed` everywhere; declare `success` before `failed`
+%% so the happy path stays on the left and errors on the right (Mermaid TB / Dagre default).
+
+
+flowchart TB
+    classDef error fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#450a0a
+    classDef timeout fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#78350f
+    classDef terminal fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
+    classDef progress fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
+    classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
+    classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
+
+    START([User request analysis])
+
+    SPLIT{Which flow?}
+
+    subgraph PRODUCT["Path A — Product (multi-component)"]
+        direction TB
+        P_PARSE[Parse product -parsing level]
+        P_PARSE_ERR[[No preprocessing, no agent.<br/>analysis state: error]]
+        P_OK[Parse OK → create product<br/>user navigates to product page]
+
+        subgraph PER_COMP[" "]
+            direction TB
+            PER_CAPTION["For each component in array — async, parallel.<br/>Each component supplies an image only."]
+            SYFT[Syft → CycloneDX]
+            SYFT_FAIL[[goes to excluded components]]
+            EXHORT[Exhort — dependency analytics]
+            EXHORT_ERR[[Exhort failed <br/>---]]
+            VULN_CHECK[Vulnerable package<br/>present in codebase?]
+            TO_AGENT[Send to agent — AI analysis]
+            NO_VULN_EXCL[[Vulnerable package not in codebase.<br/>goes to excluded components]]
+
+            PER_CAPTION --> SYFT
+        end
+
+        P_PARSE -->|success| P_OK
+        P_PARSE -->|failed| P_PARSE_ERR
+        P_OK --> PER_CAPTION
+        SYFT -->|success| EXHORT
+        SYFT -->|failed| SYFT_FAIL
+        EXHORT -->|success| VULN_CHECK
+        EXHORT -->|failed| EXHORT_ERR
+        VULN_CHECK -->|success| TO_AGENT
+        VULN_CHECK -->|failed| NO_VULN_EXCL
+    end
+
+    subgraph SINGLE["Path B — Single component (repository / CycloneDX)"]
+        direction TB
+        SC_START[Single-component intake<br/>skips product parsing, Syft, Exhort per-component branch]
+    end
+
+    subgraph AGENT["Shared — Agent pipeline (product component OR single component)"]
+        direction TB
+        A_Q[Queue<br/>Finding: in progress]
+        A_SENT[Sent to agent<br/>State: sent <br/>Finding: in progress]
+        A_CLONE_FAIL[[Clone failed<br/>State- excluded<br/>Finding: Failed]]
+        A_T1[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_ANAL[Agent analysis<br/>Finding: in progress<br/> many internal steps...]
+        A_STEP_FAIL[[Any analysis step failed<br/>State: completed<br/>Finding: Uncertain]]
+        A_T2[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_DONE[Completed<br/>State:completed]
+        A_RESULT{Vulnerability conclusion}
+        A_VULN([Finding: Vulnerable])
+        A_SAFE([Finding: Not vulnerable])
+        A_UNCERT([Finding: Uncertain])
+    end
+
+    START --> SPLIT
+    SPLIT -->|product| P_PARSE
+    SPLIT -->|single component| SC_START
+
+    SC_START --> A_Q
+    TO_AGENT --> A_Q
+
+    A_Q --> A_SENT
+    A_SENT -->|success| A_ANAL
+    A_SENT -->|clone failed| A_CLONE_FAIL
+    A_SENT -->|timeout| A_T1
+    A_ANAL -->|all steps OK| A_DONE
+    A_ANAL -->|timeout| A_T2
+    A_ANAL -->|step failure| A_STEP_FAIL
+    A_DONE --> A_RESULT
+    A_RESULT --> A_VULN & A_SAFE & A_UNCERT
+
+    class P_PARSE_ERR,SYFT_FAIL,EXHORT_ERR,NO_VULN_EXCL,A_CLONE_FAIL,A_STEP_FAIL error
+    class A_T1,A_T2 timeout
+    class A_VULN,A_SAFE,A_UNCERT terminal
+    class A_Q,A_SENT,A_ANAL,A_RESULT progress
+    class P_OK,A_DONE,TO_AGENT ok
+    class PER_CAPTION caption
