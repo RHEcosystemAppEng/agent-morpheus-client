@@ -13,6 +13,10 @@ Check this other documents for:
 * [Configuration](./docs/configuration.md)
 * [Development](./docs/development.md)
 
+## Analysis pipeline workflow
+
+End-to-end processing from request intake through ExploitIQ is summarized in the **Mermaid diagram at the end of this README** ([jump to diagram](#analysis-pipeline-diagram)). The editable source lives in [docs/analysis-pipeline-workflow.mmd](./docs/analysis-pipeline-workflow.mmd); when you change that file, update the fenced **mermaid** code block at the bottom of this README so GitHub’s preview stays accurate.
+
 ## Using the Application
 
 Open http://localhost:8080/
@@ -111,3 +115,111 @@ A blue **Download** button is available on the repository report page, providing
 ![download_button](./docs/images/download_button.png)
 
 ![download_open](./docs/images/download_open.png)
+
+## Analysis pipeline diagram
+
+The flowchart below is a high-level map of what happens after you submit an analysis request. It is meant for operators, integrators, and anyone tracing why a report ended up **queued**, **sent**, **failed**, **excluded**, or in a given **finding** state.
+
+
+The diagram is rendered here for GitHub readers. To iterate on layout or wording, edit [docs/analysis-pipeline-workflow.mmd](./docs/analysis-pipeline-workflow.mmd) and paste the updated `flowchart` (and `%%{init: ...}%%` line if present) into the block below.
+
+```mermaid
+%%{init: {"htmlLabels": true}}%%
+
+flowchart TB
+    classDef error fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#450a0a
+    classDef timeout fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#78350f
+    classDef terminal fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
+    classDef progress fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
+    classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
+    classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
+
+    HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
+    class HEADER caption
+
+    START([User request analysis])
+
+    SPLIT([Which flow? <br/>CVE ID +  SPDX SBOM = Product <br/>CVE ID + Repository URL & Commit ID / CycloneDX SBOM = Single component<br/>])
+
+    subgraph PRODUCT["<b>Path A — Product (multi-component)</b>"]
+        direction TB
+        P_PARSE[Parse product -parsing level]
+        P_PARSE_ERR[[No preprocessing, no agent.<br/>analysis state: error]]
+        P_OK[Parse OK → create product<br/>user navigates to product page]
+
+        subgraph PER_COMP[" "]
+            direction TB
+            PER_CAPTION["For each component in array — async, parallel.<br/>Each component supplies an image only."]
+            SYFT[Syft → CycloneDX]
+            SYFT_FAIL[[goes to excluded components]]
+            EXHORT[Exhort — dependency analytics]
+            EXHORT_ERR[[Exhort failed <br/>---]]
+            VULN_CHECK[Vulnerable package<br/>present in codebase?]
+            TO_AGENT[Send to agent — AI analysis]
+            NO_VULN_EXCL[[Vulnerable package not in codebase.<br/>goes to excluded components]]
+
+            PER_CAPTION --> SYFT
+        end
+
+        P_PARSE -->|success| P_OK
+        P_PARSE -->|failed| P_PARSE_ERR
+        P_OK --> PER_CAPTION
+        SYFT -->|success| EXHORT
+        SYFT -->|failed| SYFT_FAIL
+        EXHORT -->|success| VULN_CHECK
+        EXHORT -->|failed| EXHORT_ERR
+        VULN_CHECK -->|success| TO_AGENT
+        VULN_CHECK -->|failed| NO_VULN_EXCL
+    end
+
+    subgraph SINGLE["<b>Path B — Single component</b><br/>(repository / CycloneDX)"]
+        direction TB
+        SC_START[<br/>Single-component intake<br/>skips product parsing, Syft, Exhort per-component branch]
+    end
+
+    subgraph AGENT["<b>Shared — Agent pipeline</b><br/>(product component OR single component)"]
+        direction TB
+        A_Q[Queue<br/>Finding: in progress]
+        A_PENDING_MAX[State: Pending max active]
+        A_Q_OVERFLOW[[Queue overflow<br/>Finding: Failed]]
+        A_SENT[Sent to agent<br/>State: sent<br/>Finding: in progress]
+        A_CLONE_FAIL[[Clone failed<br/>State- excluded<br/>Finding: Failed]]
+        A_T1[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_ANAL[Agent analysis<br/>Finding: in progress<br/> many internal steps...]
+        A_STEP_FAIL[[Any analysis step failed<br/>State: completed<br/>Finding: Uncertain]]
+        A_T2[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_DONE[Completed<br/>State:completed]
+        A_RESULT{Vulnerability conclusion}
+        A_VULN([Finding: Vulnerable])
+        A_SAFE([Finding: Not vulnerable])
+        A_UNCERT([Finding: Uncertain])
+    end
+
+    HEADER --> START
+    START --> SPLIT
+    SPLIT -->|product| P_PARSE
+    SPLIT -->|single component| SC_START
+
+    SC_START --> A_Q
+    TO_AGENT --> A_Q
+
+    A_Q -->|direct| A_SENT
+    A_Q -->|pending max active| A_PENDING_MAX
+    A_Q -->|queue overflow| A_Q_OVERFLOW
+    A_PENDING_MAX --> A_SENT
+    A_SENT -->|success| A_ANAL
+    A_SENT -->|clone failed| A_CLONE_FAIL
+    A_SENT -->|timeout| A_T1
+    A_ANAL -->|all steps OK| A_DONE
+    A_ANAL -->|timeout| A_T2
+    A_ANAL -->|step failure| A_STEP_FAIL
+    A_DONE --> A_RESULT
+    A_RESULT --> A_VULN & A_SAFE & A_UNCERT
+
+    class P_PARSE_ERR,SYFT_FAIL,EXHORT_ERR,NO_VULN_EXCL,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
+    class A_T1,A_T2 timeout
+    class A_VULN,A_SAFE,A_UNCERT terminal
+    class A_Q,A_SENT,A_ANAL,A_RESULT progress
+    class P_OK,A_DONE,TO_AGENT ok
+    class PER_CAPTION caption
+```

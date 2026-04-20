@@ -2,7 +2,11 @@
 %% Product path vs single-component path, then shared agent lifecycle and outcomes.
 %% Product path: use edge labels `success` / `failed` everywhere; declare `success` before `failed`
 %% so the happy path stays on the left and errors on the right (Mermaid TB / Dagre default).
+%%
+%% Bold / line breaks: use HTML in quoted labels (<b>, <br/>). Requires htmlLabels (init below).
+%% Subgraph titles render on the subgraph frame; Mermaid cannot move them outside the frame.
 
+%%{init: {"htmlLabels": true}}%%
 
 flowchart TB
     classDef error fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#450a0a
@@ -12,11 +16,14 @@ flowchart TB
     classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
     classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
 
+    HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
+    class HEADER caption
+
     START([User request analysis])
 
-    SPLIT{Which flow?}
+    SPLIT([Which flow? <br/>CVE ID +  SPDX SBOM = Product <br/>CVE ID + Repository URL & Commit ID / CycloneDX SBOM = Single component<br/>])
 
-    subgraph PRODUCT["Path A — Product (multi-component)"]
+    subgraph PRODUCT["<b>Path A — Product (multi-component)</b>"]
         direction TB
         P_PARSE[Parse product -parsing level]
         P_PARSE_ERR[[No preprocessing, no agent.<br/>analysis state: error]]
@@ -47,15 +54,17 @@ flowchart TB
         VULN_CHECK -->|failed| NO_VULN_EXCL
     end
 
-    subgraph SINGLE["Path B — Single component (repository / CycloneDX)"]
+    subgraph SINGLE["<b>Path B — Single component</b><br/>(repository / CycloneDX)"]
         direction TB
-        SC_START[Single-component intake<br/>skips product parsing, Syft, Exhort per-component branch]
+        SC_START[<br/>Single-component intake<br/>skips product parsing, Syft, Exhort per-component branch]
     end
 
-    subgraph AGENT["Shared — Agent pipeline (product component OR single component)"]
+    subgraph AGENT["<b>Shared — Agent pipeline</b><br/>(product component OR single component)"]
         direction TB
         A_Q[Queue<br/>Finding: in progress]
-        A_SENT[Sent to agent<br/>State: sent <br/>Finding: in progress]
+        A_PENDING_MAX[State: Pending max active]
+        A_Q_OVERFLOW[[Queue overflow<br/>Finding: Failed]]
+        A_SENT[Sent to agent<br/>State: sent<br/>Finding: in progress]
         A_CLONE_FAIL[[Clone failed<br/>State- excluded<br/>Finding: Failed]]
         A_T1[[Timeout<br/>State: expired<br/>Finding: Failed]]
         A_ANAL[Agent analysis<br/>Finding: in progress<br/> many internal steps...]
@@ -68,6 +77,7 @@ flowchart TB
         A_UNCERT([Finding: Uncertain])
     end
 
+    HEADER --> START
     START --> SPLIT
     SPLIT -->|product| P_PARSE
     SPLIT -->|single component| SC_START
@@ -75,7 +85,10 @@ flowchart TB
     SC_START --> A_Q
     TO_AGENT --> A_Q
 
-    A_Q --> A_SENT
+    A_Q -->|direct| A_SENT
+    A_Q -->|pending max active| A_PENDING_MAX
+    A_Q -->|queue overflow| A_Q_OVERFLOW
+    A_PENDING_MAX --> A_SENT
     A_SENT -->|success| A_ANAL
     A_SENT -->|clone failed| A_CLONE_FAIL
     A_SENT -->|timeout| A_T1
@@ -85,7 +98,7 @@ flowchart TB
     A_DONE --> A_RESULT
     A_RESULT --> A_VULN & A_SAFE & A_UNCERT
 
-    class P_PARSE_ERR,SYFT_FAIL,EXHORT_ERR,NO_VULN_EXCL,A_CLONE_FAIL,A_STEP_FAIL error
+    class P_PARSE_ERR,SYFT_FAIL,EXHORT_ERR,NO_VULN_EXCL,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
     class A_T1,A_T2 timeout
     class A_VULN,A_SAFE,A_UNCERT terminal
     class A_Q,A_SENT,A_ANAL,A_RESULT progress
