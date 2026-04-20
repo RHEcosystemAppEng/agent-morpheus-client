@@ -13,9 +13,6 @@ Check this other documents for:
 * [Configuration](./docs/configuration.md)
 * [Development](./docs/development.md)
 
-## Analysis pipeline workflow
-
-End-to-end processing from request intake through ExploitIQ is summarized in the **Mermaid diagram at the end of this README** ([jump to diagram](#analysis-pipeline-diagram)). The editable source lives in [docs/analysis-pipeline-workflow.mmd](./docs/analysis-pipeline-workflow.mmd); when you change that file, update the fenced **mermaid** code block at the bottom of this README so GitHub’s preview stays accurate.
 
 ## Using the Application
 
