@@ -37,8 +37,8 @@ export interface UseRepositoryReportsOptions {
   /** When provided, fetches reports for this product and CVE. When omitted, fetches single-repository reports (no product_id). */
   productId?: string;
   cveId?: string;
-  /** When provided, live SSE refetch runs while this returns true. Used e.g. until product analysis is completed. */
-  shouldContinuePolling?: () => boolean;
+  /** When provided, SSE-driven refetches run only while this returns true (e.g. until product analysis completes). */
+  shouldContinueLiveRefresh?: () => boolean;
   /** Override default {@link REPORT_CATALOG_SSE_PATH}. */
   sseRefreshPath?: string;
   /** Table state from useTableParams().data; defaults applied inside this hook. */
@@ -89,7 +89,7 @@ export function getFindingFilterApiParams(
 }
 
 /**
- * Hook to fetch repository reports with server-side pagination, sorting, filtering, and SSE auto-refresh.
+ * Hook to fetch repository reports with server-side pagination, sorting, filtering, and SSE catalog invalidation.
  */
 const DEFAULT_PER_PAGE = 10;
 
@@ -100,7 +100,7 @@ export function useRepositoryReports(
     productId,
     cveId,
     tableData,
-    shouldContinuePolling,
+    shouldContinueLiveRefresh,
     sseRefreshPath: sseRefreshPathOption,
   } = options;
 
@@ -164,12 +164,12 @@ export function useRepositoryReports(
         sseRefreshPath,
       ],
       sseRefreshPath,
-      ...(shouldContinuePolling && {
-        shouldPoll: (_data: Report[] | null) => shouldContinuePolling(),
-        shouldUpdate: (previousReports, currentReports) => {
-          return hasReportStatesChanged(previousReports, currentReports);
-        },
+      ...(shouldContinueLiveRefresh && {
+        shouldRefresh: (_data: Report[] | null) => shouldContinueLiveRefresh(),
       }),
+      shouldUpdate: (previousReports, currentReports) => {
+        return hasReportStatesChanged(previousReports, currentReports);
+      },
     }
   );
 

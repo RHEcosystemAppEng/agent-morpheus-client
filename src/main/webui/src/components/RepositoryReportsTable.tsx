@@ -32,7 +32,7 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     tableData: params.data,
     productId,
     cveId,
-    shouldContinuePolling: () =>
+    shouldContinueLiveRefresh: () =>
       product.summary?.productState !== "completed",
   });
 

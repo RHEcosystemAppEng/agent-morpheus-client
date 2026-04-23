@@ -181,6 +181,6 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 - **WHEN** a user views the report page
 - **AND** some analysis states in `sbomReport.statusCounts` are not "failed" or "completed"
 - **THEN** the report page refreshes product data on SSE using `useReport` (see `api-hooks` and `report-events-stream` specifications)
-- **AND** when all analysis states are either "failed" or "completed", live refresh stops (via `shouldPoll`)
+- **AND** when all analysis states are either "failed" or "completed", live refresh stops (via `shouldRefresh` on `useApi`)
 - **AND** the refresh preserves the current view state (no disruption to user interactions)
 

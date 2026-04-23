@@ -1,6 +1,6 @@
 import { useApi } from "./useApi";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
-import { shouldContinuePollingByProductState } from "../utils/polling";
+import { shouldContinueLiveRefreshForProduct } from "../utils/liveRefresh";
 import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import { request } from "../generated-client/core/request";
 import { OpenAPI } from "../generated-client/core/OpenAPI";
@@ -30,8 +30,8 @@ export function hasProductStatusCountsChanged(
 }
 
 /**
- * Hook to fetch product data for a report page with conditional SSE live refresh.
- * Refresh continues while product analysis is not completed.
+ * Hook to fetch product data for a report page with SSE catalog invalidation.
+ * The EventSource closes when product analysis reaches `completed`.
  * Only updates state when product data has changed to prevent unnecessary rerenders.
  * 
  * @param productId - The product ID to fetch data for
@@ -54,7 +54,8 @@ export function useReport(productId: string | undefined): UseReportResult {
     {
       deps: [productId],
       sseRefreshPath: REPORT_CATALOG_SSE_PATH,
-      shouldPoll: (product) => product !== null && shouldContinuePollingByProductState(product),
+      shouldRefresh: (product) =>
+        product !== null && shouldContinueLiveRefreshForProduct(product),
       shouldUpdate: (previousProduct, currentProduct) => {
         return hasProductStatusCountsChanged(previousProduct, currentProduct);
       },
