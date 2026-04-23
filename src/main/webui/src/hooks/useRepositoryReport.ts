@@ -38,10 +38,10 @@ export function hasRepositoryReportStateChanged(
 }
 
 /**
- * Pure function to determine if live refresh should continue based on report status
- * Returns true if refresh should continue, false to stop
+ * Whether to keep the catalog SSE connection open for this repository report fetch.
+ * Stops when status is completed or a terminal failure state.
  */
-export function shouldContinuePollingRepositoryReport(
+export function shouldContinueLiveRefreshForRepositoryReport(
   response: ReportWithStatus | null
 ): boolean {
   if (!response) return true; // Continue until first payload
@@ -54,8 +54,8 @@ export function shouldContinuePollingRepositoryReport(
 }
 
 /**
- * Hook to fetch repository report data with conditional SSE live refresh.
- * Refresh continues until status is "completed" or a failing state (e.g. failed, expired).
+ * Hook to fetch repository report data with SSE catalog invalidation.
+ * The stream closes when status is "completed" or a failing state (e.g. failed, expired).
  * Only updates state when report status or other relevant data have changed to prevent unnecessary rerenders.
  * 
  * @param reportId - The report ID to fetch data for
@@ -67,7 +67,7 @@ export function useRepositoryReport(reportId: string): UseRepositoryReportResult
     {
       deps: [reportId],
       sseRefreshPath: REPORT_CATALOG_SSE_PATH,
-      shouldPoll: shouldContinuePollingRepositoryReport,
+      shouldRefresh: shouldContinueLiveRefreshForRepositoryReport,
       shouldUpdate: hasRepositoryReportStateChanged,
     }
   );
