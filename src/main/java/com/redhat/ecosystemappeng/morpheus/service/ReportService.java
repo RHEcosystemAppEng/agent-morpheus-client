@@ -646,7 +646,10 @@ public class ReportService {
       LOGGER.debugf("looking for programming languages for repository %s (with user token)", repoName);
       return gitHubService.getLanguages(repoName, authorization).keySet();
     } catch (Exception e) {
-      LOGGER.warnf(e, "Unable to retrieve programming languages for repository %s, falling back to all supported languages", repository);
+      LOGGER.warnf(
+          "Unable to retrieve programming languages for repository %s, falling back to all supported languages (%s)",
+          repository,
+          e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
       return Collections.emptySet();
     }
   }

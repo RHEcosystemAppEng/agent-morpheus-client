@@ -1,5 +1,6 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -211,9 +212,9 @@ public class ComponentProcessingService {
 
         for (int i = 0; i < components.size(); i += BATCH_SIZE) {
             int end = Math.min(i + BATCH_SIZE, components.size());
-            List<ComponentInfo> chunk = components.subList(i, end);
+            final List<ComponentInfo> batch = new ArrayList<>(components.subList(i, end));
             executorService.runAsync(() -> {
-                for (ComponentInfo component : chunk) {
+                for (ComponentInfo component : batch) {
                     try {
                         this.processComponent(component, productId, metadata, vulnerabilityId, credentialId);
                     } catch (Exception e) {

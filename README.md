@@ -12,6 +12,7 @@ Check this other documents for:
 
 * [Configuration](./docs/configuration.md)
 * [Development](./docs/development.md)
+* [Tests](./src/test/README.md) — REST `@QuarkusTest` notes and CI test image for pipelines
 
 ## Using the Application
 

@@ -18,7 +18,7 @@
     },
     {
       "SPDXID": "SPDXRef-OCI-Component",
-      "name": "oci-component",
+      "name": "dex-rhel",
       "versionInfo": "1.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
@@ -26,7 +26,7 @@
         {
           "referenceCategory": "PACKAGE_MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:oci/oci-component@sha256:abc123?repository_url=registry.example.com/oci-component&tag=v1.0"
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0"
         }
       ]
     },

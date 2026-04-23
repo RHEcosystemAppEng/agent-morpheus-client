@@ -2,32 +2,30 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 
 import static org.hamcrest.Matchers.*;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * End-to-end test for the report upload API endpoint.
- * 
- * This test assumes the service is running in a separate process.
- * Set the BASE_URL environment variable to point to the running service,
- * e.g., BASE_URL=http://localhost:8080
- * 
- * If BASE_URL is not set, tests will be skipped.
- */
-@EnabledIfEnvironmentVariable(named = "BASE_URL", matches = ".*")
-class UploadCycloneDxEndpointTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-    private static final String BASE_URL = System.getenv("BASE_URL");
-    private static final String API_BASE = BASE_URL != null ? BASE_URL : "http://localhost:8080";
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+
+/**
+ * CycloneDX upload HTTP tests ({@link io.quarkus.test.junit.QuarkusTest}).
+ */
+@QuarkusTest
+public class UploadCycloneDxRestTest {
+
+    @BeforeEach
+    void restAssuredBase() {
+        RestApiTestFixture.configureRestAssuredIfExternal();
+    }
+
     private static final String TEST_SBOM_FILE = "src/test/resources/devservices/cyclonedx-sboms/nmstate-rhel8-operator.json";
     private static final String TEST_CVE_ID = "CVE-2021-3121";
 
@@ -35,7 +33,7 @@ class UploadCycloneDxEndpointTest {
         Path tempFile = Files.createTempFile("invalid-", ".json");
         File file = tempFile.toFile();
         file.deleteOnExit();
-        
+
         try (FileWriter writer = new FileWriter(file)) {
             writer.write("{ invalid json }");
         }
@@ -46,7 +44,7 @@ class UploadCycloneDxEndpointTest {
         Path tempFile = Files.createTempFile("cyclonedx-no-name-", ".json");
         File file = tempFile.toFile();
         file.deleteOnExit();
-        
+
         try (FileWriter writer = new FileWriter(file)) {
             writer.write("""
                 {
@@ -83,9 +81,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_ValidFileAndCveId() {
         File sbomFile = new File(TEST_SBOM_FILE);
-        RestAssured.baseURI = API_BASE;
-        
-        // Upload the file and verify report was created
+
         String productId = RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -100,8 +96,7 @@ class UploadCycloneDxEndpointTest {
             .body("report.metadata.product_id", notNullValue())
             .extract()
             .path("report.metadata.product_id");
-        
-        // Verify product was created by querying the product endpoint
+
         RestAssured.given()
             .when()
             .get("/api/v1/reports/product/" + productId)
@@ -118,8 +113,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_InvalidJsonFile() throws IOException {
         String filePath = createInvalidJsonFile();
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -137,8 +131,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_MissingComponentName() throws IOException {
         String filePath = createCycloneDxWithoutComponentName();
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -156,8 +149,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_MissingCveId() {
         File sbomFile = new File(TEST_SBOM_FILE);
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("file", sbomFile)
@@ -173,8 +165,6 @@ class UploadCycloneDxEndpointTest {
 
     @Test
     void testUpload_MissingFile() {
-        RestAssured.baseURI = API_BASE;
-        
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -191,8 +181,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_InvalidCveIdFormat() {
         File sbomFile = new File(TEST_SBOM_FILE);
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", "INVALID-CVE-FORMAT")
@@ -210,8 +199,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_MongoDbFile() {
         File mongodbFile = new File("src/test/resources/devservices/cyclonedx-sboms/mongodb.json");
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", "CVE-2023-3106")
@@ -226,11 +214,10 @@ class UploadCycloneDxEndpointTest {
 
     @Test
     void testUpload_ProductCreatedWithVersion() throws IOException {
-        // Create a CycloneDX file with version
         Path tempFile = Files.createTempFile("cyclonedx-with-version-", ".json");
         File file = tempFile.toFile();
         file.deleteOnExit();
-        
+
         try (FileWriter writer = new FileWriter(file)) {
             writer.write("""
                 {
@@ -257,9 +244,7 @@ class UploadCycloneDxEndpointTest {
                 }
                 """);
         }
-        
-        RestAssured.baseURI = API_BASE;
-        
+
         String productId = RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -270,8 +255,7 @@ class UploadCycloneDxEndpointTest {
             .statusCode(202)
             .extract()
             .path("report.metadata.product_id");
-        
-        // Verify product was created with the version from the file
+
         RestAssured.given()
             .when()
             .get("/api/v1/reports/product/" + productId)
@@ -282,11 +266,10 @@ class UploadCycloneDxEndpointTest {
 
     @Test
     void testUpload_ProductCreatedWithoutVersion() throws IOException {
-        // Create a CycloneDX file without version
         Path tempFile = Files.createTempFile("cyclonedx-no-version-", ".json");
         File file = tempFile.toFile();
         file.deleteOnExit();
-        
+
         try (FileWriter writer = new FileWriter(file)) {
             writer.write("""
                 {
@@ -313,28 +296,24 @@ class UploadCycloneDxEndpointTest {
                 }
                 """);
         }
-        
-        RestAssured.baseURI = API_BASE;
-        
-        // Upload should succeed even without version
+
         io.restassured.response.Response response = RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
             .multiPart("file", file)
             .when()
             .post("/api/v1/products/upload-cyclonedx");
-        
+
         if (response.getStatusCode() != 202) {
             System.err.println("Error response body: " + response.getBody().asString());
             System.err.println("Status code: " + response.getStatusCode());
         }
-        
+
         String productId = response.then()
             .statusCode(202)
             .extract()
             .path("report.metadata.product_id");
-        
-        // Verify product was created with empty string version (no default version fallback)
+
         RestAssured.given()
             .when()
             .get("/api/v1/reports/product/" + productId)
@@ -346,8 +325,7 @@ class UploadCycloneDxEndpointTest {
     @Test
     void testUpload_InvalidJsonFile_NoProductCreated() throws IOException {
         String filePath = createInvalidJsonFile();
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("cveId", TEST_CVE_ID)
@@ -360,17 +338,12 @@ class UploadCycloneDxEndpointTest {
             .body("errors", notNullValue())
             .body("errors.file", notNullValue())
             .body("errors.file", containsString("not valid JSON"));
-        
-        // Verify no product was created by checking that a random product ID doesn't exist
-        // (We can't easily verify "no product created" without knowing what product ID would have been generated,
-        // but we can at least verify the request failed before product creation)
     }
 
     @Test
     void testUpload_MissingCveId_NoProductCreated() {
         File sbomFile = new File(TEST_SBOM_FILE);
-        RestAssured.baseURI = API_BASE;
-        
+
         RestAssured.given()
             .contentType(ContentType.MULTIPART)
             .multiPart("file", sbomFile)
@@ -382,8 +355,5 @@ class UploadCycloneDxEndpointTest {
             .body("errors", notNullValue())
             .body("errors.cveId", notNullValue())
             .body("errors.cveId", containsString("CVE ID is required"));
-        
-        // Verify no product was created (validation failed before product creation)
     }
 }
-

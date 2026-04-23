@@ -2,33 +2,23 @@ package com.redhat.ecosystemappeng.morpheus.rest;
 
 import static org.hamcrest.Matchers.*;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.Assertions;
 
+import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 /**
- * End-to-end tests for product summaries exposed under the reports API
- * ({@code GET /api/v1/reports/product} and {@code GET /api/v1/reports/product/{id}}).
- * <p>
- * Historically this class targeted a removed {@code /api/v1/sbom-reports} surface; it now
- * validates the consolidated product summary endpoints.
- * <p>
- * Requires a running service and seed data. Set {@code BASE_URL}, e.g.
- * {@code BASE_URL=http://localhost:8080}. If unset, tests are skipped.
+ * Product summary HTTP tests ({@link io.quarkus.test.junit.QuarkusTest}).
  */
-@EnabledIfEnvironmentVariable(named = "BASE_URL", matches = ".*")
-class GetProductsEndpointTest {
-
-    private static final String BASE_URL = System.getenv("BASE_URL");
-    private static final String API_BASE = BASE_URL != null ? BASE_URL : "http://localhost:8080";
+@QuarkusTest
+public class GetProductsRestTest {
 
     @BeforeEach
-    void setUp() {
-        RestAssured.baseURI = API_BASE;
+    void restAssuredBase() {
+        RestApiTestFixture.configureRestAssuredIfExternal();
     }
 
     @Test
