@@ -1,0 +1,106 @@
+%% Analysis pipeline / workflow — aligned with morpheus-client backend behavior.
+%% Product path: success / failed edge order (success left, failed right) where binary.
+%%
+%% Bold / line breaks: HTML in quoted labels (<b>, <br/>). Requires htmlLabels (init below).
+
+%%{init: {"htmlLabels": true}}%%
+
+flowchart TB
+    classDef error fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#450a0a
+    classDef timeout fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#78350f
+    classDef terminal fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
+    classDef progress fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
+    classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
+    classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
+
+    HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
+    class HEADER caption
+
+    START([User request analysis])
+
+    SPLIT([Which flow? <br/>CVE ID + SPDX SBOM = Product <br/>CVE ID + Repository URL &amp; Commit ID / CycloneDX SBOM = Single component<br/>])
+
+    subgraph PRODUCT["<b>Path A — Product (multi-component)</b>"]
+        direction TB
+        P_PARSE[Parse product — parsing level]
+        P_PARSE_ERR[[Parsing failed<br/>no preprocessing, no agent<br/>analysis state: error]]
+        P_OK[Parse OK → create product<br/>user navigates to product page]
+
+        subgraph PER_COMP[" "]
+            direction TB
+            PER_CAPTION["For each component in array — async, parallel.<br/>Each component supplies an image only."]
+            SYFT[Syft → CycloneDX JSON]
+            SYFT_FAIL[[Syft failed<br/>submission failure / excluded]]
+            CYCLONE_VAL["Parse &amp; validate CycloneDX<br/>from Syft output"]
+            CYCLONE_FAIL[[CycloneDX parse / validation failed<br/>submission failure / excluded]]
+            TO_AGENT["Save report &amp; submit for analysis<br/>Morpheus queue"]
+
+            PER_CAPTION --> SYFT
+        end
+
+        P_PARSE -->|success| P_OK
+        P_PARSE -->|failed| P_PARSE_ERR
+        P_OK --> PER_CAPTION
+        SYFT -->|success| CYCLONE_VAL
+        SYFT -->|failed| SYFT_FAIL
+        CYCLONE_VAL -->|success| TO_AGENT
+        CYCLONE_VAL -->|failed| CYCLONE_FAIL
+    end
+
+    subgraph SINGLE["<b>Path B — Single component</b><br/>(repository / CycloneDX)"]
+        direction TB
+        SC_START[Single-component intake<br/>skips product &amp; per-image Syft path]
+        SC_CYCLONE["Parse &amp; validate CycloneDX<br/>uploaded SBOM"]
+        SC_CYCLONE_ERR[[CycloneDX parse failed<br/>immediate error to client]]
+    end
+
+    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → Morpheus)"]
+        direction TB
+        QUEUE_GATE["Is queue full?<br/>active reports &gt;= max active"]
+        PEND_CAP[Pending queue<br/>below max size?]
+        QUEUED[Queued<br/>Finding: in progress]
+        A_Q_OVERFLOW[[Queue exceeded<br/>Finding: Failed]]
+        A_SENT[Sent to agent<br/>State: sent<br/>Finding: in progress]
+        A_CLONE_FAIL[[Clone failed<br/>State: excluded<br/>Finding: Failed]]
+        A_T1[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_ANAL[Agent analysis<br/>Finding: in progress<br/>many internal steps…]
+        A_STEP_FAIL[[Any analysis step failed<br/>State: completed<br/>Finding: Uncertain]]
+        A_T2[[Timeout<br/>State: expired<br/>Finding: Failed]]
+        A_DONE[Completed<br/>State: completed]
+        A_RESULT{Vulnerability conclusion}
+        A_VULN([Finding: Vulnerable])
+        A_SAFE([Finding: Not vulnerable])
+        A_UNCERT([Finding: Uncertain])
+    end
+
+    HEADER --> START
+    START --> SPLIT
+    SPLIT -->|product| P_PARSE
+    SPLIT -->|single component| SC_START
+
+    SC_START --> SC_CYCLONE
+    SC_CYCLONE -->|success| QUEUE_GATE
+    SC_CYCLONE -->|failed| SC_CYCLONE_ERR
+    TO_AGENT --> QUEUE_GATE
+
+    QUEUE_GATE -->|no| A_SENT
+    QUEUE_GATE -->|yes| PEND_CAP
+    PEND_CAP -->|yes| QUEUED
+    PEND_CAP -->|no| A_Q_OVERFLOW
+    QUEUED -->|capacity available| A_SENT
+
+    A_SENT -->|success| A_ANAL
+    A_SENT -->|clone failed| A_CLONE_FAIL
+    A_SENT -->|timeout| A_T1
+    A_ANAL -->|all steps OK| A_DONE
+    A_ANAL -->|timeout| A_T2
+    A_ANAL -->|step failure| A_STEP_FAIL
+    A_DONE --> A_RESULT
+    A_RESULT --> A_VULN & A_SAFE & A_UNCERT
+
+    class P_PARSE_ERR,SYFT_FAIL,CYCLONE_FAIL,SC_CYCLONE_ERR,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
+    class A_T1,A_T2 timeout
+    class A_VULN,A_SAFE,A_UNCERT terminal
+    class QUEUE_GATE,PEND_CAP,QUEUED,A_SENT,A_ANAL,A_RESULT progress
+    class P_OK,A_DONE,TO_AGENT ok
+    class PER_CAPTION caption
