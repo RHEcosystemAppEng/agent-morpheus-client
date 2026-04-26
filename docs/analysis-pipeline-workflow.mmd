@@ -1,10 +1,7 @@
-%% Analysis pipeline / workflow — derived from project notes (mermaid.txt)
-%% Product path vs single-component path, then shared agent lifecycle and outcomes.
-%% Product path: use edge labels `success` / `failed` everywhere; declare `success` before `failed`
-%% so the happy path stays on the left and errors on the right (Mermaid TB / Dagre default).
+%% Analysis pipeline / workflow — aligned with morpheus-client backend behavior.
+%% Product path: success / failed edge order (success left, failed right) where binary.
 %%
-%% Bold / line breaks: use HTML in quoted labels (<b>, <br/>). Requires htmlLabels (init below).
-%% Subgraph titles render on the subgraph frame; Mermaid cannot move them outside the frame.
+%% Bold / line breaks: HTML in quoted labels (<b>, <br/>). Requires htmlLabels (init below).
 
 %%{init: {"htmlLabels": true}}%%
 
@@ -21,24 +18,22 @@ flowchart TB
 
     START([User request analysis])
 
-    SPLIT([Which flow? <br/>CVE ID +  SPDX SBOM = Product <br/>CVE ID + Repository URL & Commit ID / CycloneDX SBOM = Single component<br/>])
+    SPLIT([Which flow? <br/>CVE ID + SPDX SBOM = Product <br/>CVE ID + Repository URL &amp; Commit ID / CycloneDX SBOM = Single component<br/>])
 
     subgraph PRODUCT["<b>Path A — Product (multi-component)</b>"]
         direction TB
-        P_PARSE[Parse product -parsing level]
-        P_PARSE_ERR[[No preprocessing, no agent.<br/>analysis state: error]]
+        P_PARSE[Parse product — parsing level]
+        P_PARSE_ERR[[Parsing failed<br/>no preprocessing, no agent<br/>analysis state: error]]
         P_OK[Parse OK → create product<br/>user navigates to product page]
 
         subgraph PER_COMP[" "]
             direction TB
             PER_CAPTION["For each component in array — async, parallel.<br/>Each component supplies an image only."]
-            SYFT[Syft → CycloneDX]
-            SYFT_FAIL[[goes to excluded components]]
-            EXHORT[Exhort — dependency analytics]
-            EXHORT_ERR[[Exhort failed <br/>---]]
-            VULN_CHECK[Vulnerable package<br/>present in codebase?]
-            TO_AGENT[Send to agent — AI analysis]
-            NO_VULN_EXCL[[Vulnerable package not in codebase.<br/>goes to excluded components]]
+            SYFT[Syft → CycloneDX JSON]
+            SYFT_FAIL[[Syft failed<br/>submission failure / excluded]]
+            CYCLONE_VAL["Parse &amp; validate CycloneDX<br/>from Syft output"]
+            CYCLONE_FAIL[[CycloneDX parse / validation failed<br/>submission failure / excluded]]
+            TO_AGENT["Save report &amp; submit for analysis<br/>Morpheus queue"]
 
             PER_CAPTION --> SYFT
         end
@@ -46,31 +41,32 @@ flowchart TB
         P_PARSE -->|success| P_OK
         P_PARSE -->|failed| P_PARSE_ERR
         P_OK --> PER_CAPTION
-        SYFT -->|success| EXHORT
+        SYFT -->|success| CYCLONE_VAL
         SYFT -->|failed| SYFT_FAIL
-        EXHORT -->|success| VULN_CHECK
-        EXHORT -->|failed| EXHORT_ERR
-        VULN_CHECK -->|success| TO_AGENT
-        VULN_CHECK -->|failed| NO_VULN_EXCL
+        CYCLONE_VAL -->|success| TO_AGENT
+        CYCLONE_VAL -->|failed| CYCLONE_FAIL
     end
 
     subgraph SINGLE["<b>Path B — Single component</b><br/>(repository / CycloneDX)"]
         direction TB
-        SC_START[<br/>Single-component intake<br/>skips product parsing, Syft, Exhort per-component branch]
+        SC_START[Single-component intake<br/>skips product &amp; per-image Syft path]
+        SC_CYCLONE["Parse &amp; validate CycloneDX<br/>uploaded SBOM"]
+        SC_CYCLONE_ERR[[CycloneDX parse failed<br/>immediate error to client]]
     end
 
-    subgraph AGENT["<b>Shared — Agent pipeline</b><br/>(product component OR single component)"]
+    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → Morpheus)"]
         direction TB
-        A_Q[Queue<br/>Finding: in progress]
-        A_PENDING_MAX[State: Pending max active]
-        A_Q_OVERFLOW[[Queue overflow<br/>Finding: Failed]]
+        QUEUE_GATE["Is queue full?<br/>active reports &gt;= max active"]
+        PEND_CAP[Pending queue<br/>below max size?]
+        QUEUED[Queued<br/>Finding: in progress]
+        A_Q_OVERFLOW[[Queue exceeded<br/>Finding: Failed]]
         A_SENT[Sent to agent<br/>State: sent<br/>Finding: in progress]
-        A_CLONE_FAIL[[Clone failed<br/>State- excluded<br/>Finding: Failed]]
+        A_CLONE_FAIL[[Clone failed<br/>State: excluded<br/>Finding: Failed]]
         A_T1[[Timeout<br/>State: expired<br/>Finding: Failed]]
-        A_ANAL[Agent analysis<br/>Finding: in progress<br/> many internal steps...]
+        A_ANAL[Agent analysis<br/>Finding: in progress<br/>many internal steps…]
         A_STEP_FAIL[[Any analysis step failed<br/>State: completed<br/>Finding: Uncertain]]
         A_T2[[Timeout<br/>State: expired<br/>Finding: Failed]]
-        A_DONE[Completed<br/>State:completed]
+        A_DONE[Completed<br/>State: completed]
         A_RESULT{Vulnerability conclusion}
         A_VULN([Finding: Vulnerable])
         A_SAFE([Finding: Not vulnerable])
@@ -82,13 +78,17 @@ flowchart TB
     SPLIT -->|product| P_PARSE
     SPLIT -->|single component| SC_START
 
-    SC_START --> A_Q
-    TO_AGENT --> A_Q
+    SC_START --> SC_CYCLONE
+    SC_CYCLONE -->|success| QUEUE_GATE
+    SC_CYCLONE -->|failed| SC_CYCLONE_ERR
+    TO_AGENT --> QUEUE_GATE
 
-    A_Q -->|direct| A_SENT
-    A_Q -->|pending max active| A_PENDING_MAX
-    A_Q -->|queue overflow| A_Q_OVERFLOW
-    A_PENDING_MAX --> A_SENT
+    QUEUE_GATE -->|no| A_SENT
+    QUEUE_GATE -->|yes| PEND_CAP
+    PEND_CAP -->|yes| QUEUED
+    PEND_CAP -->|no| A_Q_OVERFLOW
+    QUEUED -->|capacity available| A_SENT
+
     A_SENT -->|success| A_ANAL
     A_SENT -->|clone failed| A_CLONE_FAIL
     A_SENT -->|timeout| A_T1
@@ -98,9 +98,9 @@ flowchart TB
     A_DONE --> A_RESULT
     A_RESULT --> A_VULN & A_SAFE & A_UNCERT
 
-    class P_PARSE_ERR,SYFT_FAIL,EXHORT_ERR,NO_VULN_EXCL,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
+    class P_PARSE_ERR,SYFT_FAIL,CYCLONE_FAIL,SC_CYCLONE_ERR,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
     class A_T1,A_T2 timeout
     class A_VULN,A_SAFE,A_UNCERT terminal
-    class A_Q,A_SENT,A_ANAL,A_RESULT progress
+    class QUEUE_GATE,PEND_CAP,QUEUED,A_SENT,A_ANAL,A_RESULT progress
     class P_OK,A_DONE,TO_AGENT ok
     class PER_CAPTION caption
