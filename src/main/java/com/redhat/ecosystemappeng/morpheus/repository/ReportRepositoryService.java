@@ -575,7 +575,7 @@ public class ReportRepositoryService {
     }
 
     if (!hasCompletionTimeStored && !hasPendingReports && Objects.nonNull(latestCompletionTime)) {
-      productRepositoryService.updateCompletedAt(productId, latestCompletionTime);
+      productRepositoryService.updateCompletedAtWithoutCatalogNotification(productId, latestCompletionTime);
       LOGGER.infof("Product %s completed at %s", productId, latestCompletionTime);
     }
   }

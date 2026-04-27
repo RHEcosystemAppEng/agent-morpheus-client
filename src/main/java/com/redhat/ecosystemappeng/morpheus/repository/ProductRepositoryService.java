@@ -128,9 +128,21 @@ public class ProductRepositoryService {
   }
 
   public void updateCompletedAt(String id, String completedAt) {
+    updateCompletedAtWithoutCatalogNotification(id, completedAt);
+    reportSseBroadcaster.publishCatalogChanged();
+  }
+
+  /**
+   * Persists {@code completed_at} only. Callers that already publish catalog SSE (e.g. after report updates)
+   * should use this to avoid duplicate events.
+   */
+  public void updateCompletedAtWithoutCatalogNotification(String id, String completedAt) {
+    setCompletedAt(id, completedAt);
+  }
+
+  private void setCompletedAt(String id, String completedAt) {
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, id), Updates.set(COMPLETED_AT, completedAt));
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
-    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void addSubmissionFailure(String id, FailedComponent failure) {
@@ -152,7 +164,7 @@ public class ProductRepositoryService {
       int failureCount = Objects.nonNull(failures) ? failures.size() : 0;
       int submittedCount = Objects.requireNonNullElse(doc.getInteger(SUBMITTED_COUNT), 0);
       if (submittedCount > 0 && failureCount == submittedCount && Objects.isNull(doc.getString(COMPLETED_AT))) {
-        updateCompletedAt(id, Instant.now().toString());
+        setCompletedAt(id, Instant.now().toString());
       }
     }
     reportSseBroadcaster.publishCatalogChanged();
