@@ -35,24 +35,28 @@ For faster frontend development cycles, you can run the UI standalone (without Q
 - `API_TOKEN`: Authentication token for API requests. **Required.** The token will be automatically added to all API requests via the `Authorization: Bearer <token>` header.
 
 **How to run:**
+
 ```shell script
 cd src/main/webui
 VITE_API_BASE_URL=http://localhost:8080 API_TOKEN=your-token-here npm run dev:standalone
 ```
 
 This will:
+
 - Start Vite dev server on `http://localhost:3000`
-- Serve the UI at the root path 
+- Serve the UI at the root path
 - Proxy all `/api/*` requests to the backend URL specified in `VITE_API_BASE_URL` with automatic authentication
 
 **Using environment file (.env):**
 You can also create a `.env` file in `src/main/webui/`:
+
 ```bash
 VITE_API_BASE_URL=http://localhost:8080
 API_TOKEN=your-token-here
 ```
 
 Then run:
+
 ```shell script
 cd src/main/webui
 npm run dev:standalone
@@ -66,7 +70,7 @@ You can supply the application with data by sending Agent Morpheus output.json f
  curl -i -X POST --header 'Content-type: application/json' http://localhost:8080/api/v1/reports -d @/path/to/file.json
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **_NOTE:_** Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 
 ## Packaging and running the application
 

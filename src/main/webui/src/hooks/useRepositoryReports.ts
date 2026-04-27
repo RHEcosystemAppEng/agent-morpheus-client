@@ -5,10 +5,7 @@
 import { useMemo } from "react";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { Report } from "../generated-client";
-import {
-  POLL_INTERVAL_MS,
-  REPORTS_TABLE_POLL_INTERVAL_MS,
-} from "../utils/polling";
+import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import isEqual from "lodash/isEqual";
 import { displayToApi, JUSTIFICATION_DISPLAY_LABELS } from "../utils/justificationStatus";
 import type { UseTableParamsData } from "./useTableParams";
@@ -40,10 +37,10 @@ export interface UseRepositoryReportsOptions {
   /** When provided, fetches reports for this product and CVE. When omitted, fetches single-repository reports (no product_id). */
   productId?: string;
   cveId?: string;
-  /** When provided, polling runs while this returns true. Used e.g. to poll until product analysis is completed. */
-  shouldContinuePolling?: () => boolean;
-  /** Polling interval in ms. When omitted, defaults to 5000 in product context and 15000 for single-repository. */
-  pollInterval?: number;
+  /** When provided, SSE-driven refetches run only while this returns true (e.g. until product analysis completes). */
+  shouldContinueLiveRefresh?: () => boolean;
+  /** Override default {@link REPORT_CATALOG_SSE_PATH}. */
+  sseRefreshPath?: string;
   /** Table state from useTableParams().data; defaults applied inside this hook. */
   tableData: UseTableParamsData<"gitRepo" | "submittedAt" | "completedAt", RepoFilterKey>;
 }
@@ -92,8 +89,7 @@ export function getFindingFilterApiParams(
 }
 
 /**
- * Hook to fetch repository reports with server-side pagination, sorting, filtering, and optional auto-refresh.
- * Use pollInterval to set the refresh interval and shouldContinuePolling to stop when a condition is met.
+ * Hook to fetch repository reports with server-side pagination, sorting, filtering, and SSE catalog invalidation.
  */
 const DEFAULT_PER_PAGE = 10;
 
@@ -104,8 +100,8 @@ export function useRepositoryReports(
     productId,
     cveId,
     tableData,
-    shouldContinuePolling,
-    pollInterval: pollIntervalOption,
+    shouldContinueLiveRefresh,
+    sseRefreshPath: sseRefreshPathOption,
   } = options;
 
   const page = tableData.page ?? 1;
@@ -118,9 +114,7 @@ export function useRepositoryReports(
 
   const isProductContext = productId != null && cveId != null;
 
-  const pollInterval =
-    pollIntervalOption ??
-    (isProductContext ? POLL_INTERVAL_MS : REPORTS_TABLE_POLL_INTERVAL_MS);
+  const sseRefreshPath = sseRefreshPathOption ?? REPORT_CATALOG_SSE_PATH;
 
   const { status: statusFilterValue, exploitIqStatus: exploitIqStatusApiValue } =
     useMemo(() => getFindingFilterApiParams(findingFilter), [findingFilter]);
@@ -167,15 +161,15 @@ export function useRepositoryReports(
         exploitIqStatusApiValue ?? "",
         repositorySearchValue,
         cveIdFilter ?? "",
-        pollInterval,
+        sseRefreshPath,
       ],
-      pollInterval,
-      ...(shouldContinuePolling && {
-        shouldPoll: shouldContinuePolling,
-        shouldUpdate: (previousReports, currentReports) => {
-          return hasReportStatesChanged(previousReports, currentReports);
-        },
+      sseRefreshPath,
+      ...(shouldContinueLiveRefresh && {
+        shouldRefresh: (_data: Report[] | null) => shouldContinueLiveRefresh(),
       }),
+      shouldUpdate: (previousReports, currentReports) => {
+        return hasReportStatesChanged(previousReports, currentReports);
+      },
     }
   );
 

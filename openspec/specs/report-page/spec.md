@@ -15,7 +15,7 @@ The application SHALL provide navigation from the reports table to a report page
 ### Requirement: Report Details Display
 The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM"), including the day, full month name, year, and time with seconds and AM/PM indicator.
 
-The report page SHALL automatically refresh data every 5 seconds using `useReport` hook with polling, but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop (see `api-hooks` specification for `useReport` and polling behavior).
+The report page SHALL automatically refresh data using `useReport` with SSE (`sseRefreshPath`), but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refresh SHALL stop (see `api-hooks` and `report-events-stream` specifications).
 
 The report page SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
@@ -112,7 +112,7 @@ The report page SHALL display a donut chart summarizing component scan states fr
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Repository Reports Table
-The report page SHALL display an embedded repository reports table that conforms to the **repository-reports-table** specification. The table SHALL list repository reports filtered by both the report's SBOM report ID and the CVE ID from the route parameters. The table SHALL automatically refresh data every 5 seconds using `usePaginatedApi` with polling, using the same auto-refresh condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", auto-refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue auto-refreshing (see `api-hooks` specification for polling behavior). The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
+The report page SHALL display an embedded repository reports table that conforms to the **repository-reports-table** specification. The table SHALL list repository reports filtered by both the report's SBOM report ID and the CVE ID from the route parameters. The table SHALL automatically refresh using `usePaginatedApi` with SSE, using the same condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue (see `api-hooks` and `report-events-stream` specifications). The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
 
 #### Scenario: Repository reports table displays on report page
 - **WHEN** a user views the report page with a specific CVE ID in the route
@@ -120,14 +120,14 @@ The report page SHALL display an embedded repository reports table that conforms
 - **AND** the table shows only repository reports for the current SBOM report and CVE (filtered by both SBOM report ID and CVE ID from route parameters)
 - **AND** the table is embedded in the page under the donut charts
 
-#### Scenario: Repository reports table auto-refresh on report page
+#### Scenario: Repository reports table live refresh on report page
 - **WHEN** a user views the report page with a repository reports table
 - **AND** some analysis states in `sbomReport.statusCounts` (from the parent report page) are not "failed" or "completed"
-- **THEN** the repository reports table automatically refreshes data every 5 seconds using `usePaginatedApi` with polling (see `api-hooks` specification)
-- **AND** the repository reports table uses the same `sbomReport.statusCounts` condition as the parent report page to determine whether to continue auto-refreshing
-- **AND** the auto-refresh preserves current pagination, sorting, and filter settings
-- **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", auto-refresh stops
-- **AND** the auto-refresh prevents unnecessary rerenders when data hasn't changed (see `api-hooks` specification for `shouldUpdate` behavior)
+- **THEN** the repository reports table refreshes on SSE catalog events via `usePaginatedApi` (see `api-hooks` and `report-events-stream` specifications)
+- **AND** the repository reports table uses the same `sbomReport.statusCounts` condition as the parent report page to determine whether to continue live refresh
+- **AND** the refresh preserves current pagination, sorting, and filter settings
+- **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", live refresh stops
+- **AND** unnecessary rerenders are avoided when data hasn't changed (see `api-hooks` `shouldUpdate` behavior)
 
 #### Scenario: Repository reports table error state on report page
 - **WHEN** reports data fetch fails for the repository reports table on the report page
@@ -169,7 +169,7 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 
 #### Scenario: Report data fetched via API
 - **WHEN** the report page loads with SBOM report ID and CVE ID in route parameters
-- **THEN** report data is fetched using `/api/v1/product/${productId}` endpoint via the `useReport` hook (see `api-hooks` specification)
+- **THEN** report data is fetched using `/api/v1/reports/product/${productId}` endpoint via the `useReport` hook (see `api-hooks` specification)
 - **AND** the page extracts and displays data for the specific CVE ID from the route parameters, not the first CVE
 
 #### Scenario: Repository reports data fetched via API
@@ -177,10 +177,10 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 - **THEN** reports data is fetched using `/api/v1/reports` endpoint with `productId` and `vulnId` query parameters via the `usePaginatedApi` hook (see `api-hooks` specification)
 - **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `exploitIqStatus`, `gitRepo`)
 
-#### Scenario: Report page auto-refresh
+#### Scenario: Report page live refresh
 - **WHEN** a user views the report page
 - **AND** some analysis states in `sbomReport.statusCounts` are not "failed" or "completed"
-- **THEN** the report page automatically refreshes data every 5 seconds using `useReport` hook with polling (see `api-hooks` specification)
-- **AND** when all analysis states are either "failed" or "completed", auto-refresh stops (via `shouldPoll` function)
-- **AND** the auto-refresh preserves the current view state (no disruption to user interactions)
+- **THEN** the report page refreshes product data on SSE using `useReport` (see `api-hooks` and `report-events-stream` specifications)
+- **AND** when all analysis states are either "failed" or "completed", live refresh stops (via `shouldRefresh` on `useApi`)
+- **AND** the refresh preserves the current view state (no disruption to user interactions)
 

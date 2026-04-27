@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
+import { SSEListener } from '../utils/sseListener';
 import { OpenAPI } from '../generated-client/core/OpenAPI';
 import { getHeaders } from '../generated-client/core/request';
 import type { ApiRequestOptions } from '../generated-client/core/ApiRequestOptions';
@@ -81,21 +82,19 @@ export interface UsePaginatedApiResult<T> {
 
 export interface UsePaginatedApiOptions<T = unknown> {
   /**
-   * Dependencies array - when these change, the API will be called again
+   * Dependencies array — when these change, the API will be called again
    */
   deps?: unknown[];
   /**
-   * Polling interval in milliseconds. If set, the API will be called repeatedly at this interval.
-   * @default undefined (no polling)
+   * Absolute URL or same-origin path for Server-Sent Events. When set, each SSE message triggers
+   * the same paginated REST request again (after the initial load), subject to debounce and {@link shouldRefresh}.
    */
-  pollInterval?: number;
+  sseRefreshPath?: string;
   /**
-   * Function to determine if polling should continue based on the current data.
-   * If not provided, polling will continue indefinitely (when pollInterval is set).
-   * @param data - The current data from the API call
-   * @returns true if polling should continue, false to stop
+   * When {@link sseRefreshPath} is set, called with the latest data before each SSE-driven refetch.
+   * Return false to close the EventSource.
    */
-  shouldPoll?: (data: T | null) => boolean;
+  shouldRefresh?: (data: T | null) => boolean;
   /**
    * Function to compare previous and current data to determine if state should be updated.
    * If provided, state will only be updated if this function returns true.
@@ -108,41 +107,15 @@ export interface UsePaginatedApiOptions<T = unknown> {
 }
 
 /**
- * Hook for paginated API calls that returns { data, loading, error, pagination }
- * Always fetches immediately on mount and when dependencies change.
- * Supports optional polling with conditional logic.
- * 
- * @param apiCall - Function that returns ApiRequestOptions for the request
- * @param options - Configuration options
- * @returns Object with data, loading, error, and pagination states
- * 
- * @example
- * ```tsx
- * const { data, loading, error, pagination } = usePaginatedApi(
- *   () => ({
- *     method: 'GET',
- *     url: '/api/reports',
- *     query: { page: page - 1, pageSize: PER_PAGE, productId, vulnId },
- *   }),
- *   { deps: [page, productId, vulnId] }
- * );
- * 
- * // With polling
- * const { data, loading, error, pagination } = usePaginatedApi(
- *   () => ({ ... }),
- *   { 
- *     deps: [page, productId],
- *     pollInterval: 5000,
- *     shouldPoll: (data) => data?.someCondition !== true
- *   }
- * );
- * ```
+ * Hook for paginated API calls that returns { data, loading, error, pagination }.
+ * Fetches on mount and when dependencies change (debounced after the first load).
+ * Optional {@link UsePaginatedApiOptions.sseRefreshPath} enables catalog invalidation via SSE.
  */
 export function usePaginatedApi<T>(
   apiCall: () => ApiRequestOptions,
   options: UsePaginatedApiOptions<T> = {}
 ): UsePaginatedApiResult<T> {
-  const { deps = [], pollInterval } = options;
+  const { deps = [], sseRefreshPath } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -151,13 +124,11 @@ export function usePaginatedApi<T>(
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
   const apiCallRef = useRef<() => ApiRequestOptions>(apiCall);
   // Store options in ref to avoid stale closures
   const optionsRef = useRef<UsePaginatedApiOptions<T>>(options);
-  // Store data in ref to access latest value in polling callback without restarting interval
   const dataRef = useRef<T | null>(null);
   // Track if this is the very first mount (not dependency changes)
   const isFirstMountRef = useRef<boolean>(true);
@@ -165,7 +136,8 @@ export function usePaginatedApi<T>(
   const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
   // Track if debounce is pending (user is typing/changing filters)
   const debouncePendingRef = useRef<boolean>(false);
-  
+  const sseUnsubscribeRef = useRef<(() => void) | null>(null);
+
   // Update options ref whenever options change
   useEffect(() => {
     optionsRef.current = options;
@@ -183,7 +155,7 @@ export function usePaginatedApi<T>(
     }
 
     cancelledRef.current = false;
-    // Only set loading to true on the very first mount, not on dependency changes or polling
+    // Only set loading to true on the very first mount, not on dependency changes or SSE refetch
     // This prevents showing skeleton when sort/filter changes
     // Check if data is null (initial load) AND this is the first mount
     if (data === null && isFirstMountRef.current) {
@@ -312,62 +284,56 @@ export function usePaginatedApi<T>(
         debouncedExecuteRef.current.cancel();
         debouncePendingRef.current = false; // Clear pending state on cancel
       }
-      // Note: Do NOT clear polling interval here - it's managed by the polling effect
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
 
-  // Set up polling if pollInterval is provided
-  // Always set the interval, but check initialFetchCompleteRef inside the callback
-  // to prevent polling until the initial fetch completes
   useEffect(() => {
-    if (!pollInterval) {
+    if (!sseRefreshPath) {
+      sseUnsubscribeRef.current = null;
       return;
     }
-
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    // Always set up polling interval when pollInterval is provided
-    // The callback will check if initial fetch is complete before executing
-    intervalRef.current = setInterval(() => {
-      // Don't poll until initial fetch completes (prevents duplicate calls on mount)
+    let unsubscribe: (() => void) | undefined;
+    const listener = () => {
       if (!initialFetchCompleteRef.current) {
         return;
       }
-
-      // Skip polling if user is actively changing filters (debounce pending)
-      // This prevents polling with stale filter values and respects user input
       if (debouncePendingRef.current) {
         return;
       }
-
-      // Check if we should continue polling using latest data from ref
-      const shouldPoll = optionsRef.current.shouldPoll;
-      if (shouldPoll && !shouldPoll(dataRef.current)) {
-        // Stop polling if shouldPoll returns false
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
+      const shouldRefresh = optionsRef.current.shouldRefresh;
+      if (shouldRefresh && !shouldRefresh(dataRef.current)) {
+        unsubscribe?.();
         return;
       }
-
-      // Execute the API call (not a dependency change, so use shouldUpdate comparison)
-      execute(false);
-    }, pollInterval);
-
+      void execute(false);
+    };
+    unsubscribe = SSEListener.subscribe(sseRefreshPath, listener);
+    sseUnsubscribeRef.current = unsubscribe;
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      unsubscribe?.();
+      if (sseUnsubscribeRef.current === unsubscribe) {
+        sseUnsubscribeRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval]);
+  }, [sseRefreshPath, ...deps]);
+
+  useEffect(() => {
+    if (!sseRefreshPath) {
+      return;
+    }
+    const shouldRefresh = optionsRef.current.shouldRefresh;
+    if (shouldRefresh && !shouldRefresh(data)) {
+      const off = sseUnsubscribeRef.current;
+      if (off) {
+        off();
+        if (sseUnsubscribeRef.current === off) {
+          sseUnsubscribeRef.current = null;
+        }
+      }
+    }
+  }, [data, sseRefreshPath]);
 
   return { data, loading, error, pagination };
 }
