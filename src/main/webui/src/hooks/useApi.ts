@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { CancelablePromise } from "../generated-client";
+import { SSEListener } from "../utils/sseListener";
 
 export interface UseApiResult<T> {
   data: T | null;
@@ -54,7 +55,7 @@ export function useApi<T>(
 
   const promiseRef = useRef<CancelablePromise<T> | Promise<T> | null>(null);
   const cancelledRef = useRef<boolean>(false);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const sseUnsubscribeRef = useRef<(() => void) | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
   const previousDataRef = useRef<T | null>(null);
   const optionsRef = useRef<UseApiOptions<T>>(options);
@@ -138,31 +139,27 @@ export function useApi<T>(
 
   useEffect(() => {
     if (!sseRefreshPath) {
+      sseUnsubscribeRef.current = null;
       return;
     }
-    const url = sseRefreshPath.startsWith("http")
-      ? sseRefreshPath
-      : `${window.location.origin}${sseRefreshPath}`;
-    const es = new EventSource(url, { withCredentials: true });
-    eventSourceRef.current = es;
-    es.onmessage = () => {
+    let unsubscribe: (() => void) | undefined;
+    const listener = () => {
       if (!initialFetchCompleteRef.current) {
         return;
       }
       const shouldRefresh = optionsRef.current.shouldRefresh;
       if (shouldRefresh && !shouldRefresh(dataRef.current)) {
-        es.close();
-        if (eventSourceRef.current === es) {
-          eventSourceRef.current = null;
-        }
+        unsubscribe?.();
         return;
       }
       execute(false);
     };
+    unsubscribe = SSEListener.subscribe(sseRefreshPath, listener);
+    sseUnsubscribeRef.current = unsubscribe;
     return () => {
-      es.close();
-      if (eventSourceRef.current === es) {
-        eventSourceRef.current = null;
+      unsubscribe?.();
+      if (sseUnsubscribeRef.current === unsubscribe) {
+        sseUnsubscribeRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,9 +170,14 @@ export function useApi<T>(
       return;
     }
     const shouldRefresh = optionsRef.current.shouldRefresh;
-    if (shouldRefresh && !shouldRefresh(data) && eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
+    if (shouldRefresh && !shouldRefresh(data)) {
+      const off = sseUnsubscribeRef.current;
+      if (off) {
+        off();
+        if (sseUnsubscribeRef.current === off) {
+          sseUnsubscribeRef.current = null;
+        }
+      }
     }
   }, [data, sseRefreshPath]);
 

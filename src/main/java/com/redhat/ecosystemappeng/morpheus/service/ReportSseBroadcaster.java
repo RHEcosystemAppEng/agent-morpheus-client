@@ -1,7 +1,5 @@
 package com.redhat.ecosystemappeng.morpheus.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.logging.Logger;
@@ -35,8 +33,7 @@ public class ReportSseBroadcaster {
   }
 
   private void emit(ReportSseMessage message) {
-    List<MultiEmitter<? super ReportSseMessage>> snapshot = new ArrayList<>(subscribers);
-    for (MultiEmitter<? super ReportSseMessage> emitter : snapshot) {
+    for (MultiEmitter<? super ReportSseMessage> emitter : subscribers) {
       try {
         emitter.emit(message);
       } catch (Exception e) {

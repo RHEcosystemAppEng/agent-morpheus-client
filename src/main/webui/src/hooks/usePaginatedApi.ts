@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
+import { SSEListener } from '../utils/sseListener';
 import { OpenAPI } from '../generated-client/core/OpenAPI';
 import { getHeaders } from '../generated-client/core/request';
 import type { ApiRequestOptions } from '../generated-client/core/ApiRequestOptions';
@@ -135,7 +136,7 @@ export function usePaginatedApi<T>(
   const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
   // Track if debounce is pending (user is typing/changing filters)
   const debouncePendingRef = useRef<boolean>(false);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const sseUnsubscribeRef = useRef<(() => void) | null>(null);
 
   // Update options ref whenever options change
   useEffect(() => {
@@ -289,14 +290,11 @@ export function usePaginatedApi<T>(
 
   useEffect(() => {
     if (!sseRefreshPath) {
+      sseUnsubscribeRef.current = null;
       return;
     }
-    const url = sseRefreshPath.startsWith("http")
-      ? sseRefreshPath
-      : `${window.location.origin}${sseRefreshPath}`;
-    const es = new EventSource(url, { withCredentials: true });
-    eventSourceRef.current = es;
-    es.onmessage = () => {
+    let unsubscribe: (() => void) | undefined;
+    const listener = () => {
       if (!initialFetchCompleteRef.current) {
         return;
       }
@@ -305,18 +303,17 @@ export function usePaginatedApi<T>(
       }
       const shouldRefresh = optionsRef.current.shouldRefresh;
       if (shouldRefresh && !shouldRefresh(dataRef.current)) {
-        es.close();
-        if (eventSourceRef.current === es) {
-          eventSourceRef.current = null;
-        }
+        unsubscribe?.();
         return;
       }
       void execute(false);
     };
+    unsubscribe = SSEListener.subscribe(sseRefreshPath, listener);
+    sseUnsubscribeRef.current = unsubscribe;
     return () => {
-      es.close();
-      if (eventSourceRef.current === es) {
-        eventSourceRef.current = null;
+      unsubscribe?.();
+      if (sseUnsubscribeRef.current === unsubscribe) {
+        sseUnsubscribeRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -327,9 +324,14 @@ export function usePaginatedApi<T>(
       return;
     }
     const shouldRefresh = optionsRef.current.shouldRefresh;
-    if (shouldRefresh && !shouldRefresh(data) && eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
+    if (shouldRefresh && !shouldRefresh(data)) {
+      const off = sseUnsubscribeRef.current;
+      if (off) {
+        off();
+        if (sseUnsubscribeRef.current === off) {
+          sseUnsubscribeRef.current = null;
+        }
+      }
     }
   }, [data, sseRefreshPath]);
 
