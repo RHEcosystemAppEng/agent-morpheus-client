@@ -201,33 +201,26 @@
    limitations under the License.
 
 ### THIRD-PARTY LICENSES
-- nginx		2-clause BSD license
-- aiohttp-client-cache		Apache License 2.0
-- aiohttp		Apache License 2.0
-- aioresponses		MIT License
-- beautifulsoup4		MIT License
-- esprima-python		BSD 2-Clause License
-- faiss		MIT License
-- git-lfs		MIT License
-- gitpython		BSD 3-Clause License
-- json5		MIT License
-- openai		MIT License
-- packaging		Apache License 2.0 and BSD 2-Clause License
-- pydantic		MIT License
-- sentence-transformers		Apache License 2.0
-- tenacity		Apache License 2.0
-- tiktoken		MIT License
-- tini		MIT License
-- transformers		Apache License 2.0
-- uvloop		Apache License 2.0 and MIT License
-- google-search-results		MIT License
-- langchain		MIT License
-- langchain-community		MIT License
-- langchain-core		MIT License
-- nemollm		Apache License 2.0
-- pydpkg		MIT License
-- rank_bm25		MIT License
-- tree-sitter		MIT License
-- tree-sitter-languages		MIT License
-- univers		Apache License 2.0
-- wget		GNU General Public License (GPL) version 3
+
+#### Java / JVM Dependencies
+- Quarkus                                    Apache License 2.0
+- Quarkus Quinoa                             Apache License 2.0
+- Jackson (Databind, Core, Annotations)      Apache License 2.0
+- MongoDB Java Driver                        Apache License 2.0
+- Eclipse Vert.x                             Apache License 2.0
+- SmallRye Health                            Apache License 2.0
+- SmallRye OpenAPI                           Apache License 2.0
+- SmallRye Context Propagation               Apache License 2.0
+- Micrometer                                 Apache License 2.0
+- OpenTelemetry Java                         Apache License 2.0
+- Hibernate Validator                        Apache License 2.0
+- JBoss Log Manager                          Apache License 2.0
+
+#### Frontend Dependencies (production bundle)
+- React                                      MIT License
+- PatternFly React (core, charts,
+  component-groups, icons, table)            MIT License
+- react-router / react-router-dom            MIT License
+- lodash                                     MIT License
+- react-markdown                             MIT License
+- victory                                    MIT License
