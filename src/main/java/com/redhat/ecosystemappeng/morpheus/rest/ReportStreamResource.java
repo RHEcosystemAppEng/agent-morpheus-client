@@ -32,7 +32,7 @@ public class ReportStreamResource {
   @Path("/stream")
   @Produces(MediaType.SERVER_SENT_EVENTS)
   @RestStreamElementType(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Report catalog change stream", description = "Server-Sent Events (JSON). Emit `catalog` when reports or products change; clients should refetch their REST views.")
+  @Operation(summary = "Report live-update stream (SSE)", description = "Server-Sent Events. Each event `data` line is JSON `{}` (empty object): report or product data may have changed; clients should refetch their REST views. The payload may gain fields later for targeted invalidation.")
   @APIResponses({
       @APIResponse(responseCode = "200", description = "SSE stream", content = @Content(schema = @Schema(implementation = ReportSseMessage.class)))
   })

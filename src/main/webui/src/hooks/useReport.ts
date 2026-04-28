@@ -13,10 +13,8 @@
 import { useApi } from "./useApi";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import { shouldContinueLiveRefreshForProduct } from "../utils/liveRefresh";
-import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import { request } from "../generated-client/core/request";
 import { OpenAPI } from "../generated-client/core/OpenAPI";
-import isEqual from "lodash/isEqual";
 
 export interface UseReportResult {
   data: ProductSummary | null;
@@ -25,27 +23,9 @@ export interface UseReportResult {
 }
 
 /**
- * Pure function to compare ProductSummary objects
- * Compares all fields of the product summary using deep comparison
- * Returns true if any product data has changed, false otherwise
- */
-export function hasProductStatusCountsChanged(
-  previousProduct: ProductSummary | null,
-  currentProduct: ProductSummary
-): boolean {
-  // If no previous data, always update (initial load)
-  if (!previousProduct) {
-    return true;
-  }
-
-  return !isEqual(previousProduct, currentProduct);
-}
-
-/**
- * Hook to fetch product data for a report page with SSE catalog invalidation.
- * The EventSource closes when product analysis reaches `completed`.
- * Only updates state when product data has changed to prevent unnecessary rerenders.
- * 
+ * Hook to fetch product data for a report page with optional server live-update refetch.
+ * Refetches after SSE ticks stop while {@link shouldContinueLiveRefreshForProduct} is false (e.g. when analysis completes).
+ *
  * @param productId - The product ID to fetch data for
  * @returns Object with data, loading, and error states
  */
@@ -65,12 +45,9 @@ export function useReport(productId: string | undefined): UseReportResult {
     }),
     {
       deps: [productId],
-      sseRefreshPath: REPORT_CATALOG_SSE_PATH,
+      liveUpdatesRefresh: true,
       shouldRefresh: (product) =>
         product !== null && shouldContinueLiveRefreshForProduct(product),
-      shouldUpdate: (previousProduct, currentProduct) => {
-        return hasProductStatusCountsChanged(previousProduct, currentProduct);
-      },
     }
   );
 

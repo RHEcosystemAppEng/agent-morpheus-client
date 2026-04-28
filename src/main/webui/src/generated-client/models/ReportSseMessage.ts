@@ -3,20 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * JSON object sent as each SSE event data line (OpenAPI lists this under text/event-stream, not as a typical fetch response body).
+ * JSON object sent as each SSE event `data` line (OpenAPI lists this under text/event-stream).
+ * Today this is the empty object `{}`: any message means data may have changed; refetch REST as needed.
+ * Future OpenAPI versions may add optional properties for targeted invalidation.
  */
-export type ReportSseMessage = {
-    /**
-     * Invalidation kind; use `catalog` for any list-affecting report or product change.
-     */
-    type: string;
-    /**
-     * Report id hint when applicable
-     */
-    reportId?: string;
-    /**
-     * Product id hint when applicable
-     */
-    productId?: string;
-};
-
+export type ReportSseMessage = Record<string, never>;

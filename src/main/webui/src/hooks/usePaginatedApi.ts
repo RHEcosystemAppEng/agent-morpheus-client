@@ -17,7 +17,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
-import { SSEListener } from '../utils/sseListener';
+import { useLiveUpdatesRevision } from '../contexts/LiveUpdatesContext';
 import { OpenAPI } from '../generated-client/core/OpenAPI';
 import { getHeaders } from '../generated-client/core/request';
 import type { ApiRequestOptions } from '../generated-client/core/ApiRequestOptions';
@@ -98,36 +98,26 @@ export interface UsePaginatedApiOptions<T = unknown> {
    */
   deps?: unknown[];
   /**
-   * Absolute URL or same-origin path for Server-Sent Events. When set, each SSE message triggers
-   * the same paginated REST request again (after the initial load), subject to debounce and {@link shouldRefresh}.
+   * When true, refetches after each server live-update SSE tick (see LiveUpdatesProvider), subject to debounce and shouldRefresh.
    */
-  sseRefreshPath?: string;
+  liveUpdatesRefresh?: boolean;
   /**
-   * When {@link sseRefreshPath} is set, called with the latest data before each SSE-driven refetch.
-   * Return false to close the EventSource.
+   * When liveUpdatesRefresh is true, called with the latest data before each SSE-driven refetch.
+   * Return false to skip the refetch.
    */
   shouldRefresh?: (data: T | null) => boolean;
-  /**
-   * Function to compare previous and current data to determine if state should be updated.
-   * If provided, state will only be updated if this function returns true.
-   * This prevents unnecessary rerenders when data hasn't meaningfully changed.
-   * @param previousData - The previous data (null on first call)
-   * @param currentData - The current data from the API call
-   * @returns true if state should be updated, false to skip the update
-   */
-  shouldUpdate?: (previousData: T | null, currentData: T) => boolean;
 }
 
 /**
  * Hook for paginated API calls that returns { data, loading, error, pagination }.
  * Fetches on mount and when dependencies change (debounced after the first load).
- * Optional {@link UsePaginatedApiOptions.sseRefreshPath} enables catalog invalidation via SSE.
+ * Optional liveUpdatesRefresh enables refetch when the server signals data may have changed (LiveUpdatesProvider).
  */
 export function usePaginatedApi<T>(
   apiCall: () => ApiRequestOptions,
   options: UsePaginatedApiOptions<T> = {}
 ): UsePaginatedApiResult<T> {
-  const { deps = [], sseRefreshPath } = options;
+  const { deps = [], liveUpdatesRefresh = false } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -137,7 +127,6 @@ export function usePaginatedApi<T>(
   const abortControllerRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef<boolean>(false);
   const initialFetchCompleteRef = useRef<boolean>(false);
-  const previousDataRef = useRef<T | null>(null);
   const apiCallRef = useRef<() => ApiRequestOptions>(apiCall);
   // Store options in ref to avoid stale closures
   const optionsRef = useRef<UsePaginatedApiOptions<T>>(options);
@@ -148,7 +137,8 @@ export function usePaginatedApi<T>(
   const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
   // Track if debounce is pending (user is typing/changing filters)
   const debouncePendingRef = useRef<boolean>(false);
-  const sseUnsubscribeRef = useRef<(() => void) | null>(null);
+
+  const liveUpdatesRevision = useLiveUpdatesRevision(liveUpdatesRefresh);
 
   // Update options ref whenever options change
   useEffect(() => {
@@ -160,7 +150,7 @@ export function usePaginatedApi<T>(
     dataRef.current = data;
   }, [data]);
 
-  const execute = async (isDependencyChange: boolean = false) => {
+  const execute = async () => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -220,20 +210,7 @@ export function usePaginatedApi<T>(
       }
 
       if (!cancelledRef.current) {
-        // Always update if dependencies changed (filters/pagination changed)
-        // Otherwise, check if we should update based on comparison function
-        const shouldUpdate = optionsRef.current.shouldUpdate;
-        const shouldUpdateState = isDependencyChange || !shouldUpdate
-          ? true
-          : shouldUpdate(previousDataRef.current, responseData);
-        
-        if (shouldUpdateState) {
-          setData(responseData);
-        }
-        
-        // Always update previous data ref for future comparisons
-        previousDataRef.current = responseData;
-      
+        setData(responseData);
         initialFetchCompleteRef.current = true;
       }
     } catch (err) {
@@ -262,20 +239,17 @@ export function usePaginatedApi<T>(
   });
 
   useEffect(() => {
-    // Reset previous data ref when deps change (new query = fresh comparison)
-    previousDataRef.current = null;
-    
     // On initial mount, execute immediately without debounce
     if (isFirstMountRef.current) {
       // Pass true to indicate this is a dependency change, so we always update
       // execute() will set isFirstMountRef.current = false in its finally block
-      execute(true);
+      execute();
     } else {
       // On subsequent dependency changes, debounce the API call
       // Create debounced function if it doesn't exist
       if (!debouncedExecuteRef.current) {
         debouncedExecuteRef.current = debounce(() => {
-          execute(true);
+          execute();
           // Clear pending flag when debounce fires
           debouncePendingRef.current = false;
         }, 300);
@@ -301,51 +275,25 @@ export function usePaginatedApi<T>(
   }, [...deps]);
 
   useEffect(() => {
-    if (!sseRefreshPath) {
-      sseUnsubscribeRef.current = null;
+    if (!liveUpdatesRefresh) {
       return;
     }
-    let unsubscribe: (() => void) | undefined;
-    const listener = () => {
-      if (!initialFetchCompleteRef.current) {
-        return;
-      }
-      if (debouncePendingRef.current) {
-        return;
-      }
-      const shouldRefresh = optionsRef.current.shouldRefresh;
-      if (shouldRefresh && !shouldRefresh(dataRef.current)) {
-        unsubscribe?.();
-        return;
-      }
-      void execute(false);
-    };
-    unsubscribe = SSEListener.subscribe(sseRefreshPath, listener);
-    sseUnsubscribeRef.current = unsubscribe;
-    return () => {
-      unsubscribe?.();
-      if (sseUnsubscribeRef.current === unsubscribe) {
-        sseUnsubscribeRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sseRefreshPath, ...deps]);
-
-  useEffect(() => {
-    if (!sseRefreshPath) {
+    if (liveUpdatesRevision === 0) {
+      return;
+    }
+    if (!initialFetchCompleteRef.current) {
+      return;
+    }
+    if (debouncePendingRef.current) {
       return;
     }
     const shouldRefresh = optionsRef.current.shouldRefresh;
-    if (shouldRefresh && !shouldRefresh(data)) {
-      const off = sseUnsubscribeRef.current;
-      if (off) {
-        off();
-        if (sseUnsubscribeRef.current === off) {
-          sseUnsubscribeRef.current = null;
-        }
-      }
+    if (shouldRefresh && !shouldRefresh(dataRef.current)) {
+      return;
     }
-  }, [data, sseRefreshPath]);
+    void execute();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveUpdatesRevision, liveUpdatesRefresh]);
 
   return { data, loading, error, pagination };
 }

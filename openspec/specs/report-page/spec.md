@@ -15,9 +15,7 @@ The application SHALL provide navigation from the reports table to a report page
 ### Requirement: Report Details Display
 The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM"), including the day, full month name, year, and time with seconds and AM/PM indicator.
 
-The report page SHALL automatically refresh data using `useReport` with SSE (`sseRefreshPath`), but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refresh SHALL stop (see `api-hooks` and `report-events-stream` specifications).
-
-The report page SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
+The report page SHALL automatically refresh data using `useReport` with server live updates (`liveUpdatesRefresh`), but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refetches SHALL stop while the shared live-updates `EventSource` remains open (see `api-hooks` and `report-events-stream` specifications).
 
 The Details card SHALL display a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` (numExcluded from `sbomReport.statusCounts["excluded"]` or `product.data.submissionFailures.length`, numSubmitted from `product.data.submittedCount`). When numExcluded > 0, the value SHALL be a link that navigates to `/reports/product/excluded-components/:productId/:cveId`. When numExcluded === 0, the value SHALL be `0/<numSubmitted>` displayed as plain text (not a link).
 
@@ -112,7 +110,7 @@ The report page SHALL display a donut chart summarizing component scan states fr
 - **THEN** the donut chart area displays a loading spinner
 
 ### Requirement: Repository Reports Table
-The report page SHALL display an embedded repository reports table that conforms to the **repository-reports-table** specification. The table SHALL list repository reports filtered by both the report's SBOM report ID and the CVE ID from the route parameters. The table SHALL automatically refresh using `usePaginatedApi` with SSE, using the same condition as the parent report page: refresh only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refresh SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue (see `api-hooks` and `report-events-stream` specifications). The repository reports table SHALL use the `shouldUpdate` option to prevent unnecessary rerenders when data hasn't changed (see `api-hooks` specification).
+The report page SHALL display an embedded repository reports table that conforms to the **repository-reports-table** specification. The table SHALL list repository reports filtered by both the report's SBOM report ID and the CVE ID from the route parameters. The table SHALL automatically refresh using `usePaginatedApi` with live updates (`liveUpdatesRefresh`), using the same condition as the parent report page: refetch only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refetches SHALL stop. The repository reports table SHALL use the same `sbomReport.statusCounts` data from the parent report page to determine whether to continue (see `api-hooks` and `report-events-stream` specifications).
 
 #### Scenario: Repository reports table displays on report page
 - **WHEN** a user views the report page with a specific CVE ID in the route
@@ -123,11 +121,11 @@ The report page SHALL display an embedded repository reports table that conforms
 #### Scenario: Repository reports table live refresh on report page
 - **WHEN** a user views the report page with a repository reports table
 - **AND** some analysis states in `sbomReport.statusCounts` (from the parent report page) are not "failed" or "completed"
-- **THEN** the repository reports table refreshes on SSE catalog events via `usePaginatedApi` (see `api-hooks` and `report-events-stream` specifications)
+- **THEN** the repository reports table refreshes on SSE live-update events via `usePaginatedApi` (see `api-hooks` and `report-events-stream` specifications)
 - **AND** the repository reports table uses the same `sbomReport.statusCounts` condition as the parent report page to determine whether to continue live refresh
 - **AND** the refresh preserves current pagination, sorting, and filter settings
 - **AND** when all analysis states in `sbomReport.statusCounts` are either "failed" or "completed", live refresh stops
-- **AND** unnecessary rerenders are avoided when data hasn't changed (see `api-hooks` `shouldUpdate` behavior)
+- **AND** refetches follow `shouldContinueLiveRefresh` from the parent product data (see `api-hooks`)
 
 #### Scenario: Repository reports table error state on report page
 - **WHEN** reports data fetch fails for the repository reports table on the report page

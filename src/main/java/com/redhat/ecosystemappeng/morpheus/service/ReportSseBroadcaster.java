@@ -29,7 +29,7 @@ public class ReportSseBroadcaster {
 
   /** Coarse signal: any reports/products list or detail the UI caches may have changed. */
   public void publishCatalogChanged() {
-    emit(new ReportSseMessage("catalog", null, null));
+    emit(new ReportSseMessage());
   }
 
   private void emit(ReportSseMessage message) {

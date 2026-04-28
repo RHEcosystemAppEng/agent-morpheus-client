@@ -1,11 +1,14 @@
 package com.redhat.ecosystemappeng.morpheus.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+
 /**
- * Payload for {@code text/event-stream} items (JSON per event). Clients refetch REST; this is only invalidation.
+ * Payload for each {@code text/event-stream} element: JSON {@code {}} meaning “data may have changed; refetch REST”.
+ * <p>
+ * A future version may add fields (for example {@code type}, {@code reportId}, {@code productId}) so clients can
+ * ignore events that do not concern the current view; those fields should be emitted only from write paths that
+ * know the identifiers reliably.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @RegisterForReflection
-public record ReportSseMessage(String type, String reportId, String productId) {
+public record ReportSseMessage() {
 }

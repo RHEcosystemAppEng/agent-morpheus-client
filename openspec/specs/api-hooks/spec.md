@@ -1,13 +1,13 @@
 # api-hooks Specification
 
 ## Purpose
-The api-hooks capability defines React hooks for making API calls with features such as pagination support, debouncing, and **SSE-driven** live refresh. The hooks provide a consistent interface for data fetching with automatic state management (loading, error, data), optional catalog invalidation via Server-Sent Events, and behavior to prevent unnecessary API calls. 
+The api-hooks capability defines React hooks for making API calls with features such as pagination support, debouncing, and **SSE-driven** live refresh. The hooks provide a consistent interface for data fetching with automatic state management (loading, error, data), optional live-update invalidation via Server-Sent Events, and behavior to prevent unnecessary API calls. 
 
 ## Requirements
 ### Requirement: useApi Hook for Immediate API Calls
-The `useApi` hook SHALL provide immediate API calls that execute on mount and when dependencies change. The hook SHALL support optional **SSE** live refresh via `sseRefreshPath` (same-origin `EventSource` with credentials). The hook SHALL return `{ data, loading, error }`.
+The `useApi` hook SHALL provide immediate API calls that execute on mount and when dependencies change. The hook SHALL support optional **SSE**-driven live refresh via `liveUpdatesRefresh` (ticks from `LiveUpdatesProvider`; same-origin `EventSource` with credentials is opened only in that provider). The hook SHALL return `{ data, loading, error }`.
 
-The hook SHALL fetch data immediately on mount and when dependencies in the `deps` array change. When `sseRefreshPath` is set, the hook SHALL support an optional `shouldRefresh` callback to stop listening when it returns false. The hook SHALL support a `shouldUpdate` function to prevent unnecessary state updates when data has not meaningfully changed.
+The hook SHALL fetch data immediately on mount and when dependencies in the `deps` array change. When `liveUpdatesRefresh` is true, the hook SHALL re-execute after each live-update tick (after initial load completes), subject to an optional `shouldRefresh` callback that skips the refetch when it returns false (the global `EventSource` remains open).
 
 #### Scenario: useApi immediate execution
 - **WHEN** a component uses `useApi` hook
@@ -19,11 +19,11 @@ The hook SHALL fetch data immediately on mount and when dependencies in the `dep
 - **THEN** the API call executes immediately on mount
 - **AND** the API call re-executes whenever any dependency in the `deps` array changes
 
-#### Scenario: useApi with SSE
-- **WHEN** `useApi` is configured with `sseRefreshPath`
+#### Scenario: useApi with live updates SSE
+- **WHEN** `useApi` is configured with `liveUpdatesRefresh: true` and the app is wrapped in `LiveUpdatesProvider`
 - **THEN** the API call executes immediately on mount
-- **AND** the API call re-executes on each SSE message (after initial load completes), subject to `shouldRefresh` when provided
-- **AND** if `shouldRefresh` is provided, the EventSource stays open only while `shouldRefresh(data)` returns true
+- **AND** the API call re-executes on each live-update tick (after initial load completes), subject to `shouldRefresh` when provided
+- **AND** if `shouldRefresh` returns false, that refetch is skipped (the shared live-updates `EventSource` is unchanged)
 
 ### Requirement: usePostApi Hook for Manual API Calls
 The `usePostApi` hook SHALL provide manual API calls that require explicit triggering. The hook SHALL be used for POST, PUT, DELETE operations that should not execute automatically. The hook SHALL return `{ data, loading, error, execute }` where `execute` must be called to trigger the API call.
@@ -80,31 +80,24 @@ The debounce SHALL only apply to dependency changes after the initial mount. The
 - **AND** the debounce mechanism does not apply to the initial fetch
 
 #### Scenario: Live refresh skips when debounce is pending
-- **WHEN** `usePaginatedApi` is configured with `sseRefreshPath` AND a user is actively typing in a filter field (debounce is pending)
+- **WHEN** `usePaginatedApi` is configured with `liveUpdatesRefresh: true` AND a user is actively typing in a filter field (debounce is pending)
 - **THEN** live refresh skips execution during the debounce period
 - **AND** live refresh resumes after the debounce fires and the filter change completes
 - **AND** this prevents refetch from executing with stale filter values
 
 #### Scenario: Live refresh continues when no debounce is pending
-- **WHEN** `usePaginatedApi` is configured with `sseRefreshPath` AND no debounce is pending (user is not typing)
+- **WHEN** `usePaginatedApi` is configured with `liveUpdatesRefresh: true` AND no debounce is pending (user is not typing)
 - **THEN** SSE messages trigger refetch as configured
 - **AND** dependency changes are still debounced even when live refresh is active
 
 #### Scenario: Live refresh preserves pagination and filter settings
-- **WHEN** `usePaginatedApi` is configured with `sseRefreshPath` AND a live refresh executes
+- **WHEN** `usePaginatedApi` is configured with `liveUpdatesRefresh: true` AND a live refresh executes
 - **THEN** the API call preserves current pagination, sorting, and filter settings from the dependencies
 - **AND** the call uses the same query parameters as the last successful API call
 
-#### Scenario: Live refresh prevents unnecessary rerenders with shouldUpdate
-- **WHEN** `usePaginatedApi` is configured with `sseRefreshPath` and `shouldUpdate` function AND a refresh executes AND the data has not meaningfully changed
-- **THEN** the hook SHALL compare the previous and current data using the `shouldUpdate` function
-- **AND** the hook SHALL skip the state update (prevent rerender) if `shouldUpdate` returns false
-- **AND** the hook SHALL trigger a rerender if `shouldUpdate` returns true or if `shouldUpdate` is not provided
-- **AND** this optimization SHALL prevent UI jumps and visual disruption when the data remains unchanged
-
-### Requirement: sseRefreshPath on useApi and usePaginatedApi
-Both hooks SHALL accept optional `sseRefreshPath`; when set they SHALL use `EventSource` with credentials. Refetches SHALL use the same REST/fetch paths as before.
+### Requirement: liveUpdatesRefresh on useApi and usePaginatedApi
+Both hooks SHALL accept optional `liveUpdatesRefresh`; when true they SHALL react to ticks from `LiveUpdatesProvider` (not by opening their own `EventSource`). Refetches SHALL use the same REST/fetch paths as before.
 
 #### Scenario: Debounce parity
-- **WHEN** `usePaginatedApi` has pending filter debounce and SSE arrives
+- **WHEN** `usePaginatedApi` has pending filter debounce and a live-update SSE tick occurs
 - **THEN** refetch is skipped until debounce completes

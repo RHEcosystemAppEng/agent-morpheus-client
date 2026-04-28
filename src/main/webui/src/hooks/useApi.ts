@@ -18,7 +18,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { CancelablePromise } from "../generated-client";
-import { SSEListener } from "../utils/sseListener";
+import { useLiveUpdatesRevision } from "../contexts/LiveUpdatesContext";
 
 export interface UseApiResult<T> {
   data: T | null;
@@ -32,22 +32,14 @@ export interface UseApiOptions<T = unknown> {
    */
   deps?: unknown[];
   /**
-   * Same-origin path or absolute URL for Server-Sent Events. When set, successful responses
-   * are followed by an `EventSource` (with credentials); each message triggers the same REST
-   * request function again.
+   * When true, refetches after each server live-update SSE tick (see LiveUpdatesProvider), subject to shouldRefresh.
    */
-  sseRefreshPath?: string;
+  liveUpdatesRefresh?: boolean;
   /**
-   * When {@link sseRefreshPath} is set, called with the latest data before each SSE-driven refetch.
-   * Return false to close the stream (for example when the resource has reached a terminal state).
-   * If omitted, every SSE message triggers a refetch while the connection stays open.
+   * When liveUpdatesRefresh is true, called with the latest data before each SSE-driven refetch.
+   * Return false to skip the refetch (for example when the resource has reached a terminal state).
    */
   shouldRefresh?: (data: T | null) => boolean;
-  /**
-   * Compare previous and current data to decide whether to update React state.
-   * If provided, state updates only when this returns true (avoids rerenders when nothing meaningful changed).
-   */
-  shouldUpdate?: (previousData: T | null, currentData: T) => boolean;
 }
 
 /**
@@ -59,7 +51,7 @@ export function useApi<T>(
   apiCall: () => Promise<T> | CancelablePromise<T>,
   options: UseApiOptions<T> = {}
 ): UseApiResult<T> {
-  const { deps = [], sseRefreshPath } = options;
+  const { deps = [], liveUpdatesRefresh = false } = options;
 
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -67,11 +59,11 @@ export function useApi<T>(
 
   const promiseRef = useRef<CancelablePromise<T> | Promise<T> | null>(null);
   const cancelledRef = useRef<boolean>(false);
-  const sseUnsubscribeRef = useRef<(() => void) | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
-  const previousDataRef = useRef<T | null>(null);
   const optionsRef = useRef<UseApiOptions<T>>(options);
   const dataRef = useRef<T | null>(null);
+
+  const liveUpdatesRevision = useLiveUpdatesRevision(liveUpdatesRefresh);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -99,15 +91,7 @@ export function useApi<T>(
       promise
         .then((result) => {
           if (!cancelledRef.current) {
-            const shouldUpdate = optionsRef.current.shouldUpdate;
-            const shouldUpdateState = shouldUpdate
-              ? shouldUpdate(previousDataRef.current, result)
-              : true;
-            if (shouldUpdateState) {
-              setData(result);
-            }
-            previousDataRef.current = result;
-
+            setData(result);
             setLoading(false);
             promiseRef.current = null;
             initialFetchCompleteRef.current = true;
@@ -136,7 +120,6 @@ export function useApi<T>(
 
   useEffect(() => {
     initialFetchCompleteRef.current = false;
-    previousDataRef.current = null;
 
     execute(true);
 
@@ -150,48 +133,22 @@ export function useApi<T>(
   }, [...deps]);
 
   useEffect(() => {
-    if (!sseRefreshPath) {
-      sseUnsubscribeRef.current = null;
+    if (!liveUpdatesRefresh) {
       return;
     }
-    let unsubscribe: (() => void) | undefined;
-    const listener = () => {
-      if (!initialFetchCompleteRef.current) {
-        return;
-      }
-      const shouldRefresh = optionsRef.current.shouldRefresh;
-      if (shouldRefresh && !shouldRefresh(dataRef.current)) {
-        unsubscribe?.();
-        return;
-      }
-      execute(false);
-    };
-    unsubscribe = SSEListener.subscribe(sseRefreshPath, listener);
-    sseUnsubscribeRef.current = unsubscribe;
-    return () => {
-      unsubscribe?.();
-      if (sseUnsubscribeRef.current === unsubscribe) {
-        sseUnsubscribeRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sseRefreshPath, ...deps]);
-
-  useEffect(() => {
-    if (!sseRefreshPath) {
+    if (liveUpdatesRevision === 0) {
+      return;
+    }
+    if (!initialFetchCompleteRef.current) {
       return;
     }
     const shouldRefresh = optionsRef.current.shouldRefresh;
-    if (shouldRefresh && !shouldRefresh(data)) {
-      const off = sseUnsubscribeRef.current;
-      if (off) {
-        off();
-        if (sseUnsubscribeRef.current === off) {
-          sseUnsubscribeRef.current = null;
-        }
-      }
+    if (shouldRefresh && !shouldRefresh(dataRef.current)) {
+      return;
     }
-  }, [data, sseRefreshPath]);
+    execute(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveUpdatesRevision, liveUpdatesRefresh]);
 
   return { data, loading, error };
 }

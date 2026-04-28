@@ -5,7 +5,7 @@
 import { ProductSummary } from "../generated-client";
 
 /**
- * Whether to keep listening for catalog SSE events for this product summary.
+ * Whether live-update–driven refetches should continue for this product summary.
  * Returns false once repository analysis has finished (`productState === "completed"`).
  */
 export function shouldContinueLiveRefreshForProduct(product: ProductSummary): boolean {

@@ -13,7 +13,7 @@
 /**
  * Hook for on-demand API calls that require explicit execution
  * Does not fetch immediately - requires manual trigger via execute()
- * Does not support SSE refetch (use useApi with sseRefreshPath when live updates are needed)
+ * Does not support SSE refetch (use useApi with liveUpdatesRefresh when server-driven live updates are needed)
  * Automatically cancels previous promise when execute() is called again
  */
 

@@ -11,10 +11,8 @@
 // limitations under the License.
 
 import { useMemo } from "react";
-import { isEqual } from "lodash";
 import { usePaginatedApi } from "./usePaginatedApi";
 import { getRepositoriesAnalyzedFromProduct } from "../utils/repositoriesAnalyzed";
-import { REPORT_CATALOG_SSE_PATH } from "../constants/sse";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import type { Finding } from "../utils/findingDisplay";
 import {
@@ -184,29 +182,6 @@ export function mapSortDirectionToApi(sortDirection: SortDirection): string {
 }
 
 /**
- * Pure function to compare ProductSummary objects between two arrays
- * Compares all fields of each product summary using deep comparison
- * Since the array contains maximum 100 products, and the number of fields is limited, the performance impact is negligible
- */
-export function haveReportStatesChanged(
-  previousProducts: ProductSummary[] | null,
-  currentProducts: ProductSummary[]
-): boolean {
-  // If no previous data, always update (initial load)
-  if (!previousProducts || previousProducts.length === 0) {
-    return true;
-  }
-
-  // If different number of products, update
-  if (previousProducts.length !== currentProducts.length) {
-    return true;
-  }
-
-  // Deep comparison of full ProductSummary objects using lodash isEqual
-  return !isEqual(previousProducts, currentProducts);
-}
-
-/**
  * Hook to fetch reports and process them for the reports table
  * Follows Rule VI: Complex data processing logic is encapsulated in a custom hook
  * with separate pure functions for data transformation
@@ -232,7 +207,7 @@ export function useReportsTableData(
   if (name) queryParams.name = name;
   if (cveId) queryParams.cveId = cveId;
 
-  // Fetch products using usePaginatedApi with SSE catalog refresh
+  // Fetch products using usePaginatedApi with live-updates SSE refresh
   const {
     data: productSummaries,
     loading,
@@ -246,10 +221,7 @@ export function useReportsTableData(
     }),
     {
       deps: [page, perPage, sortField, sortDirectionApi, name, cveId],
-      sseRefreshPath: REPORT_CATALOG_SSE_PATH,
-      shouldUpdate: (previousData, currentData) => {
-        return haveReportStatesChanged(previousData, currentData);
-      },
+      liveUpdatesRefresh: true,
     }
   );
 
