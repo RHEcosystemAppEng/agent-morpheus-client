@@ -46,10 +46,6 @@ const HomePage: React.FC = () => {
     }
   }, []);
 
-  const handleModalToggle = (_event: KeyboardEvent | React.MouseEvent) => {
-    setIsModalOpen(!isModalOpen);
-  };
-
   const handleAcknowledge = () => {
     localStorage.setItem(AI_USAGE_ACKNOWLEDGED_KEY, "true");
     setIsModalOpen(false);
@@ -60,7 +56,6 @@ const HomePage: React.FC = () => {
       <Modal
         variant={ModalVariant.small}
         isOpen={isModalOpen}
-        onClose={handleModalToggle}
         aria-labelledby="ai-usage-modal-title"
         aria-describedby="ai-usage-modal-body"
       >
