@@ -36,6 +36,7 @@ import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
 import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
+import com.redhat.ecosystemappeng.morpheus.service.ReportSseBroadcaster;
 import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
@@ -67,6 +68,9 @@ public class ProductRepositoryService {
   @Inject
   ObjectMapper objectMapper;
 
+  @Inject
+  ReportSseBroadcaster reportSseBroadcaster;
+
   public MongoCollection<Document> getCollection() {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
@@ -89,6 +93,7 @@ public class ProductRepositoryService {
 
     getCollection().insertOne(doc);
     LOGGER.debugf("Saved product %s to %s collection", product.id(), COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public Product get(String id) {
@@ -101,11 +106,13 @@ public class ProductRepositoryService {
   public void remove(String id) {
     getCollection().deleteOne(Filters.eq(RepositoryConstants.ID_KEY, id)).wasAcknowledged();
     LOGGER.debugf("Removed product %s from %s collection", id, COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public void remove(Collection<String> ids) {
     getCollection().deleteMany(Filters.in(RepositoryConstants.ID_KEY, ids)).wasAcknowledged();
     LOGGER.debugf("Removed products %s from %s collection", ids.toString(), COLLECTION);
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public String getUserName(String id) {
@@ -121,6 +128,19 @@ public class ProductRepositoryService {
   }
 
   public void updateCompletedAt(String id, String completedAt) {
+    updateCompletedAtWithoutCatalogNotification(id, completedAt);
+    reportSseBroadcaster.publishCatalogChanged();
+  }
+
+  /**
+   * Persists {@code completed_at} only. Callers that already publish catalog SSE (e.g. after report updates)
+   * should use this to avoid duplicate events.
+   */
+  public void updateCompletedAtWithoutCatalogNotification(String id, String completedAt) {
+    setCompletedAt(id, completedAt);
+  }
+
+  private void setCompletedAt(String id, String completedAt) {
     getCollection().updateOne(Filters.eq(RepositoryConstants.ID_KEY, id), Updates.set(COMPLETED_AT, completedAt));
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
   }
@@ -144,9 +164,10 @@ public class ProductRepositoryService {
       int failureCount = Objects.nonNull(failures) ? failures.size() : 0;
       int submittedCount = Objects.requireNonNullElse(doc.getInteger(SUBMITTED_COUNT), 0);
       if (submittedCount > 0 && failureCount == submittedCount && Objects.isNull(doc.getString(COMPLETED_AT))) {
-        updateCompletedAt(id, Instant.now().toString());
+        setCompletedAt(id, Instant.now().toString());
       }
     }
+    reportSseBroadcaster.publishCatalogChanged();
   }
 
   public static record ListResult(List<Product> products, long totalCount) {}

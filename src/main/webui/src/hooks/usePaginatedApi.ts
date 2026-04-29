@@ -17,6 +17,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { debounce } from 'lodash';
+import { useLiveUpdatesRevision } from '../contexts/LiveUpdatesContext';
 import { OpenAPI } from '../generated-client/core/OpenAPI';
 import { getHeaders } from '../generated-client/core/request';
 import type { ApiRequestOptions } from '../generated-client/core/ApiRequestOptions';
@@ -93,68 +94,30 @@ export interface UsePaginatedApiResult<T> {
 
 export interface UsePaginatedApiOptions<T = unknown> {
   /**
-   * Dependencies array - when these change, the API will be called again
+   * Dependencies array — when these change, the API will be called again
    */
   deps?: unknown[];
   /**
-   * Polling interval in milliseconds. If set, the API will be called repeatedly at this interval.
-   * @default undefined (no polling)
+   * When true, refetches after each server live-update SSE tick (see LiveUpdatesProvider), subject to debounce and shouldRefresh.
    */
-  pollInterval?: number;
+  liveUpdatesRefresh?: boolean;
   /**
-   * Function to determine if polling should continue based on the current data.
-   * If not provided, polling will continue indefinitely (when pollInterval is set).
-   * @param data - The current data from the API call
-   * @returns true if polling should continue, false to stop
+   * When liveUpdatesRefresh is true, called with the latest data before each SSE-driven refetch.
+   * Return false to skip the refetch.
    */
-  shouldPoll?: (data: T | null) => boolean;
-  /**
-   * Function to compare previous and current data to determine if state should be updated.
-   * If provided, state will only be updated if this function returns true.
-   * This prevents unnecessary rerenders when data hasn't meaningfully changed.
-   * @param previousData - The previous data (null on first call)
-   * @param currentData - The current data from the API call
-   * @returns true if state should be updated, false to skip the update
-   */
-  shouldUpdate?: (previousData: T | null, currentData: T) => boolean;
+  shouldRefresh?: (data: T | null) => boolean;
 }
 
 /**
- * Hook for paginated API calls that returns { data, loading, error, pagination }
- * Always fetches immediately on mount and when dependencies change.
- * Supports optional polling with conditional logic.
- * 
- * @param apiCall - Function that returns ApiRequestOptions for the request
- * @param options - Configuration options
- * @returns Object with data, loading, error, and pagination states
- * 
- * @example
- * ```tsx
- * const { data, loading, error, pagination } = usePaginatedApi(
- *   () => ({
- *     method: 'GET',
- *     url: '/api/reports',
- *     query: { page: page - 1, pageSize: PER_PAGE, productId, vulnId },
- *   }),
- *   { deps: [page, productId, vulnId] }
- * );
- * 
- * // With polling
- * const { data, loading, error, pagination } = usePaginatedApi(
- *   () => ({ ... }),
- *   { 
- *     deps: [page, productId],
- *     pollInterval: 5000,
- *     shouldPoll: (data) => data?.someCondition !== true
- *   }
- * );
- * ```
+ * Hook for paginated API calls that returns { data, loading, error, pagination }.
+ * Fetches on mount and when dependencies change (debounced after the first load).
+ * Optional liveUpdatesRefresh enables refetch when the server signals data may have changed (LiveUpdatesProvider).
  */
 export function usePaginatedApi<T>(
   apiCall: () => ApiRequestOptions,
   options: UsePaginatedApiOptions<T> = {}
 ): UsePaginatedApiResult<T> {
-  const { deps = [], pollInterval } = options;
+  const { deps = [], liveUpdatesRefresh = false } = options;
   
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -163,13 +126,10 @@ export function usePaginatedApi<T>(
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const cancelledRef = useRef<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const initialFetchCompleteRef = useRef<boolean>(false);
-  const previousDataRef = useRef<T | null>(null);
   const apiCallRef = useRef<() => ApiRequestOptions>(apiCall);
   // Store options in ref to avoid stale closures
   const optionsRef = useRef<UsePaginatedApiOptions<T>>(options);
-  // Store data in ref to access latest value in polling callback without restarting interval
   const dataRef = useRef<T | null>(null);
   // Track if this is the very first mount (not dependency changes)
   const isFirstMountRef = useRef<boolean>(true);
@@ -177,7 +137,9 @@ export function usePaginatedApi<T>(
   const debouncedExecuteRef = useRef<ReturnType<typeof debounce> | null>(null);
   // Track if debounce is pending (user is typing/changing filters)
   const debouncePendingRef = useRef<boolean>(false);
-  
+
+  const liveUpdatesRevision = useLiveUpdatesRevision(liveUpdatesRefresh);
+
   // Update options ref whenever options change
   useEffect(() => {
     optionsRef.current = options;
@@ -188,14 +150,14 @@ export function usePaginatedApi<T>(
     dataRef.current = data;
   }, [data]);
 
-  const execute = async (isDependencyChange: boolean = false) => {
+  const execute = async () => {
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
     cancelledRef.current = false;
-    // Only set loading to true on the very first mount, not on dependency changes or polling
+    // Only set loading to true on the very first mount, not on dependency changes or SSE refetch
     // This prevents showing skeleton when sort/filter changes
     // Check if data is null (initial load) AND this is the first mount
     if (data === null && isFirstMountRef.current) {
@@ -248,20 +210,7 @@ export function usePaginatedApi<T>(
       }
 
       if (!cancelledRef.current) {
-        // Always update if dependencies changed (filters/pagination changed)
-        // Otherwise, check if we should update based on comparison function
-        const shouldUpdate = optionsRef.current.shouldUpdate;
-        const shouldUpdateState = isDependencyChange || !shouldUpdate
-          ? true
-          : shouldUpdate(previousDataRef.current, responseData);
-        
-        if (shouldUpdateState) {
-          setData(responseData);
-        }
-        
-        // Always update previous data ref for future comparisons
-        previousDataRef.current = responseData;
-      
+        setData(responseData);
         initialFetchCompleteRef.current = true;
       }
     } catch (err) {
@@ -290,20 +239,17 @@ export function usePaginatedApi<T>(
   });
 
   useEffect(() => {
-    // Reset previous data ref when deps change (new query = fresh comparison)
-    previousDataRef.current = null;
-    
     // On initial mount, execute immediately without debounce
     if (isFirstMountRef.current) {
       // Pass true to indicate this is a dependency change, so we always update
       // execute() will set isFirstMountRef.current = false in its finally block
-      execute(true);
+      execute();
     } else {
       // On subsequent dependency changes, debounce the API call
       // Create debounced function if it doesn't exist
       if (!debouncedExecuteRef.current) {
         debouncedExecuteRef.current = debounce(() => {
-          execute(true);
+          execute();
           // Clear pending flag when debounce fires
           debouncePendingRef.current = false;
         }, 300);
@@ -324,62 +270,30 @@ export function usePaginatedApi<T>(
         debouncedExecuteRef.current.cancel();
         debouncePendingRef.current = false; // Clear pending state on cancel
       }
-      // Note: Do NOT clear polling interval here - it's managed by the polling effect
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps]);
 
-  // Set up polling if pollInterval is provided
-  // Always set the interval, but check initialFetchCompleteRef inside the callback
-  // to prevent polling until the initial fetch completes
   useEffect(() => {
-    if (!pollInterval) {
+    if (!liveUpdatesRefresh) {
       return;
     }
-
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (liveUpdatesRevision === 0) {
+      return;
     }
-
-    // Always set up polling interval when pollInterval is provided
-    // The callback will check if initial fetch is complete before executing
-    intervalRef.current = setInterval(() => {
-      // Don't poll until initial fetch completes (prevents duplicate calls on mount)
-      if (!initialFetchCompleteRef.current) {
-        return;
-      }
-
-      // Skip polling if user is actively changing filters (debounce pending)
-      // This prevents polling with stale filter values and respects user input
-      if (debouncePendingRef.current) {
-        return;
-      }
-
-      // Check if we should continue polling using latest data from ref
-      const shouldPoll = optionsRef.current.shouldPoll;
-      if (shouldPoll && !shouldPoll(dataRef.current)) {
-        // Stop polling if shouldPoll returns false
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        return;
-      }
-
-      // Execute the API call (not a dependency change, so use shouldUpdate comparison)
-      execute(false);
-    }, pollInterval);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
+    if (!initialFetchCompleteRef.current) {
+      return;
+    }
+    if (debouncePendingRef.current) {
+      return;
+    }
+    const shouldRefresh = optionsRef.current.shouldRefresh;
+    if (shouldRefresh && !shouldRefresh(dataRef.current)) {
+      return;
+    }
+    void execute();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pollInterval]);
+  }, [liveUpdatesRevision, liveUpdatesRefresh]);
 
   return { data, loading, error, pagination };
 }

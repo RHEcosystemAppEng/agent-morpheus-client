@@ -14,7 +14,6 @@ import type { Report } from "../generated-client/models/Report";
 import type { ProductSummary } from "../generated-client/models/ProductSummary";
 import RepositoryReportsTableContent from "./RepositoryReportsTableContent";
 import { useRepositoryReports } from "../hooks/useRepositoryReports";
-import { POLL_INTERVAL_MS } from "../utils/polling";
 import { useTableParams } from "../hooks/useTableParams";
 import {
   REPOSITORY_REPORTS_VALID_SORT_COLUMNS,
@@ -45,9 +44,8 @@ const RepositoryReportsTable: React.FC<RepositoryReportsTableProps> = ({
     tableData: params.data,
     productId,
     cveId,
-    shouldContinuePolling: () =>
+    shouldContinueLiveRefresh: () =>
       product.summary?.productState !== "completed",
-    pollInterval: POLL_INTERVAL_MS,
   });
 
 

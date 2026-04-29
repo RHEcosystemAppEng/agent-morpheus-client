@@ -12,7 +12,6 @@
 
 import { useApi } from "./useApi";
 import { getRepositoryReport } from "../utils/reportApi";
-import { POLL_INTERVAL_MS } from "../utils/polling";
 import type { FullReport } from "../types/FullReport";
 import type { ReportWithStatus } from "../generated-client";
 import { isFailingState } from "../utils/findingDisplay";
@@ -24,27 +23,13 @@ export interface UseRepositoryReportResult {
 }
 
 /**
-   If the report status has changed, it indicates that the report has been updated
+ * Whether to run live-update–driven refetches for this repository report fetch.
+ * Skips refetches when status is completed or a terminal failure state.
  */
-export function hasRepositoryReportStateChanged(
-  previousResponse: ReportWithStatus | null,
-  currentResponse: ReportWithStatus
-): boolean {
-  // If no previous data, always update (initial load)
-  if (!previousResponse) {
-    return true;
-  }
-  return previousResponse.status !== currentResponse.status;
-}
-
-/**
- * Pure function to determine if polling should continue based on report status
- * Returns true if polling should continue, false to stop
- */
-export function shouldContinuePollingRepositoryReport(
+export function shouldContinueLiveRefreshForRepositoryReport(
   response: ReportWithStatus | null
 ): boolean {
-  if (!response) return true; // Continue polling if no data yet
+  if (!response) return true; // Continue until first payload
   const status = response.status ?? "";
   // Stop when completed or any terminal failure (failed, expired, etc.)
   if (status === "completed" || isFailingState(status)) {
@@ -54,10 +39,8 @@ export function shouldContinuePollingRepositoryReport(
 }
 
 /**
- * Hook to fetch repository report data with conditional auto-refresh.
- * Auto-refresh continues until status is "completed" or a failing state (e.g. failed, expired).
- * Only updates state when report status or other relevant data have changed to prevent unnecessary rerenders.
- * 
+ * Hook to fetch repository report data with server live-update refetch.
+ *
  * @param reportId - The report ID to fetch data for
  * @returns Object with data (report), status, loading, and error states
  */
@@ -66,9 +49,8 @@ export function useRepositoryReport(reportId: string): UseRepositoryReportResult
     () => getRepositoryReport(reportId),
     {
       deps: [reportId],
-      pollInterval: POLL_INTERVAL_MS,
-      shouldPoll: shouldContinuePollingRepositoryReport,
-      shouldUpdate: hasRepositoryReportStateChanged,
+      liveUpdatesRefresh: true,
+      shouldRefresh: shouldContinueLiveRefreshForRepositoryReport,
     }
   );
 
@@ -79,4 +61,3 @@ export function useRepositoryReport(reportId: string): UseRepositoryReportResult
     error 
   };
 }
-
