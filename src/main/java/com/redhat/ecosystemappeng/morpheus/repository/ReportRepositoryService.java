@@ -638,8 +638,10 @@ public class ReportRepositoryService {
 
 
       }
-    getCollection().deleteMany(filter).wasAcknowledged();
-    reportSseBroadcaster.publishCatalogChanged();
+    long deletedCount = getCollection().deleteMany(filter).getDeletedCount();
+    if (deletedCount > 0) {
+      reportSseBroadcaster.publishCatalogChanged();
+    }
     return collection;
   }
 
