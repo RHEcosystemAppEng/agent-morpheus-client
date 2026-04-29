@@ -40,6 +40,13 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
     es.onmessage = () => {
       bump();
     };
+    es.onerror = (event) => {
+      console.error(
+        "[LiveUpdates] EventSource error",
+        { url, readyState: es.readyState },
+        event
+      );
+    };
     return () => {
       es.close();
     };
