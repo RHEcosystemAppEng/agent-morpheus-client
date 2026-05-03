@@ -48,11 +48,10 @@ const HomePage: React.FC = () => {
           labelId="ai-usage-modal-title"
         />
         <ModalBody id="ai-usage-modal-body">
-          You are about to use a Red Hat tool that utilizes AI technology to
-          provide you with relevant information. By proceeding to use the tool,
-          you acknowledge that the tool uses AI-generated analysis and
-          that responses should be reviewed and verified for accuracy prior to use.
+          This application uses AI technology to create a vulnerability report based on the information you provide.
           Do not include any personal information in your input.
+          Always review AI-generated content prior to use.
+          We encourage you to send feedback to improve this feature.
         </ModalBody>
         <ModalFooter>
           <Button key="acknowledge" variant="primary" onClick={handleAcknowledge}>
