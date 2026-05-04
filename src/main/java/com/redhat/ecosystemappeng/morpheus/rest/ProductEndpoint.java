@@ -35,6 +35,7 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
@@ -269,6 +270,9 @@ public class ProductEndpoint {
 
   @ServerExceptionMapper
   public Response mapIllegalArgumentException(IllegalArgumentException e) {
+    if (e instanceof SbomValidationException sve) {
+      return mapSbomValidationException(sve);
+    }
     LOGGER.errorf(e, "Input validation failed");
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
@@ -305,10 +309,20 @@ public class ProductEndpoint {
 
   @ServerExceptionMapper
   public Response mapSbomValidationException(SbomValidationException e) {
-    LOGGER.errorf("Invalid SBOM: %s", e.getMessage());
+    if (e.hasStructuredIssues()) {
+      LOGGER.errorf("SBOM metadata validation failed: %s", e.getStructuredIssues());
+      ArrayNode issuesNode = objectMapper.createArrayNode();
+      for (var code : e.getStructuredIssues()) {
+        issuesNode.add(objectMapper.createObjectNode().put("code", code.name()));
+      }
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity(objectMapper.createObjectNode().set("sbomValidationIssues", issuesNode))
+          .build();
+    }
+    LOGGER.errorf("SBOM validation failed: %s", e.getMessage());
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
-            .put("error", "Invalid SBOM: " + e.getMessage()))
+            .put("error", e.getMessage()))
         .build();
   }
 

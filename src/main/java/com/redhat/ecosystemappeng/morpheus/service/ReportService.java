@@ -59,6 +59,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ReportWithStatus;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
 import com.redhat.ecosystemappeng.morpheus.repository.ReportRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationIssueCode;
 import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.Image;
 import com.redhat.ecosystemappeng.morpheus.model.morpheus.ReportInput;
@@ -459,8 +460,20 @@ public class ReportService {
       if (Objects.nonNull(request.metadata())) {
         properties.putAll(request.metadata());
       }
-      commitId = getCommitIdFromMetadataLabels(properties);
-      sourceLocation = getSourceLocationFromMetadataLabels(properties);
+      var sourceFromLabels = firstMetadataLabelValue(properties, appConfig.image().source().locationKeys());
+      var commitFromLabels = firstMetadataLabelValue(properties, appConfig.image().source().commitIdKeys());
+      List<SbomValidationIssueCode> metadataIssues = new ArrayList<>();
+      if (sourceFromLabels.isEmpty()) {
+        metadataIssues.add(SbomValidationIssueCode.MISSING_SOURCE_CODE_URL);
+      }
+      if (commitFromLabels.isEmpty()) {
+        metadataIssues.add(SbomValidationIssueCode.MISSING_SOURCE_COMMIT_ID);
+      }
+      if (!metadataIssues.isEmpty()) {
+        throw new SbomValidationException(metadataIssues);
+      }
+      sourceLocation = sourceFromLabels.get();
+      commitId = commitFromLabels.get();
       sbomInfo = buildSbomInfo(request);
     } else {
       name = request.sourceRepo();
@@ -537,22 +550,11 @@ public class ReportService {
     return null;
   }
 
-  private String getSourceLocationFromMetadataLabels(Map<String, String> properties) {
-    return appConfig.image().source().locationKeys().stream()
+  private Optional<String> firstMetadataLabelValue(Map<String, String> properties, List<String> keys) {
+    return keys.stream()
         .map(key -> getPropertyIgnoringSyftPrefix(properties, key))
         .filter(Objects::nonNull)
-        .findFirst()
-        .orElseThrow(() -> new SbomValidationException(
-            "SBOM is missing source code URL label. Searched for labels: " + appConfig.image().source().locationKeys() + " existing labels: " + properties.toString()));
-  }
-
-  private String getCommitIdFromMetadataLabels(HashMap<String, String> properties) {
-    return appConfig.image().source().commitIdKeys().stream()
-        .map(key -> getPropertyIgnoringSyftPrefix(properties, key))
-        .filter(Objects::nonNull)
-        .findFirst()
-        .orElseThrow(() -> new SbomValidationException(
-            "SBOM is missing source code commit ID label. Searched for labels: " + appConfig.image().source().commitIdKeys() + " existing labels: " + properties.toString()));
+        .findFirst();
   }
 
   private JsonNode buildSbomInfo(ReportRequest request) {

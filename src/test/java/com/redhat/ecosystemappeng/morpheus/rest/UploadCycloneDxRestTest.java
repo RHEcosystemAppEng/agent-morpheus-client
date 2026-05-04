@@ -209,7 +209,9 @@ public class UploadCycloneDxRestTest {
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
-            .body("error", containsString("SBOM is missing source code commit ID label."));
+            .body("sbomValidationIssues", hasSize(2))
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"))
+            .body("sbomValidationIssues[1].code", equalTo("MISSING_SOURCE_COMMIT_ID"));
     }
 
     @Test
