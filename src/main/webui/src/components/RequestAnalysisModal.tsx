@@ -24,8 +24,6 @@ import {
   FileUploadHelperText,
   DropEvent,
   Button,
-  Alert,
-  AlertVariant,
   FormHelperText,
   HelperText,
   HelperTextItem,
@@ -35,11 +33,6 @@ import {
   FormGroupLabelHelp,
   Card,
   CardBody,
-  Content,
-  ContentVariants,
-  List,
-  ListItem,
-  Stack,
   ToggleGroup,
   ToggleGroupItem,
 } from "@patternfly/react-core";
@@ -48,7 +41,7 @@ import { useNavigate } from "react-router";
 import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
 import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
-import { getSbomMetadataValidationIssueCopy } from "../constants/sbomMetadataValidationMessages";
+import RequestAnalysisSubmitErrorAlerts from "./RequestAnalysisSubmitErrorAlerts";
 import { parseRequestAnalysisSubmissionError } from "../utils/errorHandling";
 import type { SbomValidationIssueEntry } from "../utils/errorHandling";
 import { InlineCredential } from "../generated-client/models/InlineCredential";
@@ -518,41 +511,10 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
         labelId="request-analysis-modal-title"
       />
       <ModalBody>
-        {(sbomValidationIssues?.length || error) ? (
-          <Stack hasGutter style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}>
-            {sbomValidationIssues?.map((issue, index) => {
-              const copy = getSbomMetadataValidationIssueCopy(issue.code);
-              return (
-                <Alert
-                  key={`${issue.code}-${index}`}
-                  variant={AlertVariant.danger}
-                  title={copy.title}
-                  isInline
-                >
-                  <Stack hasGutter>
-                    {copy.description ? (
-                      <Content>
-                        <Content component={ContentVariants.p}>{copy.description}</Content>
-                      </Content>
-                    ) : null}
-                    {copy.labels.length > 0 ? (
-                      <List component="ul">
-                        {copy.labels.map((label) => (
-                          <ListItem key={label}>{label}</ListItem>
-                        ))}
-                      </List>
-                    ) : null}
-                  </Stack>
-                </Alert>
-              );
-            })}
-            {error ? (
-              <Alert variant={AlertVariant.danger} title="Error submitting analysis request" isInline>
-                {error}
-              </Alert>
-            ) : null}
-          </Stack>
-        ) : null}
+        <RequestAnalysisSubmitErrorAlerts
+          sbomValidationIssues={sbomValidationIssues}
+          error={error}
+        />
         <Form>
           <ToggleGroup
             aria-label="Input type"
