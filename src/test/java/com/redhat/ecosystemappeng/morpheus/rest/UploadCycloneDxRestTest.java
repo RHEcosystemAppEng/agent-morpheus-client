@@ -215,7 +215,9 @@ public class UploadCycloneDxRestTest {
             .contentType(ContentType.JSON)
             .body("sbomValidationIssues", hasSize(2))
             .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"))
-            .body("sbomValidationIssues[1].code", equalTo("MISSING_SOURCE_COMMIT_ID"));
+            .body("sbomValidationIssues[1].code", equalTo("MISSING_SOURCE_COMMIT_ID"))
+            .body("error", containsString("source code URL"))
+            .body("error", containsString("commit ID"));
     }
 
     @Test
@@ -232,7 +234,8 @@ public class UploadCycloneDxRestTest {
             .statusCode(400)
             .contentType(ContentType.JSON)
             .body("sbomValidationIssues", hasSize(1))
-            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"));
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"))
+            .body("error", containsString("source code URL"));
     }
 
     @Test
@@ -249,7 +252,8 @@ public class UploadCycloneDxRestTest {
             .statusCode(400)
             .contentType(ContentType.JSON)
             .body("sbomValidationIssues", hasSize(1))
-            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_COMMIT_ID"));
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_COMMIT_ID"))
+            .body("error", containsString("commit ID"));
     }
 
     @Test

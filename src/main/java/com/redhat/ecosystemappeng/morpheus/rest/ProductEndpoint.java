@@ -310,13 +310,16 @@ public class ProductEndpoint {
   @ServerExceptionMapper
   public Response mapSbomValidationException(SbomValidationException e) {
     if (e.hasStructuredIssues()) {
-      LOGGER.errorf("SBOM metadata validation failed: %s", e.getStructuredIssues());
+      LOGGER.errorf("SBOM metadata validation failed: %s — %s", e.getStructuredIssues(), e.getMessage());
       ArrayNode issuesNode = objectMapper.createArrayNode();
       for (var code : e.getStructuredIssues()) {
         issuesNode.add(objectMapper.createObjectNode().put("code", code.name()));
       }
+      var entity = objectMapper.createObjectNode();
+      entity.set("sbomValidationIssues", issuesNode);
+      entity.put("error", e.getMessage());
       return Response.status(Response.Status.BAD_REQUEST)
-          .entity(objectMapper.createObjectNode().set("sbomValidationIssues", issuesNode))
+          .entity(entity)
           .build();
     }
     LOGGER.errorf("SBOM validation failed: %s", e.getMessage());

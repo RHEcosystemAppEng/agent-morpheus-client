@@ -10,10 +10,10 @@ export const SBOM_METADATA_VALIDATION_ISSUES = {
     description:
       "Your SBOM must include a source code URL. Ensure one of the following labels is present in your metadata:",
     labels: [
+      "image.source-location",
       "io.openshift.build.source-location",
       "upstream-source-url",
       "org.opencontainers.image.source",
-      "repo_url",
     ],
   },
   MISSING_SOURCE_COMMIT_ID: {

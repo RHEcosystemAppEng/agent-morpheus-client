@@ -6,6 +6,8 @@ The report file upload capability enables users to upload CycloneDX SBOM files f
 ### Requirement: CycloneDX File Upload Endpoint
 The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` that accepts multipart form data containing a CVE ID and a CycloneDX file. The endpoint SHALL parse the uploaded file, validate its structure, validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`, create a report object with an SBOM report ID, and queue the report for analysis. The endpoint SHALL always generate an SBOM report ID by combining the SBOM name (from `metadata.component.name`) with a timestamp. The endpoint SHALL add the SBOM name (from `metadata.component.name`) to the report metadata as the `sbom_name` field. When validation fails, the endpoint SHALL return a structured error response mapping field names to error messages. The endpoint SHALL create a product entry for every successful upload. When the SBOM contains version information (`metadata.component.version`), the product SHALL use that version. When the SBOM does not contain version information, the product SHALL use an empty string (`""`) as the version value.
 
+When validation fails because an image-type CycloneDX SBOM is missing required **source code URL** and/or **commit ID** metadata in `metadata.properties` (same rules as image analysis), the HTTP 400 response SHALL expose enough information for clients to present a clear message: the existing machine-readable issue codes in `sbomValidationIssues` MAY be supplemented with a human-readable summary field and/or the exception message used for any `file` field mapping SHALL state which metadata is missing, not solely **"SBOM metadata validation failed"**.
+
 #### Scenario: Successful file upload and queuing
 - **WHEN** a user submits a multipart form to `/api/v1/products/upload-cyclonedx` with a valid CVE ID (matching the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`) and a valid CycloneDX JSON file containing `metadata.component.name`
 - **THEN** the system validates the CVE ID matches the official CVE regex pattern
@@ -71,6 +73,12 @@ The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` 
 - **AND** the response includes both `"cveId": "error message"` and `"file": "error message"`
 - **AND** each field maps to its specific validation error message
 
+#### Scenario: Missing image SBOM provenance metadata rejection is explicit
+- **WHEN** a user submits a valid CycloneDX JSON file with `metadata.component.name` but without the required source URL and/or commit ID metadata properties for image analysis
+- **THEN** the system returns HTTP 400 (Bad Request)
+- **AND** the response includes machine-readable issue codes for the missing metadata where applicable
+- **AND** any human-readable error text exposed to the client (including optional summary fields or messages derived from the validation exception) SHALL explicitly indicate whether the source code URL, commit ID, or both are missing
+- **AND** the human-readable text SHALL NOT consist solely of **"SBOM metadata validation failed"**
 ### Requirement: Full Report Retrieval API
 The system SHALL provide an API endpoint to retrieve full report data by report ID, returning the report data and calculated analysis status as separate fields in a structured response.
 

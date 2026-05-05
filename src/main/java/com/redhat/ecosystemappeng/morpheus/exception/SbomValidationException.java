@@ -34,7 +34,7 @@ public class SbomValidationException extends IllegalArgumentException {
   }
 
   public SbomValidationException(List<SbomValidationIssueCode> structuredIssues) {
-    super("SBOM metadata validation failed");
+    super(SbomValidationMessages.summaryForStructuredImageMetadataIssues(structuredIssues));
     this.structuredIssues = List.copyOf(structuredIssues);
   }
 
