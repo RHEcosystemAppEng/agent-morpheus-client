@@ -91,11 +91,17 @@ export function isValidationError(
  * Normalized result for request analysis submission errors (upload-cyclonedx or reports/new).
  * Components use this to set field-level and generic error state without API-specific parsing.
  */
+export interface SbomValidationIssueEntry {
+  code: string;
+}
+
 export interface RequestAnalysisSubmissionError {
   /** Field name to error message (e.g. cveId, file, sourceRepo, commitId) */
   fieldErrors: Record<string, string>;
   /** Generic message when no field-specific errors or for non-400 errors */
   genericMessage: string | null;
+  /** Structured SBOM metadata issues (e.g. missing image source labels); shown as separate alerts */
+  sbomValidationIssues?: SbomValidationIssueEntry[];
 }
 
 const DEFAULT_SUBMISSION_ERROR = "An error occurred while submitting the analysis request.";
@@ -122,6 +128,23 @@ export function parseRequestAnalysisSubmissionError(
   }
   if (error instanceof ApiError && error.status === 400 && error.body != null && typeof error.body === "object") {
     const body = error.body as Record<string, unknown>;
+    const rawIssues = body.sbomValidationIssues;
+    if (Array.isArray(rawIssues)) {
+      const sbomValidationIssues: SbomValidationIssueEntry[] = [];
+      for (const item of rawIssues) {
+        if (
+          typeof item === "object" &&
+          item !== null &&
+          "code" in item &&
+          typeof (item as { code: unknown }).code === "string"
+        ) {
+          sbomValidationIssues.push({ code: (item as { code: string }).code });
+        }
+      }
+      if (sbomValidationIssues.length > 0) {
+        return { fieldErrors: {}, genericMessage: null, sbomValidationIssues };
+      }
+    }
     if ("error" in body && typeof body.error === "string") {
       return { fieldErrors: {}, genericMessage: body.error };
     }

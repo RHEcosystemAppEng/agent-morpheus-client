@@ -93,14 +93,15 @@ public class GenerateSbomService {
                 return parsedCycloneDx;
             }
         } catch (SbomValidationException e) {
-            // Wrap SbomValidationException as SyftExecutionException; preserve original message for submission failures
-            LOGGER.errorf("Syft produced an invalid SBOM: %s for command: %s", e.getMessage(), String.join(" ", command));
-            throw new SyftExecutionException(image, "Syft produced an invalid SBOM: " + e.getMessage());
+            // Wrap SbomValidationException as SyftExecutionException; getMessage() includes image-metadata detail when structured
+            LOGGER.errorf("Syft generated an invalid SBOM: %s for command: %s", e.getMessage(), String.join(" ", command));
+            throw new SyftExecutionException(image, "Syft generated an invalid SBOM: " + e.getMessage());
         } catch (IOException e) {
-            // Wrap IOExceptions from stream operations or JSON parsing as SyftExecutionException
-            // since they occur during syft execution
-            LOGGER.errorf("Failed to read syft output: %s for command: %s", outputString, String.join(" ", command));
-            throw new SyftExecutionException(image, "Failed to read syft output");
+            // Stream read from syft stdout/stderr or downstream I/O; include cause in the message shown on submission failures
+            LOGGER.errorf(e, "Failed to read syft output for command: %s", String.join(" ", command));
+            String detail = e.getMessage();
+            String suffix = (detail != null && !detail.isBlank()) ? ": " + detail : "";
+            throw new SyftExecutionException(image, "Failed to read syft output" + suffix);
         } catch (Exception e) {
             // Wrap other exceptions as SyftExecutionException; preserve original message for submission failures
             LOGGER.errorf("Unexpected error generating SBOM for image: %s: %s", image, e.getMessage());

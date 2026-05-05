@@ -41,6 +41,8 @@ public class ComponentProcessingService {
 
     private static final Logger LOGGER = Logger.getLogger(ComponentProcessingService.class);
 
+    private static final String SYFT_INVALID_SBOM_PREFIX = "Syft generated an invalid SBOM: ";
+
     /** Max components processed concurrently; each batch waits for completion before starting the next. */
     private static final int BATCH_SIZE = 20;
 
@@ -115,9 +117,14 @@ public class ComponentProcessingService {
             return; // Exit early - no report to save
         } catch (SbomValidationException e) {
             // Pre-save failure: Validation error - save to submissionFailures
-            // Expected exception - message is ready to use
             LOGGER.errorf("Sbom validation error for component %s: %s", component.name(), e.getMessage());
-            productRepositoryService.addSubmissionFailure(productId, new FailedComponent(component.name(), component.version(), component.image(), "Syft generated an invalid SBOM: " + e.getMessage()));
+            productRepositoryService.addSubmissionFailure(
+                productId,
+                new FailedComponent(
+                    component.name(),
+                    component.version(),
+                    component.image(),
+                    userFacingMessageForSbomSubmissionFailure(e)));
             return; // Exit early - no report to save
         } catch (Exception e) {
             // Pre-save failure: Any other error during report generation - save to submissionFailures            
@@ -148,6 +155,14 @@ public class ComponentProcessingService {
                 productRepositoryService.addSubmissionFailure(productId, new FailedComponent(component.name(), component.version(), component.image(), formatErrorMessage(e,"Unexpected error while saving report")));
             }
         }
+    }
+
+    /**
+     * User-visible submission failure text (e.g. Excluded components table). Uses {@link SbomValidationException#getMessage()},
+     * which includes explicit image-metadata wording for structured issues.
+     */
+    private static String userFacingMessageForSbomSubmissionFailure(SbomValidationException e) {
+        return SYFT_INVALID_SBOM_PREFIX + e.getMessage();
     }
 
     private static String formatErrorMessage(Exception e, String prefixMessage) {

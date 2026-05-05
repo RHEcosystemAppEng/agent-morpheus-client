@@ -27,6 +27,10 @@ public class UploadCycloneDxRestTest {
     }
 
     private static final String TEST_SBOM_FILE = "src/test/resources/devservices/cyclonedx-sboms/nmstate-rhel8-operator.json";
+    private static final String NMSTATE_NO_SOURCE_URL_FILE =
+        "src/test/resources/devservices/cyclonedx-sboms/nmstate-missing-sourceurl.json";
+    private static final String NMSTATE_NO_COMMIT_ID_FILE =
+        "src/test/resources/devservices/cyclonedx-sboms/nmstate-missing-commitid.json";
     private static final String TEST_CVE_ID = "CVE-2021-3121";
 
     private String createInvalidJsonFile() throws IOException {
@@ -209,7 +213,47 @@ public class UploadCycloneDxRestTest {
             .then()
             .statusCode(400)
             .contentType(ContentType.JSON)
-            .body("error", containsString("SBOM is missing source code commit ID label."));
+            .body("sbomValidationIssues", hasSize(2))
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"))
+            .body("sbomValidationIssues[1].code", equalTo("MISSING_SOURCE_COMMIT_ID"))
+            .body("error", containsString("source code URL"))
+            .body("error", containsString("commit ID"));
+    }
+
+    @Test
+    void testUpload_missingSourceUrl() {
+        File file = new File(NMSTATE_NO_SOURCE_URL_FILE);
+
+        RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("cveId", TEST_CVE_ID)
+            .multiPart("file", file)
+            .when()
+            .post("/api/v1/products/upload-cyclonedx")
+            .then()
+            .statusCode(400)
+            .contentType(ContentType.JSON)
+            .body("sbomValidationIssues", hasSize(1))
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_CODE_URL"))
+            .body("error", containsString("source code URL"));
+    }
+
+    @Test
+    void testUpload_missingCommitId() {
+        File file = new File(NMSTATE_NO_COMMIT_ID_FILE);
+
+        RestAssured.given()
+            .contentType(ContentType.MULTIPART)
+            .multiPart("cveId", TEST_CVE_ID)
+            .multiPart("file", file)
+            .when()
+            .post("/api/v1/products/upload-cyclonedx")
+            .then()
+            .statusCode(400)
+            .contentType(ContentType.JSON)
+            .body("sbomValidationIssues", hasSize(1))
+            .body("sbomValidationIssues[0].code", equalTo("MISSING_SOURCE_COMMIT_ID"))
+            .body("error", containsString("commit ID"));
     }
 
     @Test

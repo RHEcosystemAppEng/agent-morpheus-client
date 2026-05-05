@@ -24,8 +24,6 @@ import {
   FileUploadHelperText,
   DropEvent,
   Button,
-  Alert,
-  AlertVariant,
   FormHelperText,
   HelperText,
   HelperTextItem,
@@ -43,7 +41,9 @@ import { useNavigate } from "react-router";
 import { ProductEndpointService } from "../generated-client/services/ProductEndpointService";
 import { ReportEndpointService } from "../generated-client/services/ReportEndpointService";
 import type { ReportData } from "../generated-client/models/ReportData";
+import RequestAnalysisSubmitErrorAlerts from "./RequestAnalysisSubmitErrorAlerts";
 import { parseRequestAnalysisSubmissionError } from "../utils/errorHandling";
+import type { SbomValidationIssueEntry } from "../utils/errorHandling";
 import { InlineCredential } from "../generated-client/models/InlineCredential";
 import { ReportRequest } from "../generated-client";
 
@@ -88,6 +88,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
   const [commitIdError, setCommitIdError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sbomValidationIssues, setSbomValidationIssues] = useState<SbomValidationIssueEntry[] | null>(null);
   const [cveIdError, setCveIdError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isAuthenticationSecretChecked, setIsAuthenticationSecretChecked] = useState(false);
@@ -130,6 +131,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
 
   const handleModeChange = (newMode: RequestAnalysisMode) => {
     setError(null);
+    setSbomValidationIssues(null);
     setFileError(null);
     setSourceRepoError(null);
     setCommitIdError(null);
@@ -276,14 +278,13 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
    * Sets field-level and generic error state without API-specific logic in the component.
    */
   const handleSubmitError = (err: unknown): void => {
-    const { fieldErrors, genericMessage } = parseRequestAnalysisSubmissionError(
-      err,
-      FALLBACK_ERROR_MESSAGE
-    );
+    const { fieldErrors, genericMessage, sbomValidationIssues: issues } =
+      parseRequestAnalysisSubmissionError(err, FALLBACK_ERROR_MESSAGE);
     setCveIdError(fieldErrors.cveId ?? null);
     setFileError(fieldErrors.file ?? null);
     setSourceRepoError(fieldErrors.sourceRepo ?? null);
     setCommitIdError(fieldErrors.commitId ?? null);
+    setSbomValidationIssues(issues && issues.length > 0 ? issues : null);
     setError(genericMessage);
   };
 
@@ -292,6 +293,7 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
    */
   const clearAllErrors = () => {
     setError(null);
+    setSbomValidationIssues(null);
     setCveIdError(null);
     setFileError(null);
     setSourceRepoError(null);
@@ -509,16 +511,10 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
         labelId="request-analysis-modal-title"
       />
       <ModalBody>
-        {error && (
-          <Alert
-            variant={AlertVariant.danger}
-            title="Error submitting analysis request"
-            isInline
-            style={{ marginBottom: "var(--pf-t--global--spacer--md)" }}
-          >
-            {error}
-          </Alert>
-        )}
+        <RequestAnalysisSubmitErrorAlerts
+          sbomValidationIssues={sbomValidationIssues}
+          error={error}
+        />
         <Form>
           <ToggleGroup
             aria-label="Input type"
