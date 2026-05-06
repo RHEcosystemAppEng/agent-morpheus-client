@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { SourceInfo } from './SourceInfo';
+import type { TargetPackage } from './TargetPackage';
 /**
  * Image data (required if SBOM is not provided)
  */
@@ -35,5 +36,13 @@ export type Image = {
      * SBOM information
      */
     sbom_info?: Record<string, any>;
+    /**
+     * Agent pipeline mode
+     */
+    pipeline_mode?: string;
+    /**
+     * RPM target package when pipeline_mode is rpm_package_checker
+     */
+    target_package?: TargetPackage;
 };
 

@@ -42,6 +42,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.client.GitHubService;
 import com.redhat.ecosystemappeng.morpheus.config.AppConfig;
 import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
@@ -509,7 +510,7 @@ public class ReportService {
         new SourceInfo("code", sourceLocation, commitId, allIncludes, allExcludes),
         new SourceInfo("doc", sourceLocation, commitId, includes.get("Docs"), Collections.emptyList()));
 
-    return new Image(request.analysisType(), ecosystem, manifestPath, name, tag, srcInfo, sbomInfo);
+    return new Image(request.analysisType(), ecosystem, manifestPath, name, tag, srcInfo, sbomInfo, null, null);
   }
 
   private Set<String> buildLanguagesExtensions(String ecosystem) {

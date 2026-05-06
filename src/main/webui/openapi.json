@@ -306,6 +306,18 @@
           "sbom_info": {
             "description": "SBOM information",
             "type": "object"
+          },
+          "pipeline_mode": {
+            "type": "string",
+            "description": "Agent pipeline mode",
+            "examples": [
+              "rpm_package_checker"
+            ]
+          },
+          "target_package": {
+            "description": "RPM target package when pipeline_mode is rpm_package_checker",
+            "type": "object",
+            "$ref": "#/components/schemas/TargetPackage"
           }
         }
       },
@@ -450,6 +462,42 @@
           "CHECKLIST_PROMPT_ALIGNMENT",
           "CHECKLIST_QUALITY"
         ]
+      },
+      "NewRpmReportRequest": {
+        "description": "RPM package plus CVE for new analysis request",
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "release",
+          "arch",
+          "cveId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "RPM package name"
+          },
+          "version": {
+            "type": "string",
+            "description": "RPM package version"
+          },
+          "release": {
+            "type": "string",
+            "description": "RPM package release"
+          },
+          "arch": {
+            "type": "string",
+            "description": "RPM architecture"
+          },
+          "cveId": {
+            "type": "string",
+            "description": "Vulnerability identifier (CVE-YYYY-NNNN+)",
+            "examples": [
+              "CVE-2024-12345"
+            ]
+          }
+        }
       },
       "OverviewMetrics": {
         "description": "Metrics for the home page calculated from data in the last week",
@@ -832,6 +880,18 @@
               "sbom_info": {
                 "description": "SBOM information",
                 "type": "object"
+              },
+              "pipeline_mode": {
+                "type": "string",
+                "description": "Agent pipeline mode",
+                "examples": [
+                  "rpm_package_checker"
+                ]
+              },
+              "target_package": {
+                "description": "RPM target package when pipeline_mode is rpm_package_checker",
+                "type": "object",
+                "$ref": "#/components/schemas/TargetPackage"
               }
             }
           },
@@ -917,6 +977,9 @@
           }
         }
       },
+      "ReportSseMessage": {
+        "type": "object"
+      },
       "ReportWithStatus": {
         "description": "Report data with calculated analysis status",
         "type": "object",
@@ -979,6 +1042,38 @@
               "type": "string"
             },
             "description": "Patterns to exclude from the analysis"
+          }
+        }
+      },
+      "TargetPackage": {
+        "type": "object",
+        "description": "RPM target package descriptor for rpm_package_checker pipeline",
+        "required": [
+          "name",
+          "version",
+          "release",
+          "arch",
+          "ecosystem"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "release": {
+            "type": "string"
+          },
+          "arch": {
+            "type": "string"
+          },
+          "ecosystem": {
+            "type": "string",
+            "description": "Package ecosystem",
+            "examples": [
+              "rpm"
+            ]
           }
         }
       },
@@ -3133,6 +3228,52 @@
         ]
       }
     },
+    "/api/v1/reports/new-rpm-report": {
+      "post": {
+        "summary": "Create analysis request for an RPM package",
+        "description": "Accepts RPM name, version, release, architecture, and a CVE id; builds a Morpheus input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object \"errors\" mapping field names to messages).",
+        "requestBody": {
+          "description": "RPM package coordinates and CVE identifier",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRpmReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Analysis request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid fields; response body has an \"errors\" object mapping field names (name, version, release, arch, cveId) to messages"
+          },
+          "429": {
+            "description": "Request queue exceeded"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      }
+    },
     "/api/v1/reports/product": {
       "delete": {
         "summary": "Delete product by IDs",
@@ -3421,6 +3562,32 @@
         ],
         "tags": [
           "Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/reports/stream": {
+      "get": {
+        "summary": "Report live-update stream (SSE)",
+        "description": "Server-Sent Events. Each event `data` line is JSON `{}` (empty object): report or product data may have changed; clients should refetch their REST views. The payload may gain fields later for targeted invalidation.",
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSseMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Stream Resource"
         ]
       }
     },
