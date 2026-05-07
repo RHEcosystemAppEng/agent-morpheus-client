@@ -120,7 +120,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ isSidebarOpen, onSidebarToggle 
   const techPreviewTrigger = (
     <Popover
       triggerAction="click"
-      aria-label="Tech preview"
+      headerContent={<Title headingLevel="h6">Technology Preview</Title>}
       bodyContent={
         <Content component="p" className="pf-v6-u-mb-0">
           {TECH_PREVIEW_DISCLAIMER}
