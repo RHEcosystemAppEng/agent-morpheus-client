@@ -41,7 +41,7 @@ public class ComponentProcessingService {
 
     private static final Logger LOGGER = Logger.getLogger(ComponentProcessingService.class);
 
-    private static final String SYFT_INVALID_SBOM_PREFIX = "Syft generated an invalid SBOM: ";
+    public static final String SYFT_INVALID_SBOM_PREFIX = "Syft generated an invalid SBOM: ";
 
     /** Max components processed concurrently; each batch waits for completion before starting the next. */
     private static final int BATCH_SIZE = 20;

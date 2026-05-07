@@ -275,9 +275,6 @@ public class ProductEndpoint {
 
   @ServerExceptionMapper
   public Response mapIllegalArgumentException(IllegalArgumentException e) {
-    if (e instanceof SbomValidationException sve) {
-      return mapSbomValidationException(sve);
-    }
     LOGGER.errorf(e, "Input validation failed");
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()

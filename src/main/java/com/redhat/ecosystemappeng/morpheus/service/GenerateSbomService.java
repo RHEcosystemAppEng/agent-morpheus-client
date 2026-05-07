@@ -14,6 +14,8 @@
 
 package com.redhat.ecosystemappeng.morpheus.service;
 
+import static com.redhat.ecosystemappeng.morpheus.service.ComponentProcessingService.SYFT_INVALID_SBOM_PREFIX;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -94,13 +96,13 @@ public class GenerateSbomService {
             }
         } catch (SbomValidationException e) {
             // Wrap SbomValidationException as SyftExecutionException; getMessage() includes image-metadata detail when structured
-            LOGGER.errorf("Syft generated an invalid SBOM: %s for command: %s", e.getMessage(), String.join(" ", command));
-            throw new SyftExecutionException(image, "Syft generated an invalid SBOM: " + e.getMessage());
+            LOGGER.errorf("%s%s for command: %s", SYFT_INVALID_SBOM_PREFIX, e.getMessage(), String.join(" ", command));
+            throw new SyftExecutionException(image, SYFT_INVALID_SBOM_PREFIX + e.getMessage());
         } catch (IOException e) {
             // Stream read from syft stdout/stderr or downstream I/O; include cause in the message shown on submission failures
             LOGGER.errorf(e, "Failed to read syft output for command: %s", String.join(" ", command));
             String detail = e.getMessage();
-            String suffix = (detail != null && !detail.isBlank()) ? ": " + detail : "";
+            String suffix = (Objects.nonNull(detail) && !detail.isBlank()) ? ": " + detail : "";
             throw new SyftExecutionException(image, "Failed to read syft output" + suffix);
         } catch (Exception e) {
             // Wrap other exceptions as SyftExecutionException; preserve original message for submission failures
