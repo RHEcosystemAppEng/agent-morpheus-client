@@ -79,6 +79,12 @@ import java.util.Objects;
 public class ProductEndpoint {
   
   private static final Logger LOGGER = Logger.getLogger(ProductEndpoint.class);
+  /**
+   * Both keys constants must be aligned and in-sync with config keys definitions at AppConfig.java,
+   * {@link com.redhat.ecosystemappeng.morpheus.config.AppConfig}
+   */
+  public static final String EXPLOIT_IQ_IMAGE_SOURCE_LOCATION_KEYS = "exploit-iq.image.source.location-keys";
+  public static final String EXPLOIT_IQ_IMAGE_SOURCE_COMMIT_ID_KEYS = "exploit-iq.image.source.commit-id-keys";
 
   @Inject
   ReportService reportService;
@@ -317,11 +323,11 @@ public class ProductEndpoint {
       for (var code : e.getStructuredIssues()) {
         var issueNode = objectMapper.createObjectNode().put("code", code.name());
         if (code == SbomValidationIssueCode.MISSING_SOURCE_CODE_URL) {
-          issueNode.put("configuredProperty", "exploit-iq.image.source.location-keys");
+          issueNode.put("configuredProperty", EXPLOIT_IQ_IMAGE_SOURCE_LOCATION_KEYS);
           var expectedLabels = issueNode.putArray("expectedLabels");
           appConfig.image().source().locationKeys().forEach(expectedLabels::add);
         } else if (code == SbomValidationIssueCode.MISSING_SOURCE_COMMIT_ID) {
-          issueNode.put("configuredProperty", "exploit-iq.image.source.commit-id-keys");
+          issueNode.put("configuredProperty", EXPLOIT_IQ_IMAGE_SOURCE_COMMIT_ID_KEYS);
           var expectedLabels = issueNode.putArray("expectedLabels");
           appConfig.image().source().commitIdKeys().forEach(expectedLabels::add);
         }
