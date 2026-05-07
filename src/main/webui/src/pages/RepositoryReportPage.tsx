@@ -175,9 +175,22 @@ const RepositoryReportPage: React.FC = () => {
         </GridItem>
         <GridItem>
           <Alert
-            title="AI usage notice"
+            title="AI-generated report"
             variant="warning"
             isInline
+            customIcon={
+              <img
+                src="/AI Icon.svg"
+                alt="AI Icon"
+                aria-hidden
+                style={{
+                  height: "1em",
+                  width: "1em",
+                  flexShrink: 0,
+                  filter: "brightness(0)",
+                }}
+              />
+            }
           >
             Always review AI generated content prior to use.
           </Alert>
