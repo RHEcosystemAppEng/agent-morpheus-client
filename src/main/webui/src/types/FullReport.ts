@@ -120,7 +120,7 @@ export interface FullReportOutput {
   /** Array of vulnerability analysis results */
   analysis?: ReportOutput[];
   /** VEX (Vulnerability Exploitability eXchange) data */
-  vex?: unknown | null;
+  vex?: object | null;
 }
 
 /**
