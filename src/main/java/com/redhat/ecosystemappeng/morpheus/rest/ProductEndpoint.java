@@ -21,6 +21,9 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.redhat.ecosystemappeng.morpheus.config.AppConfig;
+import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationIssueCode;
 import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
@@ -62,6 +65,12 @@ import java.util.Objects;
 public class ProductEndpoint {
   
   private static final Logger LOGGER = Logger.getLogger(ProductEndpoint.class);
+  /**
+   * Both keys constants must be aligned and in-sync with config keys definitions at AppConfig.java,
+   * {@link com.redhat.ecosystemappeng.morpheus.config.AppConfig}
+   */
+  public static final String EXPLOIT_IQ_IMAGE_SOURCE_LOCATION_KEYS = "exploit-iq.image.source.location-keys";
+  public static final String EXPLOIT_IQ_IMAGE_SOURCE_COMMIT_ID_KEYS = "exploit-iq.image.source.commit-id-keys";
 
   @Inject
   ReportService reportService;
@@ -86,6 +95,9 @@ public class ProductEndpoint {
 
   @Inject
   CredentialProcessingService credentialProcessingService;
+
+  @Inject
+  AppConfig appConfig;
 
   @Context
   SecurityContext securityContext;
@@ -291,10 +303,33 @@ public class ProductEndpoint {
 
   @ServerExceptionMapper
   public Response mapSbomValidationException(SbomValidationException e) {
-    LOGGER.errorf("Invalid SBOM: %s", e.getMessage());
+    if (e.hasStructuredIssues()) {
+      LOGGER.errorf("SBOM metadata validation failed: %s — %s", e.getStructuredIssues(), e.getMessage());
+      ArrayNode issuesNode = objectMapper.createArrayNode();
+      for (var code : e.getStructuredIssues()) {
+        var issueNode = objectMapper.createObjectNode().put("code", code.name());
+        if (code == SbomValidationIssueCode.MISSING_SOURCE_CODE_URL) {
+          issueNode.put("configuredProperty", EXPLOIT_IQ_IMAGE_SOURCE_LOCATION_KEYS);
+          var expectedLabels = issueNode.putArray("expectedLabels");
+          appConfig.image().source().locationKeys().forEach(expectedLabels::add);
+        } else if (code == SbomValidationIssueCode.MISSING_SOURCE_COMMIT_ID) {
+          issueNode.put("configuredProperty", EXPLOIT_IQ_IMAGE_SOURCE_COMMIT_ID_KEYS);
+          var expectedLabels = issueNode.putArray("expectedLabels");
+          appConfig.image().source().commitIdKeys().forEach(expectedLabels::add);
+        }
+        issuesNode.add(issueNode);
+      }
+      var entity = objectMapper.createObjectNode();
+      entity.set("sbomValidationIssues", issuesNode);
+      entity.put("error", e.getMessage());
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity(entity)
+          .build();
+    }
+    LOGGER.errorf("SBOM validation failed: %s", e.getMessage());
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
-            .put("error", "Invalid SBOM: " + e.getMessage()))
+            .put("error", e.getMessage()))
         .build();
   }
 
