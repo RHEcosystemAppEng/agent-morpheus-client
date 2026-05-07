@@ -230,7 +230,7 @@ const RepositoryReportPage: React.FC = () => {
             customIcon={
               <img
                 src="/AI Icon.svg"
-                alt=""
+                alt="AI Icon"
                 aria-hidden
                 style={{
                   height: "1em",

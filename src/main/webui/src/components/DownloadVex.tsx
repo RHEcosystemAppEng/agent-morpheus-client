@@ -33,16 +33,10 @@ function reportPayloadForDownload(report: FullReport): Record<string, unknown> {
   };
 }
 
-function vexPayloadForDownload(vex: unknown): unknown {
-  if (vex !== null && typeof vex === "object" && !Array.isArray(vex)) {
-    return {
-      ai_usage_notice: AI_USAGE_NOTICE,
-      ...vex,
-    };
-  }
+function vexPayloadForDownload(vex: object): Record<string, unknown> {
   return {
     ai_usage_notice: AI_USAGE_NOTICE,
-    data: vex,
+    ...vex,
   };
 }
 
@@ -88,7 +82,7 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
 
   const handleDownloadVex = () => {
     const vexData = report.output?.vex;
-    if (!vexData || vexData === null) {
+    if (vexData == null) {
       return;
     }
 
@@ -101,7 +95,7 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
     downloadFile(reportPayloadForDownload(report), filename);
   };
 
-  const hasVex = report.output?.vex !== null;
+  const hasVex = report.output?.vex != null;
 
   const dropdownItems = (
     <>
