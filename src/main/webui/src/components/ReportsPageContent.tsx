@@ -41,11 +41,7 @@ const ReportsPageContent: React.FC = () => {
 
   return (
     <>
-      <PageSection
-        type="tabs"
-        isWidthLimited
-        aria-label="Reports navigation tabs"
-      >
+      <PageSection type="tabs" aria-label="Reports navigation tabs">
         <Tabs
           activeKey={activeTabKey}
           onSelect={handleTabClick}
@@ -64,7 +60,7 @@ const ReportsPageContent: React.FC = () => {
           />
         </Tabs>
       </PageSection>
-      <PageSection isWidthLimited aria-label="Reports content">
+      <PageSection aria-label="Reports content">
         <TabContent
           key={0}
           eventKey={0}
