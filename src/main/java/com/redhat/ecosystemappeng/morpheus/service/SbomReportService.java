@@ -130,7 +130,10 @@ public class SbomReportService {
   }
 
   /**
-   * Processes a CycloneDX file upload: validates CVE ID, parses the file, saves and submits the report.
+   * Processes a CycloneDX file upload: validates CVE ID, parses the file, builds and saves the report,
+   * persists the product, then submits the report to the analysis queue. The product document is written
+   * only after the report payload is generated and saved so validation failures in report construction
+   * do not leave orphan products.
    * @param cveId CVE ID to analyze
    * @param fileInputStream InputStream containing the CycloneDX JSON file
    * @param credentialId optional credential ID to inject into the report before saving (null if not required)
@@ -166,14 +169,25 @@ public class SbomReportService {
       throw new ValidationException(errors);
     }
     LOGGER.info("Processing CycloneDX file upload for CVE: " + cveId);
-    Product product = this.createProduct(cveId, parsedCycloneDx.sbomName(), parsedCycloneDx.sbomVersion(), CYCLONEDX_COMPONENT_COUNT, new HashMap<>());
-    ReportData reportData = reportService.createCycloneDxReportData(parsedCycloneDx, product.id(), cveId, false);
+    String productId = generateProductId(parsedCycloneDx.sbomName(), parsedCycloneDx.sbomVersion());
+    ReportData reportData = reportService.createCycloneDxReportData(parsedCycloneDx, productId, cveId, false);
 
     if (Objects.nonNull(credentialId)) {
       credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
     }
 
     ReportData savedReportData = reportService.saveReport(reportData);
+    Product product =
+        newProductDocument(
+            cveId,
+            productId,
+            parsedCycloneDx.sbomName(),
+            parsedCycloneDx.sbomVersion(),
+            CYCLONEDX_COMPONENT_COUNT,
+            new HashMap<>());
+    productRepository.save(product, userService.getUserName());
+    // If submit fails after this point, the report and product exist but the request was not queued;
+    // callers surface the error and operational cleanup is out of scope for this flow.
     reportService.submit(savedReportData.reportRequestId().id(), savedReportData.report());
     return savedReportData;
   }
@@ -286,20 +300,29 @@ public class SbomReportService {
     }
   }
 
-  private Product createProduct(String cveId, String sbomName, String sbomVersion, int componentCount, Map<String, String> metadata) {    
+  private Product createProduct(String cveId, String sbomName, String sbomVersion, int componentCount, Map<String, String> metadata) {
     String productId = generateProductId(sbomName, sbomVersion);
-    Product product = new Product(
-      productId,
-      sbomName,
-      Objects.nonNull(sbomVersion) ? sbomVersion : "",
-      Instant.now().toString(),
-      componentCount,
-      metadata,
-      Collections.emptyList(),
-      cveId
-    );
-    productRepository.save(product, userService.getUserName());    
+    Product product = newProductDocument(cveId, productId, sbomName, sbomVersion, componentCount, metadata);
+    productRepository.save(product, userService.getUserName());
     return product;
+  }
+
+  private static Product newProductDocument(
+      String cveId,
+      String productId,
+      String sbomName,
+      String sbomVersion,
+      int componentCount,
+      Map<String, String> metadata) {
+    return new Product(
+        productId,
+        sbomName,
+        Objects.nonNull(sbomVersion) ? sbomVersion : "",
+        Instant.now().toString(),
+        componentCount,
+        metadata,
+        Collections.emptyList(),
+        cveId);
   }
 }
 

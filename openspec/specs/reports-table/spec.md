@@ -185,3 +185,17 @@ When the reports table toolbar is used with pagination, the toolbar SHALL accept
 - **THEN** the Pagination component still renders with page navigation (onSetPage)
 - **AND** the per-page control may show no options or a default so existing callers do not break
 
+### Requirement: SBOMs table rows match analysis lifecycle
+
+The SBOMs tab product-level reports table SHALL list only products that correspond to vulnerability analysis work the user can reason about: either at least one report exists for the product batch **or** the product summary supports the Finding column rules without an undefined outcome. Rows SHALL NOT represent submissions that failed with an HTTP error **before** a report was persisted and queued for that attempt (for example a CycloneDX upload that returns HTTP 400 after parse for SBOM validation). The Finding column SHALL NOT remain permanently empty for any row returned by the listing API after a refresh.
+
+#### Scenario: Failed CycloneDX upload does not add an SBOMs row
+
+- **WHEN** a user submits CycloneDX from the request analysis flow and the server responds with HTTP 400 (or another error) for that submission without creating a queued or completed report for that product
+- **THEN** after the reports list refreshes (including SSE-driven refresh), the SBOMs table SHALL NOT show a new product row that exists only because of that failed submission
+- **AND** the user does not see a row with an empty Finding and no navigable report for that attempt
+
+#### Scenario: Legitimate processing shows In progress, not blank
+
+- **WHEN** a product row is returned for an accepted analysis batch where reports exist and the Finding rules classify the batch as still in progress (including edge cases where summary state is processing but individual status keys are not yet populated)
+- **THEN** the Finding column SHALL show **In progress** (or another defined label from the Finding rules), not a permanently blank cell

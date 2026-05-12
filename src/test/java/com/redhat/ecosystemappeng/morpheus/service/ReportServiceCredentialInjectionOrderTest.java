@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
+import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequestId;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
@@ -72,10 +73,11 @@ class ReportServiceCredentialInjectionOrderTest {
   void submitCycloneDx_injectsCredentialBeforeSave() throws Exception {
     sbomReportService.submitCycloneDx(CVE_ID, new ByteArrayInputStream(new byte[0]), CREDENTIAL_ID);
 
-    InOrder inOrder = Mockito.inOrder(credentialProcessingService, reportService);
+    InOrder inOrder = Mockito.inOrder(credentialProcessingService, reportService, productRepository);
     assertDoesNotThrow(() -> {
       inOrder.verify(credentialProcessingService).injectCredentialId(any(JsonNode.class), eq(CREDENTIAL_ID));
       inOrder.verify(reportService).saveReport(any());
+      inOrder.verify(productRepository).save(any(Product.class), any());
       inOrder.verify(reportService).submit(any(), any(JsonNode.class));
     }, "credentialId must be injected BEFORE saveReport() and submit(), " +
        "otherwise it is not persisted in MongoDB and not included in the Morpheus payload");
@@ -85,9 +87,11 @@ class ReportServiceCredentialInjectionOrderTest {
   void submitCycloneDx_withoutCredential_skipsInject() throws Exception {
     sbomReportService.submitCycloneDx(CVE_ID, new ByteArrayInputStream(new byte[0]), null);
 
+    InOrder inOrder = Mockito.inOrder(reportService, productRepository);
     Mockito.verify(credentialProcessingService, Mockito.never()).injectCredentialId(any(), any());
-    Mockito.verify(reportService).saveReport(any());
-    Mockito.verify(reportService).submit(any(), any());
+    inOrder.verify(reportService).saveReport(any());
+    inOrder.verify(productRepository).save(any(Product.class), any());
+    inOrder.verify(reportService).submit(any(), any(JsonNode.class));
   }
 
   @Test
@@ -97,6 +101,7 @@ class ReportServiceCredentialInjectionOrderTest {
 
     Mockito.verify(credentialProcessingService, Mockito.never()).injectCredentialId(any(), any());
     Mockito.verify(reportService, Mockito.never()).saveReport(any());
+    Mockito.verify(productRepository, Mockito.never()).save(any(), any());
     Mockito.verify(reportService, Mockito.never()).submit(any(), any());
   }
 }

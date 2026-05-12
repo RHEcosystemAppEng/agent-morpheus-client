@@ -4,7 +4,9 @@
 The report file upload capability enables users to upload CycloneDX SBOM files for vulnerability analysis. The system validates the uploaded files, extracts product information, creates reports, and manages product metadata with version information.
 ## Requirements
 ### Requirement: CycloneDX File Upload Endpoint
-The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` that accepts multipart form data containing a CVE ID and a CycloneDX file. The endpoint SHALL parse the uploaded file, validate its structure, validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`, create a report object with an SBOM report ID, and queue the report for analysis. The endpoint SHALL always generate an SBOM report ID by combining the SBOM name (from `metadata.component.name`) with a timestamp. The endpoint SHALL add the SBOM name (from `metadata.component.name`) to the report metadata as the `sbom_name` field. When validation fails, the endpoint SHALL return a structured error response mapping field names to error messages. The endpoint SHALL create a product entry for every successful upload. When the SBOM contains version information (`metadata.component.version`), the product SHALL use that version. When the SBOM does not contain version information, the product SHALL use an empty string (`""`) as the version value.
+The system SHALL provide a REST endpoint at `/api/v1/products/upload-cyclonedx` that accepts multipart form data containing a CVE ID and a CycloneDX file. The endpoint SHALL parse the uploaded file, validate its structure, validate the CVE ID format using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$`, create a report object with an SBOM report ID, and queue the report for analysis. The endpoint SHALL always generate an SBOM report ID by combining the SBOM name (from `metadata.component.name`) with a timestamp. The endpoint SHALL add the SBOM name (from `metadata.component.name`) to the report metadata as the `sbom_name` field. When validation fails, the endpoint SHALL return a structured error response mapping field names to error messages (or the SBOM validation issue payload where applicable). The endpoint SHALL create a product entry **only** when the request is fully accepted for analysis (report persisted and submission to the analysis queue succeeds as defined for this endpoint). When the SBOM contains version information (`metadata.component.version`), the product SHALL use that version. When the SBOM does not contain version information, the product SHALL use an empty string (`""`) as the version value.
+
+If parsing succeeds but later validation or report construction fails (including `SbomValidationException` for image SBOM rules such as missing required metadata labels or missing `components`), the endpoint SHALL return an HTTP error response **and** SHALL NOT persist a product document for that request **and** SHALL NOT leave a persisted vulnerability report document that references a product id for that failed attempt.
 
 When validation fails because an image-type CycloneDX SBOM is missing required **source code URL** and/or **commit ID** metadata in `metadata.properties` (same rules as image analysis), the HTTP 400 response SHALL expose enough information for clients to present a clear message. For each entry in `sbomValidationIssues`, the response SHALL include `code`, `configuredProperty`, and `expectedLabels`, where `expectedLabels` contains the configured keys resolved from the backend property referenced by `configuredProperty`. Human-readable error text SHALL state which metadata is missing and SHALL NOT be solely **"SBOM metadata validation failed"**.
 
@@ -16,8 +18,15 @@ When validation fails because an image-type CycloneDX SBOM is missing required *
 - **AND** extracts the SBOM name from `metadata.component.name`
 - **AND** generates an SBOM report ID by combining the SBOM name with a timestamp
 - **AND** creates a report object from the parsed data and CVE ID with the generated SBOM report ID and `sbom_name` field in the report metadata
+- **AND** persists a product for that analysis batch as required for successful multi-report flows
 - **AND** queues the report for analysis
 - **AND** returns HTTP 202 (Accepted) with the report data
+
+#### Scenario: Post-parse SBOM validation failure does not create a product
+- **WHEN** a user submits a multipart form to `/api/v1/products/upload-cyclonedx` with a valid CVE ID and a CycloneDX JSON file that passes initial parse (`metadata.component.name` present) but fails deeper report validation (for example missing required image provenance metadata or missing `components` as required for the generated report)
+- **THEN** the system returns HTTP 400 (Bad Request) with an error payload appropriate to the failure mode
+- **AND** no new product document exists in persistence for that submission (the product must not appear in product-based listings for that attempt)
+- **AND** no orphan report exists for that failed submission
 
 #### Scenario: Successful file upload with version creates product
 - **WHEN** a user submits a multipart form to `/api/v1/products/upload-cyclonedx` with a valid CVE ID and a valid CycloneDX JSON file containing both `metadata.component.name` and `metadata.component.version`

@@ -416,9 +416,12 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
+    // Client validation passed. For SBOM, the button shows busy while the file is read and the format
+    // is checked; the upload API is called only after that succeeds (no field errors). For Single
+    // Repository, the busy state covers only the backend request.
 
     if (mode === "single-repository") {
+      setIsSubmitting(true);
       try {
         const credential = getCredentialForSubmit();
         const requestBody: ReportRequest = {
@@ -444,36 +447,34 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({
       return;
     }
 
-    const file = selectedFile;
-    if (!file) {
-      setFileError("Required");
-      setIsSubmitting(false);
-      return;
-    }
+    setIsSubmitting(true);
+    try {
+      const file = selectedFile;
+      if (!file) {
+        setFileError("Required");
+        return;
+      }
 
-    let sbomFormat: SbomFormat | null = null;
-    try {
-      sbomFormat = await detectSbomFormat(file);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setFileError(err.message);
-      } else {        
-        setFileError("An unknown error occurred while detecting the SBOM format");
-        console.error(err);        
-      }      
-      setIsSubmitting(false);
-      return;
-    }
-    if (!sbomFormat) {      
-      setIsSubmitting(false);
-      setFileError(`File format not supported. Please upload an ${SbomFormat.SPDX} ${SPDX_VERSION} or ${SbomFormat.CycloneDX} ${CYCLONEDX_VERSION} file.`);
-      return;
-    }
-    try {
-      // Detect SBOM format                 
+      let sbomFormat: SbomFormat | null = null;
+      try {
+        sbomFormat = await detectSbomFormat(file);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setFileError(err.message);
+        } else {
+          setFileError("An unknown error occurred while detecting the SBOM format");
+          console.error(err);
+        }
+        return;
+      }
+      if (!sbomFormat) {
+        setFileError(`File format not supported. Please upload an ${SbomFormat.SPDX} ${SPDX_VERSION} or ${SbomFormat.CycloneDX} ${CYCLONEDX_VERSION} file.`);
+        return;
+      }
+
       await uploadSbomFile(file, trimmedCveId, sbomFormat);
-    } catch (err: unknown) {            
-      handleSubmitError(err);      
+    } catch (err: unknown) {
+      handleSubmitError(err);
     } finally {
       setIsSubmitting(false);
     }
