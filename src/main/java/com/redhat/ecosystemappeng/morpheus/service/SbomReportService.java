@@ -30,7 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.ecosystemappeng.morpheus.exception.CveIdValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
-import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
+import com.redhat.ecosystemappeng.morpheus.model.ExcludedComponent;
+import com.redhat.ecosystemappeng.morpheus.model.ExclusionType;
 import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
@@ -170,7 +171,7 @@ public class SbomReportService {
     }
     LOGGER.info("Processing CycloneDX file upload for CVE: " + cveId);
     String productId = generateProductId(parsedCycloneDx.sbomName(), parsedCycloneDx.sbomVersion());
-    ReportData reportData = reportService.createCycloneDxReportData(parsedCycloneDx, productId, cveId, false);
+    ReportData reportData = reportService.createCycloneDxReportData(parsedCycloneDx, productId, cveId);
 
     if (Objects.nonNull(credentialId)) {
       credentialProcessingService.injectCredentialId(reportData.report(), credentialId);
@@ -215,7 +216,7 @@ public class SbomReportService {
     }
 
     // Validate file input
-    if (fileInputStream == null) {      
+    if (fileInputStream == null) {
       errors.put("file", "No file provided");
     }
 
@@ -267,11 +268,11 @@ public class SbomReportService {
       String errorMessage = String.format(
           "Expects a container image purl with format pkg:oci/name@sha256:hash?repository_url=...&tag=...");
       String imageForDisplay = unsupported.purl() != null ? unsupported.purl() : "";
-      productRepository.addSubmissionFailure(product.id(), new FailedComponent(
-          unsupported.name(), unsupported.version(), imageForDisplay, errorMessage));
+      productRepository.addExcludedComponent(product.id(), new ExcludedComponent(
+          unsupported.name(), unsupported.version(), imageForDisplay, errorMessage, ExclusionType.error));
     }
 
-    // Start component processing (chunks run in parallel on executor)
+    // Start component processing (chunks run in parallel on executor); Exhort availability is probed inside ComponentProcessingService.
     processSpdxComponents(product.id(), parsed, cveId, credentialId);
 
     LOGGER.infof("Created product %s, started component processing", product.id());
@@ -279,7 +280,11 @@ public class SbomReportService {
     return product.id();
   }
 
-  private void processSpdxComponents(String productId, SpdxParsingService.ParsedSpdx parsed, String vulnerabilityId, String credentialId) {
+  private void processSpdxComponents(
+      String productId,
+      SpdxParsingService.ParsedSpdx parsed,
+      String vulnerabilityId,
+      String credentialId) {
     try {
       LOGGER.infof("Processing %d components for product: %s", parsed.components().size(), productId);
       Map<String, String> componentMetadata = new HashMap<>();

@@ -1,0 +1,19 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v5/analysis",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.components"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "exhort-analysis-no-cve.json"
+  }
+}

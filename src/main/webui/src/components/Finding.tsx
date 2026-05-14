@@ -39,6 +39,13 @@ const Finding: React.FC<FindingProps> = ({ finding }) => {
 
   switch (finding.type) {
     case "failed":
+      if (finding.count !== undefined) {
+        return (
+          <Label color="grey" variant="filled" icon={<ExclamationCircleIcon />}>
+            {finding.count} Failed
+          </Label>
+        );
+      }
       return <FailedStatus />;
     case "in-progress":
       return <InProgressStatus />;
@@ -49,10 +56,6 @@ const Finding: React.FC<FindingProps> = ({ finding }) => {
     case "not-vulnerable":
       label = "Not vulnerable";
       color = apiToColor(JUSTIFICATION_API.NOT_VULNERABLE);
-      break;
-    case "excluded":
-      label = "Excluded";
-      color = "grey";
       break;
     case "uncertain":
       label = "Uncertain";

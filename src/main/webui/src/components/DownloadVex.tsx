@@ -20,7 +20,6 @@ import {
   MenuToggleElement,
 } from "@patternfly/react-core";
 import type { FullReport } from "../types/FullReport";
-import { isInProgressState } from "../utils/findingDisplay";
 
 /** Embedded in every downloaded report / VEX JSON file. */
 const AI_USAGE_NOTICE =
@@ -42,8 +41,6 @@ function vexPayloadForDownload(vex: object): Record<string, unknown> {
 
 interface DownloadDropdownProps {
   report: FullReport;
-  /** Analysis status from the API (e.g. pending, queued, sent, completed). */
-  analysisStatus?: string | null;
 }
 
 // Scan ID for filename; falls back to "report" when missing (per FullReport type: input.scan.id is string | undefined).
@@ -51,13 +48,8 @@ function scanIdString(report: FullReport): string {
   return report.input?.scan?.id ?? "report";
 }
 
-const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
-  report,
-  analysisStatus,
-}) => {
+const DownloadDropdown: React.FC<DownloadDropdownProps> = ({ report }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const downloadsDisabled = isInProgressState(analysisStatus ?? "");
 
   const onToggle = () => {
     setIsOpen(!isOpen);
@@ -99,18 +91,10 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
 
   const dropdownItems = (
     <>
-      <DropdownItem
-        key="vex"
-        onClick={handleDownloadVex}
-        isDisabled={downloadsDisabled || !hasVex}
-      >
+      <DropdownItem key="vex" onClick={handleDownloadVex} isDisabled={!hasVex}>
         VEX
       </DropdownItem>
-      <DropdownItem
-        key="report"
-        onClick={handleDownloadReport}
-        isDisabled={downloadsDisabled}
-      >
+      <DropdownItem key="report" onClick={handleDownloadReport}>
         Report
       </DropdownItem>
     </>
@@ -127,18 +111,14 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
           isExpanded={isOpen}
           onClick={onToggle}
           variant="primary"
-          isDisabled={downloadsDisabled}
           splitButtonItems={[
             <MenuToggleAction
               key="download-split-action"
               id="download-report-split-action"
               aria-label="Download"
-              isDisabled={downloadsDisabled}
               onClick={(e) => {
                 e.stopPropagation();
-                if (!downloadsDisabled) {
-                  onToggle();
-                }
+                onToggle();
               }}
             >
               Download

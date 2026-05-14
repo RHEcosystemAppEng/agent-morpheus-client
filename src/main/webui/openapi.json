@@ -193,14 +193,14 @@
           }
         }
       },
-      "FailedComponent": {
-        "description": "Metadata of submitted components failed to be processed for scanning",
+      "ExcludedComponent": {
+        "description": "Component excluded from or not completing full repository analysis",
         "type": "object",
         "required": [
           "name",
           "version",
           "image",
-          "error"
+          "exclusionType"
         ],
         "properties": {
           "name": {
@@ -213,13 +213,38 @@
           },
           "image": {
             "type": "string",
-            "description": "Component image"
+            "description": "Component image or purl"
           },
           "error": {
-            "type": "string",
-            "description": "Error message"
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Detail when exclusionType is error; omit or null when dependency_not_present"
+          },
+          "exclusionType": {
+            "description": "Outcome classification",
+            "type": [
+              "string",
+              "object"
+            ],
+            "enum": [
+              "error",
+              "dependency_not_present"
+            ]
           }
         }
+      },
+      "ExclusionType": {
+        "description": "Outcome classification",
+        "type": [
+          "string",
+          "object"
+        ],
+        "enum": [
+          "error",
+          "dependency_not_present"
+        ]
       },
       "Feedback": {
         "description": "Data Transfer Object for submitting user feedback about a specific report.",
@@ -482,7 +507,7 @@
           "submittedAt",
           "submittedCount",
           "metadata",
-          "submissionFailures",
+          "excludedComponents",
           "cveId"
         ],
         "properties": {
@@ -514,16 +539,20 @@
             },
             "description": "Product user provided metadata"
           },
-          "submissionFailures": {
-            "description": "List of submitted components failed to be processed for scanning",
+          "excludedComponents": {
+            "description": "Components excluded from full analysis or without a completed repository report",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FailedComponent"
+              "$ref": "#/components/schemas/ExcludedComponent"
             }
           },
           "completedAt": {
             "type": "string",
             "description": "Timestamp of product scan request completion"
+          },
+          "dependencyTriageUnavailable": {
+            "type": "boolean",
+            "description": "When true, Exhort dependency triage was unavailable at SPDX whole-product startup; CVE-in-tree filtering was skipped and full analysis ran for reachable components."
           },
           "cveId": {
             "type": "string",
@@ -584,7 +613,7 @@
               "submittedAt",
               "submittedCount",
               "metadata",
-              "submissionFailures",
+              "excludedComponents",
               "cveId"
             ],
             "properties": {
@@ -616,16 +645,20 @@
                 },
                 "description": "Product user provided metadata"
               },
-              "submissionFailures": {
-                "description": "List of submitted components failed to be processed for scanning",
+              "excludedComponents": {
+                "description": "Components excluded from full analysis or without a completed repository report",
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/FailedComponent"
+                  "$ref": "#/components/schemas/ExcludedComponent"
                 }
               },
               "completedAt": {
                 "type": "string",
                 "description": "Timestamp of product scan request completion"
+              },
+              "dependencyTriageUnavailable": {
+                "type": "boolean",
+                "description": "When true, Exhort dependency triage was unavailable at SPDX whole-product startup; CVE-in-tree filtering was skipped and full analysis ran for reachable components."
               },
               "cveId": {
                 "type": "string",
@@ -682,7 +715,8 @@
           "imageTag",
           "state",
           "vulns",
-          "metadata"
+          "metadata",
+          "componentDependencyTriageFailed"
         ],
         "properties": {
           "id": {
@@ -738,6 +772,10 @@
           "submittedAt": {
             "type": "string",
             "description": "Submitted at timestamp from metadata.submitted_at"
+          },
+          "componentDependencyTriageFailed": {
+            "type": "boolean",
+            "description": "When true, the per-component Exhort dependency triage (CVE gate) failed while triage was active for the product (dependencyTriageUnavailable false on the product). When false, triage succeeded, was skipped because the whole-product Exhort probe was unhealthy, or was not applicable. Distinct from product-level dependencyTriageUnavailable on product API responses."
           }
         }
       },
@@ -916,6 +954,9 @@
             "description": "ID assigned on scan request submission"
           }
         }
+      },
+      "ReportSseMessage": {
+        "type": "object"
       },
       "ReportWithStatus": {
         "description": "Report data with calculated analysis status",
@@ -1161,6 +1202,10 @@
         "description": "Please enter your JWT Token without Bearer",
         "scheme": "bearer",
         "bearerFormat": "jwt"
+      },
+      "SecurityScheme": {
+        "type": "openIdConnect",
+        "description": "Authentication"
       }
     }
   },
@@ -3321,7 +3366,7 @@
                         "submittedAt",
                         "submittedCount",
                         "metadata",
-                        "submissionFailures",
+                        "excludedComponents",
                         "cveId"
                       ],
                       "properties": {
@@ -3353,16 +3398,20 @@
                           },
                           "description": "Product user provided metadata"
                         },
-                        "submissionFailures": {
-                          "description": "List of submitted components failed to be processed for scanning",
+                        "excludedComponents": {
+                          "description": "Components excluded from full analysis or without a completed repository report",
                           "type": "array",
                           "items": {
-                            "$ref": "#/components/schemas/FailedComponent"
+                            "$ref": "#/components/schemas/ExcludedComponent"
                           }
                         },
                         "completedAt": {
                           "type": "string",
                           "description": "Timestamp of product scan request completion"
+                        },
+                        "dependencyTriageUnavailable": {
+                          "type": "boolean",
+                          "description": "When true, Exhort dependency triage was unavailable at SPDX whole-product startup; CVE-in-tree filtering was skipped and full analysis ran for reachable components."
                         },
                         "cveId": {
                           "type": "string",
@@ -3421,6 +3470,32 @@
         ],
         "tags": [
           "Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/reports/stream": {
+      "get": {
+        "summary": "Report live-update stream (SSE)",
+        "description": "Server-Sent Events. Each event `data` line is JSON `{}` (empty object): report or product data may have changed; clients should refetch their REST views. The payload may gain fields later for targeted invalidation.",
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSseMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Stream Resource"
         ]
       }
     },

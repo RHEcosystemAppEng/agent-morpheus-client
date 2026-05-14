@@ -34,7 +34,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
-import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
+import com.redhat.ecosystemappeng.morpheus.model.ExcludedComponent;
+import com.redhat.ecosystemappeng.morpheus.model.ExclusionType;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.service.ReportSseBroadcaster;
 import com.redhat.ecosystemappeng.morpheus.service.RepositoryConstants;
@@ -56,8 +57,9 @@ public class ProductRepositoryService {
   private static final String COMPLETED_AT = "completed_at";
   private static final String SUBMITTED_COUNT = "submitted_count";
   private static final String CVE_ID = "cve_id";
-  private static final String SUBMISSION_FAILURES = "submission_failures";
+  private static final String EXCLUDED_COMPONENTS = "excluded_components";
   private static final String METADATA = "metadata";
+  private static final String DEPENDENCY_TRIAGE_UNAVAILABLE = "dependency_triage_unavailable";
   
   @Inject
   MongoClient mongoClient;
@@ -87,9 +89,10 @@ public class ProductRepositoryService {
         .append(SUBMITTED_AT, product.submittedAt())
         .append(SUBMITTED_COUNT, product.submittedCount())
         .append(METADATA, metadataWithUser)
-        .append(SUBMISSION_FAILURES, product.submissionFailures())
+        .append(EXCLUDED_COMPONENTS, product.excludedComponents())
         .append(COMPLETED_AT, product.completedAt())
-        .append(CVE_ID, product.cveId());
+        .append(CVE_ID, product.cveId())
+        .append(DEPENDENCY_TRIAGE_UNAVAILABLE, product.dependencyTriageUnavailable());
 
     getCollection().insertOne(doc);
     LOGGER.debugf("Saved product %s to %s collection", product.id(), COLLECTION);
@@ -145,22 +148,33 @@ public class ProductRepositoryService {
     LOGGER.debugf("Updated product %s completedAt timestamp to %s", id, completedAt);
   }
 
-  public void addSubmissionFailure(String id, FailedComponent failure) {
+  public void setDependencyTriageUnavailable(String id, boolean dependencyTriageUnavailable) {
+    getCollection().updateOne(
+        Filters.eq(RepositoryConstants.ID_KEY, id),
+        Updates.set(DEPENDENCY_TRIAGE_UNAVAILABLE, dependencyTriageUnavailable));
+    LOGGER.debugf("Updated product %s dependencyTriageUnavailable=%s", id, dependencyTriageUnavailable);
+    reportSseBroadcaster.publishCatalogChanged();
+  }
+
+  public void addExcludedComponent(String id, ExcludedComponent failure) {
     Document failureDoc = new Document()
         .append("name", failure.name())
         .append("version", failure.version())
         .append("image", failure.image())
-        .append("error", failure.error());
+        .append("exclusionType", failure.exclusionType().name());
+    if (failure.error() != null) {
+      failureDoc.append("error", failure.error());
+    }
     
     getCollection().updateOne(
         Filters.eq(RepositoryConstants.ID_KEY, id),
-        Updates.push(SUBMISSION_FAILURES, failureDoc)
+        Updates.push(EXCLUDED_COMPONENTS, failureDoc)
     );
-    LOGGER.debugf("Added submission failure to product %s: %s/%s", id, failure.name(), failure.version());
+    LOGGER.debugf("Added excluded component to product %s: %s/%s", id, failure.name(), failure.version());
 
     Document doc = getCollection().find(Filters.eq(RepositoryConstants.ID_KEY, id)).first();
     if (Objects.nonNull(doc)) {
-      List<Document> failures = doc.getList(SUBMISSION_FAILURES, Document.class);
+      List<Document> failures = doc.getList(EXCLUDED_COMPONENTS, Document.class);
       int failureCount = Objects.nonNull(failures) ? failures.size() : 0;
       int submittedCount = Objects.requireNonNullElse(doc.getInteger(SUBMITTED_COUNT), 0);
       if (submittedCount > 0 && failureCount == submittedCount && Objects.isNull(doc.getString(COMPLETED_AT))) {
@@ -250,15 +264,16 @@ public class ProductRepositoryService {
   }
 
   private Product documentToProduct(Document doc) {
-    List<FailedComponent> submissionFailures = new ArrayList<>();
-    List<Document> failuresDocs = doc.getList(SUBMISSION_FAILURES, Document.class);
+    List<ExcludedComponent> excludedComponents = new ArrayList<>();
+    List<Document> failuresDocs = doc.getList(EXCLUDED_COMPONENTS, Document.class);
     if (Objects.nonNull(failuresDocs)) {
       for (Document failureDoc : failuresDocs) {
-        submissionFailures.add(new FailedComponent(
+        excludedComponents.add(new ExcludedComponent(
           failureDoc.getString("name"),
           failureDoc.getString("version"),
           failureDoc.getString("image"),
-          failureDoc.getString("error")
+          failureDoc.getString("error"),
+          parseExclusionType(failureDoc.getString("exclusionType"))
         ));
       }
     }
@@ -273,10 +288,22 @@ public class ProductRepositoryService {
         doc.getString(SUBMITTED_AT),
         doc.getInteger(SUBMITTED_COUNT),
         metadata,
-        submissionFailures,
+        excludedComponents,
         doc.getString(COMPLETED_AT),
+        Boolean.TRUE.equals(doc.getBoolean(DEPENDENCY_TRIAGE_UNAVAILABLE)),
         doc.getString(CVE_ID)
     );
+  }
+
+  private static ExclusionType parseExclusionType(String raw) {
+    if (Objects.isNull(raw) || raw.isBlank()) {
+      return ExclusionType.error;
+    }
+    try {
+      return ExclusionType.valueOf(raw.trim());
+    } catch (IllegalArgumentException e) {
+      return ExclusionType.error;
+    }
   }
 }
 

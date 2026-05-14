@@ -13,18 +13,18 @@ The application SHALL provide navigation from the reports table to a report page
   - Otherwise, navigate to `/reports/product/:productId/:cveId` where `:productId` is `SbomReport.productId` and `:cveId` is the CVE ID
 
 ### Requirement: Report Details Display
-The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM"), including the day, full month name, year, and time with seconds and AM/PM indicator.
+The report page SHALL display report details in two separate cards positioned side by side at the top of the page. Date fields in the table SHALL display dates in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g. "07 July 2025, 10:14:02 PM"), including the day, full month name, year, and time with seconds and AM/PM indicator.
 
 The report page SHALL automatically refresh data using `useReport` with server live updates (`liveUpdatesRefresh`), but only when some analysis states in `sbomReport.statusCounts` are not "failed" or "completed". When all analysis states are either "failed" or "completed", live refetches SHALL stop while the shared live-updates `EventSource` remains open (see `api-hooks` and `report-events-stream` specifications).
 
-The Details card SHALL display a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` (numExcluded from `sbomReport.statusCounts["excluded"]` or `product.data.submissionFailures.length`, numSubmitted from `product.data.submittedCount`). When numExcluded > 0, the value SHALL be a link that navigates to `/reports/product/excluded-components/:productId/:cveId`. When numExcluded === 0, the value SHALL be `0/<numSubmitted>` displayed as plain text (not a link).
+The Details card SHALL display a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` where **numExcluded** is the length of `product.data.excludedComponents` (all exclusion types) and **numSubmitted** is `product.data.submittedCount`. When **numExcluded** > 0, the value SHALL be a link to `/reports/product/excluded-components/:productId/:cveId`. When **numExcluded** === 0, the value SHALL be `0/<numSubmitted>` as plain text (not a link).
 
 #### Scenario: Report details card displays
 - **WHEN** a user views the report page with a specific CVE ID in the route
 - **THEN** the page displays two cards side by side using a `Grid` layout at the top of the page
 - **AND** the left card (Details card) displays report information in two columns:
   - Right column: Number of repositories analyzed (showing {num completed} / {num submitted}, where num completed is the count from `sbomReport.statusCounts["completed"]` and num submitted is the value from `product.data.submittedCount`)
-- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM") when available, or "-" when no Date Completed is available) and Metadata field (displaying metadata key-value pairs from `product.data.metadata` using PatternFly LabelGroup and Label components when metadata exists, or `NotAvailable` component when no metadata is available)
+- **AND** the right card (Additional Details card) displays: Completed date field (showing the date in the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g. "07 July 2025, 10:14:02 PM") when available, or "-" when no Date Completed is available) and Metadata field (displaying metadata key-value pairs from `product.data.metadata` using PatternFly LabelGroup and Label components when metadata exists, or `NotAvailable` component when no metadata is available)
 - **AND** the CVE data displayed corresponds to the CVE ID from the route parameters
 
 #### Scenario: Repositories analyzed shows completed over submitted
@@ -34,12 +34,12 @@ The Details card SHALL display a field with label "Excluded components" and valu
 - **AND** num submitted is the value of `product.data.submittedCount`
 
 #### Scenario: Excluded components field with link when excluded present
-- **WHEN** a user views the report page and the product has one or more excluded components (numExcluded > 0, from `sbomReport.statusCounts["excluded"]` or `product.data.submissionFailures.length`)
-- **THEN** the Details card displays a field with label "Excluded components" and value `<numExcluded>/<numSubmitted>` (e.g. "3/10") as a clickable link
-- **AND** clicking the link navigates to `/reports/product/excluded-components/:productId/:cveId` where `productId` and `cveId` are from the current report page route
+- **WHEN** a user views the report page and the product has one or more entries in `product.data.excludedComponents`
+- **THEN** the Details card displays a field with label "Excluded components" and a value that includes `<numSubmitted>` in the denominator
+- **AND** the value is a clickable link to `/reports/product/excluded-components/:productId/:cveId` so users can review all excluded rows and messages on the dedicated page
 
 #### Scenario: Excluded components field as plain text when zero excluded
-- **WHEN** a user views the report page and the product has zero excluded components (numExcluded === 0)
+- **WHEN** a user views the report page and the product has zero excluded components (`excludedComponents` empty or undefined)
 - **THEN** the Details card displays a field with label "Excluded components" and value `0/<numSubmitted>` (e.g. "0/10") as plain text, not a link
 
 #### Scenario: Date Completed field always displayed
@@ -181,4 +181,38 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 - **THEN** the report page refreshes product data on SSE using `useReport` (see `api-hooks` and `report-events-stream` specifications)
 - **AND** when all analysis states are either "failed" or "completed", live refresh stops (via `shouldRefresh` on `useApi`)
 - **AND** the refresh preserves the current view state (no disruption to user interactions)
+
+### Requirement: Dependency triage unavailable warning on product report page
+When the product payload indicates that automated dependency triage was skipped because Exhort was not healthy at the start of SPDX whole-product processing, the product summary page SHALL display a PatternFly **warning** `Alert` visible alongside the normal report layout.
+
+The alert **`title`** SHALL be exactly: `Dependency triage unavailable`
+
+The alert **body/content** SHALL be exactly: `The automated pre-check for vulnerable packages is offline. Full analysis is being performed on all components to ensure complete coverage.`
+
+#### Scenario: Alert shown when triage unavailable
+- **WHEN** a user views the report page at `/reports/product/:productId/:cveId`
+- **AND** the product data loaded via `/api/v1/reports/product/${productId}` includes `dependencyTriageUnavailable === true` (or equivalent typed field from the generated client)
+- **THEN** the page SHALL render a PatternFly `Alert` with `variant="warning"` and the exact title and content strings specified above
+
+#### Scenario: No alert when triage was available or legacy product
+- **WHEN** a user views the report page at `/reports/product/:productId/:cveId`
+- **AND** `dependencyTriageUnavailable` is false, undefined, or absent (legacy persisted documents)
+- **THEN** the page SHALL NOT render the Dependency triage unavailable warning alert
+
+### Requirement: Product report page triage warnings
+
+The product SBOM report page embedded repository table SHALL show the dependency triage warning icon only when the **per-repository report** has **`componentDependencyTriageFailed` true**. The table SHALL **not** infer per-row warnings from the product-level **`dependencyTriageUnavailable`** flag alone.
+
+#### Scenario: Product triage skipped but no per-component failure
+
+- **WHEN** a user views the product report page
+- **AND** the product has **`dependencyTriageUnavailable` true**
+- **AND** repository reports have **`componentDependencyTriageFailed` false** or absent for all rows
+- **THEN** the repository table SHALL NOT show the triage warning icon for any row
+
+#### Scenario: Per-component triage failure
+
+- **WHEN** a user views the product report page
+- **AND** at least one embedded repository report has **`componentDependencyTriageFailed` true**
+- **THEN** the repository table SHALL show the triage warning icon for those rows only (with the standard tooltip text)
 

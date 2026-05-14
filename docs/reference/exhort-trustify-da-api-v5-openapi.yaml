@@ -1,0 +1,691 @@
+# Reference copy: Trustify Dependency Analytics API OpenAPI v5 (Exhort-compatible contract).
+# Fetched: 2026-05-13
+# Repository: https://github.com/guacsec/trustify-da-api-spec
+# Path in repo: api/v5/openapi.yaml
+# Last upstream commit touching this file on main at fetch: 70b1db3c5fb5cdbaad99d9d3f66cde12b22d25d8
+# Raw: https://raw.githubusercontent.com/guacsec/trustify-da-api-spec/main/api/v5/openapi.yaml
+#
+openapi: 3.0.3
+info:
+  title: Trustify Dependency Analytics API
+  description: Trustify Dependency Analytics API
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 5.1.0
+servers:
+  - url: /api/v5
+    description: API v5 endpoint
+paths:
+  /analysis:
+    post:
+      operationId: analysis
+      summary: Takes a client-resolved dependency graph to perform a full stack analysis from all the available Vulnerability sources
+      security:
+        - BearerAuth: []
+        - DynamicVulnSourceAuth: []
+        - {}
+      parameters:
+      - name: providers
+        in: query
+        description: List of vulnerability providers to get the report from. Defaults to all available providers.
+        required: false
+        schema:
+          type: string
+        example: trustify
+      - name: sources
+        in: query
+        description: List of vulnerability sources to get the report from. Defaults to all available sources.
+        required: false
+        schema:
+          type: string
+        example: osv
+      - name: recommend
+        in: query
+        description: Whether to include recommendations in the report
+        required: false
+        schema:
+          type: boolean
+          default: true
+        example: true
+      - name: cves
+        in: query
+        description: Comma-separated list of CVE IDs to filter the report. When provided, only matching CVEs are included. Defaults to all CVEs found.
+        required: false
+        schema:
+          type: string
+        example: CVE-2026-1234,CVE-2026-5678
+      requestBody:
+        required: true
+        description: Dependency graph in SBOM format
+        content:
+          application/vnd.cyclonedx+json:
+            schema:
+              type: object
+          application/vnd.spdx+json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Full dependency analysis from all the available providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisReport'
+            text/html:
+              schema:
+                type: object
+            multipart/mixed:
+              schema:
+                type: object
+                properties:
+                  json_report:
+                    $ref: '#/components/schemas/AnalysisReport'
+                  html_report:
+                    type: object
+        '422':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+  /batch-analysis:
+    post:
+      operationId: batchAnalysis
+      summary: Takes a dictionary of client-resolved dependency graphs to perform a full stack analysis from all the available Vulnerability sources
+      security:
+        - BearerAuth: [ ]
+        - DynamicVulnSourceAuth: [ ]
+        - {}
+      parameters:
+        - name: providers
+          in: query
+          description: List of vulnerability providers to get the report from
+          required: false
+          schema:
+            type: string
+          example: trustify
+        - name: sources
+          in: query
+          description: List of vulnerability sources to get the report from
+          required: false
+          schema:
+            type: string
+          example: osv
+        - name: recommend
+          in: query
+          description: Whether to include recommendations in the report
+          required: false
+          schema:
+            type: boolean
+            default: true
+          example: true
+        - name: cves
+          in: query
+          description: Comma-separated list of CVE IDs to filter the report. When provided, only matching CVEs are included. Defaults to all CVEs found.
+          required: false
+          schema:
+            type: string
+          example: CVE-2026-1234,CVE-2026-5678
+      requestBody:
+        required: true
+        description: A dictionary of package URLs to dependency graphs in SBOM format
+        content:
+          application/vnd.cyclonedx+json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+          application/vnd.spdx+json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+      responses:
+        '200':
+          description: A dictionary of package URLs to full dependency analysis reports from all the available providers
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/AnalysisReport'
+            text/html:
+              schema:
+                type: object
+            multipart/mixed:
+              schema:
+                type: object
+                properties:
+                  json_report:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/AnalysisReport'
+                  html_report:
+                    type: object
+        '422':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+  /token:
+    get:
+      operationId: validateToken
+      summary: Validates a vulnerability provider token
+      security:
+        - DynamicVulnSourceAuth: []
+      responses:
+        '200':
+          description: Successful token validation
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Response message
+        '401':
+          description: Invalid token
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+        '403':
+          description: Forbidden. The token does not have permissions
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+        '429':
+          description: Too many requests. Rate limit exceeded
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+        '400':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Missing token
+  /licenses:
+    post:
+      operationId: fetchLicenses
+      summary: Fetch licenses for a set of package URLs
+      security:
+        - BearerAuth: []
+        - DynamicVulnSourceAuth: []
+        - {}
+      requestBody:
+        required: true
+        description: List of package URLs (purls) to fetch licenses
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicensesRequest'
+      responses:
+        '200':
+          description: Successful license fetch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicensesResponse'
+              example:
+                - status:
+                    ok: true
+                    name: deps.dev
+                    code: 200
+                    message: OK
+                  summary:
+                    total: 2
+                    permissive: 1
+                    weak-copyleft: 1
+                    strong-copyleft: 1
+                    unknown: 0
+                  packages:
+                    pkg:maven/org.apache/commons-lang3@3.12.0:
+                      concluded:
+                        identifiers:
+                          - id: MIT
+                            name: MIT License
+                            isDeprecated: false
+                            isOsiApproved: true
+                            isFsfLibre: true
+                            category: PERMISSIVE
+                        expression: MIT
+                        name: MIT License
+                        category: PERMISSIVE
+                        source: package-metadata
+                        sourceUrl: https://github.com/apache/commons-lang3/blob/3.12.0/LICENSE.txt
+                      evidence:
+                        - identifiers:
+                            - id: MIT
+                              name: MIT License
+                              isDeprecated: false
+                              isOsiApproved: true
+                              isFsfLibre: true
+                              category: PERMISSIVE
+                          expression: MIT
+                          name: MIT License
+                          category: PERMISSIVE
+                          source: package-metadata
+                          sourceUrl: https://github.com/apache/commons-lang3/blob/3.12.0/LICENSE.txt
+        '422':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+  /licenses/{spdxExpression}:
+    get:
+      operationId: fetchLicense
+      summary: Fetch a license by SPDX expression
+      security:
+        - BearerAuth: []
+        - DynamicVulnSourceAuth: []
+        - {}
+      parameters:
+        - name: spdxExpression
+          in: path
+          description: The SPDX expression of the license to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful license fetch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseInfo'
+        '404':
+          description: License not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Error message
+  /licenses/identify:
+    post:
+      operationId: identifyLicense
+      summary: Identify license(s) from uploaded license file content
+      security:
+        - BearerAuth: []
+        - DynamicVulnSourceAuth: []
+        - {}
+      requestBody:
+        required: true
+        description: License file to identify (e.g. LICENSE, COPYING, or other license text)
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: License file content to identify
+      responses:
+        '200':
+          description: Identified license(s) for the uploaded file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseIdentifier'
+        '404':
+          description: License not found
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: License not found
+
+components:
+  securitySchemes:
+    DynamicVulnSourceAuth:
+      type: apiKey
+      in: header
+      name: ex-{vuln-source-id}-token
+      description: Dynamic vulnerability source token for multi-tenant deployments
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token for authentication
+      bearerFormat: JWT
+  schemas:
+    AnalysisReport:
+      type: object
+      properties:
+        scanned:
+          $ref: '#/components/schemas/Scanned'
+        providers:
+          $ref: '#/components/schemas/Providers'
+        licenses:
+          $ref: '#/components/schemas/LicensesResponse'
+    Scanned:
+      type: object
+      description: Number of dependencies scanned
+      properties:
+        total:
+          type: integer
+        direct:
+          type: integer
+        transitive:
+          type: integer
+    Providers:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/ProviderReport'
+    ProviderReport:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ProviderStatus'
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Source'
+    ProviderStatus:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        name:
+          type: string
+        code:
+          type: integer
+        message:
+          type: string
+        warnings:
+          type: object
+          description: Warnings from the provider. The key is the affected package URL, the value is an array of warning messages.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Source:
+      type: object
+      properties:
+        summary:
+          $ref: '#/components/schemas/SourceSummary'
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependencyReport'
+        unscanned:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnscannedDependency'
+    SourceSummary:
+      type: object
+      properties:
+        direct:
+          type: integer
+          default: 0
+        transitive:
+          type: integer
+          default: 0
+        total:
+          type: integer
+          default: 0
+        dependencies:
+          type: integer
+          default: 0
+        critical:
+          type: integer
+          default: 0
+        high:
+          type: integer
+          default: 0
+        medium:
+          type: integer
+          default: 0
+        low:
+          type: integer
+          default: 0
+        remediations:
+          type: integer
+          default: 0
+        recommendations:
+          type: integer
+          default: 0
+        unscanned:
+          type: integer
+          default: 0
+    PackageRef:
+      type: string
+      description: PackageURL used to identify a dependency artifact
+      example: pkg:maven/io.quarkus/quarkus-hibernate-orm@2.13.5.Final
+    DependencyReport:
+      type: object
+      properties:
+        ref:
+          $ref: '#/components/schemas/PackageRef'
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        transitive:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransitiveDependencyReport'
+        recommendation:
+          description: Trusted Content recommendation that is not related to any security vulnerability
+          allOf:
+            - $ref: '#/components/schemas/PackageRef'
+        highestVulnerability:
+          description: Highest vulnerability found for this dependency
+          $ref: '#/components/schemas/Issue'
+    Severity:
+      type: string
+      enum:
+        - CRITICAL
+        - HIGH
+        - MEDIUM
+        - LOW
+    Issue:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        source:
+          type: string
+        cvss:
+          $ref: '#/components/schemas/CvssVector'
+        cvssScore:
+          type: number
+          format: float
+        severity:
+          $ref: '#/components/schemas/Severity'
+        cves:
+          type: array
+          items:
+            type: string
+        unique:
+          type: boolean
+          default: false
+        remediation:
+          $ref: '#/components/schemas/Remediation'
+    TransitiveDependencyReport:
+      type: object
+      properties:
+        ref:
+          $ref: '#/components/schemas/PackageRef'
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+        highestVulnerability:
+          description: Highest vulnerability found for this dependency
+          $ref: '#/components/schemas/Issue'
+    Remediation:
+      type: object
+      properties:
+        fixedIn:
+          type: array
+          items:
+            type: string
+        trustedContent:
+          type: object
+          properties:
+            ref:
+              $ref: '#/components/schemas/PackageRef'
+            status:
+              type: string
+            justification:
+              type: string
+    CvssVector:
+      type: object
+      properties:
+        attackVector:
+          type: string
+        attackComplexity:
+          type: string
+        privilegesRequired:
+          type: string
+        userInteraction:
+          type: string
+        scope:
+          type: string
+        confidentialityImpact:
+          type: string
+        integrityImpact:
+          type: string
+        availabilityImpact:
+          type: string
+        exploitCodeMaturity:
+          type: string
+        remediationLevel:
+          type: string
+        reportConfidence:
+          type: string
+        cvss:
+          type: string
+    UnscannedDependency:
+      type: object
+      properties:
+        ref:
+          $ref: '#/components/schemas/PackageRef'
+        reason:
+          type: string
+    LicensesRequest:
+      type: object
+      description: List of package URLs (purls) to fetch license information for
+      properties:
+        purls:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageRef'
+    LicensesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/LicenseProviderResult'
+    LicenseProviderResult:
+        type: object
+        properties:
+          status:
+            $ref: '#/components/schemas/ProviderStatus'
+          summary:
+            $ref: '#/components/schemas/LicensesSummary'
+          projectLicense:
+            $ref: '#/components/schemas/LicenseInfo'
+          packages:
+            type: object
+            description: Package purl as key, license result as value
+            additionalProperties:
+              $ref: '#/components/schemas/PackageLicenseResult'
+    LicensesSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of licenses found. Including packages with multiple licenses.
+        concluded:
+          type: integer
+          description: Number of licenses that were concluded.
+        permissive:
+          type: integer
+        weakCopyleft:
+          type: integer
+        strongCopyleft:
+          type: integer
+        unknown:
+          type: integer
+        deprecated:
+          type: integer
+        osiApproved:
+          type: integer
+        fsfLibre:
+          type: integer
+    PackageLicenseResult:
+      type: object
+      properties:
+        concluded:
+          $ref: '#/components/schemas/LicenseInfo'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseInfo'
+    LicenseInfo:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          description: List of license identifiers found for the package
+          items:
+            $ref: '#/components/schemas/LicenseIdentifier'
+        expression:
+          type: string
+          description: SPDX license expression
+        name:
+          type: string
+          description: Human readable license name
+        category:
+          description: Category of the license
+          $ref: '#/components/schemas/LicenseCategory'
+        source:
+          type: string
+          description: Source of the license information
+        sourceUrl:
+          type: string
+          description: URL of the source of the license information
+    LicenseIdentifier:
+      type: object
+      required:
+        - id
+        - name
+        - category
+      properties:
+        id:
+          type: string
+          description: License identifier.
+          example: Apache-2.0
+        name:
+          type: string
+          description: Human readable license name.
+          example: Apache License 2.0
+        isDeprecated:
+          type: boolean
+        isOsiApproved:
+          type: boolean
+        isFsfLibre:
+          type: boolean
+        category:
+          $ref: '#/components/schemas/LicenseCategory'
+    LicenseCategory:
+      type: string
+      enum:
+        - PERMISSIVE
+        - WEAK_COPYLEFT
+        - STRONG_COPYLEFT
+        - UNKNOWN

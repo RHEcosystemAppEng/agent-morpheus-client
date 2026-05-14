@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { FailedComponent } from './FailedComponent';
+import type { ExcludedComponent } from './ExcludedComponent';
 /**
  * Product metadata
  */
@@ -32,13 +32,17 @@ export type Product = {
      */
     metadata: Record<string, string>;
     /**
-     * List of submitted components failed to be processed for scanning
+     * Components excluded from full analysis or without a completed repository report
      */
-    submissionFailures: Array<FailedComponent>;
+    excludedComponents: Array<ExcludedComponent>;
     /**
      * Timestamp of product scan request completion
      */
     completedAt?: string;
+    /**
+     * When true, Exhort dependency triage was unavailable at SPDX whole-product startup; CVE-in-tree filtering was skipped and full analysis ran for reachable components.
+     */
+    dependencyTriageUnavailable?: boolean;
     /**
      * CVE ID associated with this product
      */

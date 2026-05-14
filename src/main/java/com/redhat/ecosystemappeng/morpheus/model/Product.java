@@ -36,14 +36,22 @@ public record Product(
     int submittedCount,
     @Schema(required = true, description = "Product user provided metadata")
     Map<String, String> metadata,
-    @Schema(type = SchemaType.ARRAY, implementation = FailedComponent.class, required = true, description = "List of submitted components failed to be processed for scanning")
-    List<FailedComponent> submissionFailures,
+    @Schema(type = SchemaType.ARRAY, implementation = ExcludedComponent.class, required = true, description = "Components excluded from full analysis or without a completed repository report")
+    List<ExcludedComponent> excludedComponents,
     @Schema(description = "Timestamp of product scan request completion")
     String completedAt,
+    @Schema(
+        description =
+            "When true, Exhort dependency triage was unavailable at SPDX whole-product startup; CVE-in-tree filtering was skipped and full analysis ran for reachable components.")
+    boolean dependencyTriageUnavailable,
     @Schema(required = true, description = "CVE ID associated with this product")
     String cveId
 ) {
-    public Product(String id, String name, String version, String submittedAt, int submittedCount, Map<String, String> metadata, List<FailedComponent> submissionFailures, String cveId) {
-        this(id, name, version, submittedAt, submittedCount, metadata, submissionFailures, null, cveId);
+    public Product(String id, String name, String version, String submittedAt, int submittedCount, Map<String, String> metadata, List<ExcludedComponent> excludedComponents, String cveId) {
+        this(id, name, version, submittedAt, submittedCount, metadata, excludedComponents, null, false, cveId);
     }
-} 
+
+    public Product(String id, String name, String version, String submittedAt, int submittedCount, Map<String, String> metadata, List<ExcludedComponent> excludedComponents, String completedAt, String cveId) {
+        this(id, name, version, submittedAt, submittedCount, metadata, excludedComponents, completedAt, false, cveId);
+    }
+}

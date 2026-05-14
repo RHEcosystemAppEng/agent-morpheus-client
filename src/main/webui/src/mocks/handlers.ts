@@ -112,7 +112,7 @@ const generateMockProductSummary = (
       submittedCount: numReports,
       completedAt: state === "completed" ? now : undefined,
       metadata: spdxBlocksNavigation ? { spdx_id: spdxRaw! } : {},
-      submissionFailures: [],
+      excludedComponents: [],
     },
     summary: {
       productState,
@@ -188,6 +188,7 @@ const generateMockReport = (
     },
     gitRepo: "https://github.com/example/repo",
     ref: "main",
+    componentDependencyTriageFailed: false,
   };
 };
 
@@ -205,7 +206,7 @@ const mockProducts: ProductSummary[] = [
       submittedCount: 60,
       completedAt: new Date().toISOString(),
       metadata: {},
-      submissionFailures: [],
+      excludedComponents: [],
     },
     summary: {
       productState: "completed",
@@ -256,7 +257,7 @@ const mockProducts: ProductSummary[] = [
       submittedCount: 15,
       completedAt: new Date().toISOString(),
       metadata: {},
-      submissionFailures: [],
+      excludedComponents: [],
     },
     summary: {
       productState: "completed",
@@ -466,6 +467,7 @@ const mockReports: Report[] = [
     },
     gitRepo: `https://github.com/example/demo-completed-unknown-${i + 1}`,
     ref: "main",
+    componentDependencyTriageFailed: false,
   })),
 
   // Expired reports (10 total - dark red)
@@ -490,6 +492,7 @@ const mockReports: Report[] = [
     },
     gitRepo: `https://github.com/example/demo-expired-${i + 1}`,
     ref: "main",
+    componentDependencyTriageFailed: false,
   })),
 
   // Failed reports (8 total - red)
@@ -635,6 +638,7 @@ const mockReports: Report[] = [
     },
     gitRepo: "https://github.com/example/uncertain-repo",
     ref: "main",
+    componentDependencyTriageFailed: false,
   },
 
   // Report 10: Sample Product A / CVE-2024-1001 - First report for pagination testing
@@ -661,6 +665,7 @@ const mockReports: Report[] = [
     },
     gitRepo: "https://github.com/example/sample-product-a-repo-1",
     ref: "main",
+    componentDependencyTriageFailed: false,
   },
 
   // Generate 30+ additional reports for Sample Product A / CVE-2024-1001 for pagination testing
@@ -694,6 +699,7 @@ const mockReports: Report[] = [
       },
       gitRepo: `https://github.com/example/sample-product-a-repo-${reportNum}`,
       ref: `branch-${reportNum}`,
+      componentDependencyTriageFailed: false,
     };
   }),
 ];
@@ -721,6 +727,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-service",
     ref: "a1b2c3d4e5f6789012345678901234567890abcd",
     submittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
   {
     id: "sr-msw-2",
@@ -743,6 +750,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-app-two",
     ref: "b2c3d4e5f6789012345678901234567890abcdef12",
     submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
   {
     id: "sr-msw-3",
@@ -765,6 +773,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-three",
     ref: "c3d4e5f6789012345678901234567890abcdef1234",
     submittedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
   {
     id: "sr-msw-4",
@@ -787,6 +796,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-four",
     ref: "d4e5f6789012345678901234567890abcdef123456",
     submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
   {
     id: "sr-msw-5",
@@ -810,6 +820,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-five",
     ref: "e5f6789012345678901234567890abcdef12345678",
     submittedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
   {
     id: "sr-msw-6",
@@ -832,6 +843,7 @@ const mockSingleRepositoryReports: Report[] = [
     gitRepo: "https://github.com/msw-examples/single-repo-six",
     ref: "f6789012345678901234567890abcdef1234567890",
     submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    componentDependencyTriageFailed: false,
   },
 ];
 
@@ -1112,6 +1124,7 @@ export const handlers = [
         productId: newProductId,
         ...body?.metadata,
       },
+      componentDependencyTriageFailed: false,
     };
 
     mockReports.push(newReport);

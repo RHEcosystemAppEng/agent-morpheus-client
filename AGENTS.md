@@ -1,21 +1,3 @@
-<!-- OPENSPEC:START -->
-# OpenSpec Instructions
-
-These instructions are for AI assistants working in this project.
-
-Always open `@/openspec/AGENTS.md` when the request:
-- Mentions planning or proposals (words like proposal, spec, change, plan)
-- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
-- Sounds ambiguous and you need the authoritative spec before coding
-
-Use `@/openspec/AGENTS.md` to learn:
-- How to create and apply change proposals
-- Spec format and conventions
-- Project structure and guidelines
-
-Keep this managed block so 'openspec update' can refresh the instructions.
-
-<!-- OPENSPEC:END -->
 
 ## Core Principles
 
@@ -43,7 +25,6 @@ Font sizes and layout dimensions (heights, widths, padding, margins) that affect
 ### VIII. Loading State Patterns
 Loading states MUST use PatternFly `Skeleton` components instead of `Spinner` components. Skeletons provide better UX by showing the structure and layout of content that will appear, reducing perceived load time and layout shift. Use `Skeleton` components to match the shape and size of the content being loaded. Spinners should only be used for small, inline loading indicators (e.g., button loading states) or when skeleton placeholders are not practical.
 
-
 ## Technology Stack
 
 **Backend**: Quarkus, Java, MongoDB (via Panache), REST
@@ -69,4 +50,3 @@ Loading states MUST use PatternFly `Skeleton` components instead of `Spinner` co
 - Access: `http://localhost:8080`
     
 Use `docs/development.md` for runtime development guidance.
-

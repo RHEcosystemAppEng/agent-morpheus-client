@@ -106,7 +106,6 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
   - Location: `src/test/java/com/redhat/ecosystemappeng/morpheus/rest/`
   - **Treated as unit tests today**: they run under **Surefire** with **`mvn test` only** (not a separate `mvn verify` / Failsafe integration phase).
   - Default mode: in-process Quarkus test application (Dev Services, test `application.properties`, WireMock where configured).
-  - Optional **remote RestAssured target**: set Quarkus property `morpheus.rest-test.external-base-url` (e.g. `-Dmorpheus.rest-test.external-base-url=http://localhost:8080`) so the same test methods assert against a **running** instance while the test JVM still starts `@QuarkusTest` (see `src/test/README.md`).
   - Examples: `ProductEndpointRestTest`, `UploadSpdxRestTest`, `GetProductsRestTest`
 
 - **Test Resources**: 
@@ -132,7 +131,6 @@ The application serves as a client interface for the Agent Morpheus vulnerabilit
   - Java code MUST pass linting checks
 - **Test Execution**:
   - Backend and REST API tests run with **`mvn test`** (Surefire). There is no separate Failsafe phase for the REST suite today.
-  - Optional: pass `-Dmorpheus.rest-test.external-base-url=...` with `mvn test` to point REST Assured at a live server for the same tests (see `src/test/README.md`).
 
 ### Git Workflow
 - Branching strategy: Not explicitly documented (currently on `homepage` branch)

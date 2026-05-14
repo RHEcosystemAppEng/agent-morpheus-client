@@ -132,11 +132,9 @@ A blue **Download** button is available on the repository report page, providing
 
 The flowchart below is a high-level map of what happens after you submit an analysis request. It is meant for operators, integrators, and anyone tracing why a report ended up **queued**, **sent**, **failed**, **excluded**, or in a given **finding** state.
 
-
-The diagram is rendered here for GitHub readers. To iterate on layout or wording, edit [docs/analysis-pipeline-workflow.mmd](./docs/analysis-pipeline-workflow.mmd) and paste the updated `flowchart` (and `%%{init: ...}%%` line if present) into the block below.
-
 ```mermaid
 %%{init: {"htmlLabels": true}}%%
+
 
 flowchart TB
     classDef error fill:#fecaca,stroke:#b91c1c,stroke-width:2px,color:#450a0a
@@ -144,20 +142,21 @@ flowchart TB
     classDef terminal fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
     classDef progress fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
     classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
+    classDef excludedOk fill:#d1fae5,stroke:#047857,stroke-width:2px,color:#064e3b
     classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
 
     HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
     class HEADER caption
 
-    START([User request analysis])
+    START([User: Request analysis])
 
-    SPLIT([Which flow? <br/>CVE ID + SPDX SBOM = Product <br/>CVE ID + Repository URL &amp; Commit ID / CycloneDX SBOM = Single component<br/>])
+    SPLIT(["Which entry?<br/><b>SBOM · SPDX 2.3</b> → POST /api/v1/products/upload-spdx → product page<br/><b>SBOM · CycloneDX 1.6</b> → POST /api/v1/products/upload-cyclonedx → repository report page<br/><b>Single Repository</b> → POST /api/v1/reports/new → repository report page<br/><small>CVE ID validated with ^CVE-[0-9]{4}-[0-9]{4,19}$</small>"])
 
-    subgraph PRODUCT["<b>Path A — Product (multi-component)</b>"]
+    subgraph PRODUCT["<b>Path A — SPDX product (multi-component)</b><br/>POST …/upload-spdx"]
         direction TB
-        P_PARSE[Parse product — parsing level]
+        P_PARSE[Parse SPDX product — parsing level]
         P_PARSE_ERR[[Parsing failed<br/>no preprocessing, no agent<br/>analysis state: error]]
-        P_OK[Parse OK → create product<br/>user navigates to product page]
+        P_OK[Parse OK → create product<br/>user navigates to /reports/product/:id/:cveId]
 
         subgraph PER_COMP[" "]
             direction TB
@@ -166,6 +165,9 @@ flowchart TB
             SYFT_FAIL[[Syft failed<br/>submission failure / excluded]]
             CYCLONE_VAL["Parse &amp; validate CycloneDX<br/>from Syft output"]
             CYCLONE_FAIL[[CycloneDX parse / validation failed<br/>submission failure / excluded]]
+            EXHORT["Exhort (dependency analytics)<br/>CVE gate — POST CycloneDX to analysis API"]
+            EXHORT_SVC_ERR[[Exhort call failed<br/>unreachable / API or transport error<br/>excluded · error]]
+            EXHORT_NOT_IN_DEPS[[CVE not in dependency graph<br/>excluded — no agent submit<br/>e.g. submissionFailures / product list]]
             TO_AGENT["Save report &amp; submit for analysis<br/>Morpheus queue"]
 
             PER_CAPTION --> SYFT
@@ -176,15 +178,23 @@ flowchart TB
         P_OK --> PER_CAPTION
         SYFT -->|success| CYCLONE_VAL
         SYFT -->|failed| SYFT_FAIL
-        CYCLONE_VAL -->|success| TO_AGENT
+        CYCLONE_VAL -->|success| EXHORT
         CYCLONE_VAL -->|failed| CYCLONE_FAIL
+        EXHORT -->|CVE in dependency tree| TO_AGENT
+        EXHORT -->|Exhort service failed| EXHORT_SVC_ERR
+        EXHORT -->|CVE not in graph| EXHORT_NOT_IN_DEPS
     end
 
-    subgraph SINGLE["<b>Path B — Single component</b><br/>(repository / CycloneDX)"]
+    subgraph CYCLONE_FILE["<b>Path B — SBOM: CycloneDX 1.6 file</b><br/>POST …/upload-cyclonedx"]
         direction TB
-        SC_START[Single-component intake<br/>skips product &amp; per-image Syft path]
-        SC_CYCLONE["Parse &amp; validate CycloneDX<br/>uploaded SBOM"]
-        SC_CYCLONE_ERR[[CycloneDX parse failed<br/>immediate error to client]]
+        CD_PARSE["Parse &amp; validate uploaded CycloneDX<br/>create product + one report → queue"]
+        CD_ERR[[CycloneDX validation failed<br/>400 to client]]
+    end
+
+    subgraph SOURCE_REPO["<b>Path C — Single Repository</b><br/>POST …/reports/new"]
+        direction TB
+        SR_INTAKE["ReportRequest · analysisType: source<br/>sourceRepo, commitId, CVE, metadata<br/>optional credential"]
+        SR_ERR[[Client / validation error]]
     end
 
     subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → Morpheus)"]
@@ -208,12 +218,14 @@ flowchart TB
 
     HEADER --> START
     START --> SPLIT
-    SPLIT -->|product| P_PARSE
-    SPLIT -->|single component| SC_START
+    SPLIT -->|SPDX 2.3| P_PARSE
+    SPLIT -->|CycloneDX 1.6| CD_PARSE
+    SPLIT -->|Single Repository| SR_INTAKE
 
-    SC_START --> SC_CYCLONE
-    SC_CYCLONE -->|success| QUEUE_GATE
-    SC_CYCLONE -->|failed| SC_CYCLONE_ERR
+    CD_PARSE -->|success| QUEUE_GATE
+    CD_PARSE -->|failed| CD_ERR
+    SR_INTAKE -->|success| QUEUE_GATE
+    SR_INTAKE -->|failed| SR_ERR
     TO_AGENT --> QUEUE_GATE
 
     QUEUE_GATE -->|no| A_SENT
@@ -231,10 +243,11 @@ flowchart TB
     A_DONE --> A_RESULT
     A_RESULT --> A_VULN & A_SAFE & A_UNCERT
 
-    class P_PARSE_ERR,SYFT_FAIL,CYCLONE_FAIL,SC_CYCLONE_ERR,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
+    class P_PARSE_ERR,SYFT_FAIL,CYCLONE_FAIL,EXHORT_SVC_ERR,CD_ERR,SR_ERR,A_CLONE_FAIL,A_STEP_FAIL,A_Q_OVERFLOW error
+    class EXHORT_NOT_IN_DEPS excludedOk
     class A_T1,A_T2 timeout
     class A_VULN,A_SAFE,A_UNCERT terminal
-    class QUEUE_GATE,PEND_CAP,QUEUED,A_SENT,A_ANAL,A_RESULT progress
+    class QUEUE_GATE,PEND_CAP,QUEUED,A_SENT,A_ANAL,A_RESULT,EXHORT progress
     class P_OK,A_DONE,TO_AGENT ok
     class PER_CAPTION caption
 ```

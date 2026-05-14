@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -16,11 +15,6 @@ import io.restassured.http.ContentType;
  */
 @QuarkusTest
 public class ReportEndpointFailedRestTest {
-
-    @BeforeEach
-    void restAssuredBase() {
-        RestApiTestFixture.configureRestAssuredIfExternal();
-    }
 
     private static final String EXISTING_SCAN_ID = "test-scan-no-output-info";
     private static final String NON_EXISTENT_SCAN_ID = "non-existent-scan-id-12345";

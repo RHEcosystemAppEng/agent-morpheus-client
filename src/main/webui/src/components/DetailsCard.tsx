@@ -31,19 +31,8 @@ import NotAvailable from "./NotAvailable";
 import { getFindingForReportRow } from "../utils/findingDisplay";
 import { getPullImageReference } from "../utils/containerImageReference";
 
-/** Base URL for .../commit/{ref} links: no trailing slash or `.git` suffix. */
 function normalizeRepoBaseForCommitLink(repo: string): string {
-  let s = repo;
-  while (s.endsWith("/")) {
-    s = s.slice(0, -1);
-  }
-  if (s.endsWith(".git")) {
-    s = s.slice(0, -".git".length);
-  }
-  while (s.endsWith("/")) {
-    s = s.slice(0, -1);
-  }
-  return s;
+  return repo.endsWith("/") ? repo.slice(0, -1) : repo;
 }
 
 interface DetailsCardProps {
@@ -139,14 +128,25 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                     {codeRepository}
                   </a>
                 ) : (
-                  <NotAvailable />
+                  image?.name
                 )}
               </DescriptionListDescription>
             </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Image</DescriptionListTerm>
               <DescriptionListDescription>
-                {imagePullRef ?? <NotAvailable />}
+                {imagePullRef ??
+                  (codeRepository && codeRef ? (
+                    <a
+                      href={`${normalizeRepoBaseForCommitLink(codeRepository)}/commit/${codeRef}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {codeRef}
+                    </a>
+                  ) : (
+                    image?.tag ?? <NotAvailable />
+                  ))}
               </DescriptionListDescription>
             </DescriptionListGroup>
             {!isFailed && (

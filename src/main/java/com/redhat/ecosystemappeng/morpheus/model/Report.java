@@ -47,6 +47,12 @@ public record Report(
     @Schema(description = "Git reference (commit hash, tag, or branch) from source_info")
     String ref,
     @Schema(description = "Submitted at timestamp from metadata.submitted_at")
-    String submittedAt) {
+    String submittedAt,
+    @Schema(
+        required = true,
+        description = "When true, the per-component Exhort dependency triage (CVE gate) failed while triage was active for the product "
+            + "(dependencyTriageUnavailable false on the product). When false, triage succeeded, was skipped because the whole-product Exhort probe was unhealthy, "
+            + "or was not applicable. Distinct from product-level dependencyTriageUnavailable on product API responses.")
+    Boolean componentDependencyTriageFailed) {
 
 }

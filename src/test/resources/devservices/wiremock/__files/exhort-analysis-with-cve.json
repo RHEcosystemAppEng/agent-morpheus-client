@@ -1,0 +1,25 @@
+{
+  "providers": {
+    "rhtpa": {
+      "status": {
+        "ok": true,
+        "warnings": {}
+      },
+      "sources": {
+        "default": {
+          "dependencies": [
+            {
+              "warnings": [],
+              "issues": [
+                {
+                  "cves": ["CVE-2007-4559"]
+                }
+              ],
+              "transitive": []
+            }
+          ]
+        }
+      }
+    }
+  }
+}

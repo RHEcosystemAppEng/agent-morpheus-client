@@ -36,10 +36,7 @@ const ReportDetails: React.FC<ReportDetailsProps> = ({ product, cveId, cardHeigh
   const name = product.data?.name || "";
   const { getDisplay, submittedCount } = getRepositoriesAnalyzedFromProduct(product);
   const repositoriesAnalyzed = getDisplay();
-  const numExcluded =
-    product.summary?.statusCounts?.["excluded"] ??
-    product.data?.submissionFailures?.length ??
-    0;
+  const numExcluded = product.data?.excludedComponents?.length ?? 0;
   const numSubmitted = submittedCount;
   const excludedValue = `${numExcluded}/${numSubmitted}`;
   const productId = product.data?.id;

@@ -1,0 +1,337 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "creationInfo": {
+    "created": "2026-01-05T01:26:57Z",
+    "creators": [
+      "Organization: Red Hat Product Security (secalert@redhat.com)"
+    ]
+  },
+  "dataLicense": "CC0-1.0",
+  "name": "morpheus-test-gitops-spdx",
+  "spdxVersion": "SPDX-2.3",
+  "documentNamespace": "https://example.test/morpheus/spdx/morpheus-test-gitops-spdx",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-test-product-gitops",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:/a:redhat:openshift_gitops:1.19::el8",
+          "referenceType": "cpe22Type"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "morpheus-test-gitops",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-dex-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/dex-rhel8@sha256:442508af831dd69f0bdfde9065c8bf2776abf5d37786467528f696e372f5d996?repository_url=registry.redhat.io/openshift-gitops-1/dex-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "dex-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argocd-extensions-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-extensions-rhel8@sha256:8afea9d7876656c931f8050979d6d92c85b01069c7a5f2de46c0f65002663458?repository_url=registry.redhat.io/openshift-gitops-1/argocd-extensions-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-extensions-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-gitops-operator-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8-operator@sha256:c3f236b77221bfb0ffd9f44fbf231ecf44764905226f9eaa876c9335c27acb46?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8-operator&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-operator-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-gitops-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/gitops-rhel8@sha256:fa0f52974e14c22af290c896f1f0b9ff62148a27317f48b3b5b2ea8768c9549b?repository_url=registry.redhat.io/openshift-gitops-1/gitops-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "gitops-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argocd-image-updater-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-image-updater-rhel8@sha256:3c8df368671ee9aa4fbbddf46b2e0e7730d040b617986d799f0807fb14f866d5?repository_url=registry.redhat.io/openshift-gitops-1/argocd-image-updater-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-image-updater-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-must-gather-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/must-gather-rhel8@sha256:5b6dac63fd10528d12a4cf64360a577d61bb33ff2abe251ffd6f60a2cf9c0c10?repository_url=registry.redhat.io/openshift-gitops-1/must-gather-rhel8&tag=1.19",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "must-gather-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argo-rollouts-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argo-rollouts-rhel8@sha256:5365dfcdcedde372b9d7cc787107b05f997c7526fd1d473e26f843718a5be92d?repository_url=registry.redhat.io/openshift-gitops-1/argo-rollouts-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argo-rollouts-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argocd-rhel9-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel9@sha256:8b024159d03cf5da2e4beff0936dd36a3db1b168c29e4c64e9f162edb157ca63?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel9&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-rhel9-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argocd-agent-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-agent-rhel8@sha256:c650147ab5940d7095eaee89ba75956726838595057ab6b216d41d0f09265f30?repository_url=registry.redhat.io/openshift-gitops-1/argocd-agent-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-agent-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    },
+    {
+      "SPDXID": "SPDXRef-test-component-argocd-1-19",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=1.19",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0-8",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceLocator": "pkg:oci/argocd-rhel8@sha256:a5d9ecefafd75b1c8ba0fd067f6336d7df1cd8775e3c250032048c9745875e4f?repository_url=registry.redhat.io/openshift-gitops-1/argocd-rhel8&tag=v1.19.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false,
+      "name": "argocd-1-19",
+      "supplier": "Organization: Red Hat",
+      "versionInfo": ""
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-test-component-dex-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argocd-extensions-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-gitops-operator-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-gitops-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argocd-image-updater-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-must-gather-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argo-rollouts-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argocd-rhel9-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argocd-agent-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-test-component-argocd-1-19",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "PACKAGE_OF"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-test-product-gitops",
+      "relationshipType": "DESCRIBES"
+    }
+  ]
+}

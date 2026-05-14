@@ -69,7 +69,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-
 import java.util.Objects;
 
 @SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "jwt", description = "Please enter your JWT Token without Bearer")
@@ -244,7 +243,7 @@ public class ProductEndpoint {
       if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {
         try {
           InlineCredential credential = new InlineCredential(secretValue, userName);
-          String userId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
+          String userId = securityContext.getUserPrincipal().getName();
           credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);
         } catch (IllegalArgumentException e) {
           LOGGER.warnf(e, "Credential validation failed");
@@ -284,7 +283,7 @@ public class ProductEndpoint {
     LOGGER.errorf(e, "Input validation failed");
     return Response.status(Response.Status.BAD_REQUEST)
         .entity(objectMapper.createObjectNode()
-            .put("error", "Input validation failed"))
+            .put("error", e.getMessage()))
         .build();
   }
 
@@ -293,7 +292,7 @@ public class ProductEndpoint {
     LOGGER.errorf(e, "Failed to store credential");
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
         .entity(objectMapper.createObjectNode()
-            .put("error", "Failed to handle credentials"))
+            .put("error", "Failed to store credential: " + e.getMessage()))
         .build();
   }
 
@@ -392,7 +391,7 @@ public class ProductEndpoint {
       String credentialId = null;
       if (Objects.nonNull(secretValue) && !secretValue.isBlank()) {        
         InlineCredential credential = new InlineCredential(secretValue, userName);
-        String userId = UtilitiesService.getAuthenticatedUserName(securityContext, userService);
+        String userId = securityContext.getUserPrincipal().getName();
         credentialId = credentialProcessingService.processAndStoreCredential(credential, userId);        
       }      
       String productId = sbomProcessingService.submitSpdx(fileInputStream, cveId, credentialId);
