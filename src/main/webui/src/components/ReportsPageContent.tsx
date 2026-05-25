@@ -21,22 +21,31 @@ import {
 } from "@patternfly/react-core";
 import SbomsTable from "./SbomsTable";
 import SingleRepositoriesTable from "./SingleRepositoriesTable";
+import RpmRepositoriesTable from "./RpmRepositoriesTable";
 
 const TAB_CONTENT_0 = "reports-tab-content-0";
 const TAB_CONTENT_1 = "reports-tab-content-1";
+const TAB_CONTENT_2 = "reports-tab-content-2";
 
 const ReportsPageContent: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const activeTabKey =
-    location.pathname === "/reports/single-repositories" ? 1 : 0;
+
+  let activeTabKey = 0;
+  if (location.pathname === "/reports/single-repositories") {
+    activeTabKey = 1;
+  } else if (location.pathname === "/reports/rpm") {
+    activeTabKey = 2;
+  }
 
   const handleTabClick = (
     _event: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>,
     tabIndex: string | number
   ) => {
-    if (tabIndex === 0) navigate("/reports");
-    else if (tabIndex === 1) navigate("/reports/single-repositories");
+    const idx = typeof tabIndex === "string" ? parseInt(tabIndex, 10) : tabIndex;
+    if (idx === 0) navigate("/reports");
+    else if (idx === 1) navigate("/reports/single-repositories");
+    else if (idx === 2) navigate("/reports/rpm");
   };
 
   return (
@@ -57,6 +66,11 @@ const ReportsPageContent: React.FC = () => {
             eventKey={1}
             title={<TabTitleText>Single Repositories</TabTitleText>}
             tabContentId={TAB_CONTENT_1}
+          />
+          <Tab
+            eventKey={2}
+            title={<TabTitleText>RPM</TabTitleText>}
+            tabContentId={TAB_CONTENT_2}
           />
         </Tabs>
       </PageSection>
@@ -81,6 +95,17 @@ const ReportsPageContent: React.FC = () => {
         >
           <TabContentBody>
             {activeTabKey === 1 && <SingleRepositoriesTable />}
+          </TabContentBody>
+        </TabContent>
+        <TabContent
+          key={2}
+          eventKey={2}
+          id={TAB_CONTENT_2}
+          activeKey={activeTabKey}
+          hidden={2 !== activeTabKey}
+        >
+          <TabContentBody>
+            {activeTabKey === 2 && <RpmRepositoriesTable />}
           </TabContentBody>
         </TabContent>
       </PageSection>

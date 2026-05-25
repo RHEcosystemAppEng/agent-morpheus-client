@@ -55,5 +55,13 @@ export type Report = {
      * Submitted at timestamp from metadata.submitted_at
      */
     submittedAt?: string;
+    /**
+     * RPM NVR hyphenated triple from target_package when present
+     */
+    rpmPackage?: string;
+    /**
+     * RPM architecture from target_package.arch when present
+     */
+    rpmArchitecture?: string;
 };
 

@@ -30,6 +30,8 @@ export const PAGE_TITLE_REPORTS_SINGLE_REPOSITORIES = withAppTitle(
   "Reports — Single repositories"
 );
 
+export const PAGE_TITLE_REPORTS_RPM = withAppTitle("Reports — RPM");
+
 export function pageTitleProductReport(
   productName: string,
   cveId: string
@@ -41,13 +43,20 @@ export function pageTitleProductReport(
 export function pageTitleRepositoryReport(
   cveId: string,
   imageName?: string,
-  imageTag?: string
+  imageTag?: string,
+  /**
+   * When `image.name` / `tag` empty (RPM checker): tab title suffix from hyphenated **N-V-R**
+   * plus **architecture**, e.g. `openssl-3.0.7-5.el9 | x86_64` (from `target_package`; not spaced Nevra).
+   */
+  rpmPackageIdentity?: string,
 ): string {
   const repoParts = [imageName, imageTag].filter(
-    (part): part is string => Boolean(part && part.trim())
+    (part): part is string => Boolean(part && part.trim()),
   );
-  const repo = repoParts.join(" ");
-  const segment = repo ? `${cveId} — ${repo}` : cveId;
+  const repo = repoParts.join(" ").trim();
+  const rpm = rpmPackageIdentity?.trim();
+  const suffix = repo || rpm;
+  const segment = suffix ? `${cveId} — ${suffix}` : cveId;
   return withAppTitle(segment);
 }
 

@@ -19,7 +19,7 @@ import { usePaginatedApi } from "./usePaginatedApi";
 import { Report } from "../generated-client";
 import { displayToApi, JUSTIFICATION_DISPLAY_LABELS } from "../utils/justificationStatus";
 import type { UseTableParamsData } from "./useTableParams";
-import type { RepoFilterKey } from "./repositoryReportsTableParams";
+import type { RepoFilterKey, RepoSortColumn } from "./repositoryReportsTableParams";
 
 export interface UseRepositoryReportsOptions {
   /** When provided, fetches reports for this product and CVE. When omitted, fetches single-repository reports (no product_id). */
@@ -28,7 +28,9 @@ export interface UseRepositoryReportsOptions {
   /** When provided, SSE-driven refetches run only while this returns true (e.g. until product analysis completes). */
   shouldContinueLiveRefresh?: () => boolean;
   /** Table state from useTableParams().data; defaults applied inside this hook. */
-  tableData: UseTableParamsData<"gitRepo" | "submittedAt" | "completedAt", RepoFilterKey>;
+  tableData: UseTableParamsData<RepoSortColumn, RepoFilterKey>;
+  /** When true (**`/reports/rpm`**), restricts to **`rpm_package_checker`** pipeline and skips **`git_repo`** query wiring. */
+  rpmTab?: boolean;
 }
 
 export interface UseRepositoryReportsResult {
@@ -87,13 +89,16 @@ export function useRepositoryReports(
     cveId,
     tableData,
     shouldContinueLiveRefresh,
+    rpmTab = false,
   } = options;
 
   const page = tableData.page ?? 1;
   const perPage = tableData.perPage ?? DEFAULT_PER_PAGE;
   const sortColumn = tableData.sortColumn ?? "submittedAt";
   const sortDirection = tableData.sortDirection ?? "desc";
-  const repositorySearchValue = tableData.getFilterValue("gitRepo") ?? "";
+  const gitRepoRaw = tableData.getFilterValue("gitRepo") ?? "";
+  const repositorySearchValue = rpmTab ? "" : gitRepoRaw;
+  const rpmPackageFilter = rpmTab ? (tableData.getFilterValue("rpmPackage") ?? "") : "";
   const cveIdFilter = tableData.getFilterValue("cveId") ?? "";
   const findingFilter = tableData.getFilterValue("finding") ?? undefined;
 
@@ -121,7 +126,7 @@ export function useRepositoryReports(
         ...(isProductContext
           ? { productId, vulnId: cveId }
           : {
-              withoutProduct: "true",
+              inputType: rpmTab ? "rpm" : "repository",
               ...(cveIdFilter?.trim() && { vulnId: cveIdFilter.trim() }),
             }),
         sortBy: sortByParam,
@@ -129,7 +134,13 @@ export function useRepositoryReports(
         ...(exploitIqStatusApiValue && {
           exploitIqStatus: exploitIqStatusApiValue,
         }),
-        ...(repositorySearchValue && { gitRepo: repositorySearchValue }),
+        ...(repositorySearchValue?.trim() && {
+          gitRepo: repositorySearchValue.trim(),
+        }),
+        ...(rpmTab &&
+          rpmPackageFilter.trim() && {
+            rpmPackage: rpmPackageFilter.trim(),
+          }),
       },
     }),
     {
@@ -144,6 +155,8 @@ export function useRepositoryReports(
         exploitIqStatusApiValue ?? "",
         repositorySearchValue,
         cveIdFilter ?? "",
+        rpmPackageFilter,
+        rpmTab,
       ],
       liveUpdatesRefresh: true,
       ...(shouldContinueLiveRefresh && {

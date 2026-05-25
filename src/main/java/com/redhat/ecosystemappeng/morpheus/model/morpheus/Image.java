@@ -19,12 +19,15 @@ import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import jakarta.annotation.Nullable;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+
+import com.redhat.ecosystemappeng.morpheus.model.TargetPackage;
 
 @Schema(name = "Image", description = "Image data")
 @RegisterForReflection
@@ -43,6 +46,12 @@ public record Image(
     @Schema(required = true, description = "Source code information", type = SchemaType.ARRAY, implementation = SourceInfo.class)
     @JsonProperty("source_info") Collection<SourceInfo> sourceInfo, 
     @Schema(description = "SBOM information", type = SchemaType.OBJECT, implementation = Object.class)
-    @JsonProperty("sbom_info") @Nullable JsonNode sbomInfo
+    @JsonProperty("sbom_info") @Nullable JsonNode sbomInfo,
+    @Schema(
+        description = "Agent pipeline mode; omit when not applicable",
+        enumeration = {"full_pipeline", "rpm_package_checker"})
+    @JsonProperty("pipeline_mode") @Nullable PipelineMode pipelineMode,
+    @Schema(description = "RPM target package when pipeline_mode is rpm_package_checker")
+    @JsonProperty("target_package") @Nullable TargetPackage targetPackage
 ) {
 }

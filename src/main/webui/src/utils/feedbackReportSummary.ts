@@ -19,6 +19,10 @@
 
 import type { FullReport } from "../types/FullReport";
 import { getPullImageReference } from "./containerImageReference";
+import {
+  formatRpmTargetPackageIdentity,
+  isRpmPackageCheckerReport,
+} from "./rpmReport";
 
 export function getReportSummaryForFeedback(report: FullReport): string {
   if (!report?.input) {
@@ -26,27 +30,35 @@ export function getReportSummaryForFeedback(report: FullReport): string {
   }
 
   const lines: string[] = [];
-  const name =
-    report.input.scan?.id ??
-    report.metadata?.product_id ??
-    report._id ??
-    "Report";
-  const image = report.input.image;
-  const sourceInfo = image?.source_info ?? [];
-  const repoSource =
-    sourceInfo.find((s) => s?.type === "code" && s?.git_repo) ??
-    sourceInfo.find((s) => s?.git_repo);
+  const isRpm = isRpmPackageCheckerReport(report);
 
-  lines.push(`Name: ${name}`);
-  lines.push("");
-  const pullable = getPullImageReference(image);
-  if (pullable) {
-    lines.push(`Image: ${pullable}`);
+  if (isRpm) {
+    const tp = report.input.image?.target_package;
+    lines.push(`RPM package: ${formatRpmTargetPackageIdentity(tp)}`);
+    lines.push("");
+  } else {
+    const name =
+      report.input.scan?.id ??
+      report.metadata?.product_id ??
+      report._id ??
+      "Report";
+    const image = report.input.image;
+    const sourceInfo = image?.source_info ?? [];
+    const repoSource =
+      sourceInfo.find((s) => s?.type === "code" && s?.git_repo) ??
+      sourceInfo.find((s) => s?.git_repo);
+
+    lines.push(`Name: ${name}`);
+    lines.push("");
+    const pullable = getPullImageReference(image);
+    if (pullable) {
+      lines.push(`Image: ${pullable}`);
+      lines.push("");
+    }
+    lines.push(`Repository: ${repoSource?.git_repo ?? ""}`);
+    lines.push(`Commit/ref: ${repoSource?.ref ?? ""}`);
     lines.push("");
   }
-  lines.push(`Repository: ${repoSource?.git_repo ?? ""}`);
-  lines.push(`Commit/ref: ${repoSource?.ref ?? ""}`);
-  lines.push("");
 
   const analysis = report.output?.analysis ?? [];
   for (const vuln of analysis) {
@@ -65,11 +77,17 @@ export function getReportSummaryForFeedback(report: FullReport): string {
       lines.push(`Summary: ${vuln.summary}`);
       lines.push("");
     }
-    lines.push("Checklist:");
-    if (vuln.checklist?.length) {
-      for (const item of vuln.checklist) {
-        if (item.input) lines.push(`Q: ${item.input}`);
-        if (item.response) lines.push(`A: ${item.response}`);
+    if (isRpm && vuln.details?.trim()) {
+      lines.push(`Details: ${vuln.details}`);
+      lines.push("");
+    }
+    if (!isRpm) {
+      lines.push("Checklist:");
+      if (vuln.checklist?.length) {
+        for (const item of vuln.checklist) {
+          if (item.input) lines.push(`Q: ${item.input}`);
+          if (item.response) lines.push(`A: ${item.response}`);
+        }
       }
     }
     lines.push("---");

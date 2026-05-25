@@ -21,9 +21,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
@@ -105,6 +107,55 @@ public class ReportRepositoryService {
     return mongoClient.getDatabase(dbName).getCollection(COLLECTION);
   }
 
+  /** Returns trimmed non-empty {@code s}, or {@code null} if absent or blank. */
+  static String trimmedNonEmpty(String s) {
+    if (Objects.isNull(s)) {
+      return null;
+    }
+    String t = s.trim();
+    return t.isEmpty() ? null : t;
+  }
+
+  /**
+   * Regex for {@code $regexMatch} on a lowercased NVR concat: literal substring, case-insensitive via lowercased input.
+   * Package-private for unit tests.
+   */
+  static String rpmPackageMatchRegexLiteral(String trimmedUserTerm) {
+    return ".*" + Pattern.quote(trimmedUserTerm.toLowerCase(Locale.ROOT)) + ".*";
+  }
+
+  private static Document rpmTargetPackageTrimmedField(String fieldSuffix) {
+    String path = "input.image.target_package." + fieldSuffix;
+    return new Document("$trim", new Document("input",
+        new Document("$ifNull", List.of("$" + path, ""))));
+  }
+
+  private static Document rpmTargetPackageNonemptyField(String fieldSuffix) {
+    return new Document("$gt",
+        List.of(new Document("$strLenCP", rpmTargetPackageTrimmedField(fieldSuffix)), 0));
+  }
+
+  /**
+   * BSON filter: target_package has complete NVR (trimmed non-empty) and joined string contains {@code term} literally (case-insensitive).
+   */
+  static Bson rpmPackageSubstringMatch(String trimmedNonEmptyTerm) {
+    String regex = rpmPackageMatchRegexLiteral(trimmedNonEmptyTerm);
+    Document joinedLower = new Document("$toLower", new Document("$concat",
+        List.of(
+            rpmTargetPackageTrimmedField("name"),
+            "-",
+            rpmTargetPackageTrimmedField("version"),
+            "-",
+            rpmTargetPackageTrimmedField("release"))));
+    Document match = new Document("$regexMatch", new Document("input", joinedLower).append("regex", regex));
+    Document guard = new Document("$and", List.of(
+        rpmTargetPackageNonemptyField("name"),
+        rpmTargetPackageNonemptyField("version"),
+        rpmTargetPackageNonemptyField("release"),
+        match));
+    return Filters.expr(guard);
+  }
+
   @PostConstruct
   public void dbInit() {
     MongoCollection<Document> reportsCollection = getCollection();
@@ -178,6 +229,19 @@ public class ReportRepositoryService {
       }
     }
 
+    String rpmPackageStr = null;
+    String rpmArchStr = null;
+    var targetPackageDoc = Objects.nonNull(image) ? image.get("target_package", Document.class) : null;
+    if (Objects.nonNull(targetPackageDoc)) {
+      String n = trimmedNonEmpty(targetPackageDoc.getString("name"));
+      String ver = trimmedNonEmpty(targetPackageDoc.getString("version"));
+      String rel = trimmedNonEmpty(targetPackageDoc.getString("release"));
+      if (Objects.nonNull(n) && Objects.nonNull(ver) && Objects.nonNull(rel)) {
+        rpmPackageStr = n + "-" + ver + "-" + rel;
+      }
+      rpmArchStr = trimmedNonEmpty(targetPackageDoc.getString("arch"));
+    }
+
     String submittedAt = Objects.nonNull(metadata) ? metadata.get(SUBMITTED_AT) : null;
     String scanId = scan.getString(RepositoryConstants.SCAN_ID);
     return new Report(id, scanId,
@@ -190,7 +254,9 @@ public class ReportRepositoryService {
         metadata,
         gitRepo,
         ref,
-        submittedAt);
+        submittedAt,
+        rpmPackageStr,
+        rpmArchStr);
   }
 
   public String getStatus(Document doc, Map<String, String> metadata) {
@@ -336,7 +402,9 @@ public class ReportRepositoryService {
       "submittedAt", "metadata.submitted_at",
       "vuln_id", "output.analysis.vuln_id",
       "ref", "input.image.source_info.ref",
-      "gitRepo", "input.image.source_info.git_repo");
+      "gitRepo", "input.image.source_info.git_repo",
+      "rpmPackage", "input.image.target_package.name",
+      "rpmArchitecture", "input.image.target_package.arch");
 
   public PaginatedResult<Report> list(Map<String, String> queryFilter, List<SortField> sortFields,
       Pagination pagination) {
@@ -716,11 +784,24 @@ public class ReportRepositoryService {
           handleMultipleValues(e.getValue(), (value) -> 
             Filters.eq("metadata.product_id", value), filters);
           break;
-        case "withoutProduct":
-          if (Boolean.TRUE.toString().equalsIgnoreCase(e.getValue())) {
-            filters.add(Filters.exists("metadata." + PRODUCT_ID, false));
+        case "inputType": {
+          String it = trimmedNonEmpty(e.getValue());
+          if (Objects.nonNull(it)) {
+            switch (it.toLowerCase()) {
+              case "rpm":
+                filters.add(Filters.exists("metadata." + PRODUCT_ID, false));
+                filters.add(Filters.eq("input.image.pipeline_mode", "rpm_package_checker"));
+                break;
+              case "repository":
+                filters.add(Filters.exists("metadata." + PRODUCT_ID, false));
+                filters.add(Filters.ne("input.image.pipeline_mode", "rpm_package_checker"));
+                break;
+              default:
+                break;
+            }
           }
           break;
+        }
         case "gitRepo":
           var gitRepoValues = e.getValue().split(",");
           if (gitRepoValues.length == 1) {
@@ -743,6 +824,23 @@ public class ReportRepositoryService {
             filters.add(Filters.or(gitRepoFilters));
           }
           break;
+        case "rpmPackage": {
+          String rawRpmPkg = e.getValue();
+          if (Objects.nonNull(rawRpmPkg) && !rawRpmPkg.isBlank()) {
+            String[] rpmTerms = rawRpmPkg.split(",");
+            List<Bson> rpmPkgFilters = new ArrayList<>();
+            for (String term : rpmTerms) {
+              String t = trimmedNonEmpty(term);
+              if (Objects.nonNull(t)) {
+                rpmPkgFilters.add(rpmPackageSubstringMatch(t));
+              }
+            }
+            if (!rpmPkgFilters.isEmpty()) {
+              filters.add(rpmPkgFilters.size() == 1 ? rpmPkgFilters.get(0) : Filters.or(rpmPkgFilters));
+            }
+          }
+          break;
+        }
         case "exploitIqStatus":
           break;
         default:

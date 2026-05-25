@@ -3,7 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { InlineCredential } from './InlineCredential';
+import type { PipelineMode } from './PipelineMode';
 import type { SourceInfo } from './SourceInfo';
+import type { TargetPackage } from './TargetPackage';
 /**
  * A single report request
  */
@@ -52,6 +54,14 @@ export type ReportRequest = {
          * SBOM information
          */
         sbom_info?: Record<string, any>;
+        /**
+         * Agent pipeline mode; omit when not applicable
+         */
+        pipeline_mode?: PipelineMode;
+        /**
+         * RPM target package when pipeline_mode is rpm_package_checker
+         */
+        target_package?: TargetPackage;
     };
     /**
      * Credential for private repository access (optional, required only for private repository access)

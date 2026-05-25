@@ -17,11 +17,28 @@
 
 import type { SortDirection as TableParamsSortDirection } from "./useTableParams";
 
-export type SortColumn = "gitRepo" | "submittedAt" | "completedAt";
+/** Matches repository reports table layouts and `GET /api/v1/reports` `inputType` for standalone tabs. */
+export type RepositoryReportsInputType = "repository" | "rpm";
+
+/** Sort columns for **`GET /api/v1/reports`** `sortBy` (maps via backend SORT_MAPPINGS). */
+export type RepoSortColumn =
+  | "gitRepo"
+  | "submittedAt"
+  | "completedAt"
+  | "rpmPackage"
+  | "rpmArchitecture";
+
 export type SortDirection = TableParamsSortDirection;
 
-export const REPOSITORY_REPORTS_VALID_SORT_COLUMNS: readonly SortColumn[] = [
+export const REPOSITORY_REPORTS_REPOSITORY_SORT_COLUMNS: readonly RepoSortColumn[] = [
   "gitRepo",
+  "submittedAt",
+  "completedAt",
+];
+
+export const REPOSITORY_REPORTS_RPM_SORT_COLUMNS: readonly RepoSortColumn[] = [
+  "rpmPackage",
+  "rpmArchitecture",
   "submittedAt",
   "completedAt",
 ];
@@ -30,7 +47,15 @@ export const REPOSITORY_REPORTS_VALID_FILTER_KEYS = [
   "gitRepo",
   "cveId",
   "finding",
+  "rpmPackage",
 ] as const;
 
 export type RepoFilterKey =
   (typeof REPOSITORY_REPORTS_VALID_FILTER_KEYS)[number];
+
+/** @deprecated Prefer {@link RepoSortColumn}. */
+export type SortColumn = RepoSortColumn;
+
+/** @deprecated Prefer {@link REPOSITORY_REPORTS_REPOSITORY_SORT_COLUMNS}. */
+export const REPOSITORY_REPORTS_VALID_SORT_COLUMNS =
+  REPOSITORY_REPORTS_REPOSITORY_SORT_COLUMNS;

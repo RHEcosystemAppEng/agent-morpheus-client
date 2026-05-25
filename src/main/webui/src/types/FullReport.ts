@@ -42,6 +42,15 @@ export interface Justification {
   reason?: string;
 }
 
+/** RPM NEVRA persisted under Morpheus `input.image.target_package`. */
+export interface RpmTargetPackage {
+  name?: string;
+  version?: string;
+  release?: string;
+  arch?: string;
+  ecosystem?: string;
+}
+
 /**
  * CVSS score information
  */
@@ -62,6 +71,8 @@ export interface ReportOutput {
   checklist?: ChecklistItem[];
   /** Summary of the analysis */
   summary?: string;
+  /** Long-form markdown details (e.g. RPM package checker payloads) */
+  details?: string;
   /** Justification for the vulnerability analysis result */
   justification?: Justification;
   /** Intel score for the vulnerability */
@@ -76,6 +87,10 @@ export interface ReportOutput {
 export interface FullReportImage {
   /** Analysis form type (image|source) */
   analysis_type: string;
+  /** e.g. `rpm_package_checker` for RPM CVE checks (`new-rpm-report-api`). */
+  pipeline_mode?: string;
+  /** Populated when `pipeline_mode` is RPM checker. */
+  target_package?: RpmTargetPackage;
   /** Programming language ecosystem */
   ecosystem?: string;
   /** Manifest file path */
@@ -135,6 +150,16 @@ export interface FullReportOutput {
   vex?: object | null;
 }
 
+/** Paths and download URL surfaced by RPM package checker analysis (`checker_context` in persisted reports). */
+export interface FullReportCheckerContextArtifacts {
+  source_url?: string;
+}
+
+/** RPM checker metadata under `report.info.checker_context`. */
+export interface FullReportCheckerContext {
+  artifacts?: FullReportCheckerContextArtifacts;
+}
+
 /**
  * Report information structure containing VDB, intel, and potentially other fields
  * Supports both new format (intel as IntelEntry[]) and legacy format (intel as object with score)
@@ -146,6 +171,8 @@ export interface FullReportInfo {
   };
   /** Intel information - can be array of IntelEntry (new format) or legacy object format */
   intel?: IntelEntry[] | { score?: number } | Record<string, unknown>;
+  /** RPM package checker context (e.g. downloadable artifact URL). */
+  checker_context?: FullReportCheckerContext;
   /** Additional fields that may exist in info */
   [key: string]: unknown;
 }

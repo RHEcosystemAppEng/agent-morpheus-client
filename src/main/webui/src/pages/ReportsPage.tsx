@@ -17,14 +17,17 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import {
   PAGE_TITLE_REPORTS_SBOMS,
   PAGE_TITLE_REPORTS_SINGLE_REPOSITORIES,
+  PAGE_TITLE_REPORTS_RPM,
 } from "./pageTitles";
 
 const ReportsPage: React.FC = () => {
   const location = useLocation();
   const documentTitle =
-    location.pathname === "/reports/single-repositories"
-      ? PAGE_TITLE_REPORTS_SINGLE_REPOSITORIES
-      : PAGE_TITLE_REPORTS_SBOMS;
+    location.pathname === "/reports/rpm"
+      ? PAGE_TITLE_REPORTS_RPM
+      : location.pathname === "/reports/single-repositories"
+        ? PAGE_TITLE_REPORTS_SINGLE_REPOSITORIES
+        : PAGE_TITLE_REPORTS_SBOMS;
   useDocumentTitle(documentTitle);
 
   return (

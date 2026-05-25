@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,13 +153,13 @@ public class DatabaseInit {
         try {
           var doc = Document.parse(Files.readString(f));
           var metadata = doc.get("metadata", Document.class);
-          metadata.put("submitted_at", Instant.parse((String) metadata.get("submitted_at")));
+          metadata.put("submitted_at", normalizeMetadataInstant(metadata.get("submitted_at")));
           if (Objects.nonNull(metadata.get("sent_at"))) {
-            metadata.put("sent_at", Instant.parse((String) metadata.get("sent_at")));
+            metadata.put("sent_at", normalizeMetadataInstant(metadata.get("sent_at")));
           }
           docs.add(doc);
         } catch (Exception e) {
-          LOGGER.errorf("Ignoring invalid document: %s", f, e);
+          LOGGER.errorf("Ignoring invalid document: %s with error: %s", f, e.getMessage());          
         }
       });
       mongoClient.getDatabase(dbName).getCollection("reports").insertMany(docs);
@@ -166,5 +167,22 @@ public class DatabaseInit {
     } catch (IOException | URISyntaxException e) {
       LOGGER.error("Unable to load reports into database", e);
     }
+  }
+
+  /** Values from BSON extended JSON {@code {"$date": "..."}} parse as {@link Date}; ISO strings are also accepted. */
+  private static Instant normalizeMetadataInstant(Object value) {
+    if (value == null) {
+      return null;
+    }
+    if (value instanceof Instant instant) {
+      return instant;
+    }
+    if (value instanceof Date date) {
+      return date.toInstant();
+    }
+    if (value instanceof String string) {
+      return Instant.parse(string);
+    }
+    throw new IllegalArgumentException("Unsupported metadata timestamp type " + value.getClass().getName());
   }
 }

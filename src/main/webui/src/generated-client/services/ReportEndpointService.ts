@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { FailedComponent } from '../models/FailedComponent';
 import type { MarkReportFailedRequest } from '../models/MarkReportFailedRequest';
+import type { NewRpmReportRequest } from '../models/NewRpmReportRequest';
 import type { ProductSummary } from '../models/ProductSummary';
 import type { Report } from '../models/Report';
 import type { ReportData } from '../models/ReportData';
@@ -70,14 +71,15 @@ export class ReportEndpointService {
         exploitIqStatus,
         imageName,
         imageTag,
+        inputType,
         page = 0,
         pageSize = 100,
         productId,
         reportId,
+        rpmPackage,
         sortBy,
         status,
         vulnId,
-        withoutProduct = 'false',
     }: {
         /**
          * Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN
@@ -91,6 +93,10 @@ export class ReportEndpointService {
          * Filter by image tag
          */
         imageTag?: string,
+        /**
+         * Standalone Reports tab filter: "repository" (no product id, not rpm_package_checker), "rpm" (no product id, rpm_package_checker), or omit for no input-type filter
+         */
+        inputType?: string,
         /**
          * Page number (0-based)
          */
@@ -108,6 +114,10 @@ export class ReportEndpointService {
          */
         reportId?: string,
         /**
+         * Case-insensitive substring match on RPM NVR as displayed: trimmed non-empty input.image.target_package name, version, and release joined with hyphens (documents missing any of the three are excluded). Literal match only—not a regex vocabulary. Comma-separated values match if any term matches (OR).
+         */
+        rpmPackage?: string,
+        /**
          * Sort criteria in format 'field:direction'
          */
         sortBy?: Array<string>,
@@ -119,10 +129,6 @@ export class ReportEndpointService {
          * Filter by vulnerability ID (CVE ID)
          */
         vulnId?: string,
-        /**
-         * When true, return only reports that have no metadata.product_id (single repositories not part of a product)
-         */
-        withoutProduct?: string,
     }): CancelablePromise<Array<Report>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -131,16 +137,18 @@ export class ReportEndpointService {
                 'exploitIqStatus': exploitIqStatus,
                 'imageName': imageName,
                 'imageTag': imageTag,
+                'inputType': inputType,
                 'page': page,
                 'pageSize': pageSize,
                 'productId': productId,
                 'reportId': reportId,
+                'rpmPackage': rpmPackage,
                 'sortBy': sortBy,
                 'status': status,
                 'vulnId': vulnId,
-                'withoutProduct': withoutProduct,
             },
             errors: {
+                400: `Invalid query parameters (for example unsupported inputType)`,
                 500: `Internal server error`,
             },
         });
@@ -226,6 +234,32 @@ export class ReportEndpointService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid request data`,
+                429: `Request queue exceeded`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Create analysis request for an RPM package
+     * Accepts RPM name, version, release, architecture, and a CVE id; builds a Morpheus input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object "errors" mapping field names to messages).
+     * @returns ReportData Analysis request accepted
+     * @throws ApiError
+     */
+    public static postApiV1ReportsNewRpmReport({
+        requestBody,
+    }: {
+        /**
+         * RPM package coordinates and CVE identifier
+         */
+        requestBody: NewRpmReportRequest,
+    }): CancelablePromise<ReportData> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/reports/new-rpm-report',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Missing or invalid fields; response body has an "errors" object mapping field names (name, version, release, arch, cveId) to messages`,
                 429: `Request queue exceeded`,
                 500: `Internal server error`,
             },

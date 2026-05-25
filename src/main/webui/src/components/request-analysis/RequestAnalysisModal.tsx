@@ -27,6 +27,8 @@ import RequestAnalysisCveIdField from "./RequestAnalysisCveIdField";
 import RequestAnalysisSbomFileField from "./RequestAnalysisSbomFileField";
 import RequestAnalysisSingleRepositoryFields from "./RequestAnalysisSingleRepositoryFields";
 import RequestAnalysisPrivateRepositorySection from "./RequestAnalysisPrivateRepositorySection";
+import RequestAnalysisRpmPackageField from "./RequestAnalysisRpmPackageField";
+import RequestAnalysisRpmArchitectureField from "./RequestAnalysisRpmArchitectureField";
 
 export type { AnalysisRequestMode } from "../../hooks/useAnalysisRequestForm";
 
@@ -85,15 +87,33 @@ const RequestAnalysisModal: React.FC<RequestAnalysisModalProps> = ({ onClose }) 
               handlers={handlers}
             />
           )}
-          <RequestAnalysisPrivateRepositorySection
-            isAuthenticationSecretChecked={values.isAuthenticationSecretChecked}
-            authenticationSecret={values.authenticationSecret}
-            authenticationSecretError={errors.authenticationSecret}
-            username={values.username}
-            usernameError={errors.username}
-            isSubmitting={state.isSubmitting}
-            handlers={handlers}
-          />
+          {values.mode === "rpm" && (
+            <>
+              <RequestAnalysisRpmPackageField
+                rpmPackageNvr={values.rpmPackageNvr}
+                rpmPackageNvrError={errors.rpmPackageNvr}
+                isSubmitting={state.isSubmitting}
+                handlers={handlers}
+              />
+              <RequestAnalysisRpmArchitectureField
+                rpmArch={values.rpmArch}
+                rpmArchError={errors.rpmArch}
+                isSubmitting={state.isSubmitting}
+                handlers={handlers}
+              />
+            </>
+          )}
+          {values.mode !== "rpm" && (
+            <RequestAnalysisPrivateRepositorySection
+              isAuthenticationSecretChecked={values.isAuthenticationSecretChecked}
+              authenticationSecret={values.authenticationSecret}
+              authenticationSecretError={errors.authenticationSecret}
+              username={values.username}
+              usernameError={errors.username}
+              isSubmitting={state.isSubmitting}
+              handlers={handlers}
+            />
+          )}
         </Form>
       </ModalBody>
       <ModalFooter>

@@ -2,9 +2,7 @@
 
 ## Purpose
 Define how the web UI sets `document.title` so tabs show where the user is. Implementation: `src/main/webui/src/pages/pageTitles.ts` and `useDocumentTitle`.
-
 ## Requirements
-
 ### Requirement: Format and single source
 Tab titles SHALL be built only through `pageTitles.ts` helpers, applied with `useDocumentTitle`, and SHALL end with ` | Exploit Intelligence` (via `withAppTitle` / `DOCUMENT_TITLE_APP_NAME`).
 
@@ -22,3 +20,16 @@ Titles SHALL follow the patterns implemented in `pageTitles.ts`, including: Home
 #### Scenario: CVE details load failure
 - **WHEN** CVE details fail to load for a route CVE id
 - **THEN** the document title includes that CVE id in the error segment with the app suffix
+
+### Requirement: RPM repository report document title segments
+
+When the repository report page loads successfully for an RPM package checker report (**`report.input.image.pipeline_mode`** is **`rpm_package_checker`**) and **`report.input.image.target_package`** is present, **`document.title`** SHALL include the CVE id and RPM package identity derived from **`target_package`**. The **name**, **version**, and **release`** portion **SHALL** be presented as **hyphenated N-V-R** (**`name-version-release`**) when all three are non-empty after trim (**not** as a space-separated triple). **Architecture** (**`arch`**) **SHALL** appear as a distinct segment in the title suffix (same delimiter pattern as **`pageTitles.ts`** uses for the non-RPM image **name**/**tag** suffix, e.g. em dash after CVE and separator between **N-V-R** and **arch** as implemented), so the tab title **aligns** with **repository-report-page** active-tail formatting.
+
+Titles MUST still follow **`document-titles`** global conventions (constructed via **`pageTitles.ts`** / **`useDocumentTitle`** and the **`Exploit Intelligence`** suffix).
+
+#### Scenario: Loaded RPM checker repository report title
+
+- **WHEN** the repository report page has resolved report data AND **`pipeline_mode`** is **`rpm_package_checker`** AND **`target_package`** has **name**, **version**, **release**, and **arch** populated after trim
+- **THEN** **`document.title`** includes **CVE id** and a suffix where **package coordinates use `name-version-release`** (hyphens) **and** **architecture** is visible **without** collapsing **name version release arch** into one space-separated Nevra string
+- **AND** the suffix follows **`pageTitles.ts`** conventions with the **Exploit Intelligence** app suffix
+

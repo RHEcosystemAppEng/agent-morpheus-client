@@ -30,13 +30,25 @@ import RepositoryTableToolbar from "./RepositoryTableToolbar";
 import { getFindingForReportRow } from "../utils/findingDisplay";
 import TableEmptyState from "./TableEmptyState";
 import type { UseTableParamsResult } from "../hooks/useTableParams";
-import type { SortColumn, RepoFilterKey } from "../hooks/repositoryReportsTableParams";
+import type {
+  RepoSortColumn,
+  RepoFilterKey,
+  RepositoryReportsInputType,
+  SortColumn,
+} from "../hooks/repositoryReportsTableParams";
 import TableErrorState from "./TableErrorState";
+
+const MISSING_RPM_ARTIFACT_CELL = "Not available";
+
+/** SBOM-linked + Single Repositories layouts (artifact column + toolbar mapping). */
+export type RepositoryTableLayout = RepositoryReportsInputType;
 
 type ColumnKey =
   | "id"
   | "gitRepo"
   | "commitId"
+  | "rpmPackage"
+  | "rpmArchitecture"
   | "cveId"
   | "finding"
   | "submittedAt"
@@ -49,7 +61,7 @@ interface ColumnDef {
   width?: ThProps["width"];
 }
 
-const REPOSITORY_REPORTS_COLUMNS: ColumnDef[] = [
+const REPOSITORY_LAYOUT_COLUMNS: ColumnDef[] = [
   { key: "id", label: "ID", width: 10 },
   { key: "gitRepo", label: "Repository", sortable: true, width: 25 },
   { key: "commitId", label: "Commit ID", width: 10 },
@@ -59,9 +71,24 @@ const REPOSITORY_REPORTS_COLUMNS: ColumnDef[] = [
   { key: "completedAt", label: "Date Completed", sortable: true, width: 15 },
 ];
 
-function isSortableColumn(key: ColumnKey): key is SortColumn {
-  const col = REPOSITORY_REPORTS_COLUMNS.find((c) => c.key === key);
-  return col?.sortable === true;
+const RPM_LAYOUT_COLUMNS: ColumnDef[] = [
+  { key: "id", label: "ID", width: 10 },
+  { key: "rpmPackage", label: "Package", sortable: true, width: 25 },
+  { key: "rpmArchitecture", label: "Architecture", sortable: true, width: 10 },
+  { key: "cveId", label: "CVE ID" },
+  { key: "finding", label: "Finding", width: 10 },
+  { key: "submittedAt", label: "Date Requested", sortable: true, width: 15 },
+  { key: "completedAt", label: "Date Completed", sortable: true, width: 15 },
+];
+
+function defsFor(layout: RepositoryTableLayout): ColumnDef[] {
+  return layout === "rpm" ? RPM_LAYOUT_COLUMNS : REPOSITORY_LAYOUT_COLUMNS;
+}
+
+function isSortableRepoColumn(
+  col: ColumnDef
+): col is ColumnDef & { key: RepoSortColumn } {
+  return col.sortable === true;
 }
 
 export interface RepositoryReportsTableContentProps {
@@ -71,8 +98,10 @@ export interface RepositoryReportsTableContentProps {
   pagination: { totalElements: number; totalPages: number } | null;
   tableParams: UseTableParamsResult<SortColumn, RepoFilterKey>;
   getViewPath: (report: Report) => string;
-  /** When true, show CVE ID column and CVE ID filter (Single Repositories only). */
+  /** When true, show CVE ID column and CVE ID toolbar filter (Standalone tabs). */
   showCveIdColumn?: boolean;
+  /** `repository`: embedded / Single Repositories; `rpm`: `/reports/rpm` layout. */
+  tableLayout?: RepositoryTableLayout;
   ariaLabel?: string;
 }
 
@@ -86,22 +115,22 @@ const RepositoryReportsTableContent: React.FC<
   tableParams,
   getViewPath,
   showCveIdColumn = false,
+  tableLayout = "repository",
   ariaLabel = "Repository reports table",
 }) => {
   const showCveIdFilter = showCveIdColumn;
+
   const displayReports = reports || [];
   const totalFilteredCount = pagination?.totalElements ?? 0;
-  const visibleColumns = REPOSITORY_REPORTS_COLUMNS.filter(
+  const layoutColumns = useMemo(() => defsFor(tableLayout), [tableLayout]);
+  const visibleColumns = layoutColumns.filter(
     (col) => col.key !== "cveId" || (col.key === "cveId" && showCveIdColumn)
   );
-  const sortColumn = tableParams.data.sortColumn ?? "submittedAt";
+  const sortColumn =
+    tableParams.data.sortColumn ?? ("submittedAt" as RepoSortColumn);
   const sortDirection = tableParams.data.sortDirection ?? "desc";
   const activeSortIndex = useMemo(
-    () =>
-      Math.max(
-        0,
-        visibleColumns.findIndex((c) => c.key === sortColumn)
-      ),
+    () => Math.max(0, visibleColumns.findIndex((c) => c.key === sortColumn)),
     [visibleColumns, sortColumn]
   );
 
@@ -110,6 +139,7 @@ const RepositoryReportsTableContent: React.FC<
       tableParams={tableParams}
       loading={loading}
       showCveIdFilter={showCveIdFilter}
+      inputType={tableLayout}
       itemCount={pagination?.totalElements ?? totalFilteredCount}
     />
   );
@@ -127,8 +157,20 @@ const RepositoryReportsTableContent: React.FC<
           <TableText wrapModifier="truncate">{report.gitRepo || ""}</TableText>
         );
       case "commitId":
+        return <TableText wrapModifier="truncate">{report.ref ?? ""}</TableText>;
+      case "rpmPackage":
         return (
-          <TableText wrapModifier="truncate">{report.ref}</TableText>
+          <TableText wrapModifier="truncate">
+            {report.rpmPackage?.trim() ? report.rpmPackage : MISSING_RPM_ARTIFACT_CELL}
+          </TableText>
+        );
+      case "rpmArchitecture":
+        return (
+          <TableText wrapModifier="truncate">
+            {report.rpmArchitecture?.trim()
+              ? report.rpmArchitecture.trim()
+              : MISSING_RPM_ARTIFACT_CELL}
+          </TableText>
         );
       case "cveId":
         return (
@@ -168,14 +210,16 @@ const RepositoryReportsTableContent: React.FC<
               key={col.key}
               width={col.width}
               sort={
-                isSortableColumn(col.key)
+                isSortableRepoColumn(col)
                   ? {
                       sortBy: {
                         index: activeSortIndex,
                         direction: sortDirection,
                       },
                       onSort: () =>
-                        tableParams.handlers.handleSortToggle(col.key as SortColumn),
+                        tableParams.handlers.handleSortToggle(
+                          col.key as RepoSortColumn
+                        ),
                       columnIndex: index,
                     }
                   : undefined

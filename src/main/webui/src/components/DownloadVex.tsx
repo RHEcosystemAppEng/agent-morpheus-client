@@ -44,16 +44,17 @@ interface DownloadDropdownProps {
   report: FullReport;
   /** Analysis status from the API (e.g. pending, queued, sent, completed). */
   analysisStatus?: string | null;
-}
-
-// Scan ID for filename; falls back to "report" when missing (per FullReport type: input.scan.id is string | undefined).
-function scanIdString(report: FullReport): string {
-  return report.input?.scan?.id ?? "report";
+  /** Route **CVE** segment; used in download filenames with **reportIdSegment**. */
+  cveId: string;
+  /** Route **report** id (scan id); used with **cveId** for filenames. */
+  reportIdSegment: string;
 }
 
 const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
   report,
   analysisStatus,
+  cveId,
+  reportIdSegment,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -86,12 +87,12 @@ const DownloadDropdown: React.FC<DownloadDropdownProps> = ({
       return;
     }
 
-    const filename = `vex-${scanIdString(report)}.json`;
+    const filename = `vex-${cveId}-${reportIdSegment}.json`;
     downloadFile(vexPayloadForDownload(vexData), filename);
   };
 
   const handleDownloadReport = () => {
-    const filename = `${scanIdString(report)}.json`;
+    const filename = `report-${cveId}-${reportIdSegment}.json`;
     downloadFile(reportPayloadForDownload(report), filename);
   };
 

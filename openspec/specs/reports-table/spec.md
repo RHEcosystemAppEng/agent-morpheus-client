@@ -144,23 +144,34 @@ The reports table SHALL display a "Finding" column with one finding per product.
 - **AND** the count is shown in the same format as Vulnerable and Uncertain (e.g. "3 Excluded")
 
 ### Requirement: Reports Page Tabs and Single Repositories
-The Reports page SHALL display two tabs: **SBOMs** (default) and **Single Repositories**. Selecting a tab SHALL switch content and update the URL: `/reports` for SBOMs, `/reports/single-repositories` for Single Repositories. Direct navigation to either URL SHALL show the corresponding tab. Spacing between tab bar and content SHALL use PatternFly Stack/StackItem with the standard spacer.
+
+The Reports page SHALL display three tabs in order: **SBOMs** (default), **Single Repositories**, **RPM**. Selecting a tab SHALL switch content and update the URL: **`/reports`** (**SBOMs**), **`/reports/single-repositories`** (**Single Repositories**), **`/reports/rpm`** (**RPM**). Direct navigation to any of those URLs SHALL show the matching tab selected. Spacing between tab bar and content SHALL use PatternFly Stack/StackItem with the standard spacer.
 
 #### Scenario: Tabs and URL
+
 - **WHEN** a user is on the Reports page
-- **THEN** two tabs are shown; SBOMs tab shows the product-level reports table (filtering, sorting, pagination as in Reports Table Display/Filtering); Single Repositories tab shows a table of reports without `report.metadata.product_id`
+- **THEN** three tabs are shown; SBOMs tab shows the product-level reports table (filtering, sorting, pagination as in Reports Table Display/Filtering) using **`GET /api/v1/reports/product`** **without** new query parameters from **reports-input-type**; Single Repositories tab shows standalone repository workflow reports; RPM tab shows standalone RPM checker reports per RPM routing below
 - **AND** clicking a tab navigates to its URL; browser Back/Forward SHALL switch tabs correctly
 
 #### Scenario: Single Repositories table
-- **WHEN** the Single Repositories tab is active
-- **THEN** a table is shown that conforms to the **repository-reports-table** specification (columns, Finding column logic, shared InProgressStatus/FailedStatus, single Finding filter, pagination, loading and empty/error behavior)
-- **AND** data is from `/api/v1/reports` with a parameter returning only reports where `report.metadata.product_id` is absent; pagination, sorting, and filtering are server-side
-- **AND** "View" navigates to `/reports/component/:cveId/:reportId`; empty and error states are displayed when applicable
 
-#### Scenario: Implementation and test data
-- **WHEN** implementing the feature
-- **THEN** Single Repositories tab content SHALL live in a dedicated component (e.g. `SingleRepositoriesTable.tsx`) reusing patterns from `RepositoryReportsTable`
-- **AND** devservices/test data SHALL include at least one report without `report.metadata.product_id` (e.g. under `src/test/resources/devservices/reports/`) for verification
+- **WHEN** the Single Repositories tab is active
+- **THEN** a table is shown that conforms to **repository-reports-table** (**Single Repositories variant**: Repository and Commit ID columns, Finding column logic, toolbar, pagination, loading and empty/error rules)
+- **AND** data is from **`GET /api/v1/reports`** with **`inputType=repository`** (standalone only: **no** **`metadata.product_id`**); pagination, sorting, and filtering remain server-side unless delegated to **repository-reports-table**
+- **AND** View navigates to **`/reports/component/:cveId/:reportId`**; empty and error states are displayed when applicable
+
+#### Scenario: RPM reports tab table
+
+- **WHEN** the **RPM** tab is active
+- **THEN** a table is shown that conforms to **repository-reports-table** **RPM Reports tab variant** (**Package** and **Architecture** columns in place of Repository and Commit ID); Finding column, timestamps, CVE filter visibility, pagination, skeleton and empty/error rules SHALL match Single Repositories except where **RPM Reports tab table variant** specifies otherwise
+- **AND** listing SHALL use **`GET /api/v1/reports`** with **`inputType=rpm`** (**RPM checker**, standalone only: **no** **`metadata.product_id`** per **reports-input-type**); paging, sorting, and filtering remain server-side
+- **AND** View navigation SHALL use **`/reports/component/:cveId/:reportId`**
+
+#### Scenario: Implementation notes
+
+- **WHEN** implementing this surface
+- **THEN** RPM tab content MAY live alongside existing tab shells (for example **`RpmReportsTable.tsx`** or parameterized reuse of **`RepositoryReportsTable`** patterns)
+- **AND** devservices fixture data SHALL cover at least one standalone RPM checker report (**`pipeline_mode`** **`rpm_package_checker`**, **`metadata.product_id`** absent)
 
 ### Requirement: Repos Analyzed column format
 The reports table SHALL display the "Repos Analyzed" column using the same calculation as the report page Details card: num completed from `statusCounts["completed"]` and num submitted from `product.data.submittedCount`. The display SHALL use the same shared formatter as the report details card, with the optional suffix "analyzed" (e.g. "5/10 analyzed").
@@ -199,3 +210,4 @@ The SBOMs tab product-level reports table SHALL list only products that correspo
 
 - **WHEN** a product row is returned for an accepted analysis batch where reports exist and the Finding rules classify the batch as still in progress (including edge cases where summary state is processing but individual status keys are not yet populated)
 - **THEN** the Finding column SHALL show **In progress** (or another defined label from the Finding rules), not a permanently blank cell
+

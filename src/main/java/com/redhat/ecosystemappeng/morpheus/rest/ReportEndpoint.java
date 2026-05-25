@@ -14,6 +14,9 @@
 
 package com.redhat.ecosystemappeng.morpheus.rest;
 
+import java.io.IOException;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -38,8 +41,9 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.ecosystemappeng.morpheus.model.InlineCredential;
+import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.MarkReportFailedRequest;
+import com.redhat.ecosystemappeng.morpheus.model.NewRpmReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.model.ReportRequest;
 import com.redhat.ecosystemappeng.morpheus.model.SortField;
@@ -48,6 +52,7 @@ import com.redhat.ecosystemappeng.morpheus.service.CredentialStorageException;
 import com.redhat.ecosystemappeng.morpheus.service.PreProcessingService;
 import com.redhat.ecosystemappeng.morpheus.service.ProductService;
 import com.redhat.ecosystemappeng.morpheus.service.ReportService;
+import com.redhat.ecosystemappeng.morpheus.service.RpmReportService;
 import com.redhat.ecosystemappeng.morpheus.service.RequestQueueExceededException;
 import com.redhat.ecosystemappeng.morpheus.service.UserService;
 import com.redhat.ecosystemappeng.morpheus.service.UtilitiesService;
@@ -95,6 +100,9 @@ public class ReportEndpoint {
 
   @Inject
   ReportService reportService;
+
+  @Inject
+  RpmReportService rpmReportService;
 
   @Inject
   PreProcessingService preProcessingService;
@@ -201,7 +209,62 @@ public class ReportEndpoint {
     }
   }
 
-    @POST
+  @POST
+  @Path("/new-rpm-report")
+  @Operation(
+    summary = "Create analysis request for an RPM package",
+    description = """
+        Accepts RPM name, version, release, architecture, and a CVE id; builds a Morpheus input with \
+        pipeline_mode rpm_package_checker and target_package, persists the report, and always submits \
+        it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use \
+        the same field-mapped JSON shape as POST /products/upload-spdx (object \"errors\" mapping field names to messages).""")
+  @APIResponses({
+    @APIResponse(
+      responseCode = "202",
+      description = "Analysis request accepted",
+      content = @Content(
+        schema = @Schema(implementation = ReportData.class)
+      )
+    ),
+    @APIResponse(
+      responseCode = "400",
+      description = "Missing or invalid fields; response body has an \"errors\" object mapping field names (name, version, release, arch, cveId) to messages"
+    ),
+    @APIResponse(
+      responseCode = "429",
+      description = "Request queue exceeded"
+    ),
+    @APIResponse(
+      responseCode = "500",
+      description = "Internal server error"
+    )
+  })
+  public Response newRpmReport(
+    @RequestBody(
+      description = "RPM package coordinates and CVE identifier",
+      required = true,
+      content = @Content(schema = @Schema(implementation = NewRpmReportRequest.class))
+    )
+    NewRpmReportRequest request) {
+    try {
+      ReportData res = rpmReportService.persistAndSubmitNewRpmReport(request);
+      return Response.accepted(res).build();
+    } catch (RequestQueueExceededException e) {
+      LOGGER.errorf("Too many requests, limit exceeded");
+      return Response.status(Status.TOO_MANY_REQUESTS)
+        .entity(objectMapper.createObjectNode()
+          .put("error", "Too many requests, limit exceeded"))
+        .build();
+    } catch (IOException e) {
+      LOGGER.error("Unable to persist or submit RPM analysis request", e);
+      return Response.serverError()
+        .entity(objectMapper.createObjectNode()
+          .put("error", e.getMessage()))
+        .build();
+    }
+  }
+
+  @POST
   @Path("/{id}/retry")
   @Operation(
     summary = "Retry analysis request", 
@@ -309,6 +372,10 @@ public class ReportEndpoint {
       )
     ),
     @APIResponse(
+      responseCode = "400",
+      description = "Invalid query parameters (for example unsupported inputType)"
+    ),
+    @APIResponse(
       responseCode = "500", 
       description = "Internal server error"
     )
@@ -352,22 +419,48 @@ public class ReportEndpoint {
       )
       @QueryParam("productId") String productId,
       @Parameter(
-        description = "When true, return only reports that have no metadata.product_id (single repositories not part of a product)"
+        description = "Standalone Reports tab filter: \"repository\" (no product id, not rpm_package_checker), "
+            + "\"rpm\" (no product id, rpm_package_checker), or omit for no input-type filter"
       )
-      @QueryParam("withoutProduct") @DefaultValue("false") String withoutProduct,
+      @QueryParam("inputType") String inputType,
       @Parameter(
         description = "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN"
       )
-      @QueryParam("exploitIqStatus") String exploitIqStatus) {
+      @QueryParam("exploitIqStatus") String exploitIqStatus,
+      @Parameter(
+        description = "Case-insensitive substring match on RPM NVR as displayed: "
+            + "trimmed non-empty input.image.target_package name, version, and release joined with hyphens "
+            + "(documents missing any of the three are excluded). Literal match only—not a regex vocabulary. "
+            + "Comma-separated values match if any term matches (OR)."
+      )
+      @QueryParam("rpmPackage") String rpmPackage) {
 
-    var filter = uriInfo.getQueryParameters().entrySet().stream()
+    String inputTypeCanon = canonInputTypeOrNull(inputType);
+    if (inputType != null && !inputType.isBlank() && Objects.isNull(inputTypeCanon)) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(objectMapper.createObjectNode()
+              .put("error", "inputType must be repository or rpm if provided"))
+          .build();
+    }
+
+    var filter = new HashMap<>(uriInfo.getQueryParameters().entrySet().stream()
         .filter(e -> !FIXED_QUERY_PARAMS.contains(e.getKey()))
         .collect(Collectors.toMap(
             Entry::getKey,
             e -> e.getValue().size() > 1 
               ? String.join(",", e.getValue()) 
               : e.getValue().getFirst()
-        ));
+        )));
+    filter.remove("withoutProduct");
+    filter.remove("pipelineMode");
+    if (Objects.nonNull(inputTypeCanon)) {
+      filter.put("inputType", inputTypeCanon);
+    }
+
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.tracef("list inputTypeEffective=%s", inputTypeCanon);
+    }
+
     var result = reportService.list(filter, SortField.fromSortBy(sortBy), page, pageSize);
     return Response.ok(result.results)
         .header("X-Total-Pages", result.totalPages)
@@ -770,6 +863,37 @@ public class ReportEndpoint {
     reportService.remove(reportIds);
     productService.remove(id);
     return Response.accepted().build();
+  }
+
+  /**
+   * Canonical {@code inputType} query for {@link #list}, or null when omitted/blank ({@code null} means invalid if raw was non-blank outside handler).
+   */
+  private static String canonInputTypeOrNull(String inputType) {
+    if (Objects.isNull(inputType)) {
+      return null;
+    }
+    String t = inputType.trim();
+    if (t.isEmpty()) {
+      return null;
+    }
+    if ("repository".equalsIgnoreCase(t)) {
+      return "repository";
+    }
+    if ("rpm".equalsIgnoreCase(t)) {
+      return "rpm";
+    }
+    return null;
+  }
+
+  @ServerExceptionMapper
+  public Response mapValidationException(ValidationException e) {
+    var errorNode = objectMapper.createObjectNode();
+    var errorsNode = errorNode.putObject("errors");
+    LOGGER.error(e.getMessage());
+    if (e.getErrors() != null) {
+      e.getErrors().forEach(errorsNode::put);
+    }
+    return Response.status(Status.BAD_REQUEST).entity(errorNode).build();
   }
 
   @ServerExceptionMapper

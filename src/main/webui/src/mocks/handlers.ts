@@ -698,7 +698,35 @@ const mockReports: Report[] = [
   }),
 ];
 
-/** Reports with no `product_id` / `productId` in metadata (MSW mirror of `withoutProduct=true`). */
+/** Standalone RPM package checker rows (MSW mirror of `GET /reports?inputType=rpm`). */
+const mockStandaloneRpmReports: Report[] = [
+  {
+    id: "rpm-msw-standalone-1",
+    scanId: "rpm-msw-standalone-1",
+    startedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    completedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    imageName: "source",
+    imageTag: "n/a",
+    state: "completed",
+    vulns: [
+      {
+        vulnId: "CVE-2024-RPMTAB",
+        justification: { status: "FALSE", label: "not_vulnerable" },
+      },
+    ],
+    metadata: {
+      environment: "msw-rpm-standalone",
+      submitted_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    gitRepo: "https://brew.example.redhat.com/mock-rpm-src",
+    ref: "libmock-1.0-1",
+    submittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    rpmPackage: "libmock-1.0-1",
+    rpmArchitecture: "x86_64",
+  },
+];
+
+/** Reports with no `product_id` / `productId` in metadata (`GET /reports?inputType=repository`). */
 const mockSingleRepositoryReports: Report[] = [
   {
     id: "sr-msw-1",
@@ -840,17 +868,25 @@ function reportHasProductMetadata(r: Report): boolean {
   return Boolean(m.productId || m.product_id);
 }
 
+/** MSW heuristic: RPM package-checker summaries carry a non-empty `rpmPackage` (from target_package NVR). */
+function mockReportIsStandaloneRpmChecker(r: Report): boolean {
+  const p = r.rpmPackage;
+  return typeof p === "string" && p.trim() !== "";
+}
+
 function findReportByScanId(scanId: string): Report | undefined {
   return (
     mockReports.find((r) => r.scanId === scanId) ??
-    mockSingleRepositoryReports.find((r) => r.scanId === scanId)
+    mockSingleRepositoryReports.find((r) => r.scanId === scanId) ??
+    mockStandaloneRpmReports.find((r) => r.scanId === scanId)
   );
 }
 
 function findReportById(id: string): Report | undefined {
   return (
     mockReports.find((r) => r.id === id) ??
-    mockSingleRepositoryReports.find((r) => r.id === id)
+    mockSingleRepositoryReports.find((r) => r.id === id) ??
+    mockStandaloneRpmReports.find((r) => r.id === id)
   );
 }
 
@@ -863,6 +899,11 @@ function removeReportById(id: string): boolean {
   const iSingle = mockSingleRepositoryReports.findIndex((r) => r.id === id);
   if (iSingle !== -1) {
     mockSingleRepositoryReports.splice(iSingle, 1);
+    return true;
+  }
+  const iRpm = mockStandaloneRpmReports.findIndex((r) => r.id === id);
+  if (iRpm !== -1) {
+    mockStandaloneRpmReports.splice(iRpm, 1);
     return true;
   }
   return false;
@@ -958,8 +999,9 @@ export const handlers = [
     const productId = url.searchParams.get("productId");
     const vulnId = url.searchParams.get("vulnId");
     const status = url.searchParams.get("status");
+    const rawInputType = url.searchParams.get("inputType")?.trim();
 
-    let filteredReports = [...mockReports, ...mockSingleRepositoryReports];
+    let filteredReports = [...mockReports, ...mockSingleRepositoryReports, ...mockStandaloneRpmReports];
 
     // Apply filters
     if (productId) {
@@ -968,8 +1010,17 @@ export const handlers = [
           r.metadata?.productId === productId ||
           r.metadata?.product_id === productId
       );
-    } else if (url.searchParams.get("withoutProduct") === "true") {
-      filteredReports = filteredReports.filter((r) => !reportHasProductMetadata(r));
+    } else {
+      const it = rawInputType?.toLowerCase();
+      if (it === "repository") {
+        filteredReports = filteredReports.filter(
+          (r) => !reportHasProductMetadata(r) && !mockReportIsStandaloneRpmChecker(r)
+        );
+      } else if (it === "rpm") {
+        filteredReports = filteredReports.filter(
+          (r) => !reportHasProductMetadata(r) && mockReportIsStandaloneRpmChecker(r)
+        );
+      }
     }
 
     if (vulnId) {

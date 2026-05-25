@@ -29,6 +29,12 @@ const RequestAnalysisModeToggle: React.FC<RequestAnalysisModeToggleProps> = ({
       isSelected={mode === "single-repository"}
       onChange={() => handlers.changeMode("single-repository")}
     />
+    <ToggleGroupItem
+      text="RPM"
+      buttonId="mode-rpm"
+      isSelected={mode === "rpm"}
+      onChange={() => handlers.changeMode("rpm")}
+    />
   </ToggleGroup>
 );
 

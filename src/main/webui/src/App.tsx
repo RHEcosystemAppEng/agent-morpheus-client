@@ -36,6 +36,7 @@ const App: React.FC = () => {
               path="/reports/single-repositories"
               element={<ReportsPage />}
             />
+            <Route path="/reports/rpm" element={<ReportsPage />} />
             <Route
               path="/reports/product/:productId/:cveId/:reportId"
               element={<RepositoryReportPage />}

@@ -71,3 +71,4 @@ coverage/
 *.tmp
 *.temp
 .cache/
+.cursor/

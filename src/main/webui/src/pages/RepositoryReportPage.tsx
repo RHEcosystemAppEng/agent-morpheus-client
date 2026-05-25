@@ -29,7 +29,9 @@ import { ExclamationCircleIcon } from "@patternfly/react-icons";
 import { useRepositoryReport } from "../hooks/useRepositoryReport";
 import { getErrorMessage } from "../utils/errorHandling";
 import { isFailingState } from "../utils/findingDisplay";
-import DetailsCard from "../components/DetailsCard";
+import DetailsCard, {
+  RPM_REPOSITORY_REPORT_DETAILS_CARD_TITLE,
+} from "../components/DetailsCard";
 import ChecklistCard from "../components/ChecklistCard";
 import RepositoryAdditionalDetailsCard from "../components/RepositoryAdditionalDetailsCard";
 import RepositoryReportPageSkeleton from "../components/RepositoryReportPageSkeleton";
@@ -42,8 +44,17 @@ import {
   pageTitleRepositoryReportInvalidUrl,
   pageTitleRepositoryReportLoadError,
   pageTitleRepositoryReportNotFound,
-  pageTitleRepositoryReportVulnNotFound,
 } from "./pageTitles";
+import {
+  formatRpmRepositoryReportDocumentTitleSuffix,
+  getRpmPackageSourceUrl,
+  isRpmPackageCheckerReport,
+  repositoryReportSubtitleDisplay,
+} from "../utils/rpmReport";
+import { findAnalysisRowForRouteCve } from "../utils/repositoryReport";
+import RpmAnalysisDetailsSection from "../components/RpmAnalysisDetailsSection";
+import { RpmTargetPackageArtifactDetails } from "../components/RpmTargetPackageArtifactDetails";
+import { ContainerRepositoryArtifactDetails } from "../components/ContainerRepositoryArtifactDetails";
 
 interface RepositoryReportPageErrorProps {
   title: string;
@@ -66,6 +77,7 @@ const RepositoryReportPageError: React.FC<RepositoryReportPageErrorProps> = ({
     </PageSection>
   );
 };
+
 
 interface RepositoryReportPageApiErrorProps {
   error: Error;
@@ -116,11 +128,6 @@ const RepositoryReportPage: React.FC = () => {
     [report]
   );
 
-  const scanVulnForCve = useMemo(
-    () => report?.input?.scan?.vulns?.find((v) => v.vuln_id === cveId),
-    [report, cveId]
-  );
-
   const documentTitle = useMemo(() => {
     if (!cveId) {
       return pageTitleRepositoryReportInvalidUrl();
@@ -137,12 +144,17 @@ const RepositoryReportPage: React.FC = () => {
     if (!report) {
       return pageTitleRepositoryReportNotFound(reportId || "");
     }
-    if (!scanVulnForCve) {
-      return pageTitleRepositoryReportVulnNotFound(cveId);
-    }
     const image = report.input?.image;
-    return pageTitleRepositoryReport(cveId, image?.name, image?.tag);
-  }, [cveId, loading, error, report, reportId, scanVulnForCve]);
+    const rpmId = isRpmPackageCheckerReport(report)
+      ? formatRpmRepositoryReportDocumentTitleSuffix(image?.target_package)
+      : undefined;
+    return pageTitleRepositoryReport(
+      cveId,
+      image?.name,
+      image?.tag,
+      rpmId,
+    );
+  }, [cveId, loading, error, report, reportId]);
 
   useDocumentTitle(documentTitle);
 
@@ -174,27 +186,11 @@ const RepositoryReportPage: React.FC = () => {
     );
   }
 
-  const image = report.input?.image;
-  const vuln = scanVulnForCve;
-
-  if (!vuln) {
-    return (
-      <RepositoryReportPageError
-        title="Vulnerability not found"
-        message={`The vulnerability ${cveId} was not found in the report with id: ${reportId}.`}
-      />
-    );
-  }
-
-  const reportIdDisplay = vuln.vuln_id
-    ? `${vuln.vuln_id} | ${image?.name || ""} | ${image?.tag || ""}`
-    : "";
-  // Extract product name from metadata, fallback to productId
-  const productName = report?.metadata?.product_id;
-  const output = report.output?.analysis || [];
-  const outputVuln = output.find((v) => v.vuln_id === cveId);
+  const outputVuln = findAnalysisRowForRouteCve(report, cveId);
+  const isRpm = isRpmPackageCheckerReport(report);
   /** Terminal analysis failure: same UI as Finding "failed" (failed or expired; details in error.message). */
   const isFailed = isFailingState(status ?? "");
+  const reportIdDisplay = repositoryReportSubtitleDisplay(report, cveId);
 
   const showReport = () => {
     return (
@@ -207,18 +203,23 @@ const RepositoryReportPage: React.FC = () => {
           >
             <FlexItem>
               <Title headingLevel="h1">
-                CVE Repository Report:{" "}
+                {isRpm ? "CVE RPM Report:" : "CVE Repository Report:"}{" "}
                 <span
                   style={{
                     fontSize: "var(--pf-t--global--font--size--heading--h6)",
                   }}
                 >
-                  {cveId} | {image?.name || ""} | {image?.tag || ""}
+                  {reportIdDisplay}
                 </span>
               </Title>
             </FlexItem>
             <FlexItem>
-              <DownloadDropdown report={report} analysisStatus={status} />
+              <DownloadDropdown
+                report={report}
+                analysisStatus={status}
+                cveId={cveId}
+                reportIdSegment={reportId || ""}
+              />
             </FlexItem>
           </Flex>
         </GridItem>
@@ -252,11 +253,31 @@ const RepositoryReportPage: React.FC = () => {
             productId={productId}
             analysisState={status}
             isFailed={isFailed}
+            cardTitle={
+              isRpm ? RPM_REPOSITORY_REPORT_DETAILS_CARD_TITLE : undefined
+            }
+            artifactDetails={
+              isRpm ? (
+                <RpmTargetPackageArtifactDetails
+                  targetPackage={report.input?.image?.target_package}
+                  rpmPackageUrl={getRpmPackageSourceUrl(report)}
+                />
+              ) : (
+                <ContainerRepositoryArtifactDetails
+                  image={report.input?.image}
+                />
+              )
+            }
           />
         </GridItem>
-        {!isFailed && (
+        {!isFailed && !isRpm && (
           <GridItem>
             <ChecklistCard vuln={outputVuln} />
+          </GridItem>
+        )}
+        {isRpm && !isFailed && (
+          <GridItem>
+            <RpmAnalysisDetailsSection detailsMarkdown={outputVuln?.details} />
           </GridItem>
         )}
         <GridItem>
@@ -279,14 +300,22 @@ const RepositoryReportPage: React.FC = () => {
       <PageSection>
         <Breadcrumb>
           <BreadcrumbItem>
-            <Link to={report.metadata?.product_id ? "/reports" : "/reports/single-repositories"}>
+            <Link
+              to={
+                report.metadata?.product_id
+                  ? "/reports"
+                  : isRpmPackageCheckerReport(report)
+                    ? "/reports/rpm"
+                    : "/reports/single-repositories"
+              }
+            >
               {"Reports"}
             </Link>
           </BreadcrumbItem>
           {productId && (
             <BreadcrumbItem>
               <Link to={`/reports/product/${productId}/${cveId}`}>
-                {productName}
+                {productId}
               </Link>
             </BreadcrumbItem>
           )}

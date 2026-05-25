@@ -306,6 +306,20 @@
           "sbom_info": {
             "description": "SBOM information",
             "type": "object"
+          },
+          "pipeline_mode": {
+            "description": "Agent pipeline mode; omit when not applicable",
+            "type": "string",
+            "enum": [
+              "full_pipeline",
+              "rpm_package_checker"
+            ],
+            "$ref": "#/components/schemas/PipelineMode"
+          },
+          "target_package": {
+            "description": "RPM target package when pipeline_mode is rpm_package_checker",
+            "type": "object",
+            "$ref": "#/components/schemas/TargetPackage"
           }
         }
       },
@@ -451,6 +465,50 @@
           "CHECKLIST_QUALITY"
         ]
       },
+      "NewRpmReportRequest": {
+        "description": "RPM package plus CVE for new analysis request",
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "release",
+          "arch",
+          "cveId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "RPM package name"
+          },
+          "version": {
+            "type": "string",
+            "description": "RPM package version"
+          },
+          "release": {
+            "type": "string",
+            "description": "RPM package release"
+          },
+          "arch": {
+            "type": "string",
+            "description": "RPM architecture",
+            "enum": [
+              "x86_64",
+              "amd64",
+              "aarch64",
+              "arm64",
+              "ppc64le",
+              "s390x"
+            ]
+          },
+          "cveId": {
+            "type": "string",
+            "description": "Vulnerability identifier (CVE-YYYY-NNNN+)",
+            "examples": [
+              "CVE-2024-12345"
+            ]
+          }
+        }
+      },
       "OverviewMetrics": {
         "description": "Metrics for the home page calculated from data in the last week",
         "type": "object",
@@ -471,6 +529,14 @@
             "description": "The percentage of false positives identified from completed reports in the last week, calculated as (reports with output.analysis.0.justification.status='FALSE' / total completed reports) * 100"
           }
         }
+      },
+      "PipelineMode": {
+        "description": "Morpheus agent pipeline mode",
+        "type": "string",
+        "enum": [
+          "full_pipeline",
+          "rpm_package_checker"
+        ]
       },
       "Product": {
         "description": "Product metadata",
@@ -738,6 +804,14 @@
           "submittedAt": {
             "type": "string",
             "description": "Submitted at timestamp from metadata.submitted_at"
+          },
+          "rpmPackage": {
+            "type": "string",
+            "description": "RPM NVR hyphenated triple from target_package when present"
+          },
+          "rpmArchitecture": {
+            "type": "string",
+            "description": "RPM architecture from target_package.arch when present"
           }
         }
       },
@@ -832,6 +906,20 @@
               "sbom_info": {
                 "description": "SBOM information",
                 "type": "object"
+              },
+              "pipeline_mode": {
+                "description": "Agent pipeline mode; omit when not applicable",
+                "type": "string",
+                "enum": [
+                  "full_pipeline",
+                  "rpm_package_checker"
+                ],
+                "$ref": "#/components/schemas/PipelineMode"
+              },
+              "target_package": {
+                "description": "RPM target package when pipeline_mode is rpm_package_checker",
+                "type": "object",
+                "$ref": "#/components/schemas/TargetPackage"
               }
             }
           },
@@ -917,6 +1005,9 @@
           }
         }
       },
+      "ReportSseMessage": {
+        "type": "object"
+      },
       "ReportWithStatus": {
         "description": "Report data with calculated analysis status",
         "type": "object",
@@ -979,6 +1070,38 @@
               "type": "string"
             },
             "description": "Patterns to exclude from the analysis"
+          }
+        }
+      },
+      "TargetPackage": {
+        "type": "object",
+        "description": "RPM target package descriptor for rpm_package_checker pipeline",
+        "required": [
+          "name",
+          "version",
+          "release",
+          "arch",
+          "ecosystem"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "release": {
+            "type": "string"
+          },
+          "arch": {
+            "type": "string"
+          },
+          "ecosystem": {
+            "type": "string",
+            "description": "Package ecosystem",
+            "examples": [
+              "rpm"
+            ]
           }
         }
       },
@@ -2886,6 +3009,14 @@
             }
           },
           {
+            "description": "Standalone Reports tab filter: \"repository\" (no product id, not rpm_package_checker), \"rpm\" (no product id, rpm_package_checker), or omit for no input-type filter",
+            "name": "inputType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Page number (0-based)",
             "name": "page",
             "in": "query",
@@ -2922,6 +3053,14 @@
             }
           },
           {
+            "description": "Case-insensitive substring match on RPM NVR as displayed: trimmed non-empty input.image.target_package name, version, and release joined with hyphens (documents missing any of the three are excluded). Literal match only—not a regex vocabulary. Comma-separated values match if any term matches (OR).",
+            "name": "rpmPackage",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Sort criteria in format 'field:direction'",
             "name": "sortBy",
             "in": "query",
@@ -2948,15 +3087,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "description": "When true, return only reports that have no metadata.product_id (single repositories not part of a product)",
-            "name": "withoutProduct",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "false"
-            }
           }
         ],
         "responses": {
@@ -2972,6 +3102,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid query parameters (for example unsupported inputType)"
           },
           "500": {
             "description": "Internal server error"
@@ -3115,6 +3248,52 @@
           },
           "400": {
             "description": "Invalid request data"
+          },
+          "429": {
+            "description": "Request queue exceeded"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/reports/new-rpm-report": {
+      "post": {
+        "summary": "Create analysis request for an RPM package",
+        "description": "Accepts RPM name, version, release, architecture, and a CVE id; builds a Morpheus input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object \"errors\" mapping field names to messages).",
+        "requestBody": {
+          "description": "RPM package coordinates and CVE identifier",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewRpmReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Analysis request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid fields; response body has an \"errors\" object mapping field names (name, version, release, arch, cveId) to messages"
           },
           "429": {
             "description": "Request queue exceeded"
@@ -3421,6 +3600,32 @@
         ],
         "tags": [
           "Report Endpoint"
+        ]
+      }
+    },
+    "/api/v1/reports/stream": {
+      "get": {
+        "summary": "Report live-update stream (SSE)",
+        "description": "Server-Sent Events. Each event `data` line is JSON `{}` (empty object): report or product data may have changed; clients should refetch their REST views. The payload may gain fields later for targeted invalidation.",
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSseMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "tags": [
+          "Report Stream Resource"
         ]
       }
     },

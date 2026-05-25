@@ -69,12 +69,10 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
   report,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const firstVuln = report?.output?.analysis?.[0] || {};
-  const cvssVector = firstVuln?.cvss?.vector_string ?? "";
 
   const submittedAt = parseMetadataTimestamp(report?.metadata, "submitted_at");
   const sentAt = parseMetadataTimestamp(report?.metadata, "sent_at");
-  
+
   const started = report?.input?.scan?.started_at ?? "";
   const completed = report?.input?.scan?.completed_at ?? "";
 
@@ -99,12 +97,6 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
       <CardExpandableContent>
         <CardBody>
           <DescriptionList isHorizontal isCompact>
-            <DescriptionListGroup>
-              <DescriptionListTerm>CVSS Vector String</DescriptionListTerm>
-              <DescriptionListDescription>
-                {cvssVector || <NotAvailable />}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
             <DescriptionListGroup>
               <DescriptionListTerm>Submitted</DescriptionListTerm>
               <DescriptionListDescription>
@@ -143,4 +135,3 @@ const RepositoryAdditionalDetailsCard: React.FC<RepositoryAdditionalDetailsCardP
 };
 
 export default RepositoryAdditionalDetailsCard;
-

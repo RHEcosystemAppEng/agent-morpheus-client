@@ -21,13 +21,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.redhat.ecosystemappeng.morpheus.exception.CveIdValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.SbomValidationException;
 import com.redhat.ecosystemappeng.morpheus.exception.ValidationException;
 import com.redhat.ecosystemappeng.morpheus.model.FailedComponent;
@@ -35,6 +33,7 @@ import com.redhat.ecosystemappeng.morpheus.model.ParsedCycloneDx;
 import com.redhat.ecosystemappeng.morpheus.model.Product;
 import com.redhat.ecosystemappeng.morpheus.model.ReportData;
 import com.redhat.ecosystemappeng.morpheus.repository.ProductRepositoryService;
+import com.redhat.ecosystemappeng.morpheus.validation.CveIdRules;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -44,7 +43,6 @@ public class SbomReportService {
 
 
   private static final Logger LOGGER = Logger.getLogger(SbomReportService.class);
-  private static final Pattern CVE_ID_PATTERN = Pattern.compile("^CVE-[0-9]{4}-[0-9]{4,19}$");
   private static final int CYCLONEDX_COMPONENT_COUNT = 1;
 
   private CycloneDxParsingService cycloneDxParsingService;
@@ -96,20 +94,6 @@ public class SbomReportService {
     this.objectMapper = objectMapper;
   }
 
-  /**
-   * Validates CVE ID format
-   * @param cveId CVE ID to validate
-   * @throws CveIdValidationException if CVE ID is null, empty, or doesn't match the required pattern
-   */
-  public void validateCveId(String cveId) {
-    if (Objects.isNull(cveId) || cveId.trim().isEmpty()) {
-      throw new CveIdValidationException(null, "CVE ID is required");
-    }
-
-    if (!CVE_ID_PATTERN.matcher(cveId).matches()) {
-      throw new CveIdValidationException(cveId, "Must match the official CVE pattern CVE-YYYY-NNNN+");
-    }
-  }
 
   /**
    * Generates a product ID from SBOM name and version.
@@ -143,15 +127,9 @@ public class SbomReportService {
    */
   public ReportData submitCycloneDx(String cveId, InputStream fileInputStream, String credentialId) throws IOException {
 
-    Map<String, String> errors = new HashMap<>();
+    Map<String, String> errors = new HashMap<>();    
 
-    // Validate CVE ID and collect errors
-    try {
-      validateCveId(cveId);
-    } catch (CveIdValidationException e) {
-      errors.put("cveId", e.getMessage());
-    }
-
+    CveIdRules.putOfficialCveFieldErrorIfInvalid(errors, cveId);
     // Parse and validate CycloneDX file and collect errors
     ParsedCycloneDx parsedCycloneDx = null;
     try {
@@ -208,11 +186,8 @@ public class SbomReportService {
     Map<String, String> errors = new HashMap<>();
 
     // Validate CVE ID and collect errors
-    try {
-      validateCveId(cveId);
-    } catch (CveIdValidationException e) {
-      errors.put("cveId", e.getMessage());
-    }
+    CveIdRules.putOfficialCveFieldErrorIfInvalid(errors, cveId);
+
 
     // Validate file input
     if (fileInputStream == null) {      

@@ -47,6 +47,10 @@ public record Report(
     @Schema(description = "Git reference (commit hash, tag, or branch) from source_info")
     String ref,
     @Schema(description = "Submitted at timestamp from metadata.submitted_at")
-    String submittedAt) {
+    String submittedAt,
+    @Schema(description = "RPM NVR hyphenated triple from target_package when present")
+    String rpmPackage,
+    @Schema(description = "RPM architecture from target_package.arch when present")
+    String rpmArchitecture) {
 
 }

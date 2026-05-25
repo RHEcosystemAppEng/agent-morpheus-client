@@ -16,6 +16,14 @@ import {
   detectCredentialType,
 } from "../utils/requestAnalysisValidation";
 import {
+  parseTrimmedRpmNvr,
+  validateRpmPackageNvrBlur,
+  RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE,
+  DEFAULT_RPM_ARCH,
+  isRpmArchChoice,
+  type RpmArchChoice,
+} from "../utils/requestAnalysisRpm";
+import {
   detectSbomFormat,
   SbomFormat,
   unsupportedSbomFormatMessage,
@@ -30,7 +38,7 @@ const VALIDATION_MESSAGE_USERNAME_REQUIRED_FOR_PAT =
 const VALIDATION_MESSAGE_SBOM_FORMAT_DETECT_UNKNOWN =
   "An unknown error occurred while detecting the SBOM format";
 
-export type AnalysisRequestMode = "sbom" | "single-repository";
+export type AnalysisRequestMode = "sbom" | "single-repository" | "rpm";
 
 export interface AnalysisRequestFormValues {
   mode: AnalysisRequestMode;
@@ -39,6 +47,8 @@ export interface AnalysisRequestFormValues {
   filename: string;
   sourceRepo: string;
   commitId: string;
+  rpmPackageNvr: string;
+  rpmArch: RpmArchChoice;
   isAuthenticationSecretChecked: boolean;
   authenticationSecret: string;
   username: string;
@@ -49,21 +59,37 @@ export interface AnalysisRequestStoredValues extends AnalysisRequestFormValues {
   selectedFile: File | null;
 }
 
-/** Text inputs controlled via `handlers.onTextChange` / `onTextBlur` / `onTextKeyDown`. Blur handling no-ops for `commitId` (validated on submit only). */
+/**
+ * Text inputs controlled via `handlers.onTextChange` / `onTextBlur` / `onTextKeyDown`.
+ * Blur/`applyTextBlurValidation`: `commitId` no-ops (validated on submit only).
+ */
 export type AnalysisRequestFormTextField = keyof Pick<
   AnalysisRequestStoredValues,
-  "cveId" | "sourceRepo" | "commitId" | "authenticationSecret" | "username"
+  "cveId" | "sourceRepo" | "commitId" | "rpmPackageNvr" | "authenticationSecret" | "username"
 >;
 
 export interface AnalysisRequestFormErrors {
   cveId: string | null;
+  /** SBOM upload / server field `file`; not `fileValue` / `filename` on values. */
   file: string | null;
   sourceRepo: string | null;
   commitId: string | null;
+  rpmPackageNvr: string | null;
+  rpmArch: string | null;
   authenticationSecret: string | null;
   username: string | null;
   error: string | null;
   sbomValidationIssues: SbomValidationIssueEntry[] | null;
+}
+
+function combineRpmCoordinateFieldErrors(fieldErrors: Record<string, string>): string | null {
+  const msgs = ["name", "version", "release"]
+    .map((k) => fieldErrors[k])
+    .filter((m): m is string => typeof m === "string" && m.trim() !== "");
+  if (msgs.length === 0) {
+    return null;
+  }
+  return msgs.join(" ");
 }
 
 function createInitialFormErrors(): AnalysisRequestFormErrors {
@@ -72,6 +98,8 @@ function createInitialFormErrors(): AnalysisRequestFormErrors {
     file: null,
     sourceRepo: null,
     commitId: null,
+    rpmPackageNvr: null,
+    rpmArch: null,
     authenticationSecret: null,
     username: null,
     error: null,
@@ -90,6 +118,8 @@ function createInitialStoredValues(): AnalysisRequestStoredValues {
     selectedFile: null,
     sourceRepo: "",
     commitId: "",
+    rpmPackageNvr: "",
+    rpmArch: DEFAULT_RPM_ARCH,
     isAuthenticationSecretChecked: false,
     authenticationSecret: "",
     username: "",
@@ -112,7 +142,7 @@ function getClientValidationErrors(s: AnalysisRequestStoredValues): Partial<Anal
     if (!s.selectedFile || !s.filename || s.filename === "") {
       errors.file = VALIDATION_MESSAGE_REQUIRED;
     }
-  } else {
+  } else if (s.mode === "single-repository") {
     const trimmedSourceRepo = s.sourceRepo.trim();
     if (trimmedSourceRepo === "") {
       errors.sourceRepo = VALIDATION_MESSAGE_REQUIRED;
@@ -125,9 +155,16 @@ function getClientValidationErrors(s: AnalysisRequestStoredValues): Partial<Anal
     if (s.commitId.trim() === "") {
       errors.commitId = VALIDATION_MESSAGE_REQUIRED;
     }
+  } else if (s.mode === "rpm") {
+    const pkg = s.rpmPackageNvr.trim();
+    if (pkg === "") {
+      errors.rpmPackageNvr = VALIDATION_MESSAGE_REQUIRED;
+    } else if (!parseTrimmedRpmNvr(pkg)) {
+      errors.rpmPackageNvr = RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE;
+    }
   }
 
-  if (s.isAuthenticationSecretChecked) {
+  if (s.mode !== "rpm" && s.isAuthenticationSecretChecked) {
     const trimmedSecret = s.authenticationSecret.trim();
     if (trimmedSecret === "") {
       errors.authenticationSecret = VALIDATION_MESSAGE_REQUIRED;
@@ -180,6 +217,7 @@ export interface AnalysisRequestFormHandlers {
     field: AnalysisRequestFormTextField,
     event: React.KeyboardEvent<HTMLInputElement>
   ) => void;
+  onRpmArchChange: (event: React.FormEvent<HTMLSelectElement>, value: string) => void;
   onPrivateRepoSwitch: (_event: React.FormEvent<HTMLInputElement>, checked: boolean) => void;
   onFileInputChange: (_event: DropEvent, file: File) => void;
   onClearFile: (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -198,6 +236,12 @@ export type AnalysisRequestFormRepositoryTextHandlers = Pick<
   "onTextChange" | "onTextBlur" | "onTextKeyDown"
 >;
 
+/** RPM package NVR leaf (blur/Enter parity with CVE). */
+export type AnalysisRequestFormRpmPackageHandlers = Pick<
+  AnalysisRequestFormHandlers,
+  "onTextChange" | "onTextBlur" | "onTextKeyDown"
+>;
+
 /** Handlers used by private repo credential section leaf. */
 export type AnalysisRequestFormPrivateRepoHandlers = Pick<
   AnalysisRequestFormHandlers,
@@ -212,6 +256,9 @@ export type AnalysisRequestFormFileHandlers = Pick<
 
 /** Handlers used by analysis mode toggle leaf. */
 export type AnalysisRequestFormModeHandlers = Pick<AnalysisRequestFormHandlers, "changeMode">;
+
+/** Handlers for RPM architecture `FormSelect`. */
+export type AnalysisRequestFormRpmArchHandlers = Pick<AnalysisRequestFormHandlers, "onRpmArchChange">;
 
 export interface UseAnalysisRequestFormResult {
   values: AnalysisRequestFormValues;
@@ -237,18 +284,32 @@ export function useAnalysisRequestForm({
       ...CLEARED_SUBMISSION_ERRORS,
       cveId: prev.cveId,
     }));
-    setValues((prev) => ({ ...prev, mode: newMode }));
+    setValues((prev) => {
+      const nextMode = newMode;
+      if (nextMode === "rpm" || prev.mode === "rpm") {
+        return {
+          ...prev,
+          mode: nextMode,
+          rpmPackageNvr: "",
+          rpmArch: DEFAULT_RPM_ARCH,
+        };
+      }
+      return { ...prev, mode: nextMode };
+    });
   }, []);
 
   const handleSubmitError = useCallback((err: unknown): void => {
     const { fieldErrors, genericMessage, sbomValidationIssues: issues } =
       parseRequestAnalysisSubmissionError(err, FALLBACK_ERROR_MESSAGE);
+    const rpmCombined = combineRpmCoordinateFieldErrors(fieldErrors);
     setErrors((prev) => ({
       ...prev,
       cveId: fieldErrors.cveId ?? null,
       file: fieldErrors.file ?? null,
       sourceRepo: fieldErrors.sourceRepo ?? null,
       commitId: fieldErrors.commitId ?? null,
+      rpmPackageNvr: rpmCombined ?? null,
+      rpmArch: fieldErrors.arch ?? null,
       sbomValidationIssues: issues && issues.length > 0 ? issues : null,
       error: genericMessage,
     }));
@@ -269,6 +330,17 @@ export function useAnalysisRequestForm({
     (field: AnalysisRequestFormTextField, _event: React.FormEvent<HTMLInputElement>, value: string) => {
       setValues((prev) => ({ ...prev, [field]: value }));
       setErrors((prev) => (prev[field] ? { ...prev, [field]: null } : prev));
+    },
+    []
+  );
+
+  const onRpmArchChange = useCallback(
+    (_event: React.FormEvent<HTMLSelectElement>, value: string) => {
+      if (!isRpmArchChoice(value)) {
+        return;
+      }
+      setValues((prev) => ({ ...prev, rpmArch: value }));
+      setErrors((prev) => (prev.rpmArch ? { ...prev, rpmArch: null } : prev));
     },
     []
   );
@@ -313,6 +385,13 @@ export function useAnalysisRequestForm({
                 username: VALIDATION_MESSAGE_USERNAME_REQUIRED_FOR_PAT,
               }));
             }
+            return v;
+          });
+          break;
+        case "rpmPackageNvr":
+          setValues((v) => {
+            const err = validateRpmPackageNvrBlur(v.rpmPackageNvr);
+            setErrors((e) => ({ ...e, rpmPackageNvr: err }));
             return v;
           });
           break;
@@ -417,6 +496,38 @@ export function useAnalysisRequestForm({
       return;
     }
 
+    if (values.mode === "rpm") {
+      setState({ isSubmitting: true });
+      try {
+        const trimmedPkg = values.rpmPackageNvr.trim();
+        const coords = parseTrimmedRpmNvr(trimmedPkg);
+        if (!coords) {
+          setErrors((prev) => ({
+            ...prev,
+            rpmPackageNvr: RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE,
+          }));
+          return;
+        }
+        const response: ReportData = await ReportEndpointService.postApiV1ReportsNewRpmReport({
+          requestBody: {
+            name: coords.name,
+            version: coords.version,
+            release: coords.release,
+            arch: values.rpmArch,
+            cveId: trimmedCveId,
+          },
+        });
+        const reportId = response.reportRequestId.reportId;
+        navigate(`/reports/component/${trimmedCveId}/${reportId}`);
+        onClose();
+      } catch (err: unknown) {
+        handleSubmitError(err);
+      } finally {
+        setState({ isSubmitting: false });
+      }
+      return;
+    }
+
     setState({ isSubmitting: true });
     try {
       const file = values.selectedFile;
@@ -465,7 +576,9 @@ export function useAnalysisRequestForm({
 
   const submitDisabled =
     state.isSubmitting ||
-    (values.isAuthenticationSecretChecked && values.authenticationSecret.trim() === "");
+    (values.mode !== "rpm" &&
+      values.isAuthenticationSecretChecked &&
+      values.authenticationSecret.trim() === "");
 
   const { selectedFile: _selectedFile, ...exportedValues } = values;
 
@@ -475,6 +588,7 @@ export function useAnalysisRequestForm({
       onTextChange,
       onTextBlur,
       onTextKeyDown,
+      onRpmArchChange,
       onPrivateRepoSwitch,
       onFileInputChange,
       onClearFile,
@@ -485,6 +599,7 @@ export function useAnalysisRequestForm({
       onTextChange,
       onTextBlur,
       onTextKeyDown,
+      onRpmArchChange,
       onPrivateRepoSwitch,
       onFileInputChange,
       onClearFile,
@@ -502,3 +617,4 @@ export function useAnalysisRequestForm({
     handlers,
   };
 }
+

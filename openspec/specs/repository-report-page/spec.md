@@ -1,130 +1,160 @@
 # repository-report-page Specification
 
 ## Description
-A detailed view page that displays comprehensive information about a specific repository report, including vulnerability analysis results, analysis state, and download options for VEX and report data.
+
+Saved repository vulnerability report page: breadcrumbs, **CVE repository report details** (**`DetailsCard`**) with distinct **artifact details** for container vs **RPM checker** reports, supplementary RPM **Details** markdown, downloads, SSE.
 
 ## Purpose
-View individual repository report details for a specific CVE, image, and tag combination within an SBOM report or as a standalone component report.
 
-When the API report status is a **failing** state (`failed` or `expired` from the backend), the UI treats it as **Failed** everywhere: **Analysis State** and the CVE line use the same **Failed** label as repository findings tables. The `error.type` field is not shown; only **Failure reason** (`report.error.message`) explains the outcome. The **Analysis Q&A** card is omitted, and agent-only detail rows (CVSS Score, Intel Reliability Score, Reason, Summary) are not shown.
+**CVE** everywhere on the page comes from the route parameter **`cveId`** (**Repository report page CVE identity**). **`DetailsCard`** omits **CVSS** for every API **`status`**. **`failed`**/**`expired`** strips analysis rows **after artifact details** and **ChecklistCard** (non-RPM); see **Failing API status**.
 
 ## Requirements
+
+### Requirement: Repository report page CVE identity
+
+The page **SHALL** treat the route parameter **`cveId`** as **Repository report page CVE identity**. **CVE** labels, **`DetailsCard`** CVE display and link targets, breadcrumb **CVE** fragments, page title **CVE** fragments, and **`output.analysis`** row selection **SHALL** use that route **`cveId`**. **`report.input.scan.vulns`** **SHALL NOT** override route **`cveId`** for those purposes. **`output.analysis[*].vuln_id`** **SHALL NOT** be used alone to determine which CVE the page is for.
+
+#### Scenario: Identity wires **`output`** and **`DetailsCard`**
+
+- **WHEN** the user opens a repository report URL with **`cveId`**
+- **THEN** **`output.analysis`** lookups **SHALL** use the row whose **`vuln_id`** equals route **`cveId`**
+- **AND** **`DetailsCard`** CVE **SHALL** display and link using route **`cveId`**
+
 ### Requirement: Repository Report Page Routes
-The repository report page SHALL support multiple route patterns.
 
-#### Scenario: SBOM report route pattern
-- **WHEN** a user navigates to `/reports/product/:productId/:cveId/:reportId`
-- **THEN** the repository report page displays with a SBOM report breadcrumb showing the SBOM report ID and CVE ID
+The page **SHALL** support **`/reports/product/:productId/:cveId/:reportId`**, **`/reports/component/:cveId/:reportId`**, and legacy **`/reports/:productId/:cveId/:reportId`**.
 
-#### Scenario: Component route pattern
-- **WHEN** a user navigates to `/reports/component/:cveId/:reportId`
-- **THEN** the repository report page displays without an SBOM report breadcrumb
+#### Scenario: Path shapes
 
-#### Scenario: Legacy route pattern
-- **WHEN** a user navigates to `/reports/:productId/:cveId/:reportId`
-- **THEN** the repository report page displays (supported for backward compatibility)
+- **WHEN** any supported URL **THEN** the page **SHALL** load **AND** product URLs **SHALL** include the extra SBOM breadcrumb segment that component URLs omit
 
-### Requirement: Repository Report Page Breadcrumb Navigation
-The repository report page SHALL display a hierarchical breadcrumb navigation at the top of the page showing the navigation path from the reports list through the SBOM report/CVE report (if applicable) to the individual repository report.
+### Requirement: RPM package checker detection
 
-#### Scenario: Breadcrumb for SBOM report route
-- **WHEN** a user views the repository report page at `/reports/product/:productId/:cveId/:reportId`
-- **THEN** a breadcrumb navigation is displayed at the top of the page with three items:
-  - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
-  - Second item: SBOM Report ID and CVE ID (format: `<product_id>/<CVE ID>`) displayed as a clickable link that navigates to `/reports/product/:productId/:cveId` (SBOM report/CVE report page)
-  - Third item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
+**RPM checker** branching on the repository report page SHALL follow **rpm-package-checker-report** (normative **`pipeline_mode`** rule). **repository-report-page** RPM behaviors (**breadcrumb tail**, **artifact details**, **Details** section, failing omissions) SHALL apply **only** for reports classified as RPM checker under that capability. Otherwise non-RPM **artifact** and **`DetailsCard`** rules SHALL apply.
 
-#### Scenario: Breadcrumb for component route
-- **WHEN** a user views the repository report page at `/reports/component/:cveId/:reportId`
-- **THEN** a breadcrumb navigation is displayed at the top of the page with two items:
-  - First item: "Reports" displayed as a clickable link that navigates to `/reports` (reports list page)
-  - Second item: Report identifier (format: `<CVE ID> | <image name> | <image tag>`) displayed as non-clickable text indicating the current page
-- **AND** no SBOM report/CVE breadcrumb item is displayed
+#### Scenario: Mode
 
-#### Scenario: Breadcrumb SBOM report ID from report metadata
-- **WHEN** a user views the repository report page with a SBOM report route
-- **THEN** the SBOM report ID in the second breadcrumb item is extracted from `report.metadata.product_id`
-- **AND** if `product_id` is not available in metadata, the SBOM report ID from route parameters is used
+- **WHEN** a loaded report qualifies as **RPM checker** per **rpm-package-checker-report**
+- **THEN** **RPM** branches **apply**
 
-#### Scenario: Breadcrumb CVE ID from route
-- **WHEN** a user views the repository report page
-- **THEN** the CVE ID in the second breadcrumb item (for SBOM report routes) is extracted from the `cveId` route parameter
-
-#### Scenario: Breadcrumb report identifier from report data
-- **WHEN** a user views the repository report page with report data loaded
-- **THEN** the report identifier breadcrumb item displays in the format `<CVE ID> | <image name> | <image tag>`
-- **AND** the CVE ID is extracted from the vulnerability output matching the route `cveId` parameter (`vuln.vuln_id`)
-- **AND** the image name and tag are extracted from `report.input.image.name` and `report.input.image.tag` respectively
-- **AND** if image name or tag is missing, empty string is used
-
-#### Scenario: Breadcrumb navigation to reports list
-- **WHEN** a user clicks the "Reports" breadcrumb item on the repository report page
-- **THEN** the application navigates to `/reports` (reports list page)
-
-#### Scenario: Breadcrumb navigation to SBOM report/CVE report
-- **WHEN** a user clicks the SBOM report ID/CVE ID breadcrumb item on the repository report page (SBOM report route only)
-- **THEN** the application navigates to `/reports/product/:productId/:cveId` where `:productId` and `:cveId` are extracted from the route parameters
-
-### Requirement: Repository Report Page Content
-The repository report page SHALL display report details in a structured layout with cards showing different aspects of the repository report, including the analysis state of the report.
-
-The repository report page SHALL display an inline warning alert with the title "AI usage notice" and the message "Always review AI generated content prior to use." The alert SHALL be positioned below the page title and above the report detail cards to remind users to review AI-generated content.
-
-The repository report page SHALL automatically refresh data by subscribing to SSE and re-fetching from `/api/v1/reports/{id}` when events arrive, but only when the report status is not "completed" or "failed". When the report status is "completed" or "failed", live refresh SHALL stop.
-
-The repository report page SHALL compare the report status between the previous and current data during live refresh. The page SHALL only trigger a rerender if the report status has changed. This optimization SHALL prevent unnecessary rerenders and UI jumps when the report status remains unchanged. Note: Only the status field is compared, not the entire report object.
-
-The repository report page SHALL display a Feedback card after the RepositoryAdditionalDetailsCard (Additional Details card) in the same grid only when the report status is "completed".
-
-#### Scenario: CVE repository report details card (DetailsCard)
-- **WHEN** a user views the repository report page with report data loaded
-- **THEN** the `CVE repository report details` card (DetailsCard) displays a description list whose first row is **Finding**, computed from the report API `status` field and the vulnerability analysis justification (same **Failed** presentation as repository findings tables when status is a failing state)
-- **AND** when analysis is in a failing state, **Failure reason** appears next, showing `report.error.message` only
-- **AND** **CVE** is shown as an internal app link to the CVE details route for the current report
-- **AND** **Repository URL** is shown as follows: when the code entry in `report.input.image.source_info` includes both `git_repo` and `ref`, the field is an external link whose URL is the repository base (trim trailing `/`, strip a trailing `.git` suffix, then trim trailing `/` again) followed by `/commit/` and the `ref` value, so the link opens the code snapshot for that revision; the visible link text matches that URL; when only `git_repo` is present, the link targets and displays `git_repo`; when neither is usable, **Not available** is shown
-- **AND** **Image** shows the pull reference (for example `registry/repository:tag`, or `registry/repository@sha256:…`) as plain text suitable for any OCI-compatible `pull` command when the report has a pullable container reference; when the report is source-based (for example `analysis_type` is `source` or the image `name` is an `http`/`https` URL that is not a registry reference), **Not available** is shown; the value is not a hyperlink
-- **AND** when analysis is not in a failing state, additional rows include CVSS Score, Intel Reliability Score, Reason, and Summary
-- **AND** the Analysis Q&A card (ChecklistCard) is not shown when analysis is in a failing state
-
-#### Scenario: Live refresh prevents unnecessary rerenders
-- **WHEN** the repository report page SSE-driven refetch runs AND the report status has not changed
-- **THEN** the page SHALL compare only the report status between the previous and current data
-- **AND** the page SHALL skip the state update (prevent rerender) if the report status is unchanged
-- **AND** the page SHALL trigger a rerender if the report status has changed
-- **AND** this optimization SHALL prevent UI jumps and visual disruption when the report status remains unchanged
-- **AND** note that only the status field is compared, not the entire report object
-
-#### Scenario: Feedback card displayed after Additional Details
-- **WHEN** a user views the repository report page with report data loaded AND the report status is "completed"(Feedback card not shown when report not completed)
-- **THEN** a Feedback card is displayed in the same grid after the RepositoryAdditionalDetailsCard (Additional Details card)
-- **AND** the Feedback card has the title "Feedback" and the subtitle "Your feedback will be used to improve the accuracy of our AI models."(for more details see feedback-report spec )
+- **WHEN** a loaded report does not qualify as RPM checker per **rpm-package-checker-report**
+- **THEN** non-RPM **artifact** and **`DetailsCard`** rules SHALL apply
 
 
-### Requirement: Download Feature
-The repository report page SHALL provide a download button that allows users to download either the VEX (Vulnerability Exploitability eXchange) data or the complete report as JSON files.
+### Requirement: Breadcrumb — what appears and data sources
 
-#### Scenario: Download dropdown menu
-- **WHEN** a user clicks the **Download** button
-- **THEN** a dropdown menu opens displaying two options:
-  - "VEX" option for downloading VEX data
-  - "Report" option for downloading the complete report data
+The page **SHALL** render breadcrumb segments in this **order**: **Reports** (always) → **SBOM parent** (product URL only) → **active tail** (always last, not a link).
 
-#### Scenario: VEX download availability
-- **WHEN** a user views the repository report page
-- **AND** the report contains VEX data (component is in a vulnerable status)
-- **THEN** the "VEX" option in the download dropdown is enabled and clickable
-- **AND** when the user clicks the "VEX" option, a JSON file is downloaded containing the VEX data from `report.output.vex`
-- **AND** the downloaded file is named in the format `vex-{cveId}-{reportId}.json`
+1. **Reports:** static label, target **`/reports`**.
+2. **SBOM parent** (only **`/reports/product/:productId/:cveId/:reportId`**): shows **`{product}/{CVE}`**, target **`/reports/product/:productId/:cveId`**. **`product`** **SHALL** be **`report.metadata.product_id`**, else route **`productId`**. **`CVE`** label **SHALL** be route **`cveId`** (**CVE identity**).
+3. **Active tail:** **`{CVE} | {name} | {tag}`**. **`CVE`** **SHALL** be route **`cveId`** (**not** from **`output.analysis`** alone). **`name`**/**`tag`** **SHALL** be **`report.input.image.name`**/**`tag`**, **empty string** if missing. **RPM checker** with **`target_package`**: if **`name`**/**`tag`** would be empty placeholders, the active tail **SHALL NOT** join **`target_package`** **name**, **version**, **release**, and **arch** with spaces. Instead it **SHALL** use **`{CVE} | {N-V-R} | {arch}`** where **{N-V-R}** is **`name`**, **`version`**, and **`release`** joined by hyphen **U+002D** when all three are non-empty after trim (**same hyphenation rule as the DetailsCard Package row**), **{arch}** is **`target_package.arch`** trimmed or **empty string** if missing, preserving three **`|`-separated** visual slots (**CVE**, **N-V-R slot**, **architecture slot**). If **N-V-R** cannot be formed (any of **name**/**version**/**release** missing or blank after trim), **{N-V-R}** **SHALL** be **empty string**. The **same active-tail string** (**`{CVE} | … | …`**) **SHALL** drive the **CVE Repository Report** **`h1`** subtitle segment that follows the **CVE Repository Report:** prefix.
 
-#### Scenario: VEX download disabled
-- **WHEN** a user views the repository report page
-- **AND** the report does not contain VEX data (`report.output.vex` is null or undefined, indicating the component is not in a vulnerable status)
-- **THEN** the "VEX" option in the download dropdown is disabled (not clickable)
-- **AND** the disabled state visually indicates that VEX data is not available
+**Clicks:** **Reports** → **`/reports`** SBOM middle → **`/reports/product/:productId/:cveId`**.
 
-#### Scenario: Report download
-- **WHEN** a user clicks the "Report" option in the download dropdown
-- **THEN** a JSON file is downloaded containing the complete report data
-- **AND** the downloaded file is named in the format `report-{cveId}-{reportId}.json`
-- **AND** the report download option is always available regardless of VEX data availability
+#### Scenario: Product vs component
 
+- **WHEN** product URL **THEN** **SHALL** render segments 1–3
+
+- **WHEN** component URL **THEN** **SHALL** render segments 1 and 3 only
+
+#### Scenario: RPM checker breadcrumb uses N-V-R, not space-separated Nevra
+
+- **WHEN** the loaded report is **RPM checker** and **`target_package`** has **name**, **version**, **release**, and **arch** present after trim
+- **THEN** the active tail **SHALL** show **`{CVE} | {name-version-release} | {arch}`** with hyphens between **name**, **version**, and **release**
+- **AND** **SHALL NOT** render **`{CVE} | name version release arch`** as a single spaced Nevra blob
+
+### Requirement: Unavailable and missing values
+
+**Default:** **`DetailsCard`** values **SHALL** show **`Not available`** when the backing field is missing, blank after trim, or unusable, unless this spec specifies otherwise (e.g. breadcrumb uses **empty string** for missing **`name`**/**`tag`** slots). **Feedback** hidden unless **`status`** **`completed`** is normal, not **`Not available`**.
+
+#### Scenario: **`DetailsCard`** gap
+
+- **WHEN** a **`DetailsCard`** source is absent **THEN** the page **SHALL** show **`Not available`**
+
+### Requirement: Primary details card — artifact details and fields
+
+The **`DetailsCard` SHALL** include an **artifact details** section **after** **CVE** and **before** the analysis rows (**Intel** onward). **Artifact details** **SHALL** group “which artifact” content: **non-RPM** includes **Repository URL** and **Image** inside this block (**no** standalone numbered **Image** row **outside** it); **RPM** includes **Package**, **Architecture**, and **RPM package URL**, in that order (**no** **Repository URL**, **no** **Image**).
+
+**Repository URL** (**non-RPM**): from first **`source_info`** with **`type === code`**. **`git_repo`** + **`ref`** **SHALL** → external link **`{normalizedBase}/commit/{ref}`** (trim **`/`**, strip **`.git`** from base, visible text = URL). **`git_repo`** only **SHALL** → link to **`git_repo`**. Else **`Not available`**.
+
+**Image** (**non-RPM**, inside **artifact details**): pull-style plaintext from **`report.input.image`** (registry vs **source**/URL rules); **`Not available`** when not pullable.
+
+**RPM artifact details:** **Package** **SHALL** be **`name`-`version`-`release`** (hyphen U+002D) **only if** all three on **`report.input.image.target_package`** are non-empty after trim **else** **`Not available`**. **Architecture** **SHALL** be **`target_package.arch`** or **`Not available`**. **RPM package URL** **SHALL** be **`report.info.checker_context.artifacts.source_url`** as an external hyperlink when that value is non-empty after trim **else** **`Not available`**.
+
+Row order for **`DetailsCard`** is items 1–8 below. When **Failing API status** applies, the page **SHALL** omit rows **≥** **5** in this list (**Intel** onward). **ChecklistCard** **SHALL NOT** appear when failing (non-RPM). For **RPM**, **ChecklistCard** **SHALL NOT** appear for any **`status`**. **`DetailsCard`** **SHALL NOT** render **CVSS Score**.
+
+1. **Finding** — API **`status`** + **`output.analysis.justification.status`** when row exists (**Failed** matches findings tables on **`failed`**/**`expired`**).
+2. **Failure reason** — only on **`failed`**/**`expired`**: **`report.error.message`** (**`error.type`** not shown here).
+3. **CVE** — route **`cveId`**, internal link (**CVE identity**).
+4. **Artifact details** — **non-RPM**: **Repository URL** + **Image**; **RPM**: **Package** + **Architecture** + **RPM package URL** (per rules above).
+5. **Intel Reliability Score** — **`output.analysis.intel_score`** if not failing.
+6. **Justification** — **`output.analysis.justification.label`** if not failing.
+7. **Reason** — **`output.analysis.justification.reason`** as markdown if not failing.
+8. **Summary** — **`output.analysis.summary`** as markdown if not failing.
+
+#### Scenario: Non-RPM completed
+
+- **WHEN** not **RPM** and not failing **THEN** **`DetailsCard` SHALL** match the ordered list with **artifact details** containing **Repository URL** and **Image**, **then** analysis rows **5–8**, with **no** **CVSS**
+
+#### Scenario: RPM completed
+
+- **WHEN** **RPM** and not failing **THEN** **`DetailsCard` SHALL** use **artifact details** with **Package**, **Architecture**, and **RPM package URL** in that order, **then** rows **5–8**, with **no** **Repository URL** row **and no** **Image** row
+
+#### Scenario: RPM package URL absent
+
+- **WHEN** **`report.info.checker_context.artifacts.source_url`** is absent, empty, or blank after trim **THEN** **`DetailsCard` SHALL** show **`Not available`** for **RPM package URL**
+
+### Requirement: Failing API status
+
+On **`failed`**/**`expired`**, **`DetailsCard` SHALL** keep rows 1–4 only (**Finding** **Failed**, **Failure reason**, **CVE**, **artifact details**). For **non-RPM**, **artifact details** **SHALL** include **Repository URL** and **Image** therein. For **RPM**, **artifact details** **SHALL** include **Package**, **Architecture**, and **RPM package URL** in that order (**no** **Image**). **SHALL NOT** show rows **5–8** (**Intel** through **Summary**). **Non-RPM** **SHALL NOT** show **ChecklistCard**. **RPM** **SHALL NOT** show **Details** markdown section (**RPM** supplementary **Details**) or **RpmRelatedLinksSection**. **`RepositoryAdditionalDetailsCard` SHALL** still render (**including** **RPM** failures), subject to **`RepositoryAdditionalDetailsCard`** placement and CVSS omission.
+
+The page **SHALL** run SSE refetches **while** **`status`** is **neither** **`completed`** **nor** **`failed`**. **SHALL** stop SSE-driven refetch when **`status`** is **`completed`** or **`failed`**. **SHALL** apply state updates after refetch **only** when **`status`** changes.
+
+#### Scenario: Truncated **`DetailsCard`** (non-RPM)
+
+- **WHEN** **`failed`** or **`expired`** and **not** **RPM** **THEN** **`DetailsCard` SHALL** end after **artifact details** (including **Image** therein) (**no** **Intel**/**Justification**/**Reason**/**Summary**)
+
+#### Scenario: Truncated **`DetailsCard`** (RPM)
+
+- **WHEN** **`failed`** or **`expired`** and **RPM** **THEN** **`DetailsCard` SHALL** end after **artifact details** (**Package**, **Architecture**, **RPM package URL**) (**no** **Intel**/**Justification**/**Reason**/**Summary**)
+
+### Requirement: **`RepositoryAdditionalDetailsCard`** placement and CVSS omission
+
+The page **SHALL** render **`RepositoryAdditionalDetailsCard`** (expandable **Additional Details**) **after **`DetailsCard`** for **RPM checker** **and** **non-RPM** repository reports whenever the repository report grid is shown (**including** **Failing API status** (**`failed`**/**`expired`**)). **`RepositoryAdditionalDetailsCard`** **SHALL NOT** display **CVSS Vector String** (**`output.analysis.cvss.vector_string`** or equivalent) **or** any **`DescriptionList`** row labeled for **CVSS** vector strings, for either mode.
+
+#### Scenario: **`RepositoryAdditionalDetailsCard`** on **RPM** and **non-RPM**
+
+- **WHEN** the repository report grid is shown **and** **RPM checker** **or** **non-RPM** **THEN** **`RepositoryAdditionalDetailsCard` SHALL** render
+
+#### Scenario: **`RepositoryAdditionalDetailsCard`** when **Finding** truncated
+
+- **WHEN** **`failed`** **or** **`expired`** **THEN** **`RepositoryAdditionalDetailsCard` SHALL** still render
+
+#### Scenario: No **CVSS** vector row in **Additional Details**
+
+- **WHEN** **`RepositoryAdditionalDetailsCard`** is expanded
+- **THEN** the page **SHALL NOT** show **CVSS Vector String**
+
+### Requirement: RPM-only supplementary content
+
+When **RPM checker** and **not** failing, the page **SHALL** render a **Details** section: **`output.analysis.details`** as markdown for the **`output.analysis`** row selected by **CVE identity** (route **`cveId`**). The page **SHALL** show **`Not available`** when **`details`** is absent or blank. The page **SHALL** set the page subtitle so **CVE** (route **`cveId`**) plus artifact label uses **`target_package`** formatted **as N-V-R and architecture segments consistent with** the **active tail** (hyphenated **name-version-release** and **architecture** slot, **not** space-separated **name version release arch**).
+
+#### Scenario: **`details`** populated
+
+- **WHEN** non-empty **`details`** **THEN** the page **SHALL** render markdown
+
+#### Scenario: **`details`** empty
+
+- **WHEN** absent or blank **THEN** the page **SHALL** show **`Not available`**
+
+### Requirement: Alert, downloads, feedback
+
+The repository report page **SHALL** show an **Alert** under **`h1`**, above cards: **AI usage notice** / **Always review AI generated content prior to use.**
+
+The page **SHALL** provide **Download**. **VEX** **SHALL** use filename **`vex-{cveId}-{reportId}.json`**, **SHALL** be enabled when **`report.output.vex`** is present, and **SHALL** be disabled when **`report.output.vex`** is absent. **Report** **SHALL** always be enabled with filename **`report-{cveId}-{reportId}.json`** (full JSON).
+
+The page **SHALL** show **Feedback** after **RepositoryAdditionalDetailsCard** only when **`status`** is **`completed`** (copy per feedback-report).
+
+#### Scenario: Feedback when done
+
+- **WHEN** **`completed`** **THEN** **Feedback** **SHALL** follow **RepositoryAdditionalDetailsCard**

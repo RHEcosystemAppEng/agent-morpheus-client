@@ -25,7 +25,11 @@ import { FilterIcon } from "@patternfly/react-icons";
 import { AttributeSelector, SingleSelectFilter } from "./Filtering";
 import { PER_PAGE_OPTIONS } from "../constants/pagination";
 import type { UseTableParamsResult } from "../hooks/useTableParams";
-import type { SortColumn, RepoFilterKey } from "../hooks/repositoryReportsTableParams";
+import type {
+  RepositoryReportsInputType,
+  SortColumn,
+  RepoFilterKey,
+} from "../hooks/repositoryReportsTableParams";
 
 const FINDING_FILTER_OPTIONS = [
   "Vulnerable",
@@ -40,38 +44,73 @@ const DEFAULT_PER_PAGE = 10;
 interface RepositoryTableToolbarProps {
   tableParams: UseTableParamsResult<SortColumn, RepoFilterKey>;
   loading: boolean;
-  /** When true, show CVE ID filter (Single Repositories only). */
+  /** When true, show CVE ID filter on Standalone (`/reports/single-repositories` / `/reports/rpm`). */
   showCveIdFilter?: boolean;
+  /**
+   * Standalone artifact search: **`repository`** reads/writes URL key **`gitRepo`** (repository name);
+   * **`rpm`** reads/writes **`rpmPackage`** (NVR substring). Aligns with **`GET /api/v1/reports` `inputType`**.
+   */
+  inputType?: RepositoryReportsInputType;
   itemCount?: number;
 }
 
-type ActiveAttribute = "Repository Name" | "CVE ID" | "Finding";
+type ActiveAttribute = "Repository Name" | "CVE ID" | "Finding" | "Package";
+
+/** URL / API filter field backing the artifact search box for the given tab. */
+function artifactFilterUrlKey(inputType: RepositoryReportsInputType): "gitRepo" | "rpmPackage" {
+  return inputType === "rpm" ? "rpmPackage" : "gitRepo";
+}
 
 const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
   tableParams,
   loading,
   showCveIdFilter = false,
+  inputType = "repository",
   itemCount,
 }) => {
-  const [activeAttribute, setActiveAttribute] =
-    useState<ActiveAttribute>("Repository Name");
+  const [activeAttribute, setActiveAttribute] = useState<ActiveAttribute>(
+    inputType === "rpm" ? "Package" : "Repository Name"
+  );
 
   const { data, handlers } = tableParams;
-  const repositorySearchValue = data.getFilterValue("gitRepo") ?? "";
+  const artifactKey = artifactFilterUrlKey(inputType);
+  const inputArtifactFilter = data.getFilterValue(artifactKey) ?? "";
+  const setInputArtifactFilter = (value: string) => {
+    handlers.setFilterValue(artifactKey, value);
+  };
+
   const findingFilter = data.getFilterValue("finding") ?? undefined;
   const cveIdFilterValue = data.getFilterValue("cveId") ?? "";
   const page = data.page ?? 1;
   const perPage = data.perPage ?? DEFAULT_PER_PAGE;
 
-  const attributes: ActiveAttribute[] = ["Repository Name", ...(showCveIdFilter ? (["CVE ID"] as const) : []), "Finding"];
+  const attributes: ActiveAttribute[] =
+    inputType === "rpm"
+      ? ["Package", ...(showCveIdFilter ? (["CVE ID"] as const) : []), "Finding"]
+      : [
+          "Repository Name",
+          ...(showCveIdFilter ? (["CVE ID"] as const) : []),
+          "Finding",
+        ];
 
-  const repositorySearchInput = (
+  const artifactCategoryName: ActiveAttribute =
+    inputType === "rpm" ? "Package" : "Repository Name";
+
+  const artifactSearchInput = (
     <SearchInput
-      aria-label="Search by repository name"
-      placeholder="Search by Repository Name"
-      value={repositorySearchValue}
-      onChange={(_event, value) => handlers.setFilterValue("gitRepo", value)}
-      onClear={() => handlers.setFilterValue("gitRepo", "")}
+      aria-label={
+        inputType === "rpm"
+          ? "Filter by RPM package — name, version, or release (substring match)"
+          : "Search by repository name"
+      }
+      placeholder={
+        inputType === "rpm"
+          ? "Filter by package (substring)"
+          : "Search by Repository Name"
+      }
+      value={inputArtifactFilter}
+      onChange={(_event, value) => setInputArtifactFilter(value)}
+      onClear={() => setInputArtifactFilter("")}
     />
   );
 
@@ -103,15 +142,13 @@ const RepositoryTableToolbar: React.FC<RepositoryTableToolbarProps> = ({
               />
             </ToolbarItem>
             <ToolbarFilter
-              labels={
-                repositorySearchValue !== "" ? [repositorySearchValue] : []
-              }
-              deleteLabel={() => handlers.setFilterValue("gitRepo", "")}
-              deleteLabelGroup={() => handlers.setFilterValue("gitRepo", "")}
-              categoryName="Repository Name"
-              showToolbarItem={activeAttribute === "Repository Name"}
+              labels={inputArtifactFilter !== "" ? [inputArtifactFilter] : []}
+              deleteLabel={() => setInputArtifactFilter("")}
+              deleteLabelGroup={() => setInputArtifactFilter("")}
+              categoryName={artifactCategoryName}
+              showToolbarItem={activeAttribute === artifactCategoryName}
             >
-              {repositorySearchInput}
+              {artifactSearchInput}
             </ToolbarFilter>
             {showCveIdFilter && (
               <ToolbarFilter
