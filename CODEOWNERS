@@ -1,7 +1,7 @@
 *  @zvigrinberg @IlonaShishov @vbelouso
-src/main/webui/  @batzionb @rhartuv
-src/test/resources/devservices/ @batzionb @rhartuv
-openspec/ @batzionb @rhartuv
-docs/ @batzionb @rhartuv
-README.md @batzionb @rhartuv
-AGENTS.md @batzionb @rhartuv
+src/main/webui/  @batzionb @rhartuv @vbelouso
+src/test/resources/devservices/ @batzionb @rhartuv @vbelouso
+openspec/ @batzionb @rhartuv @vbelouso
+docs/ @batzionb @rhartuv @vbelouso
+README.md @batzionb @rhartuv @vbelouso
+AGENTS.md @batzionb @rhartuv @vbelouso
