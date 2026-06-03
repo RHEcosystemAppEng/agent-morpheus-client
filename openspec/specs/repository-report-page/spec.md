@@ -7,9 +7,7 @@ Saved repository vulnerability report page: breadcrumbs, **CVE repository report
 ## Purpose
 
 **CVE** everywhere on the page comes from the route parameter **`cveId`** (**Repository report page CVE identity**). **`DetailsCard`** omits **CVSS** for every API **`status`**. **`failed`**/**`expired`** strips analysis rows **after artifact details** and **ChecklistCard** (non-RPM); see **Failing API status**.
-
 ## Requirements
-
 ### Requirement: Repository report page CVE identity
 
 The page **SHALL** treat the route parameter **`cveId`** as **Repository report page CVE identity**. **CVE** labels, **`DetailsCard`** CVE display and link targets, breadcrumb **CVE** fragments, page title **CVE** fragments, and **`output.analysis`** row selection **SHALL** use that route **`cveId`**. **`report.input.scan.vulns`** **SHALL NOT** override route **`cveId`** for those purposes. **`output.analysis[*].vuln_id`** **SHALL NOT** be used alone to determine which CVE the page is for.
@@ -39,7 +37,6 @@ The page **SHALL** support **`/reports/product/:productId/:cveId/:reportId`**, *
 
 - **WHEN** a loaded report does not qualify as RPM checker per **rpm-package-checker-report**
 - **THEN** non-RPM **artifact** and **`DetailsCard`** rules SHALL apply
-
 
 ### Requirement: Breadcrumb — what appears and data sources
 
@@ -73,7 +70,22 @@ The page **SHALL** render breadcrumb segments in this **order**: **Reports** (al
 
 ### Requirement: Primary details card — artifact details and fields
 
-The **`DetailsCard` SHALL** include an **artifact details** section **after** **CVE** and **before** the analysis rows (**Intel** onward). **Artifact details** **SHALL** group “which artifact” content: **non-RPM** includes **Repository URL** and **Image** inside this block (**no** standalone numbered **Image** row **outside** it); **RPM** includes **Package**, **Architecture**, and **RPM package URL**, in that order (**no** **Repository URL**, **no** **Image**).
+The **`DetailsCard` SHALL** group fields into an **analysis block** (Finding and AI output) and an **identity block** (**CVE** and **artifact details**), separated by a PatternFly **`Divider`** when the analysis block is shown.
+
+**Analysis block** (shown when **not** **Failing API status**):
+
+1. **Finding** — API **`status`** + **`output.analysis.justification.status`** when row exists (**Failed** matches findings tables on **`failed`**/**`expired`**).
+2. **Justification** — **`output.analysis.justification.label`**.
+3. **Reason** — **`output.analysis.justification.reason`** as markdown.
+4. **Summary** — **`output.analysis.summary`** as markdown.
+5. **Intel Reliability Score** — **`output.analysis.intel_score`**.
+
+**Divider** — PatternFly **`Divider`** **SHALL** render **after** the analysis block and **before** the identity block when the analysis block is shown. **SHALL NOT** render on **Failing API status**.
+
+**Identity block** (always shown when the card is shown, subject to failing truncation of analysis only):
+
+6. **CVE** — route **`cveId`**, internal link (**CVE identity**).
+7. **Artifact details** — **non-RPM**: **Repository URL** + **Image**; **RPM**: **Package** + **Architecture** + **RPM package URL** (per rules below). **Artifact details** **SHALL** follow **CVE** (not precede it).
 
 **Repository URL** (**non-RPM**): from first **`source_info`** with **`type === code`**. **`git_repo`** + **`ref`** **SHALL** → external link **`{normalizedBase}/commit/{ref}`** (trim **`/`**, strip **`.git`** from base, visible text = URL). **`git_repo`** only **SHALL** → link to **`git_repo`**. Else **`Not available`**.
 
@@ -81,42 +93,51 @@ The **`DetailsCard` SHALL** include an **artifact details** section **after** **
 
 **RPM artifact details:** **Package** **SHALL** be **`name`-`version`-`release`** (hyphen U+002D) **only if** all three on **`report.input.image.target_package`** are non-empty after trim **else** **`Not available`**. **Architecture** **SHALL** be **`target_package.arch`** or **`Not available`**. **RPM package URL** **SHALL** be **`report.info.checker_context.artifacts.source_url`** as an external hyperlink when that value is non-empty after trim **else** **`Not available`**.
 
-Row order for **`DetailsCard`** is items 1–8 below. When **Failing API status** applies, the page **SHALL** omit rows **≥** **5** in this list (**Intel** onward). **ChecklistCard** **SHALL NOT** appear when failing (non-RPM). For **RPM**, **ChecklistCard** **SHALL NOT** appear for any **`status`**. **`DetailsCard`** **SHALL NOT** render **CVSS Score**.
-
-1. **Finding** — API **`status`** + **`output.analysis.justification.status`** when row exists (**Failed** matches findings tables on **`failed`**/**`expired`**).
-2. **Failure reason** — only on **`failed`**/**`expired`**: **`report.error.message`** (**`error.type`** not shown here).
-3. **CVE** — route **`cveId`**, internal link (**CVE identity**).
-4. **Artifact details** — **non-RPM**: **Repository URL** + **Image**; **RPM**: **Package** + **Architecture** + **RPM package URL** (per rules above).
-5. **Intel Reliability Score** — **`output.analysis.intel_score`** if not failing.
-6. **Justification** — **`output.analysis.justification.label`** if not failing.
-7. **Reason** — **`output.analysis.justification.reason`** as markdown if not failing.
-8. **Summary** — **`output.analysis.summary`** as markdown if not failing.
+**ChecklistCard** **SHALL NOT** appear when failing (non-RPM). For **RPM**, **ChecklistCard** **SHALL NOT** appear for any **`status`**. **`DetailsCard`** **SHALL NOT** render **CVSS Score**.
 
 #### Scenario: Non-RPM completed
 
-- **WHEN** not **RPM** and not failing **THEN** **`DetailsCard` SHALL** match the ordered list with **artifact details** containing **Repository URL** and **Image**, **then** analysis rows **5–8**, with **no** **CVSS**
+- **WHEN** not **RPM** and not failing
+- **THEN** **`DetailsCard` SHALL** show the analysis block in order **Finding**, **Justification**, **Reason**, **Summary**, **Intel Reliability Score**
+- **AND** **SHALL** show a PatternFly **`Divider`**
+- **AND** **SHALL** show **CVE**, then **Repository URL**, then **Image**
+- **AND** **SHALL NOT** show **CVSS**
 
 #### Scenario: RPM completed
 
-- **WHEN** **RPM** and not failing **THEN** **`DetailsCard` SHALL** use **artifact details** with **Package**, **Architecture**, and **RPM package URL** in that order, **then** rows **5–8**, with **no** **Repository URL** row **and no** **Image** row
+- **WHEN** **RPM** and not failing
+- **THEN** **`DetailsCard` SHALL** show the same analysis block and **`Divider`** as non-RPM
+- **AND** **SHALL** show **CVE**, then **Package**, **Architecture**, and **RPM package URL** in that order
+- **AND** **SHALL NOT** show **Repository URL** or **Image**
 
 #### Scenario: RPM package URL absent
 
-- **WHEN** **`report.info.checker_context.artifacts.source_url`** is absent, empty, or blank after trim **THEN** **`DetailsCard` SHALL** show **`Not available`** for **RPM package URL**
+- **WHEN** **`report.info.checker_context.artifacts.source_url`** is absent, empty, or blank after trim
+- **THEN** **`DetailsCard` SHALL** show **`Not available`** for **RPM package URL**
+
+#### Scenario: No divider without analysis block
+
+- **WHEN** **Failing API status** applies
+- **THEN** **`DetailsCard` SHALL NOT** render the **`Divider`**
+- **AND** **SHALL NOT** render analysis-block rows (**Justification**, **Reason**, **Summary**, **Intel Reliability Score**)
 
 ### Requirement: Failing API status
 
-On **`failed`**/**`expired`**, **`DetailsCard` SHALL** keep rows 1–4 only (**Finding** **Failed**, **Failure reason**, **CVE**, **artifact details**). For **non-RPM**, **artifact details** **SHALL** include **Repository URL** and **Image** therein. For **RPM**, **artifact details** **SHALL** include **Package**, **Architecture**, and **RPM package URL** in that order (**no** **Image**). **SHALL NOT** show rows **5–8** (**Intel** through **Summary**). **Non-RPM** **SHALL NOT** show **ChecklistCard**. **RPM** **SHALL NOT** show **Details** markdown section (**RPM** supplementary **Details**) or **RpmRelatedLinksSection**. **`RepositoryAdditionalDetailsCard` SHALL** still render (**including** **RPM** failures), subject to **`RepositoryAdditionalDetailsCard`** placement and CVSS omission.
+On **`failed`**/**`expired`**, **`DetailsCard` SHALL** keep **Finding** (**Failed**), **Failure reason**, **CVE**, and **artifact details** only. **Failure reason** **SHALL** appear immediately after **Finding**. **SHALL NOT** show the analysis block, **`Divider`**, **Justification**, **Reason**, **Summary**, or **Intel Reliability Score**. For **non-RPM**, **artifact details** **SHALL** include **Repository URL** and **Image** after **CVE**. For **RPM**, **artifact details** **SHALL** include **Package**, **Architecture**, and **RPM package URL** in that order after **CVE** (**no** **Image**). **Non-RPM** **SHALL NOT** show **ChecklistCard**. **RPM** **SHALL NOT** show **Details** markdown section (**RPM** supplementary **Details**) or **RpmRelatedLinksSection**. **`RepositoryAdditionalDetailsCard` SHALL** still render (**including** **RPM** failures), subject to **`RepositoryAdditionalDetailsCard`** placement and CVSS omission.
 
 The page **SHALL** run SSE refetches **while** **`status`** is **neither** **`completed`** **nor** **`failed`**. **SHALL** stop SSE-driven refetch when **`status`** is **`completed`** or **`failed`**. **SHALL** apply state updates after refetch **only** when **`status`** changes.
 
 #### Scenario: Truncated **`DetailsCard`** (non-RPM)
 
-- **WHEN** **`failed`** or **`expired`** and **not** **RPM** **THEN** **`DetailsCard` SHALL** end after **artifact details** (including **Image** therein) (**no** **Intel**/**Justification**/**Reason**/**Summary**)
+- **WHEN** **`failed`** or **`expired`** and **not** **RPM**
+- **THEN** **`DetailsCard` SHALL** show **Finding**, **Failure reason**, **CVE**, **Repository URL**, and **Image** in that order
+- **AND** **SHALL NOT** show **`Divider`**, **Intel**, **Justification**, **Reason**, or **Summary**
 
 #### Scenario: Truncated **`DetailsCard`** (RPM)
 
-- **WHEN** **`failed`** or **`expired`** and **RPM** **THEN** **`DetailsCard` SHALL** end after **artifact details** (**Package**, **Architecture**, **RPM package URL**) (**no** **Intel**/**Justification**/**Reason**/**Summary**)
+- **WHEN** **`failed`** or **`expired`** and **RPM**
+- **THEN** **`DetailsCard` SHALL** show **Finding**, **Failure reason**, **CVE**, **Package**, **Architecture**, and **RPM package URL** in that order
+- **AND** **SHALL NOT** show **`Divider`**, **Intel**, **Justification**, **Reason**, or **Summary**
 
 ### Requirement: **`RepositoryAdditionalDetailsCard`** placement and CVSS omission
 
@@ -158,3 +179,4 @@ The page **SHALL** show **Feedback** after **RepositoryAdditionalDetailsCard** o
 #### Scenario: Feedback when done
 
 - **WHEN** **`completed`** **THEN** **Feedback** **SHALL** follow **RepositoryAdditionalDetailsCard**
+

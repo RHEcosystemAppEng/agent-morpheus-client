@@ -19,6 +19,7 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   DescriptionListDescription,
+  Divider,
   Title,
   Content,
 } from "@patternfly/react-core";
@@ -93,31 +94,8 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
               </DescriptionListDescription>
             </DescriptionListGroup>
           )}
-          <DescriptionListGroup>
-            <DescriptionListTerm>CVE</DescriptionListTerm>
-            <DescriptionListDescription>
-              <Link
-                to={
-                  productId
-                    ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
-                    : `/reports/component/cve/${cveId}/${reportId}`
-                }
-              >
-                {cveId}
-              </Link>
-            </DescriptionListDescription>
-          </DescriptionListGroup>
-          {artifactDetails}
           {!isFailed && (
             <>
-              <DescriptionListGroup>
-                <DescriptionListTerm>
-                  Intel Reliability Score
-                </DescriptionListTerm>
-                <DescriptionListDescription>
-                  <IntelReliabilityScore score={outputVuln?.intel_score} />
-                </DescriptionListDescription>
-              </DescriptionListGroup>
               <DescriptionListGroup>
                 <DescriptionListTerm>Justification</DescriptionListTerm>
                 <DescriptionListDescription>
@@ -154,8 +132,34 @@ const DetailsCard: React.FC<DetailsCardProps> = ({
                   )}
                 </DescriptionListDescription>
               </DescriptionListGroup>
+              <DescriptionListGroup>
+                <DescriptionListTerm>
+                  Intel Reliability Score
+                </DescriptionListTerm>
+                <DescriptionListDescription>
+                  <IntelReliabilityScore score={outputVuln?.intel_score} />
+                </DescriptionListDescription>
+              </DescriptionListGroup>
+              <DescriptionListGroup style={{ gridColumn: "1 / -1" }}>
+                <Divider component="div" />
+              </DescriptionListGroup>
             </>
           )}
+          <DescriptionListGroup>
+            <DescriptionListTerm>CVE</DescriptionListTerm>
+            <DescriptionListDescription>
+              <Link
+                to={
+                  productId
+                    ? `/reports/product/cve/${productId}/${cveId}/${reportId}`
+                    : `/reports/component/cve/${cveId}/${reportId}`
+                }
+              >
+                {cveId}
+              </Link>
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+          {artifactDetails}
         </DescriptionList>
       </CardBody>
     </Card>
