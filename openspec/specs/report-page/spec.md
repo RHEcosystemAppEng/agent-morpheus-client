@@ -136,30 +136,39 @@ The report page SHALL display an embedded repository reports table that conforms
 - **THEN** the table displays an empty state message
 
 ### Requirement: Report Page Layout
-The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation and page title at the top of the page.
+The report page SHALL use PatternFly layout components and follow the standard page structure. The report page SHALL display a breadcrumb navigation, page title, and **product analysis status** at the top of the page. The product analysis status SHALL appear on its own row **directly below** the page title (not inline beside the title).
+
+The product analysis status SHALL be exactly one of two labels: **In progress** or **Completed**. It SHALL NOT display vulnerability findings (Vulnerable, Uncertain, Not vulnerable, Excluded, Failed)—those remain in the Finding column on the reports table and in per-repository rows.
+
+Status SHALL be derived from `ProductSummary` using shared logic consistent with backend `summary.productState` and `summary.statusCounts`:
+
+- **In progress** when the batch is not complete: `summary.productState` is `processing` (report documents not yet created for every submitted component) or `analysing` (at least one non-excluded component report is `pending`, `queued`, or `sent`), or when `data.submittedCount` does not equal the sum of terminal component counts (see Completed).
+- **Completed** when `summary.productState` is `completed`, **or** when `data.submittedCount` equals the sum of `statusCounts["completed"]`, `statusCounts["excluded"]`, `statusCounts["failed"]`, and `statusCounts["expired"]` (treating absent keys as 0). This accounting rule SHALL apply when `submittedCount > 0`.
+
+Label styling SHALL match the reports table batch progress affordances: **In progress** uses the shared grey outline label with `InProgressIcon`; **Completed** uses a success outline label with a check icon (not the filled green “Not vulnerable” finding style).
 
 #### Scenario: Report page layout
 - **WHEN** a user views the report page
 - **THEN** the page uses PatternFly `PageSection` components for layout
 - **AND** a breadcrumb navigation is displayed at the top of the page with:
   - First item: "Reports" as a clickable link that navigates to `/reports`
-  - Second item: `<SBOM name>/<CVE ID>` displayed as non-clickable text (current page indicator)
-- **AND** a page title is displayed below the breadcrumb with the format "Report: <SBOM name>/<CVE ID>" where the word "Report" is displayed in bold
-- **AND** a status label is displayed next to the page title showing the SBOM report state (e.g., "Completed" with green label if `sbomReport.statusCounts["completed"]` exists)
+  - Second item: `<product name>/<CVE ID>` displayed as non-clickable text (current page indicator)
+- **AND** a page title is displayed with the format "Report: <product name>/<CVE ID>" where the word "Report" is displayed in bold
+- **AND** a product analysis status label is displayed on the row below the page title
 - **AND** report details are displayed in two separate `Card` components side by side using a `Grid` layout
 - **AND** donut charts are displayed side by side in a `Grid` layout
 - **AND** the repository reports table is displayed embedded in a separate `PageSection` below the donut charts
 
 #### Scenario: Breadcrumb navigation
 - **WHEN** a user views the report page
-- **THEN** the breadcrumb displays the SBOM name from `sbomReport.sbomName` and the CVE ID from route parameters
+- **THEN** the breadcrumb displays the product name from `product.data.name` and the CVE ID from route parameters
 - **AND** clicking the "Reports" breadcrumb item navigates to the reports list page at `/reports`
 
 #### Scenario: Page title display
 - **WHEN** a user views the report page
-- **THEN** the page title displays "Report: <SBOM name>/<CVE ID>" where:
+- **THEN** the page title displays "Report: <product name>/<CVE ID>" where:
   - The word "Report" is displayed in bold
-  - The SBOM name is extracted from `sbomReport.sbomName`
+  - The product name is extracted from `product.data.name`
   - The CVE ID is extracted from route parameters
 
 ### Requirement: API Integration

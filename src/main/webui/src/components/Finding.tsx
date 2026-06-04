@@ -12,16 +12,22 @@
 
 import { Label, LabelProps } from "@patternfly/react-core";
 import type { Finding as FindingType } from "../utils/findingDisplay";
-import { ExclamationCircleIcon, InProgressIcon } from "@patternfly/react-icons";
+import { CheckCircleIcon, ExclamationCircleIcon, InProgressIcon } from "@patternfly/react-icons";
 import { apiToColor, JUSTIFICATION_API } from "../utils/justificationStatus";
 
 export interface FindingProps {
   finding: FindingType | null;
 }
 
-const InProgressStatus: React.FC = () => (
+export const InProgressStatus: React.FC = () => (
   <Label color="grey" variant="outline" icon={<InProgressIcon />}>
     In progress
+  </Label>
+);
+
+export const CompletedBatchStatus: React.FC = () => (
+  <Label status="success" variant="outline" icon={<CheckCircleIcon />}>
+    Completed
   </Label>
 );
 
