@@ -61,32 +61,15 @@ function getExcludedCount(statusCounts: Record<string, number>): number {
   return statusCounts["excluded"] ?? 0;
 }
 
-function getTerminalComponentCount(statusCounts: Record<string, number>): number {
-  return (
-    (statusCounts["completed"] ?? 0) +
-    (statusCounts["excluded"] ?? 0) +
-    (statusCounts["failed"] ?? 0) +
-    (statusCounts["expired"] ?? 0)
-  );
-}
-
 /**
  * Overall SBOM batch status for the report page header (In progress vs Completed).
- * Completed when backend productState is completed or terminal statusCounts sum to submittedCount.
+ * Uses backend-computed summary.productState (processing | analysing | completed).
  */
 export function getProductAnalysisStatus(
   product: ProductSummary,
 ): ProductAnalysisStatus {
   const productState = (product.summary?.productState ?? "").toLowerCase();
-  if (productState === "completed") {
-    return "completed";
-  }
-  const submitted = product.data?.submittedCount ?? 0;
-  const terminal = getTerminalComponentCount(product.summary?.statusCounts ?? {});
-  if (submitted > 0 && submitted === terminal) {
-    return "completed";
-  }
-  return "in-progress";
+  return productState === "completed" ? "completed" : "in-progress";
 }
 
 /**

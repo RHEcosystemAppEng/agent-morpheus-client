@@ -140,10 +140,10 @@ The report page SHALL use PatternFly layout components and follow the standard p
 
 The product analysis status SHALL be exactly one of two labels: **In progress** or **Completed**. It SHALL NOT display vulnerability findings (Vulnerable, Uncertain, Not vulnerable, Excluded, Failed)—those remain in the Finding column on the reports table and in per-repository rows.
 
-Status SHALL be derived from `ProductSummary` using shared logic consistent with backend `summary.productState` and `summary.statusCounts`:
+Status SHALL be derived from backend-computed `summary.productState` on `ProductSummary` (same rules as `ReportRepositoryService` product summary aggregation):
 
-- **In progress** when the batch is not complete: `summary.productState` is `processing` (report documents not yet created for every submitted component) or `analysing` (at least one non-excluded component report is `pending`, `queued`, or `sent`), or when `data.submittedCount` does not equal the sum of terminal component counts (see Completed).
-- **Completed** when `summary.productState` is `completed`, **or** when `data.submittedCount` equals the sum of `statusCounts["completed"]`, `statusCounts["excluded"]`, `statusCounts["failed"]`, and `statusCounts["expired"]` (treating absent keys as 0). This accounting rule SHALL apply when `submittedCount > 0`.
+- **In progress** when `summary.productState` is `processing` (report documents not yet created for every submitted component) or `analysing` (at least one non-excluded component report is `pending`, `queued`, or `sent`).
+- **Completed** when `summary.productState` is `completed`.
 
 Label styling SHALL match the reports table batch progress affordances: **In progress** uses the shared grey outline label with `InProgressIcon`; **Completed** uses a success outline label with a check icon (not the filled green “Not vulnerable” finding style).
 
