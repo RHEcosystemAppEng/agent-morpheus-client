@@ -26,6 +26,7 @@ Check this other documents for:
 
 * [Configuration](./docs/configuration.md)
 * [Development](./docs/development.md)
+* [SBOM Requirements](./docs/sbom-requirements.md) — SPDX 2.3 structure, OCI image labels, and example fixtures
 * [Tests](./src/test/README.md) — REST `@QuarkusTest` notes and CI test image for pipelines
 
 
@@ -51,7 +52,7 @@ In this section, you will find a summary of system performance from the past sev
 
 The _Request Analysis_ dialog lets you choose an input type with **SBOM** or **Single Repository**, then enter a CVE ID to analyze.
 
-- **SBOM:** Upload a JSON SBOM file. Supported formats: **SPDX 2.3** and **CycloneDX 1.6** JSON.
+- **SBOM:** Upload a JSON SBOM file. Supported formats: **SPDX 2.3** and **CycloneDX 1.6** JSON. Refer to [SBOM Requirements](./docs/sbom-requirements.md) for details on expected SBOM structure.
 - **Single Repository:** Provide a source repository URL and a commit ID instead of an SBOM file.
 
 For private repositories, enable **Private repository** and enter an **Authentication secret** (SSH private key or Personal Access Token; the form auto-detects the type).
