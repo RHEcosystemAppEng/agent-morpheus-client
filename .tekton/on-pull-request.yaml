@@ -83,7 +83,6 @@ spec:
             value: setup
       - name: maven-test
         runAfter:
-          - fetch-repository
           - mongodb-setup
         taskRef:
           name: maven-test-ci
