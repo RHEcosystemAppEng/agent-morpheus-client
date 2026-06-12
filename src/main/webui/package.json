@@ -15,7 +15,7 @@
     "openapi:generate-all": "(npm run openapi:generate || true) && npm run openapi:generate-client"
   },
   "dependencies": {
-    "@patternfly/react-charts": "^8.4.0",
+    "@patternfly/react-charts": "^8.5.1",
     "@patternfly/react-component-groups": "^6.4.0",
     "@patternfly/react-core": "^6.5.1",
     "@patternfly/react-icons": "^6.5.1",
