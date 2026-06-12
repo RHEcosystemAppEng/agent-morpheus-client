@@ -19,7 +19,7 @@
     "@patternfly/react-component-groups": "^6.4.0",
     "@patternfly/react-core": "^6.4.0",
     "@patternfly/react-icons": "^6.4.0",
-    "@patternfly/react-table": "^6.4.0",
+    "@patternfly/react-table": "^6.5.1",
     "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
