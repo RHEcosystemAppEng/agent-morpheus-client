@@ -18,7 +18,7 @@
     "@patternfly/react-charts": "^8.4.0",
     "@patternfly/react-component-groups": "^6.4.0",
     "@patternfly/react-core": "^6.5.1",
-    "@patternfly/react-icons": "^6.4.0",
+    "@patternfly/react-icons": "^6.5.1",
     "@patternfly/react-table": "^6.5.1",
     "lodash": "^4.17.21",
     "react": "^18.3.1",
