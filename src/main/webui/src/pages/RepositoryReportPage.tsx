@@ -52,7 +52,7 @@ import {
   repositoryReportSubtitleDisplay,
 } from "../utils/rpmReport";
 import { findAnalysisRowForRouteCve } from "../utils/repositoryReport";
-import RpmAnalysisDetailsSection from "../components/RpmAnalysisDetailsSection";
+import VulnerabilityPatchDetailsSection from "../components/VulnerabilityPatchDetailsSection";
 import { RpmTargetPackageArtifactDetails } from "../components/RpmTargetPackageArtifactDetails";
 import { ContainerRepositoryArtifactDetails } from "../components/ContainerRepositoryArtifactDetails";
 
@@ -275,9 +275,9 @@ const RepositoryReportPage: React.FC = () => {
             <ChecklistCard vuln={outputVuln} />
           </GridItem>
         )}
-        {isRpm && !isFailed && (
+        {!isFailed && outputVuln?.details?.trim() && (
           <GridItem>
-            <RpmAnalysisDetailsSection detailsMarkdown={outputVuln?.details} />
+            <VulnerabilityPatchDetailsSection detailsMarkdown={outputVuln.details} />
           </GridItem>
         )}
         <GridItem>

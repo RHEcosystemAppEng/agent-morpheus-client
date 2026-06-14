@@ -2,7 +2,7 @@
 
 ## Description
 
-Saved repository vulnerability report page: breadcrumbs, **CVE repository report details** (**`DetailsCard`**) with distinct **artifact details** for container vs **RPM checker** reports, supplementary RPM **Details** markdown, downloads, SSE.
+Saved repository vulnerability report page: breadcrumbs, **CVE repository report details** (**`DetailsCard`**) with distinct **artifact details** for container vs **RPM checker** reports, **Analysis Details** markdown section (all report types), downloads, SSE.
 
 ## Purpose
 
@@ -123,7 +123,7 @@ The **`DetailsCard` SHALL** group fields into an **analysis block** (Finding and
 
 ### Requirement: Failing API status
 
-On **`failed`**/**`expired`**, **`DetailsCard` SHALL** keep **Finding** (**Failed**), **Failure reason**, **CVE**, and **artifact details** only. **Failure reason** **SHALL** appear immediately after **Finding**. **SHALL NOT** show the analysis block, **`Divider`**, **Justification**, **Reason**, **Summary**, or **Intel Reliability Score**. For **non-RPM**, **artifact details** **SHALL** include **Repository URL** and **Image** after **CVE**. For **RPM**, **artifact details** **SHALL** include **Package**, **Architecture**, and **RPM package URL** in that order after **CVE** (**no** **Image**). **Non-RPM** **SHALL NOT** show **ChecklistCard**. **RPM** **SHALL NOT** show **Details** markdown section (**RPM** supplementary **Details**) or **RpmRelatedLinksSection**. **`RepositoryAdditionalDetailsCard` SHALL** still render (**including** **RPM** failures), subject to **`RepositoryAdditionalDetailsCard`** placement and CVSS omission.
+On **`failed`**/**`expired`**, **`DetailsCard` SHALL** keep **Finding** (**Failed**), **Failure reason**, **CVE**, and **artifact details** only. **Failure reason** **SHALL** appear immediately after **Finding**. **SHALL NOT** show the analysis block, **`Divider`**, **Justification**, **Reason**, **Summary**, or **Intel Reliability Score**. For **non-RPM**, **artifact details** **SHALL** include **Repository URL** and **Image** after **CVE**. For **RPM**, **artifact details** **SHALL** include **Package**, **Architecture**, and **RPM package URL** in that order after **CVE** (**no** **Image**). **Non-RPM** **SHALL NOT** show **ChecklistCard**. **RPM** **SHALL NOT** show **RpmRelatedLinksSection**. The **Analysis Details** section **SHALL NOT** appear when failing (any report type). **`RepositoryAdditionalDetailsCard` SHALL** still render (**including** **RPM** failures), subject to **`RepositoryAdditionalDetailsCard`** placement and CVSS omission.
 
 The page **SHALL** run SSE refetches **while** **`status`** is **neither** **`completed`** **nor** **`failed`**. **SHALL** stop SSE-driven refetch when **`status`** is **`completed`** or **`failed`**. **SHALL** apply state updates after refetch **only** when **`status`** changes.
 
@@ -156,17 +156,17 @@ The page **SHALL** render **`RepositoryAdditionalDetailsCard`** (expandable **Ad
 - **WHEN** **`RepositoryAdditionalDetailsCard`** is expanded
 - **THEN** the page **SHALL NOT** show **CVSS Vector String**
 
-### Requirement: RPM-only supplementary content
+### Requirement: Analysis Details section
 
-When **RPM checker** and **not** failing, the page **SHALL** render a **Details** section: **`output.analysis.details`** as markdown for the **`output.analysis`** row selected by **CVE identity** (route **`cveId`**). The page **SHALL** show **`Not available`** when **`details`** is absent or blank. The page **SHALL** set the page subtitle so **CVE** (route **`cveId`**) plus artifact label uses **`target_package`** formatted **as N-V-R and architecture segments consistent with** the **active tail** (hyphenated **name-version-release** and **architecture** slot, **not** space-separated **name version release arch**).
+When **not** failing, the page **SHALL** render an **Analysis Details** section for **all** report types (RPM checker **and** non-RPM) when **`output.analysis.details`** is non-empty after trim for the **`output.analysis`** row selected by **CVE identity** (route **`cveId`**). The section renders the value as markdown using **`VulnerabilityPatchDetailsSection`**, with PatternFly **`CodeBlock`**/**`CodeBlockCode`** for fenced code blocks. When **`details`** is absent, blank, or empty after trim, the section **SHALL NOT** render (no **`Not available`** placeholder). The page **SHALL** set the page subtitle so **CVE** (route **`cveId`**) plus artifact label uses **`target_package`** formatted **as N-V-R and architecture segments consistent with** the **active tail** (hyphenated **name-version-release** and **architecture** slot, **not** space-separated **name version release arch**) for RPM reports.
 
 #### Scenario: **`details`** populated
 
-- **WHEN** non-empty **`details`** **THEN** the page **SHALL** render markdown
+- **WHEN** non-empty **`details`** after trim **AND** not failing **THEN** the page **SHALL** render the **Analysis Details** section with markdown content, for both RPM and non-RPM reports
 
 #### Scenario: **`details`** empty
 
-- **WHEN** absent or blank **THEN** the page **SHALL** show **`Not available`**
+- **WHEN** absent, blank, or empty after trim **THEN** the **Analysis Details** section **SHALL NOT** render
 
 ### Requirement: Alert, downloads, feedback
 
