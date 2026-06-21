@@ -14,11 +14,11 @@ limitations under the License.
 
 # Authentication
 
-This guide covers authentication configuration for ExploitIQ Client, including OpenShift OAuth, external identity providers, and development setups.
+This guide covers authentication configuration for RHTPA exploit intelligence, including OpenShift OAuth, external identity providers, and development setups.
 
 ## Overview
 
-ExploitIQ supports multiple authentication modes via Quarkus profiles:
+RHTPA exploit intelligence supports multiple authentication modes via Quarkus profiles:
 
 | Profile | Use Case | Identity Provider |
 |---------|----------|-------------------|
@@ -53,11 +53,11 @@ Create an `OAuthClient` resource in your OpenShift cluster:
 apiVersion: oauth.openshift.io/v1
 kind: OAuthClient
 metadata:
-  name: exploit-iq-client
+  name: exploit-intelligence-client
 grantMethod: prompt
 secret: <your-oauth-client-secret>
 redirectURIs:
-  - "https://exploit-iq-client.<your-domain>"
+  - "https://exploit-intelligence-client.<your-domain>"
 ```
 
 ### Environment Variables
@@ -72,7 +72,7 @@ redirectURIs:
 ```yaml
 spec:
   containers:
-  - name: exploit-iq-client
+  - name: exploit-intelligence-client
     env:
     - name: OPENSHIFT_DOMAIN
       valueFrom:
@@ -93,7 +93,7 @@ For API access in OpenShift, use your user token:
 ```bash
 # After oc login
 TOKEN=$(oc whoami -t)
-curl -H "Authorization: Bearer $TOKEN" https://exploit-iq-client.apps.example.com/api/v1/reports
+curl -H "Authorization: Bearer $TOKEN" https://exploit-intelligence-client.apps.example.com/api/v1/reports
 ```
 
 ## External Identity Providers
@@ -120,7 +120,7 @@ Create an OIDC client in Keycloak with the following settings:
 
 ```json
 {
-  "clientId": "exploit-iq-client",
+  "clientId": "exploit-intelligence-client",
   "enabled": true,
   "clientAuthenticatorType": "client-secret",
   "secret": "<your-client-secret>",
@@ -204,7 +204,7 @@ Use the password grant to obtain a token for a specific user:
 # Configuration (match your Keycloak setup)
 KC_URL="http://localhost:8190"           # Keycloak URL
 KC_REALM="quarkus"                       # Realm name
-CLIENT_ID="exploit-iq-client"            # Client ID
+CLIENT_ID="exploit-intelligence-client"            # Client ID
 CLIENT_SECRET="example-credentials"      # Client secret
 USERNAME="bruce"                         # User
 PASSWORD="wayne"                         # Password
@@ -358,7 +358,7 @@ After running a scenario with Keycloak, test API authentication:
 # 1. Get user token (uses bruce/wayne created by the script)
 USER_TOKEN=$(curl -s -X POST \
   "http://localhost:8190/realms/quarkus/protocol/openid-connect/token" \
-  -d "client_id=exploit-iq-client" \
+  -d "client_id=exploit-intelligence-client" \
   -d "client_secret=example-credentials" \
   -d "username=bruce" \
   -d "password=wayne" \
@@ -388,21 +388,21 @@ Ensure your identity provider or Keycloak is configured to include the `email` c
 
 The application implements a **Unified Role Mapping** strategy, allowing you to manage permissions using either OpenShift Groups or OIDC Roles (Keycloak), depending on your environment.
 
-The application looks for specific **Target Roles** (configurable via `exploit-iq.security.target-roles`):
-- `exploit-iq-admin`: Admin access
-- `exploit-iq-view`: Read-only access
-- `exploit-iq-prodsec`: Product Security access
+The application looks for specific **Target Roles** (configurable via `exploit-intelligence.security.target-roles`):
+- `exploit-intelligence-admin`: Admin access
+- `exploit-intelligence-view`: Read-only access
+- `exploit-intelligence-prodsec`: Product Security access
 
 ### OpenShift Groups (Production)
 In the `prod` profile, OpenShift Groups are automatically mapped to these roles.
-- Group `exploit-iq-admin` -> Mapped to `exploit-iq-admin`
-- Group `exploit-iq-view` -> Mapped to `exploit-iq-view`
-- Group `exploit-iq-prodsec` -> Mapped to `exploit-iq-prodsec`
+- Group `exploit-intelligence-admin` -> Mapped to `exploit-intelligence-admin`
+- Group `exploit-intelligence-view` -> Mapped to `exploit-intelligence-view`
+- Group `exploit-intelligence-prodsec` -> Mapped to `exploit-intelligence-prodsec`
 
 ### OIDC Roles (Keycloak / External)
 In `external-idp` or `dev` profiles, roles are extracted from the OIDC token:
-- **Realm Roles:** `exploit-iq-admin`, `exploit-iq-view`
-- **Resource Access (Client Roles):** Roles defined specifically for the `exploit-iq-client` client.
+- **Realm Roles:** `exploit-intelligence-admin`, `exploit-intelligence-view`
+- **Resource Access (Client Roles):** Roles defined specifically for the `exploit-intelligence-client` client.
 
 This flexibility allows you to choose the management style that fits your platform:
 - **OpenShift Native:** Access is controlled by OpenShift Groups.

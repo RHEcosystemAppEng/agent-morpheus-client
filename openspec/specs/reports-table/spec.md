@@ -1,7 +1,7 @@
 # reports-table Specification
 
 ## Purpose
-The reports table displays vulnerability analysis reports in a tabular format, allowing users to view SBOM report-level analysis results. The table provides aggregate ExploitIQ status indicators that summarize the overall vulnerability posture of each SBOM report.
+The reports table displays vulnerability analysis reports in a tabular format, allowing users to view SBOM report-level analysis results. The table provides aggregate exploit intelligence status indicators that summarize the overall vulnerability posture of each SBOM report.
 ## Requirements
 ### Requirement: Reports Table Display
 The reports table SHALL support sorting by the following columns:

@@ -1,5 +1,5 @@
 {
-  "name": "agent-morpheus-client-webui",
+  "name": "rhtpa-exploit-intelligence-client-webui",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

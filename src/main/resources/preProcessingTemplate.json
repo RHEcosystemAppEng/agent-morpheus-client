@@ -1,7 +1,7 @@
 {
     "specversion": "1.0",
     "id": "",
-    "source": "agent.morpheus.client",
+    "source": "rhtpa.exploit-intelligence.client",
     "type": "component.analysis",
     "datacontenttype": "application/json",
     "data": []

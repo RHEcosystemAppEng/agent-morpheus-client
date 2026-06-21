@@ -78,7 +78,7 @@ npm run dev:standalone
 
 ## Supplying application data
 
-You can supply the application with data by sending Agent Morpheus output.json files from your local file system to the application using:
+You can supply the application with data by sending exploit intelligence output.json files from your local file system to the application using:
 
 ```shell
  curl -i -X POST --header 'Content-type: application/json' http://localhost:8080/api/v1/reports -d @/path/to/file.json

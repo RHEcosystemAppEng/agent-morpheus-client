@@ -1,12 +1,12 @@
 # Project Context
 
 ## Purpose
-ExploitIQ Client is a Quarkus + React web application that interacts with the ExploitIQ (Agent Morpheus) service to evaluate vulnerabilities on Software Bill of Materials (SBOMs). The application allows users to:
+RHTPA exploit intelligence is a Quarkus + React web application that interacts with the exploit intelligence service to evaluate vulnerabilities on Software Bill of Materials (SBOMs). The application allows users to:
 - Submit CycloneDX SBOMs and CVE for vulnerability analysis
 - Manage and view vulnerability analysis reports
 - Track products and components across multiple reports
 
-The application serves as a client interface for the Agent Morpheus vulnerability analysis service, providing request queuing, report management, and a web-based UI for interacting with analysis results.
+The application serves as a client interface for the exploit intelligence vulnerability analysis service, providing request queuing, report management, and a web-based UI for interacting with analysis results.
 
 ## Tech Stack
 
@@ -213,7 +213,7 @@ Standard labels used to categorize vulnerability analysis results:
 ## External Dependencies
 
 ### Services
-- **Agent Morpheus/ExploitIQ Service**: Primary vulnerability analysis service
+- **exploit intelligence service**: Primary vulnerability analysis service
   - Endpoint: Configurable via `quarkus.rest-client.morpheus.url`
   - Handles SBOM analysis and CVE evaluation
   - Sends callback responses with analysis results

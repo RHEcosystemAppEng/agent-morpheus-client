@@ -29,7 +29,7 @@ The repository reports table SHALL display columns: **ID** (first column, width 
 
 The ID column SHALL display `report.id` as a link to the report page (component route: `/reports/component/{cveId}/{report.id}`; product route: `/reports/product/{productId}/{cveId}/{report.id}`). The **Date Requested** column SHALL display `metadata.submitted_at` when present, in the format "DD Month YYYY, HH:MM:SS AM/PM"; when `metadata.submitted_at` is missing, the cell SHALL display "-". The **Date Completed** column SHALL display `report.completedAt` in the same format. All date fields SHALL use the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM").
 
-The table SHALL display a single **Finding** column (no separate "Analysis state" or "ExploitIQ Status" column). The Finding cell SHALL show, per row: if the report's analysis state is **completed**, the ExploitIQ status (Vulnerable, Not vulnerable, or Uncertain) from the vulnerability justification; if the report's analysis state is **pending**, **queued**, or **sent**, "In progress" using the shared InProgressStatus component (grey outline label, InProgressIcon); if the report's analysis state is **expired** or **failed**, "Failed" using the shared FailedStatus component (grey filled label, ExclamationCircleIcon). Styling SHALL match the Finding column in the reports table for in-progress and failed states.
+The table SHALL display a single **Finding** column (no separate "Analysis state" or "exploit intelligence Status" column). The Finding cell SHALL show, per row: if the report's analysis state is **completed**, the exploit intelligence status (Vulnerable, Not vulnerable, or Uncertain) from the vulnerability justification; if the report's analysis state is **pending**, **queued**, or **sent**, "In progress" using the shared InProgressStatus component (grey outline label, InProgressIcon); if the report's analysis state is **expired** or **failed**, "Failed" using the shared FailedStatus component (grey filled label, ExclamationCircleIcon). Styling SHALL match the Finding column in the reports table for in-progress and failed states.
 
 #### Scenario: Repository reports table columns
 - **WHEN** a user views the repository reports table
@@ -45,7 +45,7 @@ The repository reports table toolbar SHALL provide a single **Finding** filter (
 
 #### Scenario: Finding filter and backend parameters
 - **WHEN** the repository reports table toolbar displays filters
-- **THEN** a single **Finding** filter is shown (replacing separate Analysis state and ExploitIQ status filters)
+- **THEN** a single **Finding** filter is shown (replacing separate Analysis state and exploit intelligence status filters)
 - **AND** the Finding filter SHALL allow selecting exactly one finding value (e.g. Vulnerable, Not vulnerable, Uncertain, In progress, Failed), or none
 - **AND** when the user selects a Finding value, the table SHALL pass the corresponding backend parameter(s) to the reports API so that the backend returns only rows matching the selected finding
 - **AND** when the user clears the Finding filter (no value selected), the table SHALL request data without finding-based status or exploitIqStatus filter parameters

@@ -12,12 +12,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Red Hat Exploit Intelligence- client
+# Red Hat Trusted Profile Analyzer exploit intelligence
 
-This project is a Quarkus + React web application implemented to interact with ExploitIQ service
+This project is a Quarkus + React web application implemented to interact with RHTPA exploit intelligence service
 for sending requests to evaluate vulnerabilities on specific SBOMs.
 
-For product documentation and deeper context, see the [Exploit Intelligence documentation](https://github.com/RHEcosystemAppEng/exploitiq-docs).
+For product documentation and deeper context, see the [RHTPA exploit intelligence documentation](https://github.com/RHEcosystemAppEng/exploitiq-docs).
 
 
 ## Development
@@ -38,7 +38,7 @@ Open http://localhost:8080/
 
 On the Home page, you will find a central dashboard designed to manage your exploitability analysis workflow and monitor recent system performance.
 
-**Get Started with ExploitIQ**
+**Get Started with exploit intelligence**
 
 In this section, you will find quick-access links to the core functions of the application: Request Analysis, View Reports, and Learn More.
 
@@ -147,7 +147,7 @@ flowchart TB
     classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
     classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
 
-    HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
+    HEADER["<b>RHTPA exploit intelligence -<br/>Analysis Pipeline</b>"]
     class HEADER caption
 
     START([User request analysis])

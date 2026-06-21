@@ -4,7 +4,7 @@
 Support RPM analysis
 ## Requirements
 ### Requirement: New RPM report REST endpoint
-The system SHALL provide a REST endpoint at `POST /api/v1/reports/new-rpm-report` that accepts a JSON body with string fields `name`, `version`, `release`, `arch`, and **`cveId`** (matching the **`upload-spdx-api`** vulnerability ID property name). The endpoint SHALL validate that every listed field is present and non-empty (after trimming surrounding whitespace). The endpoint SHALL validate that **`arch`**, after trim, is exactly one of the allowed RPM architecture literals: **`x86_64`**, **`amd64`**, **`aarch64`**, **`arm64`**, **`ppc64le`**, **`s390x`** (same set as the Request Analysis RPM UI architecture control). The endpoint SHALL validate the CVE identifier using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$` (case handling SHALL match existing report upload endpoints). When validation fails, the endpoint SHALL return the same style of structured error response as **`POST /api/v1/products/upload-spdx`** for field-level failures: HTTP 400 with a JSON object whose top-level keys are **request field names** and whose values are **human-readable error strings** for each invalid or missing field (see the validation requirement below). The endpoint SHALL construct a Morpheus-compatible report `input` document, persist a new report record, and **always** enqueue or submit the report for Agent Morpheus analysis using the same mechanism as `POST /api/v1/reports/new` **with submission enabled**. The endpoint SHALL NOT accept a `submit` query parameter or support a persist-only mode.
+The system SHALL provide a REST endpoint at `POST /api/v1/reports/new-rpm-report` that accepts a JSON body with string fields `name`, `version`, `release`, `arch`, and **`cveId`** (matching the **`upload-spdx-api`** vulnerability ID property name). The endpoint SHALL validate that every listed field is present and non-empty (after trimming surrounding whitespace). The endpoint SHALL validate that **`arch`**, after trim, is exactly one of the allowed RPM architecture literals: **`x86_64`**, **`amd64`**, **`aarch64`**, **`arm64`**, **`ppc64le`**, **`s390x`** (same set as the Request Analysis RPM UI architecture control). The endpoint SHALL validate the CVE identifier using the official CVE regex pattern `^CVE-[0-9]{4}-[0-9]{4,19}$` (case handling SHALL match existing report upload endpoints). When validation fails, the endpoint SHALL return the same style of structured error response as **`POST /api/v1/products/upload-spdx`** for field-level failures: HTTP 400 with a JSON object whose top-level keys are **request field names** and whose values are **human-readable error strings** for each invalid or missing field (see the validation requirement below). The endpoint SHALL construct a Morpheus-compatible report `input` document, persist a new report record, and **always** enqueue or submit the report for exploit intelligence analysis using the same mechanism as `POST /api/v1/reports/new` **with submission enabled**. The endpoint SHALL NOT accept a `submit` query parameter or support a persist-only mode.
 
 **Persistence rules:**
 - The stored report SHALL set `input.image.pipeline_mode` to the string `rpm_package_checker`.
@@ -64,7 +64,7 @@ The new endpoint SHALL be documented in the application OpenAPI/Swagger specific
 
 ### Requirement: Morpheus `input.image` for rpm_package_checker
 
-When the system builds the Morpheus `input` document for **`POST /api/v1/reports/new-rpm-report`**, the persisted **`report.input.image`** for **`rpm_package_checker`** SHALL include these mandatory fields for Agent Morpheus **`ImageInfoInput`** (upstream **`ImageInfoInput`** in the agent codebase’s **`input.py`**):
+When the system builds the Morpheus `input` document for **`POST /api/v1/reports/new-rpm-report`**, the persisted **`report.input.image`** for **`rpm_package_checker`** SHALL include these mandatory fields for exploit intelligence **`ImageInfoInput`** (upstream **`ImageInfoInput`** in the agent codebase’s **`input.py`**):
 
 - **`pipeline_mode`**: literal **`rpm_package_checker`**
 - **`analysis_type`**: literal **`source`** (corresponding to **`AnalysisType.SOURCE`**)
@@ -83,6 +83,6 @@ The public request body for **`new-rpm-report`** SHALL remain limited to **`name
 
 #### Scenario: Morpheus generate accepts rpm checker payload
 
-- **WHEN** the stored **`input`** for a successfully created RPM report is submitted to Agent Morpheus ingest / generate APIs that validate against **`AgentMorpheusInput`** / **`ImageInfoInput`**
+- **WHEN** the stored **`input`** for a successfully created RPM report is submitted to exploit intelligence ingest / generate APIs that validate against **`AgentMorpheusInput`** / **`ImageInfoInput`**
 - **THEN** validation errors SHALL NOT occur for missing mandatory **`pipeline_mode`**, **`analysis_type`**, or **`target_package`** on **`image`**
 
