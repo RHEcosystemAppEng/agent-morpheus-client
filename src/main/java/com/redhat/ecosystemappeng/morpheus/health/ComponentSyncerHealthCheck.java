@@ -31,10 +31,10 @@ public class ComponentSyncerHealthCheck implements HealthCheck {
     @Inject
     WebClient client;
 
-    @ConfigProperty(name = "morpheus.syncer.health.url")
+    @ConfigProperty(name = "exploit-intelligence.syncer.health.url")
     String componentSyncerHealthUrl;
 
-    @ConfigProperty(name = "morpheus.syncer.health.timeout")
+    @ConfigProperty(name = "exploit-intelligence.syncer.health.timeout")
     Duration componentSyncerHealthTimeout;
     // Intentionally send an invalid payload to check service availability, but
     // not to initiate job creation.

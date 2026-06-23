@@ -57,13 +57,13 @@ public class RequestQueueService {
 
   private static final Logger LOGGER = Logger.getLogger(RequestQueueService.class);
 
-  @ConfigProperty(name = "morpheus.queue.max-active", defaultValue = "5")
+  @ConfigProperty(name = "exploit-intelligence.queue.max-active", defaultValue = "5")
   Integer maxActive;
 
-  @ConfigProperty(name = "morpheus.queue.max-size", defaultValue = "500")
+  @ConfigProperty(name = "exploit-intelligence.queue.max-size", defaultValue = "500")
   Integer maxSize;
 
-  @ConfigProperty(name = "morpheus.queue.timeout", defaultValue = "5m")
+  @ConfigProperty(name = "exploit-intelligence.queue.timeout", defaultValue = "5m")
   Duration timeout;
 
   @RestClient
@@ -84,10 +84,10 @@ public class RequestQueueService {
 
   @Inject
   public RequestQueueService(MeterRegistry meterRegistry) {
-    Gauge.builder("morpheus.request.queue.config.max-active", () -> maxActive).register(meterRegistry);
-    Gauge.builder("morpheus.request.queue.config.max-size", () -> maxSize).register(meterRegistry);
-    meterRegistry.gaugeCollectionSize("morpheus.request.queue.pending", Tags.empty(), pending);
-    meterRegistry.gaugeMapSize("morpheus.request.queue.active", Tags.empty(), active);
+    Gauge.builder("exploit_intelligence.request.queue.config.max-active", () -> maxActive).register(meterRegistry);
+    Gauge.builder("exploit_intelligence.request.queue.config.max-size", () -> maxSize).register(meterRegistry);
+    meterRegistry.gaugeCollectionSize("exploit_intelligence.request.queue.pending", Tags.empty(), pending);
+    meterRegistry.gaugeMapSize("exploit_intelligence.request.queue.active", Tags.empty(), active);
   }
 
   @Scheduled(every = "10s")

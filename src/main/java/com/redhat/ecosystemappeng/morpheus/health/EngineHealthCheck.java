@@ -30,10 +30,10 @@ public class EngineHealthCheck implements HealthCheck {
     @Inject
     WebClient client;
 
-    @ConfigProperty(name = "morpheus.engine.health.url")
+    @ConfigProperty(name = "exploit-intelligence.engine.health.url")
     String engineHealthUrl;
 
-    @ConfigProperty(name = "morpheus.engine.health.timeout")
+    @ConfigProperty(name = "exploit-intelligence.engine.health.timeout")
     Duration engineHealthTimeout;
 
     private static final int EXPECTED_STATUS = 200;
