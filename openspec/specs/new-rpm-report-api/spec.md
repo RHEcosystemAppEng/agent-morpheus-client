@@ -62,9 +62,9 @@ The new endpoint SHALL be documented in the application OpenAPI/Swagger specific
 - **THEN** the request and response types for `POST /api/v1/reports/new-rpm-report` are available to TypeScript consumers without manually duplicating DTO shapes
 - **AND** the generated type for **`arch`** reflects the documented enumeration of allowed RPM architectures
 
-### Requirement: Morpheus `input.image` for rpm_package_checker
+### Requirement: Exploit Intelligence `input.image` for rpm_package_checker
 
-When the system builds the Morpheus `input` document for **`POST /api/v1/reports/new-rpm-report`**, the persisted **`report.input.image`** for **`rpm_package_checker`** SHALL include these mandatory fields for Agent Morpheus **`ImageInfoInput`** (upstream **`ImageInfoInput`** in the agent codebase’s **`input.py`**):
+When the system builds the Exploit Intelligence `input` document for **`POST /api/v1/reports/new-rpm-report`**, the persisted **`report.input.image`** for **`rpm_package_checker`** SHALL include these mandatory fields for Exploit Intelligence **`ImageInfoInput`** (upstream **`ImageInfoInput`** in the agent codebase’s **`input.py`**):
 
 - **`pipeline_mode`**: literal **`rpm_package_checker`**
 - **`analysis_type`**: literal **`source`** (corresponding to **`AnalysisType.SOURCE`**)
@@ -81,8 +81,8 @@ The public request body for **`new-rpm-report`** SHALL remain limited to **`name
 - **AND** **`report.input.image.analysis_type`** is **`source`**
 - **AND** **`report.input.image.target_package`** equals **`{ name, version, release, ecosystem: "rpm", arch }`** as specified in this capability spec
 
-#### Scenario: Morpheus generate accepts rpm checker payload
+#### Scenario: Exploit Intelligence generate accepts rpm checker payload
 
-- **WHEN** the stored **`input`** for a successfully created RPM report is submitted to Agent Morpheus ingest / generate APIs that validate against **`AgentMorpheusInput`** / **`ImageInfoInput`**
+- **WHEN** the stored **`input`** for a successfully created RPM report is submitted to Exploit Intelligence ingest / generate APIs that validate against **`ExploitIntelligenceInput`** / **`ImageInfoInput`**
 - **THEN** validation errors SHALL NOT occur for missing mandatory **`pipeline_mode`**, **`analysis_type`**, or **`target_package`** on **`image`**
 

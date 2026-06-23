@@ -4295,7 +4295,7 @@
           "name": "Red Hat Product Security",
           "namespace": "https://access.redhat.com/security/"
         },
-        "title": "ExploitIQ VEX Document",
+        "title": "Exploit Intelligence VEX Document",
         "tracking": {
           "current_release_date": "2025-12-22T09:23:15Z",
           "generator": {
@@ -4363,12 +4363,12 @@
             },
             {
               "category": "analysis",
-              "title": "ExploitIQ Analysis Summary",
+              "title": "Exploit Intelligence Analysis Summary",
               "text": "The CVE is likely exploitable in this application. Investigation confirmed that the application processes untrusted input data that could be used to craft malicious protobuf messages, potentially leading to an out-of-bounds access. Although the codebase performs some level of validation to prevent out-of-bounds access, it is unclear if these inputs are properly validated and sanitized to prevent out-of-bounds access. Furthermore, the application does not have clear input validation and sanitization practices in place to handle untrusted input data, increasing the risk of exploitation. The use of the `github.com/gogo/protobuf` package in the codebase, combined with the potential for untrusted input data, suggests that the application may be vulnerable to attacks that exploit weak input fields."
             },
             {
               "category": "analysis",
-              "title": "ExploitIQ Analysis Justification Reasoning",
+              "title": "Exploit Intelligence Analysis Justification Reasoning",
               "text": "The application processes untrusted input data that could be used to craft malicious protobuf messages, potentially leading to an out-of-bounds access, and lacks clear input validation and sanitization practices to handle such data, increasing the risk of exploitation."
             }
           ],

@@ -15,8 +15,7 @@ The Feedback card SHALL display the title "Feedback" and the subtitle "Your feed
 ### Requirement: Feedback Form Fields
 The card SHALL collect the following. Required fields SHALL be marked with an asterisk. The Submit Feedback button SHALL be disabled until all required fields are set, then enabled and primary.
 
-- **Accuracy** (dropdown, required): “How accurate do you find ExploitIQ's assessment? *” — options: Very Accurate, Mostly Accurate, Somewhat Inaccurate, Incorrect.
-- **Reasoning** (dropdown, required): “Is the reasoning and summary of findings clear, complete, and well-supported? *” — options: Yes, Mostly, Somewhat, No.
+- **Accuracy** (dropdown, required): “How accurate do you find the exploit intelligence assessment? *” — options: Very Accurate, Mostly Accurate, Somewhat Inaccurate, Incorrect.- **Reasoning** (dropdown, required): “Is the reasoning and summary of findings clear, complete, and well-supported? *” — options: Yes, Mostly, Somewhat, No.
 - **Checklist** (dropdown, required): “Were the checklist questions and explanations easy to understand? *” — options: Yes, Mostly, Somewhat, No.
 - **Rating** (1–5, required): “Rate the response (1 = Poor, 5 = Excellent): *”
 - **Comment** (TextArea, optional): “Do you have any additional feedback or suggestions to improve the analysis?”
