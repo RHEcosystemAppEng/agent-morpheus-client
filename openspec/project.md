@@ -38,7 +38,7 @@ The application serves as a client interface for the Exploit Intelligence vulner
 ### Code Style
 
 #### Java
-- Package structure: `com.redhat.ecosystemappeng.morpheus`
+- Package structure: `com.redhat.ecosystemappeng.exploitintelligence`
 - Standard Java naming conventions (PascalCase for classes, camelCase for methods/variables)
 - REST endpoints in `rest/` package
 - Service layer in `service/` package

@@ -13,7 +13,7 @@ Then run `./mvnw test` (or your usual Maven test invocation). Without this, test
 
 ## REST API tests (`@QuarkusTest` + REST Assured)
 
-The package `com.redhat.ecosystemappeng.morpheus.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** for requests and assertions.
+The package `com.redhat.ecosystemappeng.exploitintelligence.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** for requests and assertions.
 
 ### Two ways to run the same tests
 
