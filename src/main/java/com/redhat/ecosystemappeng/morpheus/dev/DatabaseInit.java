@@ -39,12 +39,12 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 /**
- * Registers only when {@code morpheus.database.init.enabled} is true at build time.
+ * Registers only when {@code exploit-intelligence.database.init.enabled} is true at build time.
  * {@code %dev} and {@code %test} set this in {@code application.properties}; production
  * builds leave it unset so this bean is not included.
  */
 @Singleton
-@IfBuildProperty(name = "morpheus.database.init.enabled", stringValue = "true")
+@IfBuildProperty(name = "exploit-intelligence.database.init.enabled", stringValue = "true")
 public class DatabaseInit {
 
   private static final Logger LOGGER = Logger.getLogger(DatabaseInit.class);
@@ -55,10 +55,10 @@ public class DatabaseInit {
   @ConfigProperty(name = "quarkus.mongodb.database")
   String dbName;
 
-  @ConfigProperty(name = "morpheus.repository.reports-path", defaultValue = "src/test/resources/devservices/reports")
+  @ConfigProperty(name = "exploit-intelligence.repository.reports-path", defaultValue = "src/test/resources/devservices/reports")
   String reportsPath;
 
-  @ConfigProperty(name = "morpheus.repository.products-path", defaultValue = "src/test/resources/devservices/products")
+  @ConfigProperty(name = "exploit-intelligence.repository.products-path", defaultValue = "src/test/resources/devservices/products")
   String productsPath;
 
   @Startup
