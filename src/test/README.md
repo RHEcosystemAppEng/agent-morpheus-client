@@ -13,7 +13,7 @@ Then run `./mvnw test` (or your usual Maven test invocation). Without this, test
 
 ## REST API tests (`@QuarkusTest` + REST Assured)
 
-The package `com.redhat.ecosystemappeng.exploitintelligence.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** for requests and assertions.
+The package `com.redhat.ecosystemappeng.exploitiq.rest` holds HTTP-level tests for the backend. They are **JUnit 5** classes annotated with **`@QuarkusTest`** and use **REST Assured** for requests and assertions.
 
 ### Two ways to run the same tests
 
@@ -21,14 +21,14 @@ The package `com.redhat.ecosystemappeng.exploitintelligence.rest` holds HTTP-lev
 
 - Run: `./mvnw test` (or a narrower `-Dtest=…`).
 - **RestAssured** uses the URL Quarkus assigns to the **test application** started in the same JVM.
-- Typical stack: test `application.properties`, Mongo Dev Services, WireMock for outbound clients (e.g. Exploit Intelligence, GitHub), seeded data where enabled.
+- Typical stack: test `application.properties`, Mongo Dev Services, WireMock for outbound clients (e.g. ExploitIQ, GitHub), seeded data where enabled.
 - **Use when:** fast feedback, CI, no separate server needed.
 
 #### 2. Optional — RestAssured pointed at a **running** server
 
-- Set Quarkus config **`exploit-intelligence.rest-test.external-base-url`** to the base URL of an already-running app (no trailing slash required), for example:
-  - **Maven:** `./mvnw test -Dexploit-intelligence.rest-test.external-base-url=http://localhost:8080`
-  - **`src/test/resources/application.properties`:** `%test.exploit-intelligence.rest-test.external-base-url=http://localhost:8080`
+- Set Quarkus config **`exploit-iq.rest-test.external-base-url`** to the base URL of an already-running app (no trailing slash required), for example:
+  - **Maven:** `./mvnw test -Dexploit-iq.rest-test.external-base-url=http://localhost:8080`
+  - **`src/test/resources/application.properties`:** `%test.exploit-iq.rest-test.external-base-url=http://localhost:8080`
 - **`@BeforeEach`**, tests call `RestApiTestFixture.configureRestAssuredIfExternal()`, which sets `RestAssured.baseURI` when that property is non-blank.
 - The **`@QuarkusTest` application still starts** in the test JVM; HTTP calls go to the **remote** base URL. That lets you reuse the **same** test code against e.g. `quarkus dev`, a container, or a shared environment.
 
@@ -36,7 +36,7 @@ The package `com.redhat.ecosystemappeng.exploitintelligence.rest` holds HTTP-lev
 
 - **One suite, two targets:** identical assertions exercise both the isolated test stack and a **real deployment** (local or staging), without maintaining a duplicate “integration only” test project.
 - **End-to-end confidence:** catch wiring, configuration, data, and infrastructure issues that only appear outside the trimmed test profile, while keeping a single source of truth for API behavior.
-- **Practical workflow:** run default tests in CI; occasionally run with `exploit-intelligence.rest-test.external-base-url` after a release candidate or config change to validate the running service matches expectations.
+- **Practical workflow:** run default tests in CI; occasionally run with `exploit-iq.rest-test.external-base-url` after a release candidate or config change to validate the running service matches expectations.
 
 ### Other helpers
 

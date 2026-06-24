@@ -27,7 +27,7 @@ For authentication setup (Keycloak, external identity providers, testing), see t
 You can run your application in dev mode that enables live coding using:
 
 ```shell
-./mvnw quarkus:dev -Dquarkus.rest-client.exploit-intelligence.url=https://agent-morpheus-route.com/scan
+./mvnw quarkus:dev -Dquarkus.rest-client.exploit-iq.url=https://agent-morpheus-route.com/scan
 ```
 
 By default, this runs with **authentication disabled**. To enable Keycloak DevServices and OIDC:

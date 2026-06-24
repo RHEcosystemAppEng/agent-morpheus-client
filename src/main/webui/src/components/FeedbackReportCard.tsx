@@ -51,7 +51,7 @@ import type { Feedback } from "../generated-client";
 const DROPDOWN_CONFIG = [
   {
     key: "accuracy" as const,
-    label: "How accurate do you find Exploit Intelligence's assessment?",
+    label: "How accurate do you find ExploitIQ's assessment?",
     options: [
       "Very Accurate",
       "Mostly Accurate",

@@ -8,7 +8,7 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class CredentialsService {
     /**
-     * Retrieve credential for ExploitIQ Agent
+     * Retrieve credential for ExploitIntelligence Agent
      * Single-use retrieval of decrypted credential. Credential is deleted after retrieval.
      * @returns CredentialData Credential retrieved successfully
      * @throws ApiError

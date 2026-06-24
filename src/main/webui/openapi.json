@@ -1777,7 +1777,7 @@
     },
     "/api/v1/credentials/{credentialId}": {
       "get": {
-        "summary": "Retrieve credential for ExploitIQ Agent",
+        "summary": "Retrieve credential for Exploit Intelligence Agent",
         "description": "Single-use retrieval of decrypted credential. Credential is deleted after retrieval.",
         "tags": [
           "credentials"
@@ -2985,8 +2985,8 @@
         "description": "Retrieves a paginated list of analysis reports with optional filtering and sorting",
         "parameters": [
           {
-            "description": "Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN",
-            "name": "exploitIqStatus",
+            "description": "Filter by Exploit Intelligence status. Valid values: TRUE, FALSE, UNKNOWN",
+            "name": "ExploitIntelligenceStatus",
             "in": "query",
             "schema": {
               "type": "string"
@@ -3212,10 +3212,10 @@
     "/api/v1/reports/new": {
       "post": {
         "summary": "Create new analysis request",
-        "description": "Creates a new analysis report request, processes it and optionally submits it to ExploitIQ for analysis",
+        "description": "Creates a new analysis report request, processes it and optionally submits it to Exploit Intelligence for analysis",
         "parameters": [
           {
-            "description": "Whether to submit to ExploitIQ for analysis",
+            "description": "Whether to submit to Exploit Intelligence for analysis",
             "name": "submit",
             "in": "query",
             "schema": {
@@ -3761,8 +3761,8 @@
     },
     "/api/v1/reports/{id}/submit": {
       "post": {
-        "summary": "Submit to ExploitIQ for analysis",
-        "description": "Submits analysis request to ExploitIQ for analysis",
+        "summary": "Submit to Exploit Intelligence for analysis",
+        "description": "Submits analysis request to Exploit Intelligence for analysis",
         "parameters": [
           {
             "description": "Request payload (report) ID to submit (24-character hexadecimal MongoDB ObjectId format)",

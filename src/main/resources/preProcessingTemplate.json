@@ -1,7 +1,7 @@
 {
     "specversion": "1.0",
     "id": "",
-    "source": "rhtpa.exploit-intelligence.client",
+    "source": "exploit-iq.client",
     "type": "component.analysis",
     "datacontenttype": "application/json",
     "data": []

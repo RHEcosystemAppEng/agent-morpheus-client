@@ -12,9 +12,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Red Hat Trusted Profile Analyzer exploit intelligence - client
+# Red Hat ExploitIQ - client
 
-This project is a Quarkus + React web application implemented to interact with Exploit Intelligence service
+This project is a Quarkus + React web application implemented to interact with ExploitIQ service
 for sending requests to evaluate vulnerabilities on specific SBOMs.
 
 For product documentation and deeper context, see the [Exploit Intelligence documentation](https://github.com/RHEcosystemAppEng/exploitiq-docs).
@@ -38,7 +38,7 @@ Open http://localhost:8080/
 
 On the Home page, you will find a central dashboard designed to manage your exploitability analysis workflow and monitor recent system performance.
 
-**Get Started with Exploit Intelligence**
+**Get Started with ExploitIQ**
 
 In this section, you will find quick-access links to the core functions of the application: Request Analysis, View Reports, and Learn More.
 
@@ -167,7 +167,7 @@ flowchart TB
             SYFT_FAIL[[Syft failed<br/>submission failure / excluded]]
             CYCLONE_VAL["Parse &amp; validate CycloneDX<br/>from Syft output"]
             CYCLONE_FAIL[[CycloneDX parse / validation failed<br/>submission failure / excluded]]
-            TO_AGENT["Save report &amp; submit for analysis<br/>Exploit Intelligence queue"]
+            TO_AGENT["Save report &amp; submit for analysis<br/>ExploitIQ queue"]
 
             PER_CAPTION --> SYFT
         end
@@ -188,7 +188,7 @@ flowchart TB
         SC_CYCLONE_ERR[[CycloneDX parse failed<br/>immediate error to client]]
     end
 
-    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → Exploit Intelligence)"]
+    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → ExploitIQ)"]
         direction TB
         QUEUE_GATE["Is queue full?<br/>active reports &gt;= max active"]
         PEND_CAP[Pending queue<br/>below max size?]

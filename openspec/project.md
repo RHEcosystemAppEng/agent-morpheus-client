@@ -1,13 +1,13 @@
 # Project Context
 
 ## Purpose
-Exploit Intelligence Client is a Quarkus + React web application that interacts with the Exploit Intelligence
+ExploitIQ Client is a Quarkus + React web application that interacts with the ExploitIQ
 service to evaluate vulnerabilities on Software Bill of Materials (SBOMs). The application allows users to:
 - Submit CycloneDX SBOMs and CVE for vulnerability analysis
 - Manage and view vulnerability analysis reports
 - Track products and components across multiple reports
 
-The application serves as a client interface for the Exploit Intelligence vulnerability analysis service, providing request queuing, report management, and a web-based UI for interacting with analysis results.
+The application serves as a client interface for the ExploitIQ vulnerability analysis service, providing request queuing, report management, and a web-based UI for interacting with analysis results.
 
 ## Tech Stack
 
@@ -180,11 +180,11 @@ Standard labels used to categorize vulnerability analysis results:
 
 #### Vulnerabilities
 - Additional vulnerability intelligence data
-- Can be used as an Intel Source for Exploit Intelligence
+- Can be used as an Intel Source for ExploitIQ
 - Include free-text descriptions and metadata
 
 ### Key Workflows
-1. **Request Submission**: User submits SBOM + CVEs → Request queued → Sent to Exploit Intelligence → Callback received → Report completed
+1. **Request Submission**: User submits SBOM + CVEs → Request queued → Sent to ExploitIQ → Callback received → Report completed
 2. **Report Management**: View, filter, sort, retry, delete reports
 3. **Product Tracking**: Reports grouped by product/image for analysis
 4. **Metadata Management**: Add custom metadata including git source location and commit ID
@@ -214,8 +214,8 @@ Standard labels used to categorize vulnerability analysis results:
 ## External Dependencies
 
 ### Services
-- **Exploit Intelligence Service**: Primary vulnerability analysis service
-  - Endpoint: Configurable via `quarkus.rest-client.exploit-intelligence.url`
+- **ExploitIQ Service**: Primary vulnerability analysis service
+  - Endpoint: Configurable via `quarkus.rest-client.exploit-iq.url`
   - Handles SBOM analysis and CVE evaluation
   - Sends callback responses with analysis results
 

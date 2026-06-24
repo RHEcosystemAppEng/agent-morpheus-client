@@ -77,26 +77,26 @@
     "realm": [
       {
         "name": "exploit-iq-view",
-        "description": "ExploitIQ read-only access"
+        "description": "Exploit Intelligence read-only access"
       },
       {
         "name": "exploit-iq-prodsec",
-        "description": "ExploitIQ product security team"
+        "description": "Exploit Intelligence product security team"
       },
       {
         "name": "exploit-iq-admin",
-        "description": "ExploitIQ full administrative access"
+        "description": "Exploit Intelligence full administrative access"
       }
     ],
     "client": {
       "exploit-iq-client": [
         {
           "name": "exploit-iq-view",
-          "description": "ExploitIQ read-only access (Client Role)"
+          "description": "Exploit Intelligence read-only access (Client Role)"
         },
         {
           "name": "exploit-iq-admin",
-          "description": "ExploitIQ full administrative access (Client Role)"
+          "description": "Exploit Intelligence full administrative access (Client Role)"
         }
       ]
     }

@@ -53,7 +53,7 @@ const GetStartedCard: FunctionComponent = () => {
           component={ContentVariants.h2}
           style={{ fontSize: "1.2rem", color: "black" }}
         >
-          Get started with Exploit Intelligence
+          Get started with ExploitIQ
         </Content>
       </CardHeader>
       <CardBody>
@@ -171,7 +171,7 @@ const GetStartedCard: FunctionComponent = () => {
             </StackItem>  
           <StackItem>
             <Content className="pf-v6-u-font-size-md">
-              Discover how Exploit Intelligence helps identify false positives and provides
+              Discover how ExploitIQ helps identify false positives and provides
               accurate vulnerability exploitability assessments.
             </Content>
           </StackItem>

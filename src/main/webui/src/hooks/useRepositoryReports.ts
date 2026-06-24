@@ -45,14 +45,14 @@ export interface UseRepositoryReportsResult {
 
 
 /**
- * Maps finding filter selection to API params: status (for In progress / Failed) and exploitIqStatus (for Vulnerable / Not Vulnerable / Uncertain).
+ * Maps finding filter selection to API params: status (for In progress / Failed) and ExploitIntelligenceStatus (for Vulnerable / Not Vulnerable / Uncertain).
  * When no value is selected (undefined), returns no filter so the backend returns all.
  */
 export function getFindingFilterApiParams(
   findingFilter: string | undefined
 ): {
   status?: string;
-  exploitIqStatus?: string;
+  ExploitIntelligenceStatus?: string;
 } {
   if (findingFilter == null || findingFilter === "") {
     return {};
@@ -71,7 +71,7 @@ export function getFindingFilterApiParams(
     : [];
   return {
     status: statusParts.length > 0 ? statusParts.join(",") : undefined,
-    exploitIqStatus:
+    ExploitIntelligenceStatus:
       exploitParts.length > 0 ? exploitParts.join(",") : undefined,
   };
 }
@@ -104,7 +104,7 @@ export function useRepositoryReports(
 
   const isProductContext = productId != null && cveId != null;
 
-  const { status: statusFilterValue, exploitIqStatus: exploitIqStatusApiValue } =
+  const { status: statusFilterValue, ExploitIntelligenceStatus: ExploitIntelligenceStatusApiValue } =
     useMemo(() => getFindingFilterApiParams(findingFilter), [findingFilter]);
 
   const sortByParam = useMemo(() => {
@@ -131,8 +131,8 @@ export function useRepositoryReports(
             }),
         sortBy: sortByParam,
         ...(statusFilterValue && { status: statusFilterValue }),
-        ...(exploitIqStatusApiValue && {
-          exploitIqStatus: exploitIqStatusApiValue,
+        ...(ExploitIntelligenceStatusApiValue && {
+          ExploitIntelligenceStatus: ExploitIntelligenceStatusApiValue,
         }),
         ...(repositorySearchValue?.trim() && {
           gitRepo: repositorySearchValue.trim(),
@@ -152,7 +152,7 @@ export function useRepositoryReports(
         cveId,
         sortByParam,
         statusFilterValue ?? "",
-        exploitIqStatusApiValue ?? "",
+        ExploitIntelligenceStatusApiValue ?? "",
         repositorySearchValue,
         cveIdFilter ?? "",
         rpmPackageFilter,

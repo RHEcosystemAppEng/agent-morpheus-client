@@ -541,7 +541,7 @@ const mockReports: Report[] = [
     imageTag: "v1.2.3",
   }),
 
-  // Report 2: Still analyzing (sent to ExploitIQ)
+  // Report 2: Still analyzing (sent to Exploit Intelligence)
   generateMockReport("report-2", "product-2", {
     state: "sent",
     hasVulnerabilities: false,
@@ -1222,7 +1222,7 @@ export const handlers = [
     return HttpResponse.json({ message: "Product deleted successfully" });
   }),
 
-  // POST /api/v1/reports/:id/submit - Submit to ExploitIQ
+  // POST /api/v1/reports/:id/submit - Submit to Exploit Intelligence
   http.post("/api/v1/reports/:id/submit", async ({ request, params }) => {
     await delay(getMockDelay(request));
     const { id } = params as { id: string };
