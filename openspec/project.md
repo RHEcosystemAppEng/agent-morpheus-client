@@ -38,7 +38,7 @@ The application serves as a client interface for the ExploitIQ vulnerability ana
 ### Code Style
 
 #### Java
-- Package structure: `com.redhat.ecosystemappeng.exploitintelligence`
+- Package structure: `com.redhat.ecosystemappeng.exploitiq`
 - Standard Java naming conventions (PascalCase for classes, camelCase for methods/variables)
 - REST endpoints in `rest/` package
 - Service layer in `service/` package
