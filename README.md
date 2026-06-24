@@ -50,10 +50,11 @@ In this section, you will find a summary of system performance from the past sev
 
 ### Request Analysis
 
-The _Request Analysis_ dialog lets you choose an input type with **SBOM** or **Single Repository**, then enter a CVE ID to analyze.
+The _Request Analysis_ dialog lets you choose an input type with **SBOM**, **Single Repository**, or **RPM**, then enter a CVE ID to analyze.
 
 - **SBOM:** Upload a JSON SBOM file. Supported formats: **SPDX 2.3** and **CycloneDX 1.6** JSON. Refer to [SBOM Requirements](./docs/sbom-requirements.md) for details on expected SBOM structure.
-- **Single Repository:** Provide a source repository URL and a commit ID instead of an SBOM file.
+- **Single Repository:** Provide a source repository URL and a commit ID instead of an SBOM file. Expand **Advanced** (optional) to set a **Manifest path** within the repo or a **Programming language** (`go`, `python`, `javascript`, `java`, or `c`); leave both blank to let the agent autodetect.
+- **RPM:** Provide the package as a hyphen-separated **name-version-release** (N-V-R), for example `openssl-3.0.7-5.el9`, and select an architecture.
 
 For private repositories, enable **Private repository** and enter an **Authentication secret** (SSH private key or Personal Access Token; the form auto-detects the type).
 
@@ -61,14 +62,18 @@ For private repositories, enable **Private repository** and enter an **Authentic
 
 ![request_analysis](./docs/images/request_analysis.png)
 
-Once you have filled in the required fields for your chosen mode (SBOM file or repository and commit) and the CVE ID, you will be able to submit the request
+Once you have filled in the required fields for your chosen mode (SBOM file, repository and commit, or RPM package and architecture) and the CVE ID, you will be able to submit the request
 
 
 After submitting the request, you will be redirected to the Report page. Once the analysis is complete, you will find a detailed report featuring the Agent's results for your request along with additional data insights.
 
 ![report](./docs/images/report.png)
 
-- **Direct Links:** You will find that the _Repository Name_ links directly to the git repository, while the _Commit ID_ links to the specific commit used in the analysis.
+- **Direct Links:** For repository-based analyses, the _Repository Name_ links directly to the git repository, while the _Commit ID_ links to the specific commit used in the analysis. For **RPM** requests, the report shows the package N-V-R, architecture, and an RPM package URL instead of repository details.
+
+An example RPM report detail page:
+
+![report_rpm](./docs/images/report_rpm.png)
 
 
 **Note:** There is a configurable pool of concurrent requests. Any request that is submitted when the pool is full will be queued. If after a certain time a callback response is not received, the report will be _expired_ (failed).
@@ -85,14 +90,16 @@ you will navigate to the CVE Details page where you can find details about a spe
 
 ### Reports Page
 
-The Reports area is split into two tabs: **SBOMs** and **Single Repositories**. Use the tab that matches how the analysis was submitted to browse, sort, filter, and open results for each report type.
+The Reports area is split into three tabs: **SBOMs**, **Single Repositories**, and **RPM**. Use the tab that matches how the analysis was submitted to browse, sort, filter, and open results for each report type.
 
-**Report Organization:** Each row represents a report for that tab’s context (SBOM-based products or single-repository analyses), which may reflect one component or many depending on the original request.
+**Report Organization:** Each row represents a report for that tab’s context (SBOM-based products, single-repository analyses, or RPM package checks), which may reflect one component or many depending on the original request.
 
 You will be able to sort, filter, and organize the reports table to quickly locate specific data.
 
 ![reports_page](./docs/images/reports_page.png)
 ![reports_page_single](./docs/images/reports_page_single.png)
+![reports_page_rpm](./docs/images/reports_page_rpm.png)
+
 
 After clicking a _ID_ link, you will find one of two views depending on the request type:
 
@@ -116,6 +123,10 @@ On this page, you will find:
 You will be able to sort, filter, and organize the reports to quickly locate specific data.
 
 - **ID link:** Finally, By clicking the _ID_ link, you will be taken to the detailed report page for that specific repository, the same page you would access directly for a single-component SBOM.
+
+### Excluded Components Page
+
+For multi-component SBOM reports, some components may fail before analysis starts (for example during Syft SBOM generation or metadata validation). On the SBOM overview **Report** page, when any components were excluded, the **Excluded components** link opens a table of those failures: **Component**, **Package URL**, and **Error**. Use this page to see why specific images or packages were not analyzed and what to fix in the SBOM or image metadata.
 
 ### Report
 

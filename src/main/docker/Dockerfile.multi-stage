@@ -1,5 +1,7 @@
 ## Stage 1 : build with maven builder image with native capabilities
-FROM registry.redhat.io/quarkus/mandrel-for-jdk-21-rhel8:23.1 AS build
+# Quarkus 3.36+ requires Mandrel/GraalVM 25+ for native builds:
+# https://quarkus.io/blog/mandrel-25-minimum-version
+FROM registry.redhat.io/quarkus/mandrel-25-rhel9@sha256:b19bdb7a74ed8827d5bc97dd95386da862a57571f7e8c2b77347912fdc0578f3 AS build
 
 # Build profile - affects build-time properties only
 # Default: prod (OpenShift OAuth). Override with --build-arg QUARKUS_PROFILE=external-idp

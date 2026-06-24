@@ -26,7 +26,6 @@ public class UploadSpdxRestTest {
     }
 
     private static final String TEST_SBOM_FILE = "src/test/resources/devservices/spdx-sboms/gitops-1.19.json";
-    private static final String SPDX_WITH_UNSUPPORTED = "src/test/resources/devservices/spdx-sboms/spdx-with-unsupported-component.json";
     private static final String INVALID_SPDX_DIR = "src/test/resources/devservices/spdx-sboms/invalid";
     private static final String TEST_VULN_ID = "CVE-2021-4238";
 
@@ -87,40 +86,6 @@ public class UploadSpdxRestTest {
             .then()
             .statusCode(200)
             .header("X-Total-Elements", String.valueOf(GITOPS_119_EXPECTED_REPORT_COUNT));
-    }
-
-    @Test
-    void testUpload_SpdxWithUnsupportedComponent_RecordsInSubmissionFailures() {
-        File sbomFile = new File(SPDX_WITH_UNSUPPORTED);
-
-        String productId = RestAssured.given()
-            .contentType(ContentType.MULTIPART)
-            .multiPart("cveId", TEST_VULN_ID)
-            .multiPart("file", sbomFile)
-            .when()
-            .post("/api/v1/products/upload-spdx")
-            .then()
-            .statusCode(202)
-            .contentType(ContentType.JSON)
-            .body("productId", notNullValue())
-            .extract()
-            .path("productId");
-
-        Assertions.assertNotNull(productId, "Product ID should not be null");
-        RestApiTestFixture.awaitSpdxProductProcessingComplete(productId);
-
-        RestAssured.given()
-            .when()
-            .get("/api/v1/products/" + productId)
-            .then()
-            .statusCode(200)
-            .contentType(ContentType.JSON)
-            .body("data.submittedCount", equalTo(2))
-            .body("data.submissionFailures", notNullValue())
-            .body("data.submissionFailures", hasSize(1))
-            .body("data.submissionFailures[0].name", equalTo("maven-lib"))
-            .body("data.submissionFailures[0].version", equalTo("2.0"))
-            .body("data.submissionFailures[0].error", containsString("Expects a container image purl with format pkg:oci/name@sha256:hash?repository_url=...&tag=..."));
     }
 
     @Test

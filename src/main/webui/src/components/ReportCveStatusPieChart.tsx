@@ -110,7 +110,7 @@ const ReportCveStatusPieChart: React.FC<ReportCveStatusPieChartProps> = ({
             colorScale={colors}
             legendData={legendData}
             title={`${total}`}
-            subTitle="Statuses"
+            subTitle="Total findings"
             total={total}
           />
         )}

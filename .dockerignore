@@ -60,6 +60,10 @@ src/test/
 
 # Quinoa
 .quinoa
+src/main/webui/node_modules
+src/main/webui/dist
+src/main/webui/.quinoa
+src/main/webui/.env
 
 # Data
 data/

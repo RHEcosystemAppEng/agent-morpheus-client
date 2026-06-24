@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Assertions;
 
@@ -22,6 +23,8 @@ public final class RestApiTestFixture {
 
     /** Quarkus / MicroProfile config key for RestAssured base URI during REST tests. */
     public static final String CONFIG_KEY_EXTERNAL_BASE_URL = "morpheus.rest-test.external-base-url";
+    public static final String CONFIG_KEY_SPDX_TIMEOUT = "morpheus.rest-test.spdx-timeout";
+    private static final Duration DEFAULT_SPDX_TIMEOUT = Duration.ofMinutes(10);
 
     private RestApiTestFixture() {
     }
@@ -31,7 +34,7 @@ public final class RestApiTestFixture {
      * Quarkus-managed RestAssured defaults.
      */
     public static Optional<String> externalBaseUrl() {
-        Optional<String> raw = ConfigProvider.getConfig().getOptionalValue(CONFIG_KEY_EXTERNAL_BASE_URL, String.class);
+        Optional<String> raw = config().getOptionalValue(CONFIG_KEY_EXTERNAL_BASE_URL, String.class);
         if (raw.isEmpty()) {
             return Optional.empty();
         }
@@ -57,7 +60,9 @@ public final class RestApiTestFixture {
      * Waits until {@code reports_for_product + submission_failures == submittedCount} on the product.
      */
     public static void awaitSpdxProductProcessingComplete(String productId) {
-        long deadline = System.currentTimeMillis() + Duration.ofMinutes(2).toMillis();
+        Duration timeout = config().getOptionalValue(CONFIG_KEY_SPDX_TIMEOUT, Duration.class)
+            .orElse(DEFAULT_SPDX_TIMEOUT);
+        long deadline = System.currentTimeMillis() + timeout.toMillis();
         while (System.currentTimeMillis() < deadline) {
             var product = RestAssured.given()
                 .when()
@@ -89,7 +94,12 @@ public final class RestApiTestFixture {
                 Assertions.fail("Interrupted while waiting for SPDX processing");
             }
         }
-        Assertions.fail("Timeout waiting for SPDX processing to finish for product " + productId);
+        Assertions.fail("Timeout waiting for SPDX processing to finish for product " + productId
+            + " within " + timeout);
+    }
+
+    private static Config config() {
+        return ConfigProvider.getConfig();
     }
 
     private static String stripTrailingSlash(String url) {

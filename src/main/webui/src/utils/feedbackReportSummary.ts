@@ -77,7 +77,7 @@ export function getReportSummaryForFeedback(report: FullReport): string {
       lines.push(`Summary: ${vuln.summary}`);
       lines.push("");
     }
-    if (isRpm && vuln.details?.trim()) {
+    if (vuln.details?.trim()) {
       lines.push(`Details: ${vuln.details}`);
       lines.push("");
     }
