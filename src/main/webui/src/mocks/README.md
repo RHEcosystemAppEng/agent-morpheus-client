@@ -151,7 +151,7 @@ The following API endpoints are currently mocked:
 - `POST /api/reports/new` - Create new report
 - `DELETE /api/reports/:id` - Delete report
 - `DELETE /api/reports/product/:id` - Delete product
-- `POST /api/reports/:id/submit` - Submit report to Exploit Intelligence
+- `POST /api/reports/:id/submit` - Submit report to ExploitIQ
 - `POST /api/reports/:id/retry` - Retry report analysis
 
 ## Customizing Mock Data

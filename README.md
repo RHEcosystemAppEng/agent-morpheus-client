@@ -17,7 +17,7 @@ limitations under the License.
 This project is a Quarkus + React web application implemented to interact with ExploitIQ service
 for sending requests to evaluate vulnerabilities on specific SBOMs.
 
-For product documentation and deeper context, see the [Exploit Intelligence documentation](https://github.com/RHEcosystemAppEng/exploitiq-docs).
+For product documentation and deeper context, see the [ExploitIQ documentation](https://github.com/RHEcosystemAppEng/exploitiq-docs).
 
 
 ## Development
@@ -147,7 +147,7 @@ flowchart TB
     classDef ok fill:#bbf7d0,stroke:#15803d,stroke-width:2px,color:#14532d
     classDef caption fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#334155
 
-    HEADER["<b>Exploit Intelligence -<br/>Analysis Pipeline</b>"]
+    HEADER["<b>ExploitIQ -<br/>Analysis Pipeline</b>"]
     class HEADER caption
 
     START([User request analysis])

@@ -182,7 +182,7 @@ The report page SHALL use API calls for data fetching, using hooks defined in th
 #### Scenario: Repository reports data fetched via API
 - **WHEN** the repository reports table loads with SBOM report ID and CVE ID in route parameters
 - **THEN** reports data is fetched using `/api/v1/reports` endpoint with `productId` and `vulnId` query parameters via the `usePaginatedApi` hook (see `api-hooks` specification)
-- **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `ExploitIntelligenceStatus`, `gitRepo`)
+- **AND** the API call includes pagination parameters (`page`, `pageSize`), sorting parameters (`sortBy`), and optional filtering parameters (`status`, `exploitIqStatus`, `gitRepo`)
 
 #### Scenario: Report page live refresh
 - **WHEN** a user views the report page

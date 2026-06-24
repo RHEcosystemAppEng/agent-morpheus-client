@@ -68,7 +68,7 @@ export class ReportEndpointService {
      * @throws ApiError
      */
     public static getApiV1Reports({
-        ExploitIntelligenceStatus,
+        exploitIqStatus,
         imageName,
         imageTag,
         inputType,
@@ -82,9 +82,9 @@ export class ReportEndpointService {
         vulnId,
     }: {
         /**
-         * Filter by Exploit Intelligence status. Valid values: TRUE, FALSE, UNKNOWN
+         * Filter by ExploitIQ status. Valid values: TRUE, FALSE, UNKNOWN
          */
-        ExploitIntelligenceStatus?: string,
+        exploitIqStatus?: string,
         /**
          * Filter by image name
          */
@@ -134,7 +134,7 @@ export class ReportEndpointService {
             method: 'GET',
             url: '/api/v1/reports',
             query: {
-                'ExploitIntelligenceStatus': ExploitIntelligenceStatus,
+                'exploitIqStatus': exploitIqStatus,
                 'imageName': imageName,
                 'imageTag': imageTag,
                 'inputType': inputType,
@@ -207,7 +207,7 @@ export class ReportEndpointService {
     }
     /**
      * Create new analysis request
-     * Creates a new analysis report request, processes it and optionally submits it to Exploit Intelligence for analysis
+     * Creates a new analysis report request, processes it and optionally submits it to ExploitIQ for analysis
      * @returns ReportData Analysis request accepted
      * @throws ApiError
      */
@@ -220,7 +220,7 @@ export class ReportEndpointService {
          */
         requestBody: ReportRequest,
         /**
-         * Whether to submit to Exploit Intelligence for analysis
+         * Whether to submit to ExploitIQ for analysis
          */
         submit?: boolean,
     }): CancelablePromise<ReportData> {
@@ -519,8 +519,8 @@ export class ReportEndpointService {
         });
     }
     /**
-     * Submit to Exploit Intelligence for analysis
-     * Submits analysis request to Exploit Intelligence for analysis
+     * Submit to ExploitIQ for analysis
+     * Submits analysis request to ExploitIQ for analysis
      * @returns string Request submitted successfully
      * @throws ApiError
      */

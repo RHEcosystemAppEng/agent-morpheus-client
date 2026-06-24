@@ -11,7 +11,7 @@
 // limitations under the License.
 
 /**
- * Shared mapping between Exploit Intelligence/justification API values (TRUE, FALSE, UNKNOWN)
+ * Shared mapping between ExploitIQ/justification API values (TRUE, FALSE, UNKNOWN)
  * and display labels (Vulnerable, Not Vulnerable, Uncertain).
  * Used by filters, CveStatus, findingDisplay, and charts.
  */
@@ -33,7 +33,7 @@ export const JUSTIFICATION_DISPLAY_LABELS = [
 ] as const;
 
 /**
- * Maps display label to API value for Exploit Intelligence/justification status.
+ * Maps display label to API value for ExploitIQ/justification status.
  */
 export function displayToApi(displayLabel: string): string {
   switch (displayLabel) {

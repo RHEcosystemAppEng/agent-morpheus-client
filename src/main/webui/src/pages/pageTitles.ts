@@ -15,7 +15,7 @@
  * Use {@link withAppTitle} so every tab includes the product name.
  */
 
-export const DOCUMENT_TITLE_APP_NAME = "Exploit Intelligence";
+export const DOCUMENT_TITLE_APP_NAME = "ExploitIQ";
 
 /** Full tab title: page-specific segment plus app name */
 export function withAppTitle(pageSegment: string): string {

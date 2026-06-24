@@ -14,7 +14,7 @@ limitations under the License.
 
 # SBOM Requirements
 
-Exploit Intelligence supports two SBOM formats for analysis requests:
+ExploitIQ supports two SBOM formats for analysis requests:
 
 | Format | Use case |
 |--------|----------|
