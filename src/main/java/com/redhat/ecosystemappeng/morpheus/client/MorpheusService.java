@@ -24,7 +24,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.concurrent.CompletionStage;
 
-@RegisterRestClient(configKey = "morpheus")
+@RegisterRestClient(configKey = "exploit-intelligence")
 @Produces(MediaType.APPLICATION_JSON)
 public interface MorpheusService {
   
