@@ -24,7 +24,7 @@ Use the `rest-client` properties for updating the default the github and morpheu
 
 ```properties
 quarkus.rest-client.github.url=https://api.github.com
-quarkus.rest-client.morpheus.url=https://agent-morpheus:8080/scan
+quarkus.rest-client.exploit-intelligence.url=https://agent-morpheus:8080/scan
 ```
 
 For development the external calls will be mocked using WireMock. The report behaviour

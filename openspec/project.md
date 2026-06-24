@@ -215,7 +215,7 @@ Standard labels used to categorize vulnerability analysis results:
 
 ### Services
 - **Exploit Intelligence Service**: Primary vulnerability analysis service
-  - Endpoint: Configurable via `quarkus.rest-client.morpheus.url`
+  - Endpoint: Configurable via `quarkus.rest-client.exploit-intelligence.url`
   - Handles SBOM analysis and CVE evaluation
   - Sends callback responses with analysis results
 
