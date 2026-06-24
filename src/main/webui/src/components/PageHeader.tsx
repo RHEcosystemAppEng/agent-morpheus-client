@@ -158,7 +158,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ isSidebarOpen, onSidebarToggle 
             <BarsIcon />
           </PageToggleButton>
         </MastheadToggle>
-        <MastheadBrand aria-label="Red Hat Trusted Profile Analyzer ExploitIQ">
+        <MastheadBrand aria-label="ExploitIQ">
           <Brand />
         </MastheadBrand>
         <Flex alignItems={{ default: 'alignItemsCenter' }} className="pf-v6-u-ml-sm">

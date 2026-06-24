@@ -23,7 +23,7 @@ The application SHALL display consistent product branding in the page header.
 
 #### Scenario: Product name and icon display
 - **WHEN** a user views any page
-- **THEN** the product name "Red Hat Trusted Profile Analyzer ExploitIQ" and icon are visible in the header
+- **THEN** the product name "Red Hat ExploitIQ" and icon are visible in the header
 
 ### Requirement: Application Navigation
 The application SHALL provide consistent navigation routes using lowercase paths. All routes SHALL use lowercase letters to follow REST conventions and maintain consistency.
