@@ -388,7 +388,7 @@ Ensure your identity provider or Keycloak is configured to include the `email` c
 
 The application implements a **Unified Role Mapping** strategy, allowing you to manage permissions using either OpenShift Groups or OIDC Roles (Keycloak), depending on your environment.
 
-The application looks for specific **Target Roles** (configurable via `exploit-Iq.security.target-roles`):
+The application looks for specific **Target Roles** (configurable via `exploit-iq.security.target-roles`):
 - `exploit-iq-admin`: Admin access
 - `exploit-iq-view`: Read-only access
 - `exploit-iq-prodsec`: Product Security access
