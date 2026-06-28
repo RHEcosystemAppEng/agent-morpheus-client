@@ -1,5 +1,5 @@
 ---
-# Maven test for @QuarkusTest in CI: JDK + Syft base image (quay.io/exploit-iq/agent-morpheus-client-test-image).
+# Maven test for @QuarkusTest in CI: JDK + Syft base image (quay.io/ecosystem-appeng/exploit-iq-test-image).
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -10,7 +10,7 @@ metadata:
     component: exploit-iq-client
 spec:
   description: >-
-    Runs ./mvnw test with ephemeral Mongo; uses quay.io/exploit-iq/agent-morpheus-client-test-image (JDK + Syft).
+    Runs ./mvnw test with ephemeral Mongo; uses quay.io/ecosystem-appeng/exploit-iq-test-image (JDK + Syft).
   workspaces:
     - name: source
       description: Cloned repository (git-clone output)
@@ -20,7 +20,7 @@ spec:
       description: Registry pull secret for Syft (directory with .dockerconfigjson)
   steps:
     - name: test
-      image: quay.io/exploit-iq/agent-morpheus-client-test-image:latest
+      image: quay.io/ecosystem-appeng/exploit-iq-test-image:latest
       workingDir: $(workspaces.source.path)
       env:
         - name: QUARKUS_MONGODB_DEVSERVICES_ENABLED
