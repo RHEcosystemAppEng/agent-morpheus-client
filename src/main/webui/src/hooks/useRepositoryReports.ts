@@ -104,7 +104,7 @@ export function useRepositoryReports(
 
   const isProductContext = productId != null && cveId != null;
 
-  const { status: statusFilterValue, exploitIqStatus: ExploitIqStatusApiValue } =
+  const { status: statusFilterValue, exploitIqStatus: exploitIqStatusApiValue } =
     useMemo(() => getFindingFilterApiParams(findingFilter), [findingFilter]);
 
   const sortByParam = useMemo(() => {
@@ -131,8 +131,8 @@ export function useRepositoryReports(
             }),
         sortBy: sortByParam,
         ...(statusFilterValue && { status: statusFilterValue }),
-        ...(ExploitIqStatusApiValue && {
-          exploitIqStatus: ExploitIqStatusApiValue,
+        ...(exploitIqStatusApiValue && {
+          exploitIqStatus: exploitIqStatusApiValue,
         }),
         ...(repositorySearchValue?.trim() && {
           gitRepo: repositorySearchValue.trim(),
@@ -152,7 +152,7 @@ export function useRepositoryReports(
         cveId,
         sortByParam,
         statusFilterValue ?? "",
-        ExploitIqStatusApiValue ?? "",
+        exploitIqStatusApiValue ?? "",
         repositorySearchValue,
         cveIdFilter ?? "",
         rpmPackageFilter,

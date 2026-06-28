@@ -241,7 +241,7 @@ export class ReportEndpointService {
     }
     /**
      * Create analysis request for an RPM package
-     * Accepts RPM name, version, release, architecture, and a CVE id; builds a ExploitIq input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object "errors" mapping field names to messages).
+     * Accepts RPM name, version, release, architecture, and a CVE id; builds an ExploitIq input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object "errors" mapping field names to messages).
      * @returns ReportData Analysis request accepted
      * @throws ApiError
      */

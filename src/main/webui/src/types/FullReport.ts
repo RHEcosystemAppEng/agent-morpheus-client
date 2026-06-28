@@ -42,7 +42,7 @@ export interface Justification {
   reason?: string;
 }
 
-/** RPM NEVRA persisted under ExploitIq `input.image.target_package`. */
+/** RPM NEVRA persisted under ExploitIQ `input.image.target_package`. */
 export interface RpmTargetPackage {
   name?: string;
   version?: string;
