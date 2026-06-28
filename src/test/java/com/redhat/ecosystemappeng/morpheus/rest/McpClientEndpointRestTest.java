@@ -1,4 +1,4 @@
-package com.redhat.ecosystemappeng.morpheus.rest;
+package com.redhat.ecosystemappeng.exploitiq.rest;
 
 import static org.hamcrest.Matchers.*;
 
