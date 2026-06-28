@@ -1,0 +1,193 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026, Red Hat Inc. & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.redhat.ecosystemappeng.morpheus.rest;
+
+import com.redhat.ecosystemappeng.morpheus.model.ErrorResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import com.redhat.ecosystemappeng.morpheus.model.McpClientRegistration;
+import com.redhat.ecosystemappeng.morpheus.model.PaginatedResult;
+import com.redhat.ecosystemappeng.morpheus.exception.McpClientAlreadyExistsException;
+import com.redhat.ecosystemappeng.morpheus.service.McpClientService;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import java.util.Objects;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
+
+@SecurityScheme(
+        securitySchemeName = "jwt",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "jwt"
+)
+@SecurityRequirement(name = "jwt")
+@Path("mcp-clients")
+@Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "mcp-clients", description = "MCP OAuth client registration management for compliance auditing")
+public class McpClientEndpoint {
+
+    private static final Logger LOGGER = Logger.getLogger(McpClientEndpoint.class);
+
+    private final McpClientService mcpClientService;
+
+    @Inject
+    public McpClientEndpoint(McpClientService mcpClientService) {
+        this.mcpClientService = mcpClientService;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Register an MCP client",
+            description = "Persists an OAuth client registration from the MCP server's Dynamic Client Registration flow."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "201",
+                    description = "Client registered successfully",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = McpClientRegistration.class)
+                    )
+            ),
+            @APIResponse(responseCode = "400", description = "Invalid registration data"),
+            @APIResponse(responseCode = "409", description = "Client with this ID already exists")
+    })
+    public Response register(@Valid McpClientRegistration registration) {
+        McpClientRegistration saved = mcpClientService.register(registration);
+        return Response.status(Response.Status.CREATED).entity(saved).build();
+    }
+
+    @GET
+    @Path("/{clientId}")
+    @Operation(
+            summary = "Get MCP client by ID",
+            description = "Retrieves a registered MCP client by its client ID."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Client found",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON,
+                            schema = @Schema(implementation = McpClientRegistration.class)
+                    )
+            ),
+            @APIResponse(responseCode = "404", description = "Client not found")
+    })
+    public Response getByClientId(@PathParam("clientId") String clientId) {
+        McpClientRegistration registration = mcpClientService.getByClientId(clientId);
+        if (Objects.isNull(registration)) {
+            throw new NotFoundException("Client not found: " + clientId);
+        }
+        return Response.ok(registration).build();
+    }
+
+    @GET
+    @Operation(
+            summary = "List MCP clients",
+            description = "Lists all registered MCP clients with pagination. Used for compliance auditing."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Client list",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            )
+    })
+    public Response list(
+            @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @QueryParam("pageSize") @DefaultValue("100") @Min(1) int pageSize) {
+        PaginatedResult<McpClientRegistration> result = mcpClientService.list(page, pageSize);
+        return Response.ok(result.results)
+                .header("X-Total-Pages", result.totalPages)
+                .header("X-Total-Elements", result.totalElements)
+                .build();
+    }
+
+    @DELETE
+    @Path("/{clientId}")
+    @Operation(
+            summary = "Delete MCP client",
+            description = "Removes a registered MCP client. For administrative cleanup."
+    )
+    @APIResponses({
+            @APIResponse(responseCode = "204", description = "Client deleted"),
+            @APIResponse(responseCode = "404", description = "Client not found")
+    })
+    public Response delete(@PathParam("clientId") String clientId) {
+        boolean deleted = mcpClientService.delete(clientId);
+        if (!deleted) {
+            throw new NotFoundException("Client not found: " + clientId);
+        }
+        return Response.noContent().build();
+    }
+
+    @ServerExceptionMapper
+    public Response mapAlreadyExistsException(McpClientAlreadyExistsException e) {
+        return Response.status(Response.Status.CONFLICT)
+                .entity(new ErrorResponse(e.getMessage()))
+                .build();
+    }
+
+    @ServerExceptionMapper
+    public Response mapNotFoundException(NotFoundException e) {
+        return Response.status(Response.Status.NOT_FOUND)
+                .entity(new ErrorResponse(e.getMessage()))
+                .build();
+    }
+
+    @ServerExceptionMapper
+    public Response mapConstraintViolationException(ConstraintViolationException e) {
+        String message = e.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Invalid request");
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ErrorResponse(message))
+                .build();
+    }
+
+    @ServerExceptionMapper
+    public Response mapException(Exception e) {
+        LOGGER.error("Unexpected error in McpClientEndpoint", e);
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(new ErrorResponse("An unexpected error occurred"))
+                .build();
+    }
+}

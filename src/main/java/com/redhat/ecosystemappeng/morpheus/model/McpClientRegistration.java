@@ -1,0 +1,48 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026, Red Hat Inc. & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.redhat.ecosystemappeng.morpheus.model;
+
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import com.redhat.ecosystemappeng.morpheus.model.validation.ValidInstant;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.util.List;
+import java.util.Map;
+
+@Schema(name = "McpClientRegistration", description = "MCP OAuth client registration for compliance auditing")
+@RegisterForReflection
+public record McpClientRegistration(
+        @NotBlank
+        @Schema(required = true, description = "Unique client identifier (UUID)")
+        String clientId,
+        @NotBlank
+        @Schema(required = true, description = "Client display name")
+        String clientName,
+        @NotNull
+        @Schema(required = true, description = "Registered OAuth redirect URIs")
+        List<String> redirectUris,
+        @NotNull
+        @Schema(required = true, description = "OAuth grant types")
+        List<String> grantTypes,
+        @NotBlank
+        @ValidInstant
+        @Schema(required = true, description = "Registration timestamp (ISO 8601)")
+        String registeredAt,
+        @NotNull
+        @Schema(required = true, description = "Full OAuth client information blob from MCP SDK DCR — contains redirect_uris, grant_types, token_endpoint_auth_method, scope, and other RFC 7591 client metadata (client_secret is stripped before persistence)")
+        Map<String, Object> clientData
+) {}
