@@ -1,6 +1,6 @@
 # JDK 21 + Syft for Tekton maven-test and local CI.
 # Syft installation mirrors src/main/docker/Dockerfile.multi-stage (mandrel stage + COPY /tmp/syft).
-# Build (repo root): docker build -f src/test/docker/Dockerfile -t quay.io/exploit-iq/exploit-iq-test-image:latest src/test/docker
+# Build (repo root): docker build -f src/test/docker/Dockerfile -t quay.io/ecosystem-appeng/exploit-iq-test-image:latest src/test/docker
 #
 # Why mandrel for syft only: anchore install.sh unpacks a .tar.gz and needs gzip; ubi9/openjdk-21
 # slim variants may not ship gzip, which causes "tar (child): gzip: Cannot exec".

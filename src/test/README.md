@@ -48,7 +48,7 @@ For project-wide conventions (Surefire vs Failsafe, quality gates), see `openspe
 
 ## CI test pipeline image
 
-The Tekton task **`.tekton/tekton-tasks/maven-test-ci.yaml`** runs **`./mvnw test`** inside **`quay.io/exploit-iq/exploit-iq-test-image:latest`**. That image bundles **JDK 21** (UBI OpenJDK) and **Syft** on `PATH`, using the same Syft install approach as **`src/main/docker/Dockerfile.multi-stage`** (install on Mandrel builder, copy `/tmp/syft` into the runtime layer) so `install.sh` has `gzip`/`tar` available.
+The Tekton task **`.tekton/tekton-tasks/maven-test-ci.yaml`** runs **`./mvnw test`** inside **`quay.io/ecosystem-appeng/exploit-iq-test-image:latest`**. That image bundles **JDK 21** (UBI OpenJDK) and **Syft** on `PATH`, using the same Syft install approach as **`src/main/docker/Dockerfile.multi-stage`** (install on Mandrel builder, copy `/tmp/syft` into the runtime layer) so `install.sh` has `gzip`/`tar` available.
 
 Pipelines expect that image tag to exist in Quay before `maven-test` can succeed.
 
@@ -58,10 +58,10 @@ From the **repository root** (requires access to `registry.redhat.io`; use `dock
 
 ```bash
 docker build -f src/test/docker/Dockerfile \
-  -t quay.io/exploit-iq/exploit-iq-test-image:latest \
+  -t quay.io/ecosystem-appeng/exploit-iq-test-image:latest \
   src/test/docker
 
-docker push quay.io/exploit-iq/exploit-iq-test-image:latest
+docker push quay.io/ecosystem-appeng/exploit-iq-test-image:latest
 ```
 
 For pushes to a **private** registry, point **`DOCKER_CONFIG`** at a directory that contains **`config.json`** (see Docker documentation); that directory must be the config **folder**, not the file path.
