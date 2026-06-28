@@ -1,4 +1,4 @@
-%% Analysis pipeline / workflow — aligned with morpheus-client backend behavior.
+%% Analysis pipeline / workflow — aligned with exploit-iq-client backend behavior.
 %% Product path: success / failed edge order (success left, failed right) where binary.
 %%
 %% Bold / line breaks: HTML in quoted labels (<b>, <br/>). Requires htmlLabels (init below).
@@ -33,7 +33,7 @@ flowchart TB
             SYFT_FAIL[[Syft failed<br/>submission failure / excluded]]
             CYCLONE_VAL["Parse &amp; validate CycloneDX<br/>from Syft output"]
             CYCLONE_FAIL[[CycloneDX parse / validation failed<br/>submission failure / excluded]]
-            TO_AGENT["Save report &amp; submit for analysis<br/>Morpheus queue"]
+            TO_AGENT["Save report &amp; submit for analysis<br/>ExploitIQ queue"]
 
             PER_CAPTION --> SYFT
         end
@@ -54,7 +54,7 @@ flowchart TB
         SC_CYCLONE_ERR[[CycloneDX parse failed<br/>immediate error to client]]
     end
 
-    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → Morpheus)"]
+    subgraph AGENT["<b>Shared — Submit &amp; agent pipeline</b><br/>(RequestQueueService → ExploitIQ)"]
         direction TB
         QUEUE_GATE["Is queue full?<br/>active reports &gt;= max active"]
         PEND_CAP[Pending queue<br/>below max size?]

@@ -3043,7 +3043,7 @@
   "metadata": {
     "product_id": "product-9",
     "user": "vbelouso@redhat.com",
-    "source": "morpheus-parser",
+    "source": "exploit-iq-parser",
     "batch_id": "mp-dnxbrn",
     "requested_at": "2025-01-20T14:46:58.335Z",
     "submitted_at": "2025-01-20T15:46:58.335583Z",

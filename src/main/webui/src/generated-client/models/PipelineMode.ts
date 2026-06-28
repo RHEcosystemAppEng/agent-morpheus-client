@@ -3,6 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Morpheus agent pipeline mode
+ * ExploitIq agent pipeline mode
  */
 export type PipelineMode = 'full_pipeline' | 'rpm_package_checker';

@@ -24,11 +24,11 @@ RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | 
 ## Stage 2 : create the docker final image
 FROM registry.redhat.io/ubi9/ubi-minimal:9.7
 
-LABEL description="Red Hat Agent Morpheus - UI"
-LABEL io.k8s.description="Red Hat Agent Morpheus - UI"
-LABEL io.k8s.display-name="Agent Morpheus UI"
-LABEL io.openshift.tags="agent morpheus ui"
-LABEL summary="The Agent Morpheus UI allows interacting with the Agent Morpheus service"
+LABEL description="Red Hat ExploitIQ - UI"
+LABEL io.k8s.description="Red Hat ExploitIQ - UI"
+LABEL io.k8s.display-name="ExploitIQ UI"
+LABEL io.openshift.tags="ExploitIQ ui"
+LABEL summary="The ExploitIQ UI allows interacting with the ExploitIQ service"
 
 WORKDIR /work/
 COPY --from=build /code/target/*-runner /work/application

@@ -532,7 +532,7 @@ scenario_devservices_github() {
     -Dquarkus.profile=external-idp \
     "-Dquarkus.oidc.auth-server-url=${KC_BASE_URL}/realms/${KC_REALM}" \
     "-Dquarkus.oidc.credentials.secret=${APP_CLIENT_SECRET}" \
-    -Dmorpheus.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
+    -Dexploit-iq.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
 }
 
 scenario_external_keycloak() {
@@ -609,7 +609,7 @@ scenario_external_keycloak() {
       -Dquarkus.keycloak.devservices.enabled=false \
       -Dquarkus.oidc.tls.verification=none \
       "-Dquarkus.rest-client.component-syncer.url=http://localhost:8088/exploit-iq/component-syncer" \
-      -Dmorpheus.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
+      -Dexploit-iq.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
   fi
 }
 
@@ -789,7 +789,7 @@ scenario_import_realm() {
       "-Dquarkus.oidc.credentials.secret=${APP_CLIENT_SECRET}" \
       -Dquarkus.keycloak.devservices.enabled=false \
       -Dquarkus.oidc.tls.verification=none \
-      -Dmorpheus.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
+      -Dexploit-iq.syncer.health.url=http://localhost:8088/exploit-iq/component-syncer
   fi
 }
 

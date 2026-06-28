@@ -27,7 +27,7 @@ For authentication setup (Keycloak, external identity providers, testing), see t
 You can run your application in dev mode that enables live coding using:
 
 ```shell
-./mvnw quarkus:dev -Dquarkus.rest-client.exploit-iq.url=https://agent-morpheus-route.com/scan
+./mvnw quarkus:dev -Dquarkus.rest-client.exploit-iq.url=https://exploit-iq-route.com/scan
 ```
 
 By default, this runs with **authentication disabled**. To enable Keycloak DevServices and OIDC:
@@ -78,7 +78,7 @@ npm run dev:standalone
 
 ## Supplying application data
 
-You can supply the application with data by sending Agent Morpheus output.json files from your local file system to the application using:
+You can supply the application with data by sending ExploitIQ output.json files from your local file system to the application using:
 
 ```shell
  curl -i -X POST --header 'Content-type: application/json' http://localhost:8080/api/v1/reports -d @/path/to/file.json
@@ -144,7 +144,7 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
 ```
 
-You can then execute your native executable with: `./target/agent-morpheus-client-1.0.0-SNAPSHOT-runner`
+You can then execute your native executable with: `./target/exploit-iq-client-1.0.0-SNAPSHOT-runner`
 
 ### Building with profiles
 

@@ -18,13 +18,13 @@ limitations under the License.
 
 For detailed authentication configuration including OpenShift OAuth, Keycloak, and external identity providers (Google, GitHub, Azure AD), see the [Authentication Guide](./authentication.md).
 
-## External Services (GitHub / Morpheus)
+## External Services (GitHub / ExploitIQ)
 
-Use the `rest-client` properties for updating the default the github and morpheus RestClient endpoints:
+Use the `rest-client` properties for updating the default the github and ExploitIQ RestClient endpoints:
 
 ```properties
 quarkus.rest-client.github.url=https://api.github.com
-quarkus.rest-client.exploit-iq.url=https://agent-morpheus:8080/scan
+quarkus.rest-client.exploit-iq.url=https://exploit-iq:8080/scan
 ```
 
 For development the external calls will be mocked using WireMock. The report behaviour
@@ -49,25 +49,25 @@ In production it is expected that the following environment variables are provid
 
 ## Queue and timeout
 
-In order to avoid overloading Morpheus, specially when a batch of requests should be processed,
+In order to avoid overloading ExploitIQ, specially when a batch of requests should be processed,
 you can configure a maximum number of ongoing requests and a maximum number of waiting
 requests. Finally it is possible to define the timeout for an ongoing request.
 
 ```properties
-morpheus.queue.max-active=5 #max number of ongoing requests
-morpheus.queue.max-size=100 #max number of waiting requests
-morpheus.queue.timeout=5m #duration of an ongoing request
+exploit-iq.queue.max-active=5 #max number of ongoing requests
+exploit-iq.queue.max-size=100 #max number of waiting requests
+exploit-iq.queue.timeout=5m #duration of an ongoing request
 ```
 
 Every 10 seconds the ongoing requests will be checked and expired if needed, then
-the waiting queue will be updated and send new requests to Morpheus
+the waiting queue will be updated and send new requests to ExploitIQ
 
 ## Pending Component Syncer timeout
 
 The Component Syncer is responsible for pre-processing component documents during product scanning. You can configure the timeout for the syncer to control how long the system waits for the component synchronization process to complete and send processed batch for analysis before timing out.
 
 ```properties
-morpheus.syncer.timeout=1h # duration to wait for component syncer during pre-processing
+exploit-iq.syncer.timeout=1h # duration to wait for component syncer during pre-processing
 ```
 
 Set this value according to the expected processing time for your product. If the syncer does not finish within the configured timeout, any components still pending will be marked as expired.
@@ -78,8 +78,8 @@ You can activate the purge for old reports. By default is disabled and unless th
 cron expression is provided it will not be executed.
 
 ```properties
-morpheus.purge.cron=0 0 * * * ? #Run every midnight
-morpheus.purge.after=7d #Remove reports older than 7 days
+exploit-iq.purge.cron=0 0 * * * ? #Run every midnight
+exploit-iq.purge.after=7d #Remove reports older than 7 days
 ```
 
 ## Includes / Excludes

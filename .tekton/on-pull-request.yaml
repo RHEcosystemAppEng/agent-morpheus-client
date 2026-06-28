@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: morpheus-client-on-pr
+  name: exploit-iq-client-on-pr
   annotations:
     # The event we are targeting as seen from the webhook payload
     # this can be an array too, i.e: [pull_request, push]
@@ -28,7 +28,7 @@ spec:
     - name: image-expires-after
       value: 5d
     - name: output-image
-      value: quay.io/ecosystem-appeng/agent-morpheus-client:on-pr-{{revision}}
+      value: quay.io/ecosystem-appeng/exploit-iq-client:on-pr-{{revision}}
     - name: path-context
       value: .
     - name: dockerfile

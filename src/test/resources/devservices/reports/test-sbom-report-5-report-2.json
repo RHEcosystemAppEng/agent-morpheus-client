@@ -2763,8 +2763,8 @@
   },
   "info": {
     "vdb": {
-      "code_vdb_path": "/morpheus-data/vdbs/code/1c72f35adf7fbae9",
-      "doc_vdb_path": "/morpheus-data/vdbs/doc/b9103c68ee4af680"
+      "code_vdb_path": "/exploit-iq-data/vdbs/code/1c72f35adf7fbae9",
+      "doc_vdb_path": "/exploit-iq-data/vdbs/doc/b9103c68ee4af680"
     },
     "intel": [
       {

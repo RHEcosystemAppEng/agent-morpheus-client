@@ -12,7 +12,7 @@
 
 import type { FullReport, RpmTargetPackage } from "../types/FullReport";
 
-/** Persisted Morpheus discriminant for RPM vulnerability checks (`new-rpm-report-api`). */
+/** Persisted ExploitIq discriminant for RPM vulnerability checks (`new-rpm-report-api`). */
 export const RPM_PIPELINE_MODE = "rpm_package_checker" as const;
 
 export function isRpmPackageCheckerReport(

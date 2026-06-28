@@ -5,7 +5,7 @@
   "metadata": {
     "product_id": "product-7",
     "user": "vbelouso@redhat.com",
-    "source": "morpheus-parser",
+    "source": "exploit-iq-parser",
     "batch_id": "mp-10i7ly",
     "requested_at": "2025-01-20T14:46:58.335Z",
     "submitted_at": "2025-01-20T15:46:58.335583Z",
@@ -2130,8 +2130,8 @@
   },
   "info": {
     "vdb": {
-      "code_vdb_path": "/morpheus-data/vdbs/code/234dc59bcd709aad",
-      "doc_vdb_path": "/morpheus-data/vdbs/doc/d12523272b4cfe13"
+      "code_vdb_path": "/exploit-iq-data/vdbs/code/234dc59bcd709aad",
+      "doc_vdb_path": "/exploit-iq-data/vdbs/doc/d12523272b4cfe13"
     },
     "intel": [
       {

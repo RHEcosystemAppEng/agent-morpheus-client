@@ -531,7 +531,7 @@
         }
       },
       "PipelineMode": {
-        "description": "Morpheus agent pipeline mode",
+        "description": "ExploitIq pipeline mode",
         "type": "string",
         "enum": [
           "full_pipeline",
@@ -2945,7 +2945,7 @@
       },
       "post": {
         "summary": "Receive analysis report",
-        "description": "Receives a completed analysis report from Morpheus",
+        "description": "Receives a completed analysis report from ExploitIq",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3269,7 +3269,7 @@
     "/api/v1/reports/new-rpm-report": {
       "post": {
         "summary": "Create analysis request for an RPM package",
-        "description": "Accepts RPM name, version, release, architecture, and a CVE id; builds a Morpheus input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object \"errors\" mapping field names to messages).",
+        "description": "Accepts RPM name, version, release, architecture, and a CVE id; builds a ExploitIq input with pipeline_mode rpm_package_checker and target_package, persists the report, and always submits it for analysis (same queue path as POST /reports/new with submit=true). Validation errors use the same field-mapped JSON shape as POST /products/upload-spdx (object \"errors\" mapping field names to messages).",
         "requestBody": {
           "description": "RPM package coordinates and CVE identifier",
           "content": {

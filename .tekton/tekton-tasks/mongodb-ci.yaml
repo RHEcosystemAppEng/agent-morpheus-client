@@ -1,6 +1,6 @@
 ---
 # Ephemeral MongoDB for @QuarkusTest in CI. Same image as prod (mongodb-community-server 8.0 UBI);
-# mirrors deploy/agent_morpheus_client.yaml (db Deployment + Service); emptyDir instead of PVC.
+# mirrors deploy/exploit-iq-client.yaml (db Deployment + Service); emptyDir instead of PVC.
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:

@@ -2900,7 +2900,7 @@
   "metadata": {
     "product_id": "product-8",
     "user": "vbelouso@redhat.com",
-    "source": "morpheus-parser",
+    "source": "exploit-iq-parser",
     "batch_id": "mp-i3mtoj",
     "requested_at": "2025-01-20T14:46:58.335Z",
     "submitted_at": "2025-01-20T15:46:58.335583Z",

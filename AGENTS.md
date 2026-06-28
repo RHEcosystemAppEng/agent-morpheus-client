@@ -34,7 +34,7 @@ Loading states MUST use PatternFly `Skeleton` components instead of `Spinner` co
 ## Development Workflow
 
 ### Code Organization
-- Backend Java code: `src/main/java/com/redhat/ecosystemappeng/morpheus/`
+- Backend Java code: `src/main/java/com/redhat/ecosystemappeng/exploitiq/`
 - Frontend TypeScript/React code: `src/main/webui`
 - Generated API client: `src/main/webui/src/services/generated-client/` (auto-generated from OpenAPI)
 - React hooks: `src/main/webui/src/hooks/` (use `useApi` for all API calls)
