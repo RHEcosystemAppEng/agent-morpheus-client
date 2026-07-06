@@ -21,7 +21,13 @@ export type LiveUpdatesStore = {
 const LiveUpdatesContext = createContext<LiveUpdatesStore | null>(null);
 
 /**
- * Owns one {@link EventSource} for the server push stream that signals report/product data may have changed.
+ * Owns one {@link EventSource} for the server-sent events stream at {@link REPORTS_LIVE_UPDATES_SSE_PATH}.
+ *
+ * The server emits two kinds of frames:
+ *  - `event: update` - report or product data may have changed; triggers a revision bump so hooks re-fetch.
+ *  - SSE comment lines (`: keepalive`) - sent periodically to prevent proxy idle-timeout disconnects;
+ *    the browser discards them and they never reach this listener.
+ *
  * Hooks opt in with `liveUpdatesRefresh` on `useApi` / `usePaginatedApi` and observe bumps via `useLiveUpdatesRevision`.
  */
 export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
@@ -37,9 +43,9 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const url = `${window.location.origin}${REPORTS_LIVE_UPDATES_SSE_PATH}`;
     const es = new EventSource(url, { withCredentials: true });
-    es.onmessage = () => {
+    es.addEventListener("update", () => {
       bump();
-    };
+    });
     es.onerror = (event) => {
       console.error(
         "[LiveUpdates] EventSource error",
