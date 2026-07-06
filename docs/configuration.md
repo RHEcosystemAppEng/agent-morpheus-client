@@ -72,6 +72,16 @@ exploit-iq.syncer.timeout=1h # duration to wait for component syncer during pre-
 
 Set this value according to the expected processing time for your product. If the syncer does not finish within the configured timeout, any components still pending will be marked as expired.
 
+## SSE keepalive heartbeat
+
+The live-update SSE stream (`/api/v1/reports/stream`) keeps a long-lived HTTP connection open. Proxies and load balancers (including OpenShift's HAProxy ingress) close idle connections after their configured timeout. To prevent unexpected disconnects, the server periodically emits an SSE comment line that counts as activity for the proxy but is silently discarded by the browser.
+
+```properties
+exploit-iq.sse.heartbeat-interval=25S # how often to send the keepalive comment
+```
+
+Set this value to less than the proxy's idle-connection timeout (`timeout server` in HAProxy). The default is defined in `application.properties`. Accepts standard duration notation: `25S`, `1M`, `PT30S`.
+
 ## Purge
 
 You can activate the purge for old reports. By default is disabled and unless the
