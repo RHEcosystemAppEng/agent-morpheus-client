@@ -100,7 +100,7 @@ If your local MongoDB requires authentication, then include credentials in the c
 ./mvnw quarkus:dev -Dquarkus.mongodb.connection-string=mongodb://<user>:<password>@localhost:27017/exploit-iq-client?authSource=exploit-iq-client
 ```
 
-To connect to MongoDB Atlas or any external MongoDB, disable Dev Services and set the connection string by using environment variables:
+To connect to MongoDB Atlas or any external MongoDB, disable MongoDB Dev Services and set the connection string by using environment variables:
 
 ```bash
 export QUARKUS_MONGODB_CONNECTION_STRING='mongodb+srv://<user>:<password>@<cluster>/'
