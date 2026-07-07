@@ -20,6 +20,8 @@ To see all the configuration options check the [configuration](./configuration.m
 
 For authentication setup (Keycloak, external identity providers, testing), see the [authentication](./authentication.md) guide.
 
+To connect the application to an external MongoDB instance, refer to [Connecting to MongoDB](./connecting-to-mongodb.md).
+
 ## Running the application in dev mode
 
 ### Integrated Mode (Default)

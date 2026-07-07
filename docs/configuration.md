@@ -36,16 +36,9 @@ will depend on the preffix used in the report ID.
 
 ## Database (MongoDB)
 
-In development a MongoDB instance will be started as a DevService. You can use an external instance with `-Dquarkus.mongodb.connection-string=mongodb://localhost:27017/`. Or forche the port number with `-Dquarkus.mongodb.devservices.port=27017`
+By default, ExploitIQ uses [Quarkus Dev Services](https://quarkus.io/guides/mongodb#dev-services) to start a MongoDB Testcontainer automatically in development mode. Sample reports are loaded at startup.
 
-At startup a bunch of reports will be loaded for development.
-
-In production it is expected that the following environment variables are provided:
-
-* `MONGODB_SVC_HOST`
-* `MONBODB_SVC_PORT`
-* `MONBODB_USERNAME`
-* `MONGODB_PASSWORD`
+To connect to an external MongoDB instance, refer to [Connecting to MongoDB](./connecting-to-mongodb.md).
 
 ## Queue and timeout
 

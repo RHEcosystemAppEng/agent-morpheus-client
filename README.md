@@ -26,6 +26,7 @@ Check this other documents for:
 
 * [Configuration](./docs/configuration.md)
 * [Development](./docs/development.md)
+* [Connecting to MongoDB](./docs/connecting-to-mongodb.md) — configuring ExploitIQ to connect to an external or self-managed MongoDB instance
 * [SBOM Requirements](./docs/sbom-requirements.md) — SPDX 2.3 structure, OCI image labels, and example fixtures
 * [Tests](./src/test/README.md) — REST `@QuarkusTest` notes and CI test image for pipelines
 
