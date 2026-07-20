@@ -48,12 +48,19 @@ requests. Finally it is possible to define the timeout for an ongoing request.
 
 ```properties
 exploit-iq.queue.max-active=5 #max number of ongoing requests
+exploit-iq.queue.max-active-per-user=5 #max number of concurrent ongoing requests per authenticated user
 exploit-iq.queue.max-size=100 #max number of waiting requests
 exploit-iq.queue.timeout=5m #duration of an ongoing request
 ```
 
 Every 10 seconds the ongoing requests will be checked and expired if needed, then
 the waiting queue will be updated and send new requests to ExploitIQ
+
+`exploit-iq.queue.max-active-per-user` limits how many of the global `max-active`
+slots a single authenticated user can occupy at once. This prevents one user from
+submitting enough large requests to exhaust the entire queue and blocking other
+users. When a user reaches this limit, new requests are rejected immediately with
+HTTP 429, without affecting the global pending/active accounting for other users.
 
 ## Pending Component Syncer timeout
 
