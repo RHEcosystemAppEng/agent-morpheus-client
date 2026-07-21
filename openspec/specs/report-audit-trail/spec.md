@@ -70,7 +70,7 @@ All destructive `ReportEndpoint` handlers (`DELETE /reports/{id}`, `DELETE /repo
 
 ### Requirement: Owner verification for mark failed by scan ID
 
-`POST /api/v1/reports/failed` (`markFailedByScanId`) SHALL verify ownership before updating report status. For human users (actor resolved via `UserService` without a JWT principal name), every report matching the scan ID SHALL have `metadata.user` equal to the actor. For service accounts (JWT principal name present per `UtilitiesService`), owner verification SHALL be skipped. On success, the backend SHALL write an audit record with operation `MODIFY_STATUS`, affected `report_ids`, and `context` containing `scanId`, `errorType`, and `errorMessage`.
+`POST /api/v1/reports/failed` (`markFailedByScanId`) SHALL verify ownership before updating report status. For human users (callers without a configured service-account role), every report matching the scan ID SHALL have `metadata.user` equal to the actor. For service accounts (callers holding any role listed in `exploit-iq.security.service-account-roles`), owner verification SHALL be skipped. Service-account detection MUST be role-based and MUST NOT rely on JWT principal type, so it works across OpenShift OAuth and Keycloak. On success, the backend SHALL write an audit record with operation `MODIFY_STATUS`, affected `report_ids`, and `context` containing `scanId`, `errorType`, and `errorMessage`.
 
 #### Scenario: Human user marks own report failed
 
@@ -88,7 +88,7 @@ All destructive `ReportEndpoint` handlers (`DELETE /reports/{id}`, `DELETE /repo
 
 #### Scenario: Service account may mark any matching report failed
 
-- **WHEN** an authenticated service account (JWT principal name present) calls `POST /api/v1/reports/failed` for an existing scan ID
+- **WHEN** an authenticated service account (holding a configured service-account role such as `exploitiq-api-access`) calls `POST /api/v1/reports/failed` for an existing scan ID
 - **THEN** the backend writes a `MODIFY_STATUS` audit record with the service principal as `actor`
 - **AND** updates all matching reports
 - **AND** returns **202 Accepted**
