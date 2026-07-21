@@ -12,9 +12,6 @@ COPY --chown=quarkus:quarkus mvnw /code/mvnw
 COPY --chown=quarkus:quarkus .mvn /code/.mvn
 COPY --chown=quarkus:quarkus pom.xml /code/
 
-# Install libatomic for Node.js 26+ compatibility
-USER root
-RUN microdnf install -y libatomic && microdnf clean all
 
 USER quarkus
 WORKDIR /code
