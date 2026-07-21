@@ -70,7 +70,7 @@ All destructive `ReportEndpoint` handlers (`DELETE /reports/{id}`, `DELETE /repo
 
 ### Requirement: Owner verification for mark failed by scan ID
 
-`POST /api/v1/reports/failed` (`markFailedByScanId`) SHALL verify ownership before updating report status. For human users (callers without a configured service-account role), every report matching the scan ID SHALL have `metadata.user` equal to the actor. For service accounts (callers holding any role listed in `exploit-iq.security.service-account-roles`), owner verification SHALL be skipped. Service-account detection MUST be role-based and MUST NOT rely on JWT principal type, so it works across OpenShift OAuth and Keycloak. On success, the backend SHALL write an audit record with operation `MODIFY_STATUS`, affected `report_ids`, and `context` containing `scanId`, `errorType`, and `errorMessage`.
+`POST /api/v1/reports/failed` (`markFailedByScanId`) SHALL verify ownership before updating report status. For human users (callers without a configured service-account role), every report matching the scan ID SHALL have `metadata.user` equal to the actor. For service accounts (callers holding any role listed in `exploitiq.security.service-account-roles`), owner verification SHALL be skipped. Service-account detection MUST be role-based and MUST NOT rely on JWT principal type, so it works across OpenShift OAuth and Keycloak. On success, the backend SHALL write an audit record with operation `MODIFY_STATUS`, affected `report_ids`, and `context` containing `scanId`, `errorType`, and `errorMessage`.
 
 #### Scenario: Human user marks own report failed
 
