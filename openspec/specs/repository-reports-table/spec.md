@@ -29,6 +29,8 @@ The repository reports table SHALL display columns: **ID** (first column, width 
 
 The ID column SHALL display `report.id` as a link to the report page (component route: `/reports/component/{cveId}/{report.id}`; product route: `/reports/product/{productId}/{cveId}/{report.id}`). The **Date Requested** column SHALL display `metadata.submitted_at` when present, in the format "DD Month YYYY, HH:MM:SS AM/PM"; when `metadata.submitted_at` is missing, the cell SHALL display "-". The **Date Completed** column SHALL display `report.completedAt` in the same format. All date fields SHALL use the format "DD Month YYYY, HH:MM:SS AM/PM" (e.g., "07 July 2025, 10:14:02 PM").
 
+When a report's analysis state is **failed** or **expired**, `report.completedAt` SHALL be populated with the time the analysis reached that terminal failure (same completion-time semantics used for SBOM product Date Completed), so the **Date Completed** cell is not empty. In-progress states (**pending**, **queued**, **sent**) MAY leave Date Completed empty.
+
 The table SHALL display a single **Finding** column (no separate "Analysis state" or "ExploitIQ Status" column). The Finding cell SHALL show, per row: if the report's analysis state is **completed**, the ExploitIQ Status (Vulnerable, Not vulnerable, or Uncertain) from the vulnerability justification; if the report's analysis state is **pending**, **queued**, or **sent**, "In progress" using the shared InProgressStatus component (grey outline label, InProgressIcon); if the report's analysis state is **expired** or **failed**, "Failed" using the shared FailedStatus component (grey filled label, ExclamationCircleIcon). Styling SHALL match the Finding column in the reports table for in-progress and failed states.
 
 #### Scenario: Repository reports table columns
@@ -39,6 +41,16 @@ The table SHALL display a single **Finding** column (no separate "Analysis state
 - **WHEN** a user views a row in the repository reports table
 - **THEN** the Finding cell shows: "Vulnerable", "Not vulnerable", or "Uncertain" (with same label colors as reports table) when the report state is completed and vulnerability justification is available; "In progress" (grey outline, InProgressIcon) when the report state is pending, queued, or sent; "Failed" (grey filled, ExclamationCircleIcon) when the report state is expired or failed
 - **AND** In progress and Failed use the shared InProgressStatus and FailedStatus components so styling matches the reports table Finding column
+
+#### Scenario: Date Completed populated for failed single-repository reports
+- **WHEN** a user views **`/reports/single-repositories`**
+- **AND** a row has analysis state **failed** or **expired** (Finding shows **Failed**)
+- **THEN** the **Date Completed** column displays a formatted timestamp from `report.completedAt`
+- **AND** the cell is not empty solely because the analysis failed
+
+#### Scenario: Date Completed still empty while in progress
+- **WHEN** a user views a repository reports row with analysis state **pending**, **queued**, or **sent**
+- **THEN** the **Date Completed** column MAY be empty
 
 ### Requirement: Finding filter and toolbar
 The repository reports table toolbar SHALL provide a single **Finding** filter (not separate Analysis state and ExploitIQ Status filters); **RPM** **`/reports/rpm`** layouts SHALL NOT expose **`git_repo`** / Repository Name filter controls (see **RPM Reports tab table variant** above). The Finding filter SHALL allow selecting exactly one finding value (e.g. Vulnerable, Not vulnerable, Uncertain, In progress, Failed), or none. When the user selects a Finding value, the table SHALL pass the corresponding backend parameter(s) to the reports API: "In progress" maps to status values for pending, queued, sent; "Failed" maps to status values for expired, failed; "Vulnerable", "Not vulnerable", and "Uncertain" map to exploitIqStatus (or equivalent API parameter) so that the backend returns only rows matching the selected finding. When no Finding value is selected, the table SHALL not apply a finding filter (no status/exploitIqStatus restriction from this filter).
