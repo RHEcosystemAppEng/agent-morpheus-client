@@ -11,7 +11,15 @@ export type RpmArchChoice = NewRpmReportRequest["arch"];
 
 export const DEFAULT_RPM_ARCH: RpmArchChoice = "x86_64";
 
-export const RPM_ARCH_CHOICES: readonly RpmArchChoice[] = ["x86_64", "amd64", "aarch64", "arm64", "ppc64le", "s390x"];
+export const RPM_ARCH_CHOICES: readonly RpmArchChoice[] = [
+  "x86_64",
+  "amd64",
+  "aarch64",
+  "arm64",
+  "ppc64le",
+  "s390x",
+  "i686",
+];
 
 export function isRpmArchChoice(value: string | undefined): value is RpmArchChoice {
   return value !== undefined && RPM_ARCH_CHOICES.includes(value as RpmArchChoice);

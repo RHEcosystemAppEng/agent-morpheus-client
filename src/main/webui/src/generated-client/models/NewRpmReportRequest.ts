@@ -21,7 +21,7 @@ export type NewRpmReportRequest = {
     /**
      * RPM architecture
      */
-    arch: 'x86_64' | 'amd64' | 'aarch64' | 'arm64' | 'ppc64le' | 's390x';
+    arch: 'x86_64' | 'amd64' | 'aarch64' | 'arm64' | 'ppc64le' | 's390x' | 'i686';
     /**
      * Vulnerability identifier (CVE-YYYY-NNNN+)
      */
