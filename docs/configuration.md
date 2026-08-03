@@ -16,7 +16,7 @@ limitations under the License.
 
 ## Authentication
 
-For detailed authentication configuration including OpenShift OAuth, Keycloak, and external identity providers (Google, GitHub, Azure AD), see the [Authentication Guide](./authentication.md).
+For detailed authentication configuration including OpenShift OAuth, Keycloak, AWS Cognito, and other external identity providers (Google, Azure AD, Okta), see the [Authentication Guide](./authentication.md).
 
 ## External Services (GitHub / ExploitIQ)
 
