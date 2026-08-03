@@ -18,7 +18,7 @@ limitations under the License.
 
 To see all the configuration options check the [configuration](./configuration.md) guide.
 
-For authentication setup (Keycloak, external identity providers, testing), see the [authentication](./authentication.md) guide.
+For authentication setup (Keycloak, AWS Cognito, other external IdPs, testing), see the [authentication](./authentication.md) guide.
 
 To connect the application to an external MongoDB instance, refer to [Connecting to MongoDB](./connecting-to-mongodb.md).
 
@@ -37,6 +37,8 @@ By default, this runs with **authentication disabled**. To enable Keycloak DevSe
 ```shell
 ./mvnw quarkus:dev -Dquarkus.oidc.enabled=true -Dquarkus.keycloak.devservices.enabled=true
 ```
+
+To use **AWS Cognito** locally, set `QUARKUS_PROFILE=dev,external-idp` and the Cognito OIDC env vars documented in [authentication.md — AWS Cognito](./authentication.md#aws-cognito).
 
 This runs both the backend and frontend together, with the UI served through Quarkus at `http://localhost:8080`.
 
@@ -153,7 +155,7 @@ You can then execute your native executable with: `./target/exploit-iq-client-1.
 Some Quarkus properties are **build-time only** and cannot be changed at runtime. When building for a specific deployment target, include the profile:
 
 ```shell
-# For external-idp deployments (Keycloak, Google, etc.)
+# For external-idp deployments (Keycloak, AWS Cognito, Google, etc.)
 ./mvnw package -Dnative -Dquarkus.profile=external-idp
 
 # For prod deployments (OpenShift OAuth) - default
