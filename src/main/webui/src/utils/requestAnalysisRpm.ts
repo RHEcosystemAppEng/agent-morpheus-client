@@ -2,10 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NewRpmReportRequest } from "../generated-client/models/NewRpmReportRequest";
+import { CVE_ID_PATTERN } from "./requestAnalysisValidation";
 
 /** Shown when the package string cannot be split into nonempty name, version, and release (RPM-style split from the right). */
 export const RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE =
   "Enter the package as name-version-release (for example openssl-3.0.7-5.el9), with hyphens separating all three parts.";
+
+/**
+ * Aligned with backend {@code NotCveIdAsRpmNvrValidator.MESSAGE} — CVE pasted into Package N-V-R.
+ */
+export const RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE =
+  "A CVE ID was entered in the Package N-V-R field. Enter the package as name-version-release and put the CVE ID in the CVE ID field.";
 
 export type RpmArchChoice = NewRpmReportRequest["arch"];
 
@@ -39,6 +46,18 @@ function isValidRpmVersionOrRelease(value: string): boolean {
   return RPM_VERSION_RELEASE_PATTERN.test(value);
 }
 
+/**
+ * {@code true} when the trimmed value matches an official CVE id (case-insensitive),
+ * i.e. a CVE was pasted into Package N-V-R instead of name-version-release.
+ */
+export function isCveIdAsPackageNvr(raw: string): boolean {
+  const t = raw.trim();
+  if (t === "") {
+    return false;
+  }
+  return CVE_ID_PATTERN.test(t.toUpperCase());
+}
+
 /** Parses a trimmed RPM N-V-R: release after last hyphen, version before that, name is the leading remainder (may contain hyphens). */
 export function parseTrimmedRpmNvr(
   trimmed: string
@@ -64,11 +83,18 @@ export function parseTrimmedRpmNvr(
   return { name, version, release };
 }
 
-/** Blur-only: empty yields no format error ("Required" is enforced on submit). */
+/**
+ * Blur/submit format check for Package N-V-R.
+ * Empty yields no format error ("Required" is enforced on submit).
+ * Rejects CVE ids pasted into this field (backend {@code @NotCveIdAsRpmNvr}).
+ */
 export function validateRpmPackageNvrBlur(raw: string): string | null {
   const t = raw.trim();
   if (t === "") {
     return null;
+  }
+  if (isCveIdAsPackageNvr(t)) {
+    return RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE;
   }
   return parseTrimmedRpmNvr(t) ? null : RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE;
 }
