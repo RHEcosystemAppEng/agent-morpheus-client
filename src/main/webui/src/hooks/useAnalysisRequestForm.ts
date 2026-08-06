@@ -19,7 +19,9 @@ import {
 import {
   parseTrimmedRpmNvr,
   validateRpmPackageNvrBlur,
+  isCveIdAsPackageNvr,
   RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE,
+  RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE,
   DEFAULT_RPM_ARCH,
   isRpmArchChoice,
   type RpmArchChoice,
@@ -187,6 +189,8 @@ function getClientValidationErrors(s: AnalysisRequestStoredValues): Partial<Anal
     const pkg = s.rpmPackageNvr.trim();
     if (pkg === "") {
       errors.rpmPackageNvr = VALIDATION_MESSAGE_REQUIRED;
+    } else if (isCveIdAsPackageNvr(pkg)) {
+      errors.rpmPackageNvr = RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE;
     } else if (!parseTrimmedRpmNvr(pkg)) {
       errors.rpmPackageNvr = RPM_PACKAGE_NVR_FORMAT_ERROR_MESSAGE;
     }
@@ -375,6 +379,13 @@ export function useAnalysisRequestForm({
   const onTextChange = useCallback(
     (field: AnalysisRequestFormTextField, _event: React.FormEvent<HTMLInputElement>, value: string) => {
       setValues((prev) => ({ ...prev, [field]: value }));
+      if (field === "rpmPackageNvr") {
+        setErrors((prev) => ({
+          ...prev,
+          rpmPackageNvr: isCveIdAsPackageNvr(value) ? RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE : null,
+        }));
+        return;
+      }
       setErrors((prev) => (prev[field] ? { ...prev, [field]: null } : prev));
     },
     []
@@ -577,6 +588,13 @@ export function useAnalysisRequestForm({
       setState({ isSubmitting: true });
       try {
         const trimmedPkg = values.rpmPackageNvr.trim();
+        if (isCveIdAsPackageNvr(trimmedPkg)) {
+          setErrors((prev) => ({
+            ...prev,
+            rpmPackageNvr: RPM_PACKAGE_NVR_CVE_ID_ERROR_MESSAGE,
+          }));
+          return;
+        }
         const coords = parseTrimmedRpmNvr(trimmedPkg);
         if (!coords) {
           setErrors((prev) => ({
@@ -655,7 +673,9 @@ export function useAnalysisRequestForm({
     state.isSubmitting ||
     (values.mode !== "rpm" &&
       values.isAuthenticationSecretChecked &&
-      values.authenticationSecret.trim() === "");
+      values.authenticationSecret.trim() === "") ||
+    (values.mode === "rpm" &&
+      (isCveIdAsPackageNvr(values.rpmPackageNvr) || errors.rpmPackageNvr !== null));
 
   const { selectedFile: _selectedFile, ...exportedValues } = values;
 
