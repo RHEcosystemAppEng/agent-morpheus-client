@@ -21,10 +21,14 @@
     <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@6.1.0/patternfly.css" crossorigin="anonymous">
     <script>
         function logout() {
-            fetch('/api/v1/user/logout', { method: 'POST' })
-                .then(() => {
-                    window.location.href = "/";
-                });
+            // Create and submit a form to trigger logout endpoint
+            // This ensures cookies are cleared via Clear-Site-Data header
+            // and allows cross-origin redirects (e.g., to Cognito logout)
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/v1/user/logout';
+            document.body.appendChild(form);
+            form.submit();
         }
     </script>
 </head>
