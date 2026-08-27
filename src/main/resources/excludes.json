@@ -19,7 +19,6 @@
     "build.gradle"
   ],
   "JavaScript": [
-    "node_modules/**/*",
     "dist/**/*",
     "build/**/*",
     "test/**/*",
