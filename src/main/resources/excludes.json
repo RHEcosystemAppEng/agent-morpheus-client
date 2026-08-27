@@ -33,13 +33,13 @@
     "**/tests/**/*",
     "**/test/**/*",
     "**/demos/**/*",
+    "**/demo/**/*",
     "**/examples/**/*",
     "**/samples/**/*",
-    "**/doc/**/*",              
+    "**/doc/**/*",
     "**/docs/**/*"
   ],
   "TypeScript": [
-    "node_modules/**/*",
     "dist/**/*",
     "build/**/*",
     "test/**/*",
