@@ -40,7 +40,6 @@
     "**/docs/**/*"
   ],
   "TypeScript": [
-    "node_modules/**/*",
     "dist/**/*",
     "build/**/*",
     "test/**/*",
