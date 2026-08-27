@@ -15,6 +15,7 @@
   ],
   "JavaScript": [
     "**/*.js",
+    "**/*.jsx",
     "**/*.mjs",
     "**/*.cjs",
     "webpack.config.js",
@@ -49,8 +50,8 @@
     "public/**/*",
     "assets/**/*"
   ],
-  "C":[
-    "**/*.c",        
+  "C": [
+    "**/*.c",
     "**/*.h"
   ],
   "Dockerfile": [

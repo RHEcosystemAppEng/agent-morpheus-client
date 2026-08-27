@@ -19,6 +19,7 @@
     "build.gradle"
   ],
   "JavaScript": [
+    "node_modules/**/*",
     "dist/**/*",
     "build/**/*",
     "test/**/*",
@@ -33,9 +34,10 @@
     "**/tests/**/*",
     "**/test/**/*",
     "**/demos/**/*",
+    "**/demo/**/*",
     "**/examples/**/*",
     "**/samples/**/*",
-    "**/doc/**/*",              
+    "**/doc/**/*",
     "**/docs/**/*"
   ],
   "TypeScript": [
