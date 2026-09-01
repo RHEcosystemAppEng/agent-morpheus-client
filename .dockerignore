@@ -81,3 +81,15 @@ coverage/
 *.temp
 .cache/
 
+# Allow local dev image builds to access Maven build output (target/ is excluded above).
+# These negations re-include exactly what the dev Dockerfiles COPY from the build context:
+#   Dockerfile.native / Dockerfile.native-micro -> target/*-runner (native executable)
+#   Dockerfile.jvm                              -> target/quarkus-app/*
+#   Dockerfile.legacy-jar                       -> target/lib + target/*-runner.jar
+# The shipped Dockerfile.multi-stage builds inside the container and copies none of these,
+# so this only affects local dev builds (docker build -f src/main/docker/Dockerfile.<x> ... .).
+!target/*-runner
+!target/*-runner.jar
+!target/quarkus-app
+!target/lib
+
