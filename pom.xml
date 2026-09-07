@@ -20,6 +20,19 @@
 
   <dependencyManagement>
     <dependencies>
+      <!--
+        CVE-2026-62243: Netty TLS hostname verification bypass on the
+        SslProvider.OPENSSL client path (fixed in netty 4.1.137.Final).
+        Quarkus 3.36.2's quarkus-bom manages netty 4.1.135.Final, which is
+        vulnerable, so this netty-bom is imported BEFORE quarkus-bom to force
+        all io.netty artifacts to 4.1.137.Final (first-declared import BOM wins).
+
+        TEMPORARY: remove this import once the platform's quarkus.platform.version
+        manages netty-handler >= 4.1.137.Final; leaving it pinned would silently
+        cap netty below any newer version Quarkus ships and could re-expose us to
+        future CVEs. Removal tracked by: TC-6098
+        (https://redhat.atlassian.net/browse/TC-6098).
+      -->
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-bom</artifactId>
