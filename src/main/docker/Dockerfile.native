@@ -14,7 +14,7 @@
 # docker run -i --rm -p 8080:8080 quarkus/exploit-iq-client
 #
 ###
-FROM registry.redhat.io/ubi10/ubi-minimal:10.2
+FROM registry.redhat.io/ubi10/ubi-minimal:1788925094
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \

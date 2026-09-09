@@ -16,7 +16,7 @@ RUN curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSIO
   && tar -xzf /tmp/syft.tar.gz -C /tmp syft \
   && rm /tmp/syft.tar.gz
 
-FROM registry.redhat.io/ubi10/openjdk-21:1.24
+FROM registry.redhat.io/ubi10/openjdk-21:1788150970
 
 LABEL org.opencontainers.image.title="exploit-iq-client-test-image"
 LABEL org.opencontainers.image.description="UBI OpenJDK 21 with pinned Syft (same install as Dockerfile.multi-stage)"
