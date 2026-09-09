@@ -57,10 +57,17 @@ Pipelines expect that image tag to exist in Quay before `maven-test` can succeed
 From the **repository root** (requires access to `registry.redhat.io`; use `docker login` or `podman login` as appropriate):
 
 ```bash
-docker build -f src/test/docker/Dockerfile \
+docker build --push -f src/test/docker/Dockerfile \
   -t quay.io/ecosystem-appeng/exploit-iq-test-image:latest \
   src/test/docker
+```
 
+`--push` builds and uploads in one step. It is **required** when the Buildx `docker-container` driver is active (the modern default): a plain `docker build -t …` leaves the result only in the build cache, so a follow-up `docker push` fails with `image not known`. If you prefer two steps, use `--load` to import the image into the local daemon first, then push:
+
+```bash
+docker build --load -f src/test/docker/Dockerfile \
+  -t quay.io/ecosystem-appeng/exploit-iq-test-image:latest \
+  src/test/docker
 docker push quay.io/ecosystem-appeng/exploit-iq-test-image:latest
 ```
 

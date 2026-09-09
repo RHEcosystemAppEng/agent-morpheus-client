@@ -2,9 +2,11 @@
 # Syft installation mirrors src/main/docker/Dockerfile.multi-stage (mandrel stage + COPY /tmp/syft).
 # Build (repo root): docker build -f src/test/docker/Dockerfile -t quay.io/ecosystem-appeng/exploit-iq-test-image:latest src/test/docker
 #
-# Why mandrel for syft only: unpacking the Syft .tar.gz needs gzip; ubi9/openjdk-21
+# Why mandrel for syft only: unpacking the Syft .tar.gz needs gzip; ubi10/openjdk-21
 # slim variants may not ship gzip, which causes "tar (child): gzip: Cannot exec".
-FROM registry.redhat.io/quarkus/mandrel-for-jdk-21-rhel8:23.1 AS syft
+# Uses the same mandrel-25-rhel9 image (and digest) as Dockerfile.multi-stage so the
+# syft-install infra matches the shipped image exactly.
+FROM registry.redhat.io/quarkus/mandrel-25-rhel9@sha256:b19bdb7a74ed8827d5bc97dd95386da862a57571f7e8c2b77347912fdc0578f3 AS syft
 USER 0
 # Pin Syft with checksum verification (APPENG-5702 / T-041) — keep in sync with Dockerfile.multi-stage
 ARG SYFT_VERSION=1.46.0
@@ -14,7 +16,7 @@ RUN curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSIO
   && tar -xzf /tmp/syft.tar.gz -C /tmp syft \
   && rm /tmp/syft.tar.gz
 
-FROM registry.redhat.io/ubi9/openjdk-21:latest
+FROM registry.redhat.io/ubi10/openjdk-21:1788150970
 
 LABEL org.opencontainers.image.title="exploit-iq-client-test-image"
 LABEL org.opencontainers.image.description="UBI OpenJDK 21 with pinned Syft (same install as Dockerfile.multi-stage)"
