@@ -224,6 +224,7 @@ Role extraction is implemented in `RoleMappingAugmentor` (additive alongside Ope
 | `QUARKUS_OIDC_AUTH_SERVER_URL` | Cognito **issuer** URL (User Pool), **not** the Hosted UI domain and **not** `.../.well-known/openid-configuration` | `https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_AbCdEf123` |
 | `QUARKUS_OIDC_CLIENT_ID` | App client ID | Cognito console → App clients |
 | `QUARKUS_OIDC_CREDENTIALS_SECRET` | App client secret | Cognito console → App clients |
+| `EXPLOITIQ_SECURITY_ADDITIONAL_LOGOUT_PATHS` | Additional logout paths for Cognito (comma-separated). Base path `/api/v1/user/logout` is always included | `/api/v1/user/logged-out` |
 | `EXPLOITIQ_SECURITY_OIDC_SCOPE_ROLE_MAPPINGS` | Optional M2M mapping: comma-separated `scope=role` pairs | `exploitiq-resource-server/exploitiq-api-access=exploitiq-api-access` |
 | `NAMESPACE` | Required for service-account role string expansion | OpenShift namespace, or `local-dev` locally |
 | `CREDENTIAL_ENCRYPTION_KEY` | 32-byte key for credential store (unrelated to Cognito) | Deployment secret |
@@ -252,6 +253,9 @@ env:
     secretKeyRef:
       name: cognito-oidc
       key: client-secret
+# Required for Cognito logout - allows /api/v1/user/logged-out endpoint
+- name: EXPLOITIQ_SECURITY_ADDITIONAL_LOGOUT_PATHS
+  value: "/api/v1/user/logged-out"
 # Required for agent/M2M bearer tokens (client_credentials) — omit for browser-only
 - name: EXPLOITIQ_SECURITY_OIDC_SCOPE_ROLE_MAPPINGS
   value: "exploitiq-resource-server/exploitiq-api-access=exploitiq-api-access"
@@ -266,6 +270,8 @@ export QUARKUS_PROFILE=dev,external-idp
 export QUARKUS_OIDC_AUTH_SERVER_URL='https://cognito-idp.{region}.amazonaws.com/{user-pool-id}'
 export QUARKUS_OIDC_CLIENT_ID='{cognito-app-client-id}'
 export QUARKUS_OIDC_CREDENTIALS_SECRET='{cognito-app-client-secret}'
+# Required for Cognito logout:
+export EXPLOITIQ_SECURITY_ADDITIONAL_LOGOUT_PATHS='/api/v1/user/logged-out'
 # Optional M2M:
 # export EXPLOITIQ_SECURITY_OIDC_SCOPE_ROLE_MAPPINGS='exploitiq-resource-server/exploitiq-api-access=exploitiq-api-access'
 
